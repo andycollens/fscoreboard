@@ -4,7 +4,12 @@
 
 ### 🎯 Автоматическая установка на сервер (рекомендуется)
 
-**Для Ubuntu Server одной командой:**
+**1. Предварительное обновление системы:**
+```bash
+sudo apt update && sudo apt upgrade -y
+```
+
+**2. Установка FSCOREBOARD:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh | sudo bash
 ```

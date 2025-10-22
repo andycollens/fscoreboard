@@ -31,6 +31,9 @@ print_header() {
     echo "🚀 FSCOREBOARD - Автоматический установщик"
     echo "============================================================================="
     echo -e "${NC}"
+    echo -e "${YELLOW}⚠️  Рекомендация: Перед установкой обновите систему:${NC}"
+    echo -e "${CYAN}   sudo apt update && sudo apt upgrade -y${NC}"
+    echo ""
 }
 
 print_step() {
@@ -83,18 +86,15 @@ check_system() {
     print_success "Система совместима (Ubuntu $UBUNTU_VERSION)"
 }
 
-# Обновление системы
-update_system() {
-    print_step "Обновление системы..."
+# Установка необходимых пакетов
+install_packages() {
+    print_step "Установка необходимых пакетов..."
     
-    apt update -y
-    apt upgrade -y
-    
-    # Установка необходимых пакетов
+    # Установка только необходимых пакетов для проекта
     apt install -y curl wget git unzip software-properties-common build-essential \
                    nginx ufw fail2ban htop bc openssl
     
-    print_success "Система обновлена"
+    print_success "Пакеты установлены"
 }
 
 # Установка Node.js
@@ -450,7 +450,7 @@ main() {
     
     # Выполнение установки
     check_system
-    update_system
+    install_packages
     install_nodejs
     install_pm2
     setup_firewall
