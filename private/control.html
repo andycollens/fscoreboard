@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>FSCOREBOARD Control Panel</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 800px; 
+      margin: 20px auto; 
+      background: #f4f4f4; 
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .presets-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .presets-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .presets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .preset-card {
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .preset-card:hover {
+      border-color: #338af3;
+      background: #f8f9ff;
+    }
+    
+    .preset-name {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    .preset-teams {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    
+    .preset-team {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .preset-team-name {
+      font-weight: bold;
+      color: #338af3;
+    }
+    
+    .preset-team-city {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .preset-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .btn-primary {
+      background: #338af3;
+      color: white;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn:hover {
+      opacity: 0.8;
+    }
+    
+    .add-preset-form {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .form-group {
+      flex: 1;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .form-group input[type="color"] {
+      width: 60px;
+      height: 40px;
+      padding: 0;
+    }
+    
+    .timer-row { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 16px; 
+      margin: 20px 0; 
+    }
+    
+    .playpause-btn, .set-btn {
+      width: 56px; 
+      height: 44px;
+      background: #338af3; 
+      color: #fff; 
+      border: none; 
+      border-radius: 8px;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      font-size: 2em; 
+      cursor: pointer; 
+      transition: background 0.2s;
+    }
+    
+    .playpause-btn:hover, .set-btn:hover { 
+      background: #2561a7; 
+    }
+    
+    .timer-inputs {
+      display: flex; 
+      align-items: center; 
+      gap: 8px;
+      background: #fff; 
+      border-radius: 8px; 
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+    }
+    
+    .timer-inputs input[type="text"] {
+      width: 80px; 
+      font-size: 1.2em; 
+      text-align: center; 
+      border: none; 
+      background: none; 
+      outline: none;
+      letter-spacing: 2px;
+    }
+    
+    .score-row { 
+      display: flex; 
+      justify-content: space-between; 
+      gap: 30px; 
+      margin-top: 20px; 
+    }
+    
+    .score-block { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      padding: 0; 
+      min-width: 120px; 
+    }
+    
+    .score-controls { 
+      display: flex; 
+      gap: 10px; 
+      margin-bottom: 8px; 
+    }
+    
+    .score-btn {
+      background: #338af3; 
+      color: #fff; 
+      border: none; 
+      border-radius: 8px;
+      width: 44px; 
+      height: 44px; 
+      font-size: 1.4em; 
+      font-weight: bold; 
+      cursor: pointer;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    }
+    
+    .score-btn:hover { 
+      background: #2561a7; 
+    }
+    
+    .score-value { 
+      font-size: 2em; 
+      color: #338af3; 
+      min-width: 32px; 
+      text-align: center; 
+    }
+    
+    .short-label-row { 
+      margin-top: 6px; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+    }
+    
+    .short-label-row input[type="text"] {
+      width: 50px; 
+      text-align: center; 
+      font-size: 1.2em; 
+      border-radius: 8px; 
+      border: 1px solid #ccc; 
+      padding: 4px 0;
+      background: #fff; 
+      text-transform: uppercase; 
+      font-weight: bold; 
+      letter-spacing: 2px;
+    }
+    
+    .kit-block { 
+      display: flex; 
+      flex-direction: row; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 0; 
+      width: 120px; 
+    }
+    
+    .kit-color {
+      width: 100px; 
+      height: 32px; 
+      border-radius: 4px; 
+      border: 1px solid #ccc;
+      background: none; 
+      margin: 0; 
+      padding: 0; 
+      cursor: pointer; 
+      display: block;
+    }
+    
+    .label-caption {
+      font-size: 0.85em; 
+      color: #888; 
+      margin-bottom: 2px; 
+      text-align: center; 
+      font-weight: normal; 
+      letter-spacing: 1px;
+    }
+    
+    .team-input-row { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      width: 100%; 
+      gap: 4px; 
+      margin-top: 6px; 
+    }
+    
+    .team-input-row input[type="text"] {
+      width: 100%;
+      text-align: center; 
+      font-size: 1em; 
+      border-radius: 8px; 
+      border: 1px solid #ccc; 
+      padding: 4px 0;
+      background: #fff; 
+      color: #338af3; 
+      font-weight: bold; 
+    }
+    
+    .city-input-row input[type="text"] {
+      width: 100%;
+      text-align: center; 
+      font-size: 1em; 
+      border-radius: 8px; 
+      border: 1px solid #ccc; 
+      padding: 4px 0;
+      background: #fff; 
+      color: #888; 
+      font-weight: normal;
+    }
+    
+    .divider { 
+      width: 2px; 
+      background: #ccc; 
+      margin: 0 10px; 
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>FSCOREBOARD Control Panel</h1>
+    <p>Управление табло и предустановками матчей</p>
+  </div>
+
+  <!-- Секция предустановок -->
+  <div class="presets-section">
+    <div class="presets-header">
+      <h2>Предустановки матчей</h2>
+      <button class="btn btn-primary" onclick="toggleAddPresetForm()">+ Добавить предустановку</button>
+    </div>
+    
+    <div id="presetsGrid" class="presets-grid">
+      <!-- Предустановки будут загружены динамически -->
+    </div>
+    
+    <div id="addPresetForm" class="add-preset-form hidden">
+      <h3>Новая предустановка</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Название матча</label>
+          <input type="text" id="presetName" placeholder="Например: Финал чемпионата">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Команда 1 - Название</label>
+          <input type="text" id="presetTeam1Name" placeholder="Название команды">
+        </div>
+        <div class="form-group">
+          <label>Команда 1 - Город</label>
+          <input type="text" id="presetTeam1City" placeholder="Город">
+        </div>
+        <div class="form-group">
+          <label>Команда 1 - Шорткод</label>
+          <input type="text" id="presetTeam1Short" placeholder="ХОЗ" maxlength="3">
+        </div>
+        <div class="form-group">
+          <label>Цвет формы 1</label>
+          <input type="color" id="presetKit1Color" value="#2b2b2b">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Команда 2 - Название</label>
+          <input type="text" id="presetTeam2Name" placeholder="Название команды">
+        </div>
+        <div class="form-group">
+          <label>Команда 2 - Город</label>
+          <input type="text" id="presetTeam2City" placeholder="Город">
+        </div>
+        <div class="form-group">
+          <label>Команда 2 - Шорткод</label>
+          <input type="text" id="presetTeam2Short" placeholder="ГОС" maxlength="3">
+        </div>
+        <div class="form-group">
+          <label>Цвет формы 2</label>
+          <input type="color" id="presetKit2Color" value="#2b2b2b">
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-primary" onclick="savePreset()">Сохранить</button>
+        <button class="btn" onclick="toggleAddPresetForm()">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Управление табло -->
+  <div class="camera-content">
+    <div class="timer-row">
+      <button id="playPauseBtn" class="playpause-btn" title="Пуск/Пауза">
+        <svg id="playPauseIcon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <polygon id="playIcon" points="8,6 26,16 8,26" fill="white"/>
+        </svg>
+      </button>
+      <div class="timer-inputs">
+        <input type="text" id="timeInput" maxlength="5" placeholder="MM:SS" pattern="^\d{2}:\d{2}$" value="00:00" autocomplete="off" />
+      </div>
+      <button id="setBtn" class="set-btn">Set</button>
+    </div>
+    <form id="controlForm" autocomplete="off" spellcheck="false">
+      <div class="score-row">
+        <div class="score-block">
+          <div class="score-controls">
+            <button type="button" class="score-btn" id="score1Dec">-</button>
+            <span class="score-value" id="score1Value">0</span>
+            <button type="button" class="score-btn" id="score1Inc">+</button>
+          </div>
+          <div class="short-label-row">
+            <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
+          </div>
+          <div class="kit-block">
+            <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
+          </div>
+          <div class="team-input-row">
+            <span class="label-caption">Название команды</span>
+            <input type="text" id="team1Name" maxlength="40" placeholder="Не введено" />
+          </div>
+          <div class="city-input-row team-input-row">
+            <span class="label-caption">Город</span>
+            <input type="text" id="team1City" maxlength="30" placeholder="Не введено" />
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="score-block">
+          <div class="score-controls">
+            <button type="button" class="score-btn" id="score2Dec">-</button>
+            <span class="score-value" id="score2Value">0</span>
+            <button type="button" class="score-btn" id="score2Inc">+</button>
+          </div>
+          <div class="short-label-row">
+            <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
+          </div>
+          <div class="kit-block">
+            <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
+          </div>
+          <div class="team-input-row">
+            <span class="label-caption">Название команды</span>
+            <input type="text" id="team2Name" maxlength="40" placeholder="Не введено" />
+          </div>
+          <div class="city-input-row team-input-row">
+            <span class="label-caption">Город</span>
+            <input type="text" id="team2City" maxlength="30" placeholder="Не введено" />
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let presets = [];
+    let ready = false;
+
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', function() {
+      loadPresets();
+      setupControls();
+    });
+
+    // Настройка контролов
+    function setupControls() {
+      // Таймер
+      document.getElementById('playPauseBtn').onclick = function() {
+        const isRunning = document.getElementById('playPauseIcon').innerHTML.includes('rect');
+        socket.emit('updateScoreboard', { 
+          timerRunning: !isRunning 
+        });
+      };
+      
+      document.getElementById('setBtn').onclick = function() {
+        const seconds = getSecondsFromTimeInput('timeInput');
+        socket.emit('updateScoreboard', { 
+          timerSeconds: seconds 
+        });
+      };
+
+      // Счет
+      document.getElementById('score1Inc').onclick = () => {
+        const current = parseInt(document.getElementById('score1Value').textContent);
+        socket.emit('updateScoreboard', { 
+          score1: current + 1 
+        });
+      };
+      
+      document.getElementById('score1Dec').onclick = () => {
+        const current = parseInt(document.getElementById('score1Value').textContent);
+        if (current > 0) {
+          socket.emit('updateScoreboard', { 
+            score1: current - 1 
+          });
+        }
+      };
+      
+      document.getElementById('score2Inc').onclick = () => {
+        const current = parseInt(document.getElementById('score2Value').textContent);
+        socket.emit('updateScoreboard', { 
+          score2: current + 1 
+        });
+      };
+      
+      document.getElementById('score2Dec').onclick = () => {
+        const current = parseInt(document.getElementById('score2Value').textContent);
+        if (current > 0) {
+          socket.emit('updateScoreboard', { 
+            score2: current - 1 
+          });
+        }
+      };
+
+      // Автогенерация шорткодов
+      autoShortName('team1Name', 'team1Short', 'ХОЗ');
+      autoShortName('team2Name', 'team2Short', 'ГОС');
+
+      // Обработчики изменений
+      const fields = [
+        'team1Name', 'team2Name', 'team1City', 'team2City',
+        'kit1Color', 'kit2Color'
+      ];
+      
+      fields.forEach(fieldId => {
+        document.getElementById(fieldId).addEventListener('input', () => {
+          sendState();
+        });
+      });
+
+      // Обработка ввода времени
+      document.getElementById('timeInput').addEventListener('input', function(e) {
+        let v = this.value.replace(/[^\d:]/g, '');
+        if (v.length === 2 && !v.includes(':')) v = v + ':';
+        if (v.length > 5) v = v.slice(0,5);
+        if (v.length === 3 && v[2] !== ':') v = v.slice(0,2) + ':' + v[2];
+        if (!/^\d{0,2}:?\d{0,2}$/.test(v)) v = v.slice(0,-1);
+        this.value = v;
+      });
+    }
+
+    // Отправка состояния
+    function sendState() {
+      if (!ready) return;
+      socket.emit('updateScoreboard', {
+        team1Name: document.getElementById('team1Name').value,
+        team1City: document.getElementById('team1City').value,
+        team1Short: document.getElementById('team1Short').value,
+        team2Name: document.getElementById('team2Name').value,
+        team2City: document.getElementById('team2City').value,
+        team2Short: document.getElementById('team2Short').value,
+        kit1Color: document.getElementById('kit1Color').value,
+        kit2Color: document.getElementById('kit2Color').value
+      });
+    }
+
+    // Загрузка предустановок
+    async function loadPresets() {
+      try {
+        const response = await fetch(`/api/presets?token=${getToken()}`);
+        presets = await response.json();
+        renderPresets();
+      } catch (error) {
+        console.error('Ошибка загрузки предустановок:', error);
+      }
+    }
+
+    // Отображение предустановок
+    function renderPresets() {
+      const grid = document.getElementById('presetsGrid');
+      grid.innerHTML = '';
+      
+      presets.forEach(preset => {
+        const card = document.createElement('div');
+        card.className = 'preset-card';
+        card.innerHTML = `
+          <div class="preset-name">${preset.name}</div>
+          <div class="preset-teams">
+            <div class="preset-team">
+              <div class="preset-team-name">${preset.team1Name}</div>
+              <div class="preset-team-city">${preset.team1City}</div>
+            </div>
+            <div class="preset-team">
+              <div class="preset-team-name">${preset.team2Name}</div>
+              <div class="preset-team-city">${preset.team2City}</div>
+            </div>
+          </div>
+          <div class="preset-actions">
+            <button class="btn btn-primary" onclick="applyPreset('${preset.id}')">Применить</button>
+            <button class="btn btn-danger" onclick="deletePreset('${preset.id}')">Удалить</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Применение предустановки
+    function applyPreset(presetId) {
+      socket.emit('applyPreset', { presetId });
+    }
+
+    // Удаление предустановки
+    async function deletePreset(presetId) {
+      if (!confirm('Удалить эту предустановку?')) return;
+      
+      try {
+        await fetch(`/api/presets/${presetId}?token=${getToken()}`, {
+          method: 'DELETE'
+        });
+        loadPresets();
+      } catch (error) {
+        console.error('Ошибка удаления предустановки:', error);
+      }
+    }
+
+    // Сохранение предустановки
+    async function savePreset() {
+      const preset = {
+        name: document.getElementById('presetName').value,
+        team1Name: document.getElementById('presetTeam1Name').value,
+        team1City: document.getElementById('presetTeam1City').value,
+        team1Short: document.getElementById('presetTeam1Short').value,
+        team2Name: document.getElementById('presetTeam2Name').value,
+        team2City: document.getElementById('presetTeam2City').value,
+        team2Short: document.getElementById('presetTeam2Short').value,
+        kit1Color: document.getElementById('presetKit1Color').value,
+        kit2Color: document.getElementById('presetKit2Color').value
+      };
+
+      if (!preset.name) {
+        alert('Введите название матча');
+        return;
+      }
+
+      try {
+        await fetch(`/api/presets?token=${getToken()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(preset)
+        });
+        
+        // Очистка формы
+        document.getElementById('addPresetForm').querySelectorAll('input').forEach(input => {
+          if (input.type === 'text') input.value = '';
+        });
+        
+        toggleAddPresetForm();
+        loadPresets();
+      } catch (error) {
+        console.error('Ошибка сохранения предустановки:', error);
+      }
+    }
+
+    // Переключение формы добавления предустановки
+    function toggleAddPresetForm() {
+      const form = document.getElementById('addPresetForm');
+      form.classList.toggle('hidden');
+    }
+
+    // Автогенерация шорткодов
+    function autoShortName(fullId, shortId, def) {
+      const fullInput = document.getElementById(fullId);
+      const shortInput = document.getElementById(shortId);
+      let manual = false;
+
+      function updateShort() {
+        if (!manual) {
+          shortInput.value = (fullInput.value || def).toUpperCase().slice(0,3);
+        }
+      }
+      fullInput.addEventListener('input', updateShort);
+      shortInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase().replace(/[^A-ZА-ЯЁ0-9]/gi, '').slice(0,3);
+        manual = true;
+      });
+      updateShort();
+    }
+
+    // Обновление UI при получении данных
+    socket.on('scoreboardUpdate', (data) => {
+      ready = false;
+      
+      // Обновление таймера
+      const isRunning = !!data.timerRunning;
+      setPlayPauseIcon('playPauseIcon', isRunning);
+      setTimeInputFromSeconds('timeInput', data.timerSeconds || 0);
+      document.getElementById('timeInput').disabled = isRunning;
+      
+      // Обновление счета
+      document.getElementById('score1Value').textContent = data.score1 ?? 0;
+      document.getElementById('score2Value').textContent = data.score2 ?? 0;
+      
+      // Обновление команд
+      document.getElementById('team1Short').value = data.team1Short ?? "";
+      document.getElementById('team2Short').value = data.team2Short ?? "";
+      document.getElementById('kit1Color').value = data.kit1Color ?? "#2b2b2b";
+      document.getElementById('kit2Color').value = data.kit2Color ?? "#2b2b2b";
+      document.getElementById('team1Name').value = data.team1Name ?? "";
+      document.getElementById('team2Name').value = data.team2Name ?? "";
+      document.getElementById('team1City').value = data.team1City ?? "";
+      document.getElementById('team2City').value = data.team2City ?? "";
+      
+      setTimeout(() => { ready = true; }, 50);
+    });
+
+    // Вспомогательные функции
+    function setPlayPauseIcon(iconId, isPlaying) {
+      const icon = document.getElementById(iconId);
+      icon.innerHTML = isPlaying
+        ? `<rect x="8" y="6" width="5" height="20" fill="white"/><rect x="19" y="6" width="5" height="20" fill="white"/>`
+        : `<polygon points="8,6 26,16 8,26" fill="white"/>`;
+    }
+
+    function setTimeInputFromSeconds(inputId, sec) {
+      const input = document.getElementById(inputId);
+      const mm = Math.floor(sec/60).toString().padStart(2, '0');
+      const ss = (sec%60).toString().padStart(2, '0');
+      input.value = `${mm}:${ss}`;
+    }
+
+    function getSecondsFromTimeInput(inputId) {
+      const val = document.getElementById(inputId).value;
+      if (/^\d{2}:\d{2}$/.test(val)) {
+        const [mm, ss] = val.split(':').map(Number);
+        return mm*60 + ss;
+      }
+      return 0;
+    }
+
+    function getToken() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('token') || 'MySecret111';
+    }
+  </script>
+</body>
+</html>

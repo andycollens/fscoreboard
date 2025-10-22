@@ -1,0 +1,19 @@
+{
+  "name": "fscoreboard",
+  "version": "1.0.0",
+  "description": "Real-time scoreboard system with Express + Socket.IO",
+  "main": "server/app.js",
+  "scripts": {
+    "start": "node server/app.js"
+  },
+  "keywords": ["scoreboard", "realtime", "socket.io", "express"],
+  "author": "FSCORE Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

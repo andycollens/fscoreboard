@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  fscoreboard:
+    build: .
+    container_name: fscoreboard
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - TOKEN=${TOKEN:-your-secret-token-here}
+      - SAVE_PATH=/app/server/state.json
+    volumes:
+      - ./server/state.json:/app/server/state.json
+      - ./logs:/app/logs
+    networks:
+      - fscoreboard-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/healthz', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  fscoreboard-network:
+    driver: bridge
+
