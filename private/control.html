@@ -1035,7 +1035,11 @@
       // Обработчик клика вне формы редактирования
       document.addEventListener('click', function(event) {
         const editForm = document.getElementById('editPresetForm');
-        if (editForm && !editForm.classList.contains('hidden') && !editForm.contains(event.target)) {
+        const editLinks = document.querySelectorAll('.preset-edit-link');
+        const isEditLink = Array.from(editLinks).some(link => link.contains(event.target));
+        
+        if (editForm && !editForm.classList.contains('hidden') && 
+            !editForm.contains(event.target) && !isEditLink) {
           handleEditFormClose();
         }
       });
