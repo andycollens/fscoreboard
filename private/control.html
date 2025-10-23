@@ -27,6 +27,7 @@
       padding: 20px;
       margin-bottom: 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border: 1px solid #ddd;
     }
     
     .presets-header {
@@ -148,6 +149,15 @@
       width: 60px;
       height: 40px;
       padding: 0;
+    }
+    
+    .camera-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border: 1px solid #ddd;
     }
     
     .timer-row { 
@@ -352,6 +362,12 @@
     
     .preset-card {
       position: relative;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border: 2px solid #ddd;
     }
     
     .preset-card.saved {
@@ -384,6 +400,30 @@
       border-radius: 3px;
       font-size: 10px;
       font-weight: bold;
+    }
+    
+    .preset-edit-icon {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    .preset-edit-icon:hover {
+      opacity: 1;
+      background: #0056b3;
     }
     
     .timer-running-warning {
@@ -735,9 +775,10 @@
       
       presets.forEach(preset => {
         const card = document.createElement('div');
-        card.className = `preset-card saved ${timerRunning ? '' : 'editable'}`;
+        card.className = `preset-card saved`;
         card.innerHTML = `
           <div class="preset-saved-indicator">СОХРАНЕНО</div>
+          ${!timerRunning ? `<button class="preset-edit-icon" onclick="editPreset('${preset.id}')" title="Редактировать">🔑</button>` : ''}
           <div class="preset-name">${preset.name}</div>
           <div class="preset-teams">
             <div class="preset-team">
@@ -751,19 +792,9 @@
           </div>
           <div class="preset-actions">
             <button class="preset-play-btn" onclick="applyPreset('${preset.id}')">▶ Применить</button>
-            ${!timerRunning ? `<button class="btn btn-primary" onclick="editPreset('${preset.id}')">✏️ Редактировать</button>` : ''}
             <button class="btn btn-danger" onclick="deletePreset('${preset.id}')" ${timerRunning ? 'disabled' : ''}>Удалить</button>
           </div>
         `;
-        
-        // Добавляем обработчик клика для редактирования (если таймер не запущен)
-        if (!timerRunning) {
-          card.addEventListener('click', (e) => {
-            if (!e.target.closest('button')) {
-              editPreset(preset.id);
-            }
-          });
-        }
         
         grid.appendChild(card);
       });
