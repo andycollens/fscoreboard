@@ -37,6 +37,7 @@
             max-width: 100vw;
             gap: 2vw;
             padding: 0 2vw;
+            position: relative;
         }
 
         /* Колонка 1: Логотип команды 1 с названием */
@@ -48,14 +49,12 @@
         }
 
         .team1-logo {
-            width: 15vw;
-            height: 15vw;
-            max-width: 500px;
-            max-height: 500px;
-            min-width: 200px;
-            min-height: 200px;
+            width: 400px;
+            height: 400px;
             object-fit: contain;
             display: none;
+            position: absolute;
+            left: calc(20% - 430px);
         }
 
         .team1-logo.show {
@@ -63,19 +62,17 @@
         }
 
         .team1-no-logo {
-            width: 15vw;
-            height: 15vw;
-            max-width: 500px;
-            max-height: 500px;
-            min-width: 200px;
-            min-height: 200px;
+            width: 400px;
+            height: 400px;
             background: #333;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #666;
-            font-size: 2vw;
+            font-size: 24px;
+            position: absolute;
+            left: calc(20% - 430px);
         }
 
         .team1-name {
@@ -96,7 +93,7 @@
 
         /* Колонка 2: Счет команды 1 */
         .team1-score {
-            font-size: 12vw;
+            font-size: 13vw;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -118,10 +115,14 @@
             color: #fff;
             text-align: center;
             margin: 0;
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .score-divider {
-            font-size: 12vw;
+            font-size: 11vw;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -135,15 +136,12 @@
             color: #fff;
             text-align: center;
             margin: 0;
-            padding: 0.5vw 1vw;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 0.5vw;
-            min-width: 8vw;
+            margin-top: 50px;
         }
 
         /* Колонка 4: Счет команды 2 */
         .team2-score {
-            font-size: 12vw;
+            font-size: 13vw;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -160,14 +158,12 @@
         }
 
         .team2-logo {
-            width: 15vw;
-            height: 15vw;
-            max-width: 500px;
-            max-height: 500px;
-            min-width: 200px;
-            min-height: 200px;
+            width: 400px;
+            height: 400px;
             object-fit: contain;
             display: none;
+            position: absolute;
+            right: calc(20% - 430px);
         }
 
         .team2-logo.show {
@@ -175,19 +171,17 @@
         }
 
         .team2-no-logo {
-            width: 15vw;
-            height: 15vw;
-            max-width: 500px;
-            max-height: 500px;
-            min-width: 200px;
-            min-height: 200px;
+            width: 400px;
+            height: 400px;
             background: #333;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #666;
-            font-size: 2vw;
+            font-size: 24px;
+            position: absolute;
+            right: calc(20% - 430px);
         }
 
         .team2-name {
@@ -214,14 +208,24 @@
             }
             
             .team1-logo, .team2-logo, .team1-no-logo, .team2-no-logo {
-                width: 20vw;
-                height: 20vw;
-                min-width: 150px;
-                min-height: 150px;
+                width: 300px;
+                height: 300px;
             }
             
-            .team1-score, .team2-score, .score-divider {
+            .team1-logo, .team1-no-logo {
+                left: calc(20% - 330px);
+            }
+            
+            .team2-logo, .team2-no-logo {
+                right: calc(20% - 330px);
+            }
+            
+            .team1-score, .team2-score {
                 font-size: 15vw;
+            }
+            
+            .score-divider {
+                font-size: 13vw;
             }
             
             .team1-name, .team2-name {
@@ -234,10 +238,12 @@
             
             .tournament-title {
                 font-size: 3vw;
+                top: 30px;
             }
             
             .timer {
                 font-size: 3vw;
+                margin-top: 30px;
             }
         }
     </style>
