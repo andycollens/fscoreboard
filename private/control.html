@@ -912,8 +912,8 @@
     }
     
     .logo-preview img {
-      max-width: 50px;
-      max-height: 50px;
+      width: 50px;
+      height: 50px;
       border-radius: 4px;
       border: 1px solid #ddd;
       object-fit: cover;
@@ -1271,6 +1271,10 @@
       uploadedLogos[team] = null;
       const preview = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoPreview`);
       preview.innerHTML = '<div class="no-logo">Нет логотипа</div>';
+      
+      // Очищаем поле выбора файла
+      const fileInput = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}Logo`);
+      fileInput.value = '';
     }
     
     // Редактирование заголовка
@@ -1467,6 +1471,7 @@
       try {
         const response = await fetch(`/api/presets?token=${getToken()}`);
         presets = await response.json();
+        console.log('Loaded presets:', presets);
         renderPresets();
       } catch (error) {
         console.error('Ошибка загрузки предустановок:', error);
@@ -1484,20 +1489,20 @@
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
-              <div class="preset-name">${preset.name}</div>
-              <div class="preset-teams">
-                <div class="preset-team">
+          <div class="preset-name">${preset.name}</div>
+          <div class="preset-teams">
+            <div class="preset-team">
                   <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
                   <span class="preset-team-name">${preset.team1Name}</span>
                   <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
-                </div>
+            </div>
                 <span class="preset-separator">:</span>
-                <div class="preset-team">
+            <div class="preset-team">
                   <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
                   <span class="preset-team-name">${preset.team2Name}</span>
                   <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
-                </div>
-              </div>
+            </div>
+          </div>
             </div>
             <div class="preset-right">
               <span class="preset-edit-link" onclick="editPreset('${preset.id}')">edit</span>
@@ -1695,6 +1700,7 @@
         showLogoPreview('team1', preset.team1Logo);
         updateLogoMini('team1', preset.team1Logo);
         uploadedLogos.team1 = preset.team1Logo;
+        console.log('Loaded team1 logo:', preset.team1Logo);
       } else {
         clearLogo('team1');
         updateLogoMini('team1', null);
@@ -1705,6 +1711,7 @@
         showLogoPreview('team2', preset.team2Logo);
         updateLogoMini('team2', preset.team2Logo);
         uploadedLogos.team2 = preset.team2Logo;
+        console.log('Loaded team2 logo:', preset.team2Logo);
       } else {
         clearLogo('team2');
         updateLogoMini('team2', null);
@@ -1732,6 +1739,12 @@
         team1Logo: uploadedLogos.team1 || '',
         team2Logo: uploadedLogos.team2 || ''
       };
+      
+      console.log('Saving preset with logos:', {
+        team1Logo: preset.team1Logo,
+        team2Logo: preset.team2Logo,
+        uploadedLogos: uploadedLogos
+      });
 
       // Валидация
       if (!preset.name) {
@@ -1993,4 +2006,5 @@
     }
   </script>
 </body>
+</html>
 </html>

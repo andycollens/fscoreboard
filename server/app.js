@@ -159,7 +159,9 @@ app.post('/api/presets', (req, res) => {
     team2City: req.body.team2City,
     team2Short: req.body.team2Short,
     kit1Color: req.body.kit1Color,
-    kit2Color: req.body.kit2Color
+    kit2Color: req.body.kit2Color,
+    team1Logo: req.body.team1Logo || '',
+    team2Logo: req.body.team2Logo || ''
   };
   
   matchPresets.push(newPreset);
@@ -192,7 +194,9 @@ app.put('/api/presets/:id', (req, res) => {
     team2City: req.body.team2City,
     team2Short: req.body.team2Short,
     kit1Color: req.body.kit1Color,
-    kit2Color: req.body.kit2Color
+    kit2Color: req.body.kit2Color,
+    team1Logo: req.body.team1Logo || '',
+    team2Logo: req.body.team2Logo || ''
   };
   
   fs.writeFileSync(PRESETS_PATH, JSON.stringify(matchPresets, null, 2));
