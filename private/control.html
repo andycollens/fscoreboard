@@ -804,6 +804,7 @@
       border: 1px solid #ddd;
       border-radius: 4px;
       font-size: 14px;
+      margin-bottom: 5px;
     }
     
     .edit-preset-form .form-group label {
@@ -1020,12 +1021,70 @@
     let ready = false;
     let timerRunning = false;
     let editingPresetId = null;
+    let originalPresetData = null;
 
     // Инициализация
     document.addEventListener('DOMContentLoaded', function() {
       loadPresets();
       setupControls();
+      setupEditFormHandlers();
     });
+    
+    // Настройка обработчиков для формы редактирования
+    function setupEditFormHandlers() {
+      // Обработчик клика вне формы редактирования
+      document.addEventListener('click', function(event) {
+        const editForm = document.getElementById('editPresetForm');
+        if (editForm && !editForm.classList.contains('hidden') && !editForm.contains(event.target)) {
+          handleEditFormClose();
+        }
+      });
+      
+      // Обработчики изменений в полях формы
+      const formFields = [
+        'editPresetName', 'editPresetTeam1Name', 'editPresetTeam1City', 
+        'editPresetTeam1Short', 'editPresetKit1Color', 'editPresetTeam2Name', 
+        'editPresetTeam2City', 'editPresetTeam2Short', 'editPresetKit2Color'
+      ];
+      
+      formFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.addEventListener('input', function() {
+            // Поле изменено, можно отслеживать изменения
+          });
+        }
+      });
+    }
+    
+    // Проверка наличия изменений в форме
+    function hasFormChanges() {
+      if (!originalPresetData) return false;
+      
+      const currentData = {
+        name: document.getElementById('editPresetName').value.trim(),
+        team1Name: document.getElementById('editPresetTeam1Name').value.trim(),
+        team1City: document.getElementById('editPresetTeam1City').value.trim(),
+        team1Short: document.getElementById('editPresetTeam1Short').value.trim(),
+        kit1Color: document.getElementById('editPresetKit1Color').value,
+        team2Name: document.getElementById('editPresetTeam2Name').value.trim(),
+        team2City: document.getElementById('editPresetTeam2City').value.trim(),
+        team2Short: document.getElementById('editPresetTeam2Short').value.trim(),
+        kit2Color: document.getElementById('editPresetKit2Color').value
+      };
+      
+      return JSON.stringify(currentData) !== JSON.stringify(originalPresetData);
+    }
+    
+    // Обработка закрытия формы редактирования
+    function handleEditFormClose() {
+      if (hasFormChanges()) {
+        if (confirm('У вас есть несохраненные изменения. Сохранить перед закрытием?')) {
+          updatePreset();
+        }
+      }
+      cancelEditPreset();
+    }
 
     // Настройка контролов
     function setupControls() {
@@ -1304,6 +1363,19 @@
       
       editingPresetId = presetId;
       
+      // Сохраняем исходные данные для сравнения
+      originalPresetData = {
+        name: preset.name,
+        team1Name: preset.team1Name,
+        team1City: preset.team1City,
+        team1Short: preset.team1Short,
+        kit1Color: preset.kit1Color,
+        team2Name: preset.team2Name,
+        team2City: preset.team2City,
+        team2Short: preset.team2Short,
+        kit2Color: preset.kit2Color
+      };
+      
       // Заполняем форму редактирования
       document.getElementById('editPresetName').value = preset.name;
       document.getElementById('editPresetTeam1Name').value = preset.team1Name;
@@ -1375,6 +1447,7 @@
     // Отмена редактирования
     function cancelEditPreset() {
       editingPresetId = null;
+      originalPresetData = null;
       document.getElementById('editPresetForm').classList.add('hidden');
     }
     
