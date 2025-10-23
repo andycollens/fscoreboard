@@ -191,23 +191,22 @@
                 
                 console.log('Image dimensions:', imageWidth, 'x', imageHeight);
                 
-                // Вычисляем координаты относительно контейнера изображения
-                const imageLeft = 0; // Левый край изображения
-                const imageRight = imageWidth; // Правый край изображения
+                // Вычисляем центр изображения
+                const imageCenterX = imageWidth / 2; // Центр по ширине
                 const imageCenterY = imageHeight / 2; // Центр по высоте
                 
-                // Позиционируем левый логотип (центр на левом краю)
-                const leftLogoX = imageLeft - 125; // 125px = половина ширины логотипа
-                const leftLogoY = imageCenterY - 125; // 125px = половина высоты логотипа
+                // Жесткая привязка: ±759px от центра изображения
+                const leftLogoX = imageCenterX - 759 - 125; // Центр - 759px - половина логотипа
+                const leftLogoY = imageCenterY - 125; // Центр по высоте - половина логотипа
                 team1Logo.style.left = leftLogoX + 'px';
                 team1Logo.style.top = leftLogoY + 'px';
                 
-                // Позиционируем правый логотип (центр на правом краю)
-                const rightLogoX = imageRight - 125; // 125px = половина ширины логотипа
-                const rightLogoY = imageCenterY - 125; // 125px = половина высоты логотипа
+                const rightLogoX = imageCenterX + 759 - 125; // Центр + 759px - половина логотипа
+                const rightLogoY = imageCenterY - 125; // Центр по высоте - половина логотипа
                 team2Logo.style.left = rightLogoX + 'px';
                 team2Logo.style.top = rightLogoY + 'px';
                 
+                console.log('Image center:', imageCenterX, imageCenterY);
                 console.log('Left logo position:', leftLogoX, leftLogoY);
                 console.log('Right logo position:', rightLogoX, rightLogoY);
             }
