@@ -649,19 +649,22 @@
       .preset-card {
         padding: 15px;
         margin-bottom: 10px;
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
       }
       
       .preset-content {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
       }
       
       .preset-left {
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
+        flex: 1;
       }
       
       .preset-name {
@@ -674,6 +677,7 @@
       .preset-teams {
         width: 100%;
         justify-content: flex-start;
+        align-self: flex-start;
       }
       
       .preset-team-name {
@@ -691,8 +695,9 @@
       }
       
       .preset-right {
-        align-self: flex-end;
-        margin-top: -40px;
+        align-self: flex-start;
+        margin-top: 0;
+        flex-shrink: 0;
       }
       
       .preset-edit-link {
