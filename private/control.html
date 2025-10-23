@@ -390,19 +390,22 @@
     
     .preset-left {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       min-width: 0;
       overflow: hidden;
+      flex-direction: column;
+      gap: 8px;
     }
     
     .preset-name {
       font-weight: bold;
       font-size: 14px;
-      margin-right: 8px;
+      margin-right: 0;
       white-space: nowrap;
       background: #e9ecef;
       padding: 2px 6px;
       border-radius: 4px;
+      align-self: flex-start;
     }
     
     .preset-teams {
@@ -410,13 +413,15 @@
       align-items: center;
       gap: 4px;
       min-width: 0;
+      align-self: flex-start;
     }
     
     .preset-right {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 24px;
       flex-shrink: 0;
+      align-self: flex-start;
     }
     
     .preset-team-name {
@@ -759,6 +764,13 @@
       color: #1976d2;
       margin-top: 0;
     }
+    
+    .team-divider {
+      height: 2px;
+      background: #ddd;
+      margin: 20px 0;
+      border-radius: 1px;
+    }
   </style>
 </head>
 <body>
@@ -920,6 +932,7 @@
           <input type="color" id="editPresetKit1Color" value="#2b2b2b">
         </div>
       </div>
+      <div class="team-divider"></div>
       <div class="form-row">
         <div class="form-group">
           <label>Команда 2 - Название</label>
