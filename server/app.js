@@ -134,6 +134,38 @@ app.post('/api/presets', (req, res) => {
   res.json(newPreset);
 });
 
+app.put('/api/presets/:id', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const presetId = req.params.id;
+  const presetIndex = matchPresets.findIndex(p => p.id === presetId);
+  
+  if (presetIndex === -1) {
+    return res.status(404).json({ error: 'Preset not found' });
+  }
+  
+  console.log('Updating preset:', presetId, req.body);
+  
+  // Обновляем предустановку
+  matchPresets[presetIndex] = {
+    ...matchPresets[presetIndex],
+    name: req.body.name,
+    team1Name: req.body.team1Name,
+    team1City: req.body.team1City,
+    team1Short: req.body.team1Short,
+    team2Name: req.body.team2Name,
+    team2City: req.body.team2City,
+    team2Short: req.body.team2Short,
+    kit1Color: req.body.kit1Color,
+    kit2Color: req.body.kit2Color
+  };
+  
+  fs.writeFileSync(PRESETS_PATH, JSON.stringify(matchPresets, null, 2));
+  
+  console.log('Preset updated successfully:', presetId);
+  res.json(matchPresets[presetIndex]);
+});
+
 app.delete('/api/presets/:id', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
   matchPresets = matchPresets.filter(p => p.id !== req.params.id);

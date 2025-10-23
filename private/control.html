@@ -379,6 +379,46 @@
       font-size: 10px;
       font-weight: bold;
     }
+    
+    .timer-running-warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .disabled-field {
+      opacity: 0.6;
+      pointer-events: none;
+      background-color: #f8f9fa !important;
+    }
+    
+    .preset-card.editable {
+      cursor: pointer;
+      border-style: dashed;
+    }
+    
+    .preset-card.editable:hover {
+      border-color: #007bff;
+      background: #f8f9ff;
+    }
+    
+    .edit-preset-form {
+      background: #e3f2fd;
+      border: 2px solid #2196f3;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .edit-preset-form h3 {
+      color: #1976d2;
+      margin-top: 0;
+    }
   </style>
 </head>
 <body>
@@ -392,7 +432,12 @@
   <div class="presets-section">
     <div class="presets-header">
       <h2>Предустановки матчей</h2>
-      <button class="btn btn-primary" onclick="toggleAddPresetForm()">+ Добавить предустановку</button>
+      <button class="btn btn-primary" onclick="toggleAddPresetForm()" id="addPresetBtn">+ Добавить предустановку</button>
+    </div>
+    
+    <!-- Предупреждение о работающем таймере -->
+    <div id="timerWarning" class="timer-running-warning hidden">
+      ⚠️ Таймер запущен! Изменения заблокированы. Остановите таймер для редактирования.
     </div>
     
     <div id="presetsGrid" class="presets-grid">
@@ -446,6 +491,57 @@
       <div class="form-row">
         <button class="btn btn-primary" onclick="savePreset()">Сохранить</button>
         <button class="btn" onclick="toggleAddPresetForm()">Отмена</button>
+      </div>
+    </div>
+    
+    <!-- Форма редактирования предустановки -->
+    <div id="editPresetForm" class="edit-preset-form hidden">
+      <h3>Редактирование предустановки</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Название матча</label>
+          <input type="text" id="editPresetName" placeholder="Например: Финал чемпионата">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Команда 1 - Название</label>
+          <input type="text" id="editPresetTeam1Name" placeholder="Название команды">
+        </div>
+        <div class="form-group">
+          <label>Команда 1 - Город</label>
+          <input type="text" id="editPresetTeam1City" placeholder="Город">
+        </div>
+        <div class="form-group">
+          <label>Команда 1 - Шорткод</label>
+          <input type="text" id="editPresetTeam1Short" placeholder="ХОЗ" maxlength="3">
+        </div>
+        <div class="form-group">
+          <label>Цвет формы 1</label>
+          <input type="color" id="editPresetKit1Color" value="#2b2b2b">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Команда 2 - Название</label>
+          <input type="text" id="editPresetTeam2Name" placeholder="Название команды">
+        </div>
+        <div class="form-group">
+          <label>Команда 2 - Город</label>
+          <input type="text" id="editPresetTeam2City" placeholder="Город">
+        </div>
+        <div class="form-group">
+          <label>Команда 2 - Шорткод</label>
+          <input type="text" id="editPresetTeam2Short" placeholder="ГОС" maxlength="3">
+        </div>
+        <div class="form-group">
+          <label>Цвет формы 2</label>
+          <input type="color" id="editPresetKit2Color" value="#2b2b2b">
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-primary" onclick="updatePreset()">Обновить</button>
+        <button class="btn" onclick="cancelEditPreset()">Отмена</button>
       </div>
     </div>
   </div>
@@ -517,6 +613,8 @@
     const socket = io();
     let presets = [];
     let ready = false;
+    let timerRunning = false;
+    let editingPresetId = null;
 
     // Инициализация
     document.addEventListener('DOMContentLoaded', function() {
@@ -634,7 +732,7 @@
       
       presets.forEach(preset => {
         const card = document.createElement('div');
-        card.className = 'preset-card saved';
+        card.className = `preset-card saved ${timerRunning ? '' : 'editable'}`;
         card.innerHTML = `
           <div class="preset-saved-indicator">СОХРАНЕНО</div>
           <div class="preset-name">${preset.name}</div>
@@ -650,9 +748,20 @@
           </div>
           <div class="preset-actions">
             <button class="preset-play-btn" onclick="applyPreset('${preset.id}')">▶ Применить</button>
-            <button class="btn btn-danger" onclick="deletePreset('${preset.id}')">Удалить</button>
+            ${!timerRunning ? `<button class="btn btn-primary" onclick="editPreset('${preset.id}')">✏️ Редактировать</button>` : ''}
+            <button class="btn btn-danger" onclick="deletePreset('${preset.id}')" ${timerRunning ? 'disabled' : ''}>Удалить</button>
           </div>
         `;
+        
+        // Добавляем обработчик клика для редактирования (если таймер не запущен)
+        if (!timerRunning) {
+          card.addEventListener('click', (e) => {
+            if (!e.target.closest('button')) {
+              editPreset(preset.id);
+            }
+          });
+        }
+        
         grid.appendChild(card);
       });
     }
@@ -756,8 +865,98 @@
 
     // Переключение формы добавления предустановки
     function toggleAddPresetForm() {
+      if (timerRunning) {
+        showNotification('Нельзя добавлять предустановки во время работы таймера!', 'error');
+        return;
+      }
       const form = document.getElementById('addPresetForm');
       form.classList.toggle('hidden');
+    }
+    
+    // Редактирование предустановки
+    function editPreset(presetId) {
+      if (timerRunning) {
+        showNotification('Нельзя редактировать предустановки во время работы таймера!', 'error');
+        return;
+      }
+      
+      const preset = presets.find(p => p.id === presetId);
+      if (!preset) return;
+      
+      editingPresetId = presetId;
+      
+      // Заполняем форму редактирования
+      document.getElementById('editPresetName').value = preset.name;
+      document.getElementById('editPresetTeam1Name').value = preset.team1Name;
+      document.getElementById('editPresetTeam1City').value = preset.team1City;
+      document.getElementById('editPresetTeam1Short').value = preset.team1Short;
+      document.getElementById('editPresetKit1Color').value = preset.kit1Color;
+      document.getElementById('editPresetTeam2Name').value = preset.team2Name;
+      document.getElementById('editPresetTeam2City').value = preset.team2City;
+      document.getElementById('editPresetTeam2Short').value = preset.team2Short;
+      document.getElementById('editPresetKit2Color').value = preset.kit2Color;
+      
+      // Показываем форму редактирования
+      document.getElementById('editPresetForm').classList.remove('hidden');
+    }
+    
+    // Обновление предустановки
+    async function updatePreset() {
+      if (!editingPresetId) return;
+      
+      const preset = {
+        name: document.getElementById('editPresetName').value.trim(),
+        team1Name: document.getElementById('editPresetTeam1Name').value.trim(),
+        team1City: document.getElementById('editPresetTeam1City').value.trim(),
+        team1Short: document.getElementById('editPresetTeam1Short').value.trim().toUpperCase(),
+        team2Name: document.getElementById('editPresetTeam2Name').value.trim(),
+        team2City: document.getElementById('editPresetTeam2City').value.trim(),
+        team2Short: document.getElementById('editPresetTeam2Short').value.trim().toUpperCase(),
+        kit1Color: document.getElementById('editPresetKit1Color').value,
+        kit2Color: document.getElementById('editPresetKit2Color').value
+      };
+
+      // Валидация
+      if (!preset.name) {
+        alert('Введите название матча');
+        return;
+      }
+      
+      if (!preset.team1Name || !preset.team2Name) {
+        alert('Введите названия обеих команд');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/presets/${editingPresetId}?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(preset)
+        });
+        
+        if (!response.ok) {
+          throw new Error('Ошибка обновления предустановки');
+        }
+        
+        // Скрытие формы
+        cancelEditPreset();
+        
+        // Перезагрузка предустановок
+        await loadPresets();
+        
+        // Показ уведомления об успехе
+        showNotification('Предустановка обновлена!', 'success');
+        
+      } catch (error) {
+        console.error('Ошибка обновления предустановки:', error);
+        showNotification('Ошибка обновления предустановки', 'error');
+      }
+    }
+    
+    // Отмена редактирования
+    function cancelEditPreset() {
+      editingPresetId = null;
+      document.getElementById('editPresetForm').classList.add('hidden');
     }
 
     // Автогенерация шорткодов
@@ -785,9 +984,43 @@
       
       // Обновление таймера
       const isRunning = !!data.timerRunning;
+      timerRunning = isRunning;
       setPlayPauseIcon('playPauseIcon', isRunning);
       setTimeInputFromSeconds('timeInput', data.timerSeconds || 0);
       document.getElementById('timeInput').disabled = isRunning;
+      
+      // Показ/скрытие предупреждения о таймере
+      const warning = document.getElementById('timerWarning');
+      if (isRunning) {
+        warning.classList.remove('hidden');
+      } else {
+        warning.classList.add('hidden');
+      }
+      
+      // Блокировка/разблокировка полей при работе таймера
+      const fieldsToDisable = [
+        'team1Name', 'team1City', 'team1Short', 'kit1Color',
+        'team2Name', 'team2City', 'team2Short', 'kit2Color'
+      ];
+      
+      fieldsToDisable.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (isRunning) {
+          field.classList.add('disabled-field');
+        } else {
+          field.classList.remove('disabled-field');
+        }
+      });
+      
+      // Блокировка кнопки добавления предустановки
+      const addBtn = document.getElementById('addPresetBtn');
+      if (isRunning) {
+        addBtn.disabled = true;
+        addBtn.textContent = '⏸️ Таймер запущен';
+      } else {
+        addBtn.disabled = false;
+        addBtn.textContent = '+ Добавить предустановку';
+      }
       
       // Обновление счета
       document.getElementById('score1Value').textContent = data.score1 ?? 0;
@@ -802,6 +1035,9 @@
       document.getElementById('team2Name').value = data.team2Name ?? "";
       document.getElementById('team1City').value = data.team1City ?? "";
       document.getElementById('team2City').value = data.team2City ?? "";
+      
+      // Перерисовка предустановок с учетом состояния таймера
+      renderPresets();
       
       setTimeout(() => { ready = true; }, 50);
     });
