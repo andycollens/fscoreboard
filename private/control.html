@@ -895,6 +895,31 @@
       border: 1px solid white;
     }
     
+    .logo-delete-btn-small {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 12px;
+      height: 12px;
+      background: rgba(220, 53, 69, 0.8);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10;
+      border: 1px solid white;
+      transition: all 0.2s ease;
+    }
+    
+    .logo-delete-btn-small:hover {
+      background: #dc3545;
+      transform: scale(1.1);
+    }
+    
     
     .preset-team-logo {
       display: inline-flex;
@@ -1141,9 +1166,10 @@
       <input type="text" id="editPresetNameInput" class="hidden" placeholder="Например: Финал чемпионата" onblur="finishEditingTitle()" onkeypress="handleTitleKeypress(event)">
       <div class="form-section">
         <h4 class="section-title">
-          <span id="editPresetTeam1LogoMini" class="logo-mini"></span>
+          <span id="editPresetTeam1LogoMini" class="logo-mini" onclick="editPresetLogo('team1')" title="Нажмите для обновления логотипа"></span>
           Команда 1
           <input type="file" id="editPresetTeam1Logo" accept="image/*" onchange="uploadLogo('team1', this)" style="display: none;">
+          <button type="button" class="logo-delete-btn-small" onclick="deletePresetLogo('team1'); event.stopPropagation()" title="Удалить логотип" style="display: none;">×</button>
         </h4>
         <div class="form-group">
           <label>Название</label>
@@ -1166,8 +1192,9 @@
       <div class="form-section">
         <h4 class="section-title">
           Команда 2
-          <span id="editPresetTeam2LogoMini" class="logo-mini"></span>
+          <span id="editPresetTeam2LogoMini" class="logo-mini" onclick="editPresetLogo('team2')" title="Нажмите для обновления логотипа"></span>
           <input type="file" id="editPresetTeam2Logo" accept="image/*" onchange="uploadLogo('team2', this)" style="display: none;">
+          <button type="button" class="logo-delete-btn-small" onclick="deletePresetLogo('team2'); event.stopPropagation()" title="Удалить логотип" style="display: none;">×</button>
         </h4>
         <div class="form-group">
           <label>Название</label>
@@ -1409,8 +1436,14 @@
       if (editMini) {
         if (logoUrl) {
           editMini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">`;
+          // Показываем кнопку удаления
+          const deleteBtn = editMini.parentElement.querySelector('.logo-delete-btn-small');
+          if (deleteBtn) deleteBtn.style.display = 'flex';
         } else {
           editMini.innerHTML = '';
+          // Скрываем кнопку удаления
+          const deleteBtn = editMini.parentElement.querySelector('.logo-delete-btn-small');
+          if (deleteBtn) deleteBtn.style.display = 'none';
         }
       }
       
@@ -1423,6 +1456,29 @@
           addMini.innerHTML = '';
         }
       }
+    }
+    
+    // Обновление логотипа в форме редактирования
+    function editPresetLogo(team) {
+      const fileInput = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}Logo`);
+      fileInput.click();
+    }
+    
+    // Удаление логотипа из формы редактирования
+    async function deletePresetLogo(team) {
+      if (!confirm('Удалить логотип этой команды?')) return;
+      
+      // Очищаем логотип
+      uploadedLogos[team] = null;
+      
+      // Обновляем миниатюру
+      updateLogoMini(team, null);
+      
+      // Очищаем поле выбора файла
+      const fileInput = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}Logo`);
+      if (fileInput) fileInput.value = '';
+      
+      showNotification('Логотип удален', 'success');
     }
     
     // Загрузка логотипа в основную форму
