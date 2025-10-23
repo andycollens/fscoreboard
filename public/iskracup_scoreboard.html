@@ -80,13 +80,16 @@
       font-weight: normal;
     }
     .divider-section {
-      width: 2px;
-      background: #424242;
+      width: 60px;
+      background: #2b2b2b;
       height: 40px;
       line-height: 40px;
       margin: 0;
       padding: 0;
       border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
       flex-grow: 0;
     }
@@ -107,8 +110,10 @@
     <div class="section team1-section"><span id="team1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">ABC</span></div>
     <!-- Score 1 section: displays the score of the first team, now lifted by 3px -->
     <div class="section score1-section"><span id="score1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">0</span></div>
-    <!-- Divider section -->
-    <div class="section divider-section"></div>
+    <!-- Divider section with ISKRA CUP logo -->
+    <div class="section divider-section">
+      <img src="/public/img/iskracup_scoreboard_logo.png" alt="ISKRA CUP" style="max-height: 30px; max-width: 50px; object-fit: contain;">
+    </div>
     <!-- Score 2 section: displays the score of the second team, now lifted by 3px -->
     <div class="section score2-section"><span id="score2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">0</span></div>
     <!-- Team 2 section: displays the short name of the second team, now lifted by 3px -->
