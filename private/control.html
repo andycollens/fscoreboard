@@ -338,10 +338,16 @@
     }
     
     .version-info {
-      font-size: 0.7em;
-      color: #999;
-      margin-top: 5px;
-      opacity: 0.6;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 0.6em;
+      color: #ccc;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 2px 6px;
+      border-radius: 3px;
+      opacity: 0.7;
+      z-index: 1000;
     }
     
     .preset-card {
@@ -422,10 +428,69 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>FSCOREBOARD Control Panel</h1>
-    <p>Управление табло и предустановками матчей</p>
-    <div class="version-info">v1.0.0</div>
+  <!-- Версия в углу -->
+  <div class="version-info">v1.0.0</div>
+
+  <!-- Управление табло -->
+  <div class="camera-content">
+    <div class="timer-row">
+      <button id="playPauseBtn" class="playpause-btn" title="Пуск/Пауза">
+        <svg id="playPauseIcon" width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <polygon id="playIcon" points="8,6 26,16 8,26" fill="white"/>
+        </svg>
+      </button>
+      <div class="timer-inputs">
+        <input type="text" id="timeInput" maxlength="5" placeholder="MM:SS" pattern="^\d{2}:\d{2}$" value="00:00" autocomplete="off" />
+      </div>
+      <button id="setBtn" class="set-btn">Set</button>
+    </div>
+    <form id="controlForm" autocomplete="off" spellcheck="false">
+      <div class="score-row">
+        <div class="score-block">
+          <div class="score-controls">
+            <button type="button" class="score-btn" id="score1Dec">-</button>
+            <span class="score-value" id="score1Value">0</span>
+            <button type="button" class="score-btn" id="score1Inc">+</button>
+          </div>
+          <div class="short-label-row">
+            <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
+          </div>
+          <div class="kit-block">
+            <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
+          </div>
+          <div class="team-input-row">
+            <span class="label-caption">Название команды</span>
+            <input type="text" id="team1Name" maxlength="40" placeholder="Не введено" />
+          </div>
+          <div class="city-input-row team-input-row">
+            <span class="label-caption">Город</span>
+            <input type="text" id="team1City" maxlength="30" placeholder="Не введено" />
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="score-block">
+          <div class="score-controls">
+            <button type="button" class="score-btn" id="score2Dec">-</button>
+            <span class="score-value" id="score2Value">0</span>
+            <button type="button" class="score-btn" id="score2Inc">+</button>
+          </div>
+          <div class="short-label-row">
+            <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
+          </div>
+          <div class="kit-block">
+            <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
+          </div>
+          <div class="team-input-row">
+            <span class="label-caption">Название команды</span>
+            <input type="text" id="team2Name" maxlength="40" placeholder="Не введено" />
+          </div>
+          <div class="city-input-row team-input-row">
+            <span class="label-caption">Город</span>
+            <input type="text" id="team2City" maxlength="30" placeholder="Не введено" />
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
 
   <!-- Секция предустановок -->
@@ -544,68 +609,6 @@
         <button class="btn" onclick="cancelEditPreset()">Отмена</button>
       </div>
     </div>
-  </div>
-
-  <!-- Управление табло -->
-  <div class="camera-content">
-    <div class="timer-row">
-      <button id="playPauseBtn" class="playpause-btn" title="Пуск/Пауза">
-        <svg id="playPauseIcon" width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <polygon id="playIcon" points="8,6 26,16 8,26" fill="white"/>
-        </svg>
-      </button>
-      <div class="timer-inputs">
-        <input type="text" id="timeInput" maxlength="5" placeholder="MM:SS" pattern="^\d{2}:\d{2}$" value="00:00" autocomplete="off" />
-      </div>
-      <button id="setBtn" class="set-btn">Set</button>
-    </div>
-    <form id="controlForm" autocomplete="off" spellcheck="false">
-      <div class="score-row">
-        <div class="score-block">
-          <div class="score-controls">
-            <button type="button" class="score-btn" id="score1Dec">-</button>
-            <span class="score-value" id="score1Value">0</span>
-            <button type="button" class="score-btn" id="score1Inc">+</button>
-          </div>
-          <div class="short-label-row">
-            <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
-          </div>
-          <div class="kit-block">
-            <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
-          </div>
-          <div class="team-input-row">
-            <span class="label-caption">Название команды</span>
-            <input type="text" id="team1Name" maxlength="40" placeholder="Не введено" />
-          </div>
-          <div class="city-input-row team-input-row">
-            <span class="label-caption">Город</span>
-            <input type="text" id="team1City" maxlength="30" placeholder="Не введено" />
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div class="score-block">
-          <div class="score-controls">
-            <button type="button" class="score-btn" id="score2Dec">-</button>
-            <span class="score-value" id="score2Value">0</span>
-            <button type="button" class="score-btn" id="score2Inc">+</button>
-          </div>
-          <div class="short-label-row">
-            <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
-          </div>
-          <div class="kit-block">
-            <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
-          </div>
-          <div class="team-input-row">
-            <span class="label-caption">Название команды</span>
-            <input type="text" id="team2Name" maxlength="40" placeholder="Не введено" />
-          </div>
-          <div class="city-input-row team-input-row">
-            <span class="label-caption">Город</span>
-            <input type="text" id="team2City" maxlength="30" placeholder="Не введено" />
-          </div>
-        </div>
-      </div>
-    </form>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
