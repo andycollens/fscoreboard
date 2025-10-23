@@ -29,7 +29,7 @@
             justify-content: center;
         }
 
-        .stripe-image {
+        .image-container {
             position: absolute;
             bottom: 220px;
             left: 50%;
@@ -39,12 +39,17 @@
             z-index: 1;
         }
 
+        .stripe-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         .team1-logo {
             position: absolute;
-            left: 50%;
+            left: 0;
             top: 50%;
-            transform: translateX(-50%) translateY(-50%);
-            margin-left: -960px;
+            transform: translateY(-50%);
             width: 300px;
             height: 300px;
             object-fit: contain;
@@ -53,10 +58,9 @@
 
         .team2-logo {
             position: absolute;
-            left: 50%;
+            right: 0;
             top: 50%;
-            transform: translateX(-50%) translateY(-50%);
-            margin-left: 660px;
+            transform: translateY(-50%);
             width: 300px;
             height: 300px;
             object-fit: contain;
@@ -65,10 +69,9 @@
 
         .team1-info {
             position: absolute;
-            left: 50%;
+            left: 25%;
             top: 50%;
             transform: translateX(-50%) translateY(-50%);
-            margin-left: -480px;
             text-align: center;
             color: white;
             z-index: 2;
@@ -77,10 +80,9 @@
 
         .team2-info {
             position: absolute;
-            left: 50%;
+            left: 75%;
             top: 50%;
             transform: translateX(-50%) translateY(-50%);
-            margin-left: 0px;
             text-align: center;
             color: white;
             z-index: 2;
@@ -103,25 +105,28 @@
 </head>
 <body>
     <div class="prematch-container">
-        <!-- Фоновое изображение -->
-        <img src="/public/img/stripe_prematch.png" alt="Prematch Stripe" class="stripe-image">
-        
-        <!-- Логотип команды 1 -->
-        <img id="team1Logo" src="" alt="Team 1 Logo" class="team1-logo" style="display: none;">
-        
-        <!-- Логотип команды 2 -->
-        <img id="team2Logo" src="" alt="Team 2 Logo" class="team2-logo" style="display: none;">
-        
-        <!-- Информация о команде 1 -->
-        <div class="team1-info">
-            <div id="team1Name" class="team-name">Команда 1</div>
-            <div id="team1City" class="team-city">Город 1</div>
-        </div>
-        
-        <!-- Информация о команде 2 -->
-        <div class="team2-info">
-            <div id="team2Name" class="team-name">Команда 2</div>
-            <div id="team2City" class="team-city">Город 2</div>
+        <!-- Контейнер изображения с привязанными элементами -->
+        <div class="image-container">
+            <!-- Фоновое изображение -->
+            <img src="/public/img/stripe_prematch.png" alt="Prematch Stripe" class="stripe-image">
+            
+            <!-- Логотип команды 1 -->
+            <img id="team1Logo" src="" alt="Team 1 Logo" class="team1-logo" style="display: none;">
+            
+            <!-- Логотип команды 2 -->
+            <img id="team2Logo" src="" alt="Team 2 Logo" class="team2-logo" style="display: none;">
+            
+            <!-- Информация о команде 1 -->
+            <div class="team1-info">
+                <div id="team1Name" class="team-name">Команда 1</div>
+                <div id="team1City" class="team-city">Город 1</div>
+            </div>
+            
+            <!-- Информация о команде 2 -->
+            <div class="team2-info">
+                <div id="team2Name" class="team-name">Команда 2</div>
+                <div id="team2City" class="team-city">Город 2</div>
+            </div>
         </div>
     </div>
 
