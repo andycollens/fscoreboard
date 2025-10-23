@@ -76,6 +76,10 @@ setInterval(() => {
   fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
 }, 1000);
 
+// ====== Middleware ======
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // ====== Раздача статики ======
 app.use('/public', express.static(path.join(__dirname, '../public')));
 app.use('/private', express.static(path.join(__dirname, '../private')));
@@ -107,6 +111,9 @@ app.get('/api/presets', (req, res) => {
 
 app.post('/api/presets', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  console.log('Creating new preset:', req.body);
+  
   const newPreset = {
     id: Date.now().toString(),
     name: req.body.name,
@@ -119,8 +126,11 @@ app.post('/api/presets', (req, res) => {
     kit1Color: req.body.kit1Color,
     kit2Color: req.body.kit2Color
   };
+  
   matchPresets.push(newPreset);
   fs.writeFileSync(PRESETS_PATH, JSON.stringify(matchPresets, null, 2));
+  
+  console.log('Preset saved successfully:', newPreset.id);
   res.json(newPreset);
 });
 
