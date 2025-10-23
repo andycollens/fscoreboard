@@ -20,6 +20,16 @@
             font-family: 'RPL', Arial, sans-serif;
         }
 
+        /* Скрываем все элементы до полной загрузки */
+        .break-container {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .break-container.loaded {
+            opacity: 1;
+        }
+
         .break-container {
             position: relative;
             width: 100%;
@@ -268,23 +278,23 @@
                 
                 // Позиционируем текстовые блоки: смещение на 405px от центра (365 + 40)
                 const leftTextX = imageCenterX - 405 - 240; // Центр - 405px - половина ширины блока (240px)
-                const leftTextY = imageCenterY - 40; // Центр по высоте - 40px
+                const leftTextY = imageCenterY - 35; // Центр по высоте - 35px (сдвиг на 5px вниз)
                 team1Info.style.left = leftTextX + 'px';
                 team1Info.style.top = leftTextY + 'px';
                 
                 const rightTextX = imageCenterX + 405 - 240; // Центр + 405px - половина ширины блока (240px)
-                const rightTextY = imageCenterY - 40; // Центр по высоте - 40px
+                const rightTextY = imageCenterY - 35; // Центр по высоте - 35px (сдвиг на 5px вниз)
                 team2Info.style.left = rightTextX + 'px';
                 team2Info.style.top = rightTextY + 'px';
                 
                 // Позиционируем блоки со счетом: ±100px от центра
                 const leftScoreX = imageCenterX - 100 - 75; // Центр - 100px - половина ширины блока (75px)
-                const leftScoreY = imageCenterY - 65; // Центр по высоте - половина высоты блока (шрифт 110px) + 20px вверх
+                const leftScoreY = imageCenterY - 45; // Центр по высоте - 45px (сдвиг на 20px вниз)
                 score1Block.style.left = leftScoreX + 'px';
                 score1Block.style.top = leftScoreY + 'px';
                 
                 const rightScoreX = imageCenterX + 100 - 75; // Центр + 100px - половина ширины блока (75px)
-                const rightScoreY = imageCenterY - 65; // Центр по высоте - половина высоты блока (шрифт 110px) + 20px вверх
+                const rightScoreY = imageCenterY - 45; // Центр по высоте - 45px (сдвиг на 20px вниз)
                 score2Block.style.left = rightScoreX + 'px';
                 score2Block.style.top = rightScoreY + 'px';
                 
@@ -333,12 +343,15 @@
             stripeImage.addEventListener('load', function() {
                 console.log('Stripe image loaded, positioning logos...');
                 positionLogos();
+                // Показываем страницу после полной загрузки
+                document.querySelector('.break-container').classList.add('loaded');
             });
             
             // Если изображение уже загружено
             if (stripeImage.complete) {
                 console.log('Stripe image already loaded, positioning logos...');
                 positionLogos();
+                document.querySelector('.break-container').classList.add('loaded');
             }
         }
 
