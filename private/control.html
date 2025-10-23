@@ -834,6 +834,47 @@
       border-radius: 3px;
     }
     
+    .logo-upload-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .logo-mini-main {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      border: 2px solid #ddd;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      flex-shrink: 0;
+    }
+    
+    .logo-mini-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 2px;
+    }
+    
+    .logo-upload-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .logo-upload-btn:hover {
+      background: #0056b3;
+    }
+    
     .edit-preset-form .form-group input {
       width: 100%;
       padding: 8px 12px;
@@ -922,6 +963,11 @@
             <span class="label-caption">Город</span>
             <input type="text" id="team1City" maxlength="30" placeholder="Не введено" />
           </div>
+          <div class="logo-upload-row">
+            <span id="team1LogoMini" class="logo-mini-main"></span>
+            <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
+            <button type="button" class="logo-upload-btn" onclick="document.getElementById('team1LogoUpload').click()">📷 Логотип</button>
+          </div>
         </div>
         <div class="divider"></div>
         <div class="score-block">
@@ -943,6 +989,11 @@
           <div class="city-input-row team-input-row">
             <span class="label-caption">Город</span>
             <input type="text" id="team2City" maxlength="30" placeholder="Не введено" />
+          </div>
+          <div class="logo-upload-row">
+            <span id="team2LogoMini" class="logo-mini-main"></span>
+            <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
+            <button type="button" class="logo-upload-btn" onclick="document.getElementById('team2LogoUpload').click()">📷 Логотип</button>
           </div>
         </div>
       </div>
@@ -1012,9 +1063,9 @@
       <div class="form-row">
         <button class="btn btn-primary" onclick="savePreset()">Сохранить</button>
         <button class="btn" onclick="toggleAddPresetForm()">Отмена</button>
-      </div>
     </div>
-    
+  </div>
+
     <!-- Форма редактирования предустановки -->
     <div id="editPresetForm" class="edit-preset-form hidden">
       <h3 id="editPresetTitle" class="editable-title" onclick="startEditingTitle()">Название матча</h3>
@@ -1027,25 +1078,25 @@
         <div class="form-group">
           <label>Название</label>
           <input type="text" id="editPresetTeam1Name" placeholder="Название команды">
-        </div>
+      </div>
         <div class="form-group">
           <label>Город</label>
           <input type="text" id="editPresetTeam1City" placeholder="Город">
-        </div>
+    </div>
         <div class="form-group">
           <label>Шорткод</label>
           <input type="text" id="editPresetTeam1Short" placeholder="ХОЗ" maxlength="3">
-        </div>
+          </div>
         <div class="form-group">
           <label>Цвет формы</label>
           <input type="color" id="editPresetKit1Color" value="#2b2b2b">
-        </div>
+          </div>
         <div class="form-group">
           <label>Логотип</label>
           <input type="file" id="editPresetTeam1Logo" accept="image/*" onchange="uploadLogo('team1', this)">
           <div id="editPresetTeam1LogoPreview" class="logo-preview"></div>
-        </div>
-      </div>
+          </div>
+          </div>
       <div class="team-divider"></div>
       <div class="form-section">
         <h4 class="section-title">
@@ -1055,7 +1106,7 @@
         <div class="form-group">
           <label>Название</label>
           <input type="text" id="editPresetTeam2Name" placeholder="Название команды">
-        </div>
+          </div>
         <div class="form-group">
           <label>Город</label>
           <input type="text" id="editPresetTeam2City" placeholder="Город">
@@ -1063,23 +1114,23 @@
         <div class="form-group">
           <label>Шорткод</label>
           <input type="text" id="editPresetTeam2Short" placeholder="ГОС" maxlength="3">
-        </div>
+          </div>
         <div class="form-group">
           <label>Цвет формы</label>
           <input type="color" id="editPresetKit2Color" value="#2b2b2b">
-        </div>
+          </div>
         <div class="form-group">
           <label>Логотип</label>
           <input type="file" id="editPresetTeam2Logo" accept="image/*" onchange="uploadLogo('team2', this)">
           <div id="editPresetTeam2LogoPreview" class="logo-preview"></div>
-        </div>
-      </div>
+          </div>
+          </div>
       <div class="form-row">
         <button class="btn btn-primary" onclick="updatePreset()">Обновить</button>
         <button class="btn btn-danger" onclick="deletePresetFromEdit()">Удалить</button>
         <button class="btn" onclick="cancelEditPreset()">Отмена</button>
-      </div>
-    </div>
+          </div>
+        </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -1093,6 +1144,10 @@
     let uploadedLogos = {
       team1: null,
       team2: null
+    };
+    let state = {
+      team1Logo: '',
+      team2Logo: ''
     };
 
     // Инициализация
@@ -1240,6 +1295,59 @@
         mini.innerHTML = '';
       }
     }
+    
+    // Загрузка логотипа в основную форму
+    async function uploadMainLogo(team, fileInput) {
+      if (!fileInput.files[0]) return;
+      
+      const formData = new FormData();
+      formData.append('logo', fileInput.files[0]);
+      
+      try {
+        const response = await fetch(`/api/upload-logo?token=${getToken()}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          updateMainLogoMini(team, result.url);
+          updateMainLogoState(team, result.url);
+          showNotification('Логотип загружен успешно', 'success');
+        } else {
+          const error = await response.json();
+          showNotification('Ошибка загрузки: ' + error.error, 'error');
+        }
+      } catch (error) {
+        showNotification('Ошибка загрузки логотипа', 'error');
+        console.error('Upload error:', error);
+      }
+    }
+    
+    // Обновление миниатюры в основной форме
+    function updateMainLogoMini(team, logoUrl) {
+      const mini = document.getElementById(`${team}LogoMini`);
+      if (logoUrl) {
+        mini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">`;
+      } else {
+        mini.innerHTML = '';
+      }
+    }
+    
+    // Обновление состояния логотипа в основной форме
+    function updateMainLogoState(team, logoUrl) {
+      state[`${team}Logo`] = logoUrl;
+      socket.emit('updateScoreboard', {
+        [`${team}Logo`]: logoUrl
+      });
+    }
+    
+    // Показ серого круга цвета формы
+    function showKitColorCircle(team) {
+      const mini = document.getElementById(`${team}LogoMini`);
+      const kitColor = document.getElementById(`kit${team === 'team1' ? '1' : '2'}Color`).value;
+      mini.innerHTML = `<div style="width: 100%; height: 100%; background-color: ${kitColor}; border-radius: 50%;"></div>`;
+    }
 
     // Настройка контролов
     function setupControls() {
@@ -1321,6 +1429,11 @@
     // Отправка состояния
     function sendState() {
       if (!ready) return;
+      
+      // Получаем текущие логотипы из состояния
+      const team1Logo = state.team1Logo || '';
+      const team2Logo = state.team2Logo || '';
+      
       socket.emit('updateScoreboard', {
         team1Name: document.getElementById('team1Name').value,
         team1City: document.getElementById('team1City').value,
@@ -1329,7 +1442,9 @@
         team2City: document.getElementById('team2City').value,
         team2Short: document.getElementById('team2Short').value,
         kit1Color: document.getElementById('kit1Color').value,
-        kit2Color: document.getElementById('kit2Color').value
+        kit2Color: document.getElementById('kit2Color').value,
+        team1Logo: team1Logo,
+        team2Logo: team2Logo
       });
     }
 
@@ -1355,21 +1470,21 @@
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
-              <div class="preset-name">${preset.name}</div>
-              <div class="preset-teams">
+          <div class="preset-name">${preset.name}</div>
+          <div class="preset-teams">
                 <span class="preset-team-name">${preset.team1Name}</span>
                 <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
                 <span class="preset-separator">:</span>
                 <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
                 <span class="preset-team-name">${preset.team2Name}</span>
-              </div>
+            </div>
             </div>
             <div class="preset-right">
               <span class="preset-edit-link" onclick="editPreset('${preset.id}')">edit</span>
               <button class="preset-play-btn" onclick="confirmApplyPreset('${preset.id}')" ${timerRunning ? 'disabled' : ''} title="Применить предустановку">
                 ▶
               </button>
-            </div>
+          </div>
           </div>
         `;
         
@@ -1407,7 +1522,7 @@
         modal.remove();
       }
     }
-    
+
     // Применение предустановки
     function applyPreset(presetId) {
       const preset = presets.find(p => p.id === presetId);
@@ -1423,6 +1538,19 @@
       document.getElementById('team2City').value = preset.team2City;
       document.getElementById('team2Short').value = preset.team2Short;
       document.getElementById('kit2Color').value = preset.kit2Color;
+      
+      // Применение логотипов
+      if (preset.team1Logo) {
+        updateMainLogoMini('team1', preset.team1Logo);
+      } else {
+        showKitColorCircle('team1');
+      }
+      
+      if (preset.team2Logo) {
+        updateMainLogoMini('team2', preset.team2Logo);
+      } else {
+        showKitColorCircle('team2');
+      }
       
       // Отправка обновленного состояния
       sendState();
@@ -1740,6 +1868,22 @@
       document.getElementById('team2Name').value = data.team2Name ?? "";
       document.getElementById('team1City').value = data.team1City ?? "";
       document.getElementById('team2City').value = data.team2City ?? "";
+      
+      // Обновление логотипов
+      state.team1Logo = data.team1Logo || '';
+      state.team2Logo = data.team2Logo || '';
+      
+      if (data.team1Logo) {
+        updateMainLogoMini('team1', data.team1Logo);
+      } else {
+        showKitColorCircle('team1');
+      }
+      
+      if (data.team2Logo) {
+        updateMainLogoMini('team2', data.team2Logo);
+      } else {
+        showKitColorCircle('team2');
+      }
       
       // Перерисовка предустановок с учетом состояния таймера
       renderPresets();
