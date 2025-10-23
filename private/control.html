@@ -411,9 +411,10 @@
     .preset-teams {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       min-width: 0;
       align-self: flex-start;
+      flex-wrap: nowrap;
     }
     
     .preset-right {
@@ -864,7 +865,7 @@
     .preset-team-logo {
       display: inline-flex;
       align-items: center;
-      margin-right: 5px;
+      flex-shrink: 0;
     }
     
     .preset-logo-mini {
@@ -872,6 +873,26 @@
       height: 20px;
       border-radius: 3px;
       object-fit: cover;
+    }
+    
+    .preset-team-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+    }
+    
+    .preset-kit-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    
+    .preset-separator {
+      color: #666;
+      font-weight: bold;
+      flex-shrink: 0;
     }
     
     .edit-preset-form .form-group input {
@@ -1472,19 +1493,15 @@
           <div class="preset-content">
             <div class="preset-left">
           <div class="preset-name">${preset.name}</div>
-          <div class="preset-teams">
-            <div class="preset-team">
-                  <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
-                  <span class="preset-team-name">${preset.team1Name}</span>
-                  <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
-            </div>
+              <div class="preset-teams">
+                <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
+                <span class="preset-team-name">${preset.team1Name}</span>
+                <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
                 <span class="preset-separator">:</span>
-            <div class="preset-team">
-                  <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
-                  <span class="preset-team-name">${preset.team2Name}</span>
-                  <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
-            </div>
-          </div>
+                <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
+                <span class="preset-team-name">${preset.team2Name}</span>
+                <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
+              </div>
             </div>
             <div class="preset-right">
               <span class="preset-edit-link" onclick="editPreset('${preset.id}')">edit</span>
