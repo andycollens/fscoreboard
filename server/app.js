@@ -219,22 +219,32 @@ app.delete('/api/presets/:id', (req, res) => {
   // Находим пресет для удаления логотипов
   const presetToDelete = matchPresets.find(p => p.id === req.params.id);
   
-  // Удаляем логотипы если они есть
+  // Функция проверки использования логотипа в активной секции
+  function isLogoInUse(logoUrl) {
+    if (!logoUrl) return false;
+    return (state.team1Logo === logoUrl || state.team2Logo === logoUrl);
+  }
+  
+  // Удаляем логотипы если они есть и не используются в активной секции
   if (presetToDelete) {
-    if (presetToDelete.team1Logo) {
+    if (presetToDelete.team1Logo && !isLogoInUse(presetToDelete.team1Logo)) {
       const logoPath = path.join(LOGOS_PATH, path.basename(presetToDelete.team1Logo));
       if (fs.existsSync(logoPath)) {
         fs.unlinkSync(logoPath);
         console.log('Deleted team1 logo:', logoPath);
       }
+    } else if (presetToDelete.team1Logo && isLogoInUse(presetToDelete.team1Logo)) {
+      console.log('Protected team1 logo from deletion (in use):', presetToDelete.team1Logo);
     }
     
-    if (presetToDelete.team2Logo) {
+    if (presetToDelete.team2Logo && !isLogoInUse(presetToDelete.team2Logo)) {
       const logoPath = path.join(LOGOS_PATH, path.basename(presetToDelete.team2Logo));
       if (fs.existsSync(logoPath)) {
         fs.unlinkSync(logoPath);
         console.log('Deleted team2 logo:', logoPath);
       }
+    } else if (presetToDelete.team2Logo && isLogoInUse(presetToDelete.team2Logo)) {
+      console.log('Protected team2 logo from deletion (in use):', presetToDelete.team2Logo);
     }
   }
   
@@ -265,10 +275,22 @@ app.delete('/api/logo/:filename', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
   
   const filePath = path.join(LOGOS_PATH, req.params.filename);
+  const logoUrl = `/public/logos/${req.params.filename}`;
+  
+  // Проверяем, используется ли логотип в активной секции
+  const isInUse = (state.team1Logo === logoUrl || state.team2Logo === logoUrl);
+  
+  if (isInUse) {
+    return res.status(403).json({ 
+      error: 'Логотип используется в активной секции и не может быть удален',
+      protected: true 
+    });
+  }
   
   try {
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
+      console.log('Deleted logo file:', filePath);
       res.json({ success: true });
     } else {
       res.status(404).json({ error: 'Файл не найден' });
