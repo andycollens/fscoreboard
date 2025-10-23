@@ -47,9 +47,6 @@
 
         .team1-logo {
             position: absolute;
-            left: -125px;
-            top: 50%;
-            transform: translateY(-50%);
             width: 250px;
             height: 250px;
             object-fit: contain;
@@ -58,9 +55,6 @@
 
         .team2-logo {
             position: absolute;
-            right: -125px;
-            top: 50%;
-            transform: translateY(-50%);
             width: 250px;
             height: 250px;
             object-fit: contain;
@@ -180,12 +174,46 @@
             }
         }
 
+        // Функция позиционирования логотипов
+        function positionLogos() {
+            const stripeImage = document.querySelector('.stripe-image');
+            const team1Logo = document.getElementById('team1Logo');
+            const team2Logo = document.getElementById('team2Logo');
+            
+            if (stripeImage && team1Logo && team2Logo) {
+                // Получаем размеры изображения
+                const imageRect = stripeImage.getBoundingClientRect();
+                const containerRect = document.querySelector('.image-container').getBoundingClientRect();
+                
+                // Вычисляем относительные координаты
+                const imageLeft = 0; // Левый край изображения
+                const imageRight = imageRect.width; // Правый край изображения
+                const imageCenterY = imageRect.height / 2; // Центр по высоте
+                
+                // Позиционируем левый логотип (центр на левом краю)
+                team1Logo.style.left = (imageLeft - 125) + 'px'; // 125px = половина ширины логотипа
+                team1Logo.style.top = (imageCenterY - 125) + 'px'; // 125px = половина высоты логотипа
+                
+                // Позиционируем правый логотип (центр на правом краю)
+                team2Logo.style.left = (imageRight - 125) + 'px'; // 125px = половина ширины логотипа
+                team2Logo.style.top = (imageCenterY - 125) + 'px'; // 125px = половина высоты логотипа
+            }
+        }
+
         // Запрос текущего состояния при загрузке страницы
         socket.emit('getCurrentState');
         
         socket.on('currentState', function(data) {
             updateDisplay(data);
         });
+
+        // Позиционируем логотипы после загрузки изображения
+        window.addEventListener('load', function() {
+            setTimeout(positionLogos, 100); // Небольшая задержка для загрузки изображения
+        });
+
+        // Позиционируем логотипы при изменении размера окна
+        window.addEventListener('resize', positionLogos);
 
     </script>
 </body>
