@@ -139,7 +139,7 @@
 <body>
     <div class="prematch-container">
         <!-- Фоновое изображение -->
-        <img src="/public/img/stripe_prematch.png" alt="Prematch Stripe" class="stripe-image">
+        <img src="/public/img/stripe_prematch.png" alt="Prematch Stripe" class="stripe-image" onerror="console.error('Failed to load stripe image'); this.style.display='none';">
         
         <!-- Логотип команды 1 -->
         <img id="team1Logo" src="" alt="Team 1 Logo" class="team1-logo" style="display: none;">
@@ -216,6 +216,15 @@
         socket.on('currentState', function(data) {
             updateDisplay(data);
         });
+
+        // Отладочная информация
+        console.log('Prematch page loaded');
+        console.log('Image source:', document.querySelector('.stripe-image').src);
+        
+        // Проверяем загрузку изображения
+        document.querySelector('.stripe-image').onload = function() {
+            console.log('Stripe image loaded successfully');
+        };
     </script>
 </body>
 </html>
