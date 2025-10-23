@@ -1695,7 +1695,40 @@
     }
 
     // Применение предустановки
-    function applyPreset(presetId) {
+    // Копирование логотипа из пресета в основную панель
+    async function copyLogoFromPreset(team, presetLogoUrl) {
+      if (!presetLogoUrl) return '';
+      
+      try {
+        // Создаем уникальное имя файла с timestamp
+        const timestamp = Date.now();
+        const extension = presetLogoUrl.split('.').pop();
+        const newFilename = `main_${team}_${timestamp}.${extension}`;
+        
+        // Копируем файл на сервере
+        const response = await fetch(`/api/copy-logo?token=${getToken()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sourceUrl: presetLogoUrl,
+            newFilename: newFilename
+          })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          return result.url;
+        } else {
+          console.error('Ошибка копирования логотипа:', await response.text());
+          return presetLogoUrl; // Fallback к оригинальному URL
+        }
+      } catch (error) {
+        console.error('Ошибка копирования логотипа:', error);
+        return presetLogoUrl; // Fallback к оригинальному URL
+      }
+    }
+
+    async function applyPreset(presetId) {
       const preset = presets.find(p => p.id === presetId);
       if (!preset) return;
       
@@ -1710,18 +1743,20 @@
       document.getElementById('team2Short').value = preset.team2Short;
       document.getElementById('kit2Color').value = preset.kit2Color;
       
-      // Применение логотипов
+      // Копирование логотипов (создание уникальных копий)
       if (preset.team1Logo) {
-        updateMainLogoMini('team1', preset.team1Logo);
-        state.team1Logo = preset.team1Logo;
+        const copiedLogoUrl = await copyLogoFromPreset('team1', preset.team1Logo);
+        updateMainLogoMini('team1', copiedLogoUrl);
+        state.team1Logo = copiedLogoUrl;
       } else {
         showKitColorCircle('team1');
         state.team1Logo = '';
       }
       
       if (preset.team2Logo) {
-        updateMainLogoMini('team2', preset.team2Logo);
-        state.team2Logo = preset.team2Logo;
+        const copiedLogoUrl = await copyLogoFromPreset('team2', preset.team2Logo);
+        updateMainLogoMini('team2', copiedLogoUrl);
+        state.team2Logo = copiedLogoUrl;
       } else {
         showKitColorCircle('team2');
         state.team2Logo = '';

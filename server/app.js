@@ -300,6 +300,45 @@ app.delete('/api/logo/:filename', (req, res) => {
   }
 });
 
+// Копирование логотипа
+app.post('/api/copy-logo', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const { sourceUrl, newFilename } = req.body;
+  
+  if (!sourceUrl || !newFilename) {
+    return res.status(400).json({ error: 'Не указаны sourceUrl и newFilename' });
+  }
+  
+  try {
+    // Извлекаем имя файла из URL
+    const sourceFilename = sourceUrl.split('/').pop();
+    const sourcePath = path.join(LOGOS_PATH, sourceFilename);
+    const destPath = path.join(LOGOS_PATH, newFilename);
+    
+    // Проверяем существование исходного файла
+    if (!fs.existsSync(sourcePath)) {
+      return res.status(404).json({ error: 'Исходный файл не найден' });
+    }
+    
+    // Копируем файл
+    fs.copyFileSync(sourcePath, destPath);
+    
+    const newUrl = `/public/logos/${newFilename}`;
+    console.log('Copied logo:', sourcePath, '->', destPath);
+    
+    res.json({ 
+      success: true, 
+      url: newUrl,
+      filename: newFilename 
+    });
+    
+  } catch (error) {
+    console.error('Ошибка копирования логотипа:', error);
+    res.status(500).json({ error: 'Ошибка копирования файла' });
+  }
+});
+
 // ====== WebSocket ======
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
