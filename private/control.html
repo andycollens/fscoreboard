@@ -786,16 +786,52 @@
       margin-top: 20px;
     }
     
-    .edit-preset-form .form-row {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
+    .edit-preset-form .form-section {
+      margin-bottom: 25px;
     }
     
     .edit-preset-form .form-group {
-      flex: 1;
-      min-width: 200px;
+      margin-bottom: 15px;
+    }
+    
+    .editable-title {
+      cursor: pointer;
+      border: 2px solid transparent;
+      padding: 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .editable-title:hover {
+      border-color: #007bff;
+      background-color: #f8f9ff;
+    }
+    
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      color: #1976d2;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .logo-mini {
+      width: 25px;
+      height: 25px;
+      border-radius: 3px;
+      border: 1px solid #ddd;
+      object-fit: cover;
+      display: inline-block;
+      background: #f5f5f5;
+    }
+    
+    .logo-mini img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 3px;
     }
     
     .edit-preset-form .form-group input {
@@ -981,56 +1017,59 @@
     
     <!-- Форма редактирования предустановки -->
     <div id="editPresetForm" class="edit-preset-form hidden">
-      <h3>Редактирование предустановки</h3>
-      <div class="form-row">
+      <h3 id="editPresetTitle" class="editable-title" onclick="startEditingTitle()">Название матча</h3>
+      <input type="text" id="editPresetNameInput" class="hidden" placeholder="Например: Финал чемпионата" onblur="finishEditingTitle()" onkeypress="handleTitleKeypress(event)">
+      <div class="form-section">
+        <h4 class="section-title">
+          <span id="editPresetTeam1LogoMini" class="logo-mini"></span>
+          Команда 1
+        </h4>
         <div class="form-group">
-          <label>Название матча</label>
-          <input type="text" id="editPresetName" placeholder="Например: Финал чемпионата">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Команда 1</label>
+          <label>Название</label>
           <input type="text" id="editPresetTeam1Name" placeholder="Название команды">
         </div>
         <div class="form-group">
-          <label>Город 1</label>
+          <label>Город</label>
           <input type="text" id="editPresetTeam1City" placeholder="Город">
         </div>
         <div class="form-group">
-          <label>Шорткод 1</label>
+          <label>Шорткод</label>
           <input type="text" id="editPresetTeam1Short" placeholder="ХОЗ" maxlength="3">
         </div>
         <div class="form-group">
-          <label>Форма 1</label>
+          <label>Цвет формы</label>
           <input type="color" id="editPresetKit1Color" value="#2b2b2b">
         </div>
         <div class="form-group">
-          <label>Логотип 1</label>
+          <label>Логотип</label>
           <input type="file" id="editPresetTeam1Logo" accept="image/*" onchange="uploadLogo('team1', this)">
           <div id="editPresetTeam1LogoPreview" class="logo-preview"></div>
         </div>
       </div>
       <div class="team-divider"></div>
-      <div class="form-row">
+      <div class="form-section">
+        <h4 class="section-title">
+          Команда 2
+          <span id="editPresetTeam2LogoMini" class="logo-mini"></span>
+        </h4>
         <div class="form-group">
-          <label>Команда 2</label>
+          <label>Название</label>
           <input type="text" id="editPresetTeam2Name" placeholder="Название команды">
         </div>
         <div class="form-group">
-          <label>Город 2</label>
+          <label>Город</label>
           <input type="text" id="editPresetTeam2City" placeholder="Город">
         </div>
         <div class="form-group">
-          <label>Шорткод 2</label>
+          <label>Шорткод</label>
           <input type="text" id="editPresetTeam2Short" placeholder="ГОС" maxlength="3">
         </div>
         <div class="form-group">
-          <label>Форма 2</label>
+          <label>Цвет формы</label>
           <input type="color" id="editPresetKit2Color" value="#2b2b2b">
         </div>
         <div class="form-group">
-          <label>Логотип 2</label>
+          <label>Логотип</label>
           <input type="file" id="editPresetTeam2Logo" accept="image/*" onchange="uploadLogo('team2', this)">
           <div id="editPresetTeam2LogoPreview" class="logo-preview"></div>
         </div>
@@ -1140,6 +1179,7 @@
           const result = await response.json();
           uploadedLogos[team] = result.filename;
           showLogoPreview(team, result.url);
+          updateLogoMini(team, result.url);
           showNotification('Логотип загружен успешно', 'success');
         } else {
           const error = await response.json();
@@ -1162,6 +1202,43 @@
       uploadedLogos[team] = null;
       const preview = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoPreview`);
       preview.innerHTML = '<div class="no-logo">Нет логотипа</div>';
+    }
+    
+    // Редактирование заголовка
+    function startEditingTitle() {
+      const title = document.getElementById('editPresetTitle');
+      const input = document.getElementById('editPresetNameInput');
+      
+      title.classList.add('hidden');
+      input.classList.remove('hidden');
+      input.value = title.textContent;
+      input.focus();
+      input.select();
+    }
+    
+    function finishEditingTitle() {
+      const title = document.getElementById('editPresetTitle');
+      const input = document.getElementById('editPresetNameInput');
+      
+      title.textContent = input.value.trim() || 'Название матча';
+      title.classList.remove('hidden');
+      input.classList.add('hidden');
+    }
+    
+    function handleTitleKeypress(event) {
+      if (event.key === 'Enter') {
+        finishEditingTitle();
+      }
+    }
+    
+    // Обновление миниатюр логотипов
+    function updateLogoMini(team, logoUrl) {
+      const mini = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoMini`);
+      if (logoUrl) {
+        mini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">`;
+      } else {
+        mini.innerHTML = '';
+      }
     }
 
     // Настройка контролов
@@ -1455,7 +1532,7 @@
       };
       
       // Заполняем форму редактирования
-      document.getElementById('editPresetName').value = preset.name;
+      document.getElementById('editPresetTitle').textContent = preset.name;
       document.getElementById('editPresetTeam1Name').value = preset.team1Name;
       document.getElementById('editPresetTeam1City').value = preset.team1City;
       document.getElementById('editPresetTeam1Short').value = preset.team1Short;
@@ -1468,16 +1545,20 @@
       // Загружаем логотипы если есть
       if (preset.team1Logo) {
         showLogoPreview('team1', preset.team1Logo);
+        updateLogoMini('team1', preset.team1Logo);
         uploadedLogos.team1 = preset.team1Logo;
       } else {
         clearLogo('team1');
+        updateLogoMini('team1', null);
       }
       
       if (preset.team2Logo) {
         showLogoPreview('team2', preset.team2Logo);
+        updateLogoMini('team2', preset.team2Logo);
         uploadedLogos.team2 = preset.team2Logo;
       } else {
         clearLogo('team2');
+        updateLogoMini('team2', null);
       }
       
       // Показываем форму редактирования
@@ -1489,7 +1570,7 @@
       if (!editingPresetId) return;
       
       const preset = {
-        name: document.getElementById('editPresetName').value.trim(),
+        name: document.getElementById('editPresetTitle').textContent.trim(),
         team1Name: document.getElementById('editPresetTeam1Name').value.trim(),
         team1City: document.getElementById('editPresetTeam1City').value.trim(),
         team1Short: document.getElementById('editPresetTeam1Short').value.trim().toUpperCase(),
