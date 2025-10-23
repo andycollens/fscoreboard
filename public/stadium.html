@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stadium - FSCOREBOARD</title>
+    <style>
+        @font-face {
+            font-family: 'RPL';
+            src: url('/public/fonts/RPL.ttf') format('truetype');
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background: #000;
+            font-family: 'RPL', Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .stadium-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .stadium-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+        }
+
+        .team-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .team-logo {
+            width: 500px;
+            height: 500px;
+            object-fit: contain;
+            display: none;
+        }
+
+        .team-logo.show {
+            display: block;
+        }
+
+        .team-name {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+        }
+
+        .team-city {
+            font-size: 32px;
+            color: #ccc;
+            text-align: center;
+            margin: 0;
+        }
+
+        .team-score {
+            font-size: 300px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .score-divider {
+            font-size: 300px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .no-logo {
+            width: 500px;
+            height: 500px;
+            background: #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="stadium-container">
+        <div class="stadium-content">
+            <!-- Команда 1 -->
+            <div class="team-block">
+                <img id="team1Logo" src="" alt="Team 1 Logo" class="team-logo">
+                <div id="team1NoLogo" class="no-logo">ЛОГО</div>
+                <h2 id="team1Name" class="team-name">Команда 1</h2>
+                <p id="team1City" class="team-city">Город 1</p>
+                <div id="team1Score" class="team-score">0</div>
+            </div>
+
+            <!-- Разделитель счета -->
+            <div class="score-divider">:</div>
+
+            <!-- Команда 2 -->
+            <div class="team-block">
+                <img id="team2Logo" src="" alt="Team 2 Logo" class="team-logo">
+                <div id="team2NoLogo" class="no-logo">ЛОГО</div>
+                <h2 id="team2Name" class="team-name">Команда 2</h2>
+                <p id="team2City" class="team-city">Город 2</p>
+                <div id="team2Score" class="team-score">0</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Элементы DOM
+        const team1Logo = document.getElementById('team1Logo');
+        const team1NoLogo = document.getElementById('team1NoLogo');
+        const team1Name = document.getElementById('team1Name');
+        const team1City = document.getElementById('team1City');
+        const team1Score = document.getElementById('team1Score');
+
+        const team2Logo = document.getElementById('team2Logo');
+        const team2NoLogo = document.getElementById('team2NoLogo');
+        const team2Name = document.getElementById('team2Name');
+        const team2City = document.getElementById('team2City');
+        const team2Score = document.getElementById('team2Score');
+
+        // Обновление отображения
+        function updateDisplay(data) {
+            // Команда 1
+            if (data.team1Logo && data.team1Logo !== '') {
+                team1Logo.src = data.team1Logo;
+                team1Logo.classList.add('show');
+                team1NoLogo.style.display = 'none';
+            } else {
+                team1Logo.classList.remove('show');
+                team1NoLogo.style.display = 'flex';
+            }
+
+            team1Name.textContent = data.team1 || 'Команда 1';
+            team1City.textContent = data.team1City || 'Город 1';
+            team1Score.textContent = data.score1 || 0;
+
+            // Команда 2
+            if (data.team2Logo && data.team2Logo !== '') {
+                team2Logo.src = data.team2Logo;
+                team2Logo.classList.add('show');
+                team2NoLogo.style.display = 'none';
+            } else {
+                team2Logo.classList.remove('show');
+                team2NoLogo.style.display = 'flex';
+            }
+
+            team2Name.textContent = data.team2 || 'Команда 2';
+            team2City.textContent = data.team2City || 'Город 2';
+            team2Score.textContent = data.score2 || 0;
+        }
+
+        // Подключение к WebSocket
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            socket.emit('getCurrentState');
+        });
+
+        socket.on('scoreboardUpdate', (data) => {
+            updateDisplay(data);
+        });
+
+        socket.on('currentState', (data) => {
+            updateDisplay(data);
+        });
+
+        // Обработка ошибок
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+    </script>
+</body>
+</html>
