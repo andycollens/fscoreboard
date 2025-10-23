@@ -368,8 +368,6 @@
       border-radius: 8px;
       padding: 12px 16px;
       margin-bottom: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      border: 1px solid #ddd;
       transition: all 0.2s;
       box-sizing: border-box;
       width: 100%;
@@ -377,7 +375,7 @@
     }
     
     .preset-card:hover {
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      background: #f8f9fa;
     }
     
     .preset-content {
@@ -401,6 +399,12 @@
       font-size: 14px;
       margin-right: 8px;
       white-space: nowrap;
+      background: #e9ecef;
+      padding: 2px 6px;
+      border-radius: 4px;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .preset-teams {
@@ -422,10 +426,15 @@
       align-items: center;
       gap: 4px;
       white-space: nowrap;
+      max-width: 150px;
+      overflow: hidden;
     }
     
     .preset-team-name {
       font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     
     .preset-kit-color {
@@ -643,7 +652,7 @@
     
     <!-- Предупреждение о работающем таймере -->
     <div id="timerWarning" class="timer-running-warning hidden">
-      ⚠️ Таймер запущен! Изменения заблокированы. Остановите таймер для редактирования.
+      ⚠️ Таймер запущен! Блокированы: изменение команд, применение предустановок. Доступно: управление счетом, создание/редактирование предустановок.
     </div>
     
     <div id="presetsGrid" class="presets-grid">
@@ -1037,10 +1046,6 @@
 
     // Переключение формы добавления предустановки
     function toggleAddPresetForm() {
-      if (timerRunning) {
-        showNotification('Нельзя добавлять предустановки во время работы таймера!', 'error');
-        return;
-      }
       const form = document.getElementById('addPresetForm');
       form.classList.toggle('hidden');
     }
@@ -1209,15 +1214,10 @@
         }
       });
       
-      // Блокировка кнопки добавления предустановки
+      // Кнопка добавления предустановки всегда доступна
       const addBtn = document.getElementById('addPresetBtn');
-      if (isRunning) {
-        addBtn.disabled = true;
-        addBtn.textContent = '⏸️ Таймер запущен';
-      } else {
-        addBtn.disabled = false;
-        addBtn.textContent = '+ Добавить предустановку';
-      }
+      addBtn.disabled = false;
+      addBtn.textContent = '+ Добавить предустановку';
       
       // Блокировка только кнопок применения предустановок
       const playButtons = document.querySelectorAll('.preset-play-btn');
