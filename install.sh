@@ -339,6 +339,36 @@ EOF
     print_success "Скрипт обновления создан: fscoreboard-update"
 }
 
+# Настройка ротации логов
+setup_log_rotation() {
+    print_step "Настройка ротации логов..."
+    
+    # Создание конфигурации logrotate для FSCOREBOARD
+    cat > /etc/logrotate.d/fscoreboard << 'EOF'
+/opt/fscoreboard/logs/*.log {
+    daily
+    missingok
+    rotate 3
+    compress
+    delaycompress
+    notifempty
+    create 644 root root
+    postrotate
+        pm2 reloadLogs
+    endscript
+}
+EOF
+    
+    # Настройка PM2 logrotate
+    pm2 install pm2-logrotate
+    pm2 set pm2-logrotate:max_size 10M
+    pm2 set pm2-logrotate:retain 3
+    pm2 set pm2-logrotate:compress true
+    pm2 set pm2-logrotate:dateFormat YYYY-MM-DD_HH-mm-ss
+    
+    print_success "Ротация логов настроена (3 дня, 10MB)"
+}
+
 # Создание скрипта мониторинга
 create_monitor_script() {
     print_step "Создание скрипта мониторинга..."
@@ -463,6 +493,13 @@ show_completion_info() {
     echo "• Автоустановка: $PROJECT_DIR/AUTO_INSTALL.md"
     
     echo ""
+    echo -e "${CYAN}📋 Настройки логов:${NC}"
+    echo "• Ротация: ежедневно, хранение 3 дня"
+    echo "• Размер: максимум 10MB на файл"
+    echo "• Сжатие: включено для старых логов"
+    echo "• PM2 logrotate: настроен автоматически"
+    
+    echo ""
     echo -e "${GREEN}🚀 FSCOREBOARD готов к работе!${NC}"
 }
 
@@ -490,6 +527,7 @@ main() {
     generate_config
     setup_nginx
     start_application
+    setup_log_rotation
     create_update_script
     create_monitor_script
     final_check
