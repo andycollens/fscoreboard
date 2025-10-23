@@ -221,9 +221,19 @@
         });
 
         // Позиционируем логотипы после загрузки изображения
-        window.addEventListener('load', function() {
-            setTimeout(positionLogos, 100); // Небольшая задержка для загрузки изображения
-        });
+        const stripeImage = document.querySelector('.stripe-image');
+        if (stripeImage) {
+            stripeImage.addEventListener('load', function() {
+                console.log('Stripe image loaded, positioning logos...');
+                positionLogos();
+            });
+            
+            // Если изображение уже загружено
+            if (stripeImage.complete) {
+                console.log('Stripe image already loaded, positioning logos...');
+                positionLogos();
+            }
+        }
 
         // Позиционируем логотипы при изменении размера окна
         window.addEventListener('resize', positionLogos);
