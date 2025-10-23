@@ -323,6 +323,14 @@ pm2 delete fscoreboard 2>/dev/null || true
 pm2 start ecosystem.config.js
 pm2 save
 
+# Исправление конфигурации Nginx (если нужно)
+if [ -f "/etc/nginx/sites-available/fscoreboard" ]; then
+    echo "🔧 Исправление конфигурации Nginx..."
+    sed -i 's/localhost:3000/localhost:3001/g' /etc/nginx/sites-available/fscoreboard
+    nginx -t && systemctl reload nginx
+    echo "✅ Nginx конфигурация обновлена"
+fi
+
 echo "✅ Обновление завершено: $(date)"
 EOF
     
