@@ -51,6 +51,8 @@
             height: 250px;
             object-fit: contain;
             z-index: 2;
+            left: 0;
+            top: 0;
         }
 
         .team2-logo {
@@ -59,6 +61,8 @@
             height: 250px;
             object-fit: contain;
             z-index: 2;
+            left: 0;
+            top: 0;
         }
 
         .team1-info {
@@ -185,18 +189,27 @@
                 const imageWidth = stripeImage.offsetWidth;
                 const imageHeight = stripeImage.offsetHeight;
                 
+                console.log('Image dimensions:', imageWidth, 'x', imageHeight);
+                
                 // Вычисляем координаты относительно контейнера изображения
                 const imageLeft = 0; // Левый край изображения
                 const imageRight = imageWidth; // Правый край изображения
                 const imageCenterY = imageHeight / 2; // Центр по высоте
                 
                 // Позиционируем левый логотип (центр на левом краю)
-                team1Logo.style.left = (imageLeft - 125) + 'px'; // 125px = половина ширины логотипа
-                team1Logo.style.top = (imageCenterY - 125) + 'px'; // 125px = половина высоты логотипа
+                const leftLogoX = imageLeft - 125; // 125px = половина ширины логотипа
+                const leftLogoY = imageCenterY - 125; // 125px = половина высоты логотипа
+                team1Logo.style.left = leftLogoX + 'px';
+                team1Logo.style.top = leftLogoY + 'px';
                 
                 // Позиционируем правый логотип (центр на правом краю)
-                team2Logo.style.left = (imageRight - 125) + 'px'; // 125px = половина ширины логотипа
-                team2Logo.style.top = (imageCenterY - 125) + 'px'; // 125px = половина высоты логотипа
+                const rightLogoX = imageRight - 125; // 125px = половина ширины логотипа
+                const rightLogoY = imageCenterY - 125; // 125px = половина высоты логотипа
+                team2Logo.style.left = rightLogoX + 'px';
+                team2Logo.style.top = rightLogoY + 'px';
+                
+                console.log('Left logo position:', leftLogoX, leftLogoY);
+                console.log('Right logo position:', rightLogoX, rightLogoY);
             }
         }
 
