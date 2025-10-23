@@ -90,16 +90,12 @@
             font-weight: bold;
             margin-bottom: 10px;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .team-city {
             font-size: 25px;
             font-weight: normal;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         /* Фиксированные размеры - без адаптивности */
@@ -251,10 +247,10 @@
                 teamName.style.fontSize = nameSize + 'px';
                 teamCity.style.fontSize = citySize + 'px';
                 
-                // Уменьшаем шрифт пока текст не поместится
-                while ((teamName.scrollWidth > teamInfo.offsetWidth || teamCity.scrollWidth > teamInfo.offsetWidth) && nameSize > 20) {
-                    nameSize -= 1;
-                    citySize -= 1;
+                // Уменьшаем шрифт пока текст не поместится (более агрессивно)
+                while ((teamName.scrollWidth > teamInfo.offsetWidth || teamCity.scrollWidth > teamInfo.offsetWidth) && nameSize > 12) {
+                    nameSize -= 0.5; // Уменьшаем на 0.5px для более точной подгонки
+                    citySize -= 0.5;
                     teamName.style.fontSize = nameSize + 'px';
                     teamCity.style.fontSize = citySize + 'px';
                 }
