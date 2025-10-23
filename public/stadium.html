@@ -49,8 +49,8 @@
         }
 
         .team1-logo {
-            width: 350px;
-            height: 350px;
+            width: 300px;
+            height: 300px;
             object-fit: contain;
             display: none;
         }
@@ -60,19 +60,19 @@
         }
 
         .team1-no-logo {
-            width: 350px;
-            height: 350px;
+            width: 300px;
+            height: 300px;
             background: #333;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #666;
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .team1-name {
-            font-size: 2.5vw;
+            font-size: 2vw;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -81,7 +81,7 @@
         }
 
         .team1-city {
-            font-size: 2vw;
+            font-size: 1.5vw;
             color: #ccc;
             text-align: center;
             margin: 0;
@@ -89,7 +89,7 @@
 
         /* Счет команды 1 */
         .team1-score {
-            font-size: 350px;
+            font-size: 400px;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -140,7 +140,7 @@
 
         /* Счет команды 2 */
         .team2-score {
-            font-size: 350px;
+            font-size: 400px;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -163,8 +163,8 @@
         }
 
         .team2-logo {
-            width: 350px;
-            height: 350px;
+            width: 300px;
+            height: 300px;
             object-fit: contain;
             display: none;
         }
@@ -174,19 +174,19 @@
         }
 
         .team2-no-logo {
-            width: 350px;
-            height: 350px;
+            width: 300px;
+            height: 300px;
             background: #333;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #666;
-            font-size: 24px;
+            font-size: 20px;
         }
 
         .team2-name {
-            font-size: 2.5vw;
+            font-size: 2vw;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -195,7 +195,7 @@
         }
 
         .team2-city {
-            font-size: 2vw;
+            font-size: 1.5vw;
             color: #ccc;
             text-align: center;
             margin: 0;
@@ -204,12 +204,12 @@
         /* Адаптивность для маленьких экранов */
         @media (max-width: 1200px) {
             .team1-logo, .team2-logo, .team1-no-logo, .team2-no-logo {
-                width: 250px;
-                height: 250px;
+                width: 200px;
+                height: 200px;
             }
             
             .team1-score, .team2-score {
-                font-size: 300px;
+                font-size: 350px;
             }
             
             .score-divider {
@@ -217,11 +217,11 @@
             }
             
             .team1-name, .team2-name {
-                font-size: 2vw;
+                font-size: 1.5vw;
             }
             
             .team1-city, .team2-city {
-                font-size: 1.5vw;
+                font-size: 1vw;
             }
             
             .tournament-title {
@@ -247,12 +247,12 @@
             }
             
             .team1-logo, .team2-logo, .team1-no-logo, .team2-no-logo {
-                width: 150px;
-                height: 150px;
+                width: 120px;
+                height: 120px;
             }
             
             .team1-score, .team2-score {
-                font-size: 200px;
+                font-size: 250px;
             }
             
             .score-divider {
@@ -371,8 +371,8 @@
             team2Score.textContent = data.score2 || 0;
 
             // Таймер
-            if (data.timer !== undefined) {
-                timer.textContent = formatTime(data.timer);
+            if (data.time !== undefined) {
+                timer.textContent = data.time || "00:00";
             }
 
             // Название турнира (если передается)
