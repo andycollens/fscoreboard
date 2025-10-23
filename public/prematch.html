@@ -42,8 +42,8 @@
         .team1-logo {
             position: absolute;
             left: 50%;
-            bottom: 220px;
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%);
             margin-left: -960px;
             width: 300px;
             height: 300px;
@@ -54,8 +54,8 @@
         .team2-logo {
             position: absolute;
             left: 50%;
-            bottom: 220px;
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%);
             margin-left: 660px;
             width: 300px;
             height: 300px;
@@ -66,8 +66,8 @@
         .team1-info {
             position: absolute;
             left: 50%;
-            bottom: 220px;
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%);
             margin-left: -480px;
             text-align: center;
             color: white;
@@ -78,8 +78,8 @@
         .team2-info {
             position: absolute;
             left: 50%;
-            bottom: 220px;
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%);
             margin-left: 0px;
             text-align: center;
             color: white;
@@ -104,7 +104,7 @@
 <body>
     <div class="prematch-container">
         <!-- Фоновое изображение -->
-        <img src="/public/img/stripe_prematch.png" alt="Prematch Stripe" class="stripe-image" onerror="console.error('Failed to load stripe image'); this.style.display='none';">
+        <img src="img/stripe_prematch.png" alt="Prematch Stripe" class="stripe-image" onerror="console.error('Failed to load stripe image from img/'); this.src='/public/img/stripe_prematch.png'; this.onerror=function(){console.error('Failed to load from /public/img/'); this.style.display='none';};">
         
         <!-- Логотип команды 1 -->
         <img id="team1Logo" src="" alt="Team 1 Logo" class="team1-logo" style="display: none;">
