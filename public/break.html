@@ -72,7 +72,7 @@
             text-align: center;
             color: white;
             z-index: 2;
-            width: 520px;
+            width: 480px;
         }
 
         .team2-info {
@@ -82,7 +82,31 @@
             text-align: center;
             color: white;
             z-index: 2;
-            width: 520px;
+            width: 480px;
+        }
+
+        .score1-block {
+            position: absolute;
+            left: 0;
+            top: 0;
+            text-align: center;
+            color: white;
+            z-index: 2;
+            width: 100px;
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .score2-block {
+            position: absolute;
+            left: 0;
+            top: 0;
+            text-align: center;
+            color: white;
+            z-index: 2;
+            width: 100px;
+            font-size: 48px;
+            font-weight: bold;
         }
 
         .team-name {
@@ -125,6 +149,16 @@
                 <div id="team2Name" class="team-name">Команда 2</div>
                 <div id="team2City" class="team-city">Город 2</div>
             </div>
+
+            <!-- Счет команды 1 -->
+            <div class="score1-block">
+                <div id="team1Score">0</div>
+            </div>
+
+            <!-- Счет команды 2 -->
+            <div class="score2-block">
+                <div id="team2Score">0</div>
+            </div>
         </div>
     </div>
 
@@ -140,6 +174,8 @@
         const team2NameEl = document.getElementById('team2Name');
         const team2CityEl = document.getElementById('team2City');
         const team2LogoEl = document.getElementById('team2Logo');
+        const team1ScoreEl = document.getElementById('team1Score');
+        const team2ScoreEl = document.getElementById('team2Score');
 
         // Обработка обновлений от сервера
         socket.on('scoreboardUpdate', function(data) {
@@ -160,6 +196,14 @@
             }
             if (data.team2City) {
                 team2CityEl.textContent = data.team2City;
+            }
+
+            // Обновляем счета
+            if (data.team1Score !== undefined) {
+                team1ScoreEl.textContent = data.team1Score;
+            }
+            if (data.team2Score !== undefined) {
+                team2ScoreEl.textContent = data.team2Score;
             }
 
             // Обновляем логотипы
@@ -191,8 +235,10 @@
             const team2Logo = document.getElementById('team2Logo');
             const team1Info = document.querySelector('.team1-info');
             const team2Info = document.querySelector('.team2-info');
+            const score1Block = document.querySelector('.score1-block');
+            const score2Block = document.querySelector('.score2-block');
             
-            if (stripeImage && team1Logo && team2Logo && team1Info && team2Info) {
+            if (stripeImage && team1Logo && team2Logo && team1Info && team2Info && score1Block && score2Block) {
                 // Получаем размеры изображения
                 const imageWidth = stripeImage.offsetWidth;
                 const imageHeight = stripeImage.offsetHeight;
@@ -214,22 +260,35 @@
                 team2Logo.style.left = rightLogoX + 'px';
                 team2Logo.style.top = rightLogoY + 'px';
                 
-                // Позиционируем текстовые блоки: смещение на 365px от центра
-                const leftTextX = imageCenterX - 365 - 260; // Центр - 365px - половина ширины блока (260px)
-                const leftTextY = imageCenterY - 40; // Центр по высоте - 40px (небольшой сдвиг вниз)
+                // Позиционируем текстовые блоки: смещение на 405px от центра (365 + 40)
+                const leftTextX = imageCenterX - 405 - 240; // Центр - 405px - половина ширины блока (240px)
+                const leftTextY = imageCenterY - 40; // Центр по высоте - 40px
                 team1Info.style.left = leftTextX + 'px';
                 team1Info.style.top = leftTextY + 'px';
                 
-                const rightTextX = imageCenterX + 365 - 260; // Центр + 365px - половина ширины блока (260px)
-                const rightTextY = imageCenterY - 40; // Центр по высоте - 40px (небольшой сдвиг вниз)
+                const rightTextX = imageCenterX + 405 - 240; // Центр + 405px - половина ширины блока (240px)
+                const rightTextY = imageCenterY - 40; // Центр по высоте - 40px
                 team2Info.style.left = rightTextX + 'px';
                 team2Info.style.top = rightTextY + 'px';
+                
+                // Позиционируем блоки со счетом: ±20px от центра
+                const leftScoreX = imageCenterX - 20 - 50; // Центр - 20px - половина ширины блока (50px)
+                const leftScoreY = imageCenterY - 24; // Центр по высоте - половина высоты блока
+                score1Block.style.left = leftScoreX + 'px';
+                score1Block.style.top = leftScoreY + 'px';
+                
+                const rightScoreX = imageCenterX + 20 - 50; // Центр + 20px - половина ширины блока (50px)
+                const rightScoreY = imageCenterY - 24; // Центр по высоте - половина высоты блока
+                score2Block.style.left = rightScoreX + 'px';
+                score2Block.style.top = rightScoreY + 'px';
                 
                 console.log('Image center:', imageCenterX, imageCenterY);
                 console.log('Left logo position:', leftLogoX, leftLogoY);
                 console.log('Right logo position:', rightLogoX, rightLogoY);
                 console.log('Left text position:', leftTextX, leftTextY);
                 console.log('Right text position:', rightTextX, rightTextY);
+                console.log('Left score position:', leftScoreX, leftScoreY);
+                console.log('Right score position:', rightScoreX, rightScoreY);
             }
         }
 
