@@ -644,12 +644,31 @@
       .preset-card {
         padding: 15px;
         margin-bottom: 10px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .preset-content {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .preset-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
       }
       
       .preset-name {
         font-size: 16px;
-        margin-right: 12px;
+        margin-right: 0;
         padding: 4px 8px;
+        align-self: flex-start;
+      }
+      
+      .preset-teams {
+        width: 100%;
+        justify-content: flex-start;
       }
       
       .preset-team-name {
@@ -666,9 +685,14 @@
         margin: 0 4px;
       }
       
+      .preset-right {
+        align-self: flex-end;
+        margin-top: -40px;
+      }
+      
       .preset-edit-link {
         font-size: 14px;
-        margin-left: 20px;
+        margin-left: 0;
       }
       
       .preset-play-btn {
