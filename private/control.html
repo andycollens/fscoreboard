@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>FSCOREBOARD Control Panel</title>
   <style>
     body { 
@@ -526,6 +527,170 @@
     
     .confirmation-btn.cancel:hover {
       background: #5a6268;
+    }
+    
+    /* Мобильная адаптивность */
+    @media (max-width: 768px) {
+      body {
+        font-size: 16px;
+        padding: 10px;
+      }
+      
+      .camera-content {
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+      
+      .timer-row {
+        flex-direction: column;
+        gap: 12px;
+        margin: 15px 0;
+      }
+      
+      .playpause-btn, .set-btn {
+        width: 60px;
+        height: 50px;
+        font-size: 16px;
+      }
+      
+      .timer-inputs input {
+        font-size: 18px;
+        padding: 8px 12px;
+        width: 80px;
+        text-align: center;
+      }
+      
+      .score-row {
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .score-block {
+        width: 100%;
+        max-width: none;
+      }
+      
+      .score-controls {
+        justify-content: center;
+        margin-bottom: 15px;
+      }
+      
+      .score-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+      
+      .score-value {
+        font-size: 32px;
+        margin: 0 20px;
+      }
+      
+      .short-label-row {
+        justify-content: center;
+        margin-bottom: 15px;
+      }
+      
+      .short-label-row input {
+        font-size: 18px;
+        padding: 8px 12px;
+        width: 80px;
+        text-align: center;
+      }
+      
+      .kit-block {
+        justify-content: center;
+        margin-bottom: 15px;
+      }
+      
+      .kit-color {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .team-input-row {
+        margin-bottom: 15px;
+      }
+      
+      .team-input-row input {
+        font-size: 16px;
+        padding: 10px 12px;
+      }
+      
+      .presets-section {
+        padding: 15px;
+      }
+      
+      .presets-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+      }
+      
+      .presets-header h2 {
+        text-align: center;
+        margin-bottom: 0;
+      }
+      
+      .btn {
+        font-size: 16px;
+        padding: 12px 20px;
+        width: 100%;
+      }
+      
+      .preset-card {
+        padding: 15px;
+        margin-bottom: 10px;
+      }
+      
+      .preset-name {
+        font-size: 16px;
+        margin-right: 12px;
+        padding: 4px 8px;
+      }
+      
+      .preset-team-name {
+        font-size: 16px;
+      }
+      
+      .preset-kit-color {
+        width: 16px;
+        height: 16px;
+      }
+      
+      .preset-separator {
+        font-size: 16px;
+        margin: 0 4px;
+      }
+      
+      .preset-edit-link {
+        font-size: 14px;
+        margin-left: 20px;
+      }
+      
+      .preset-play-btn {
+        font-size: 18px;
+        padding: 6px 10px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .form-group {
+        width: 100%;
+      }
+      
+      .form-group input {
+        font-size: 16px;
+        padding: 10px 12px;
+      }
+      
+      .form-group label {
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
     }
     
     .timer-running-warning {
