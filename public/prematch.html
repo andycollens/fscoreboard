@@ -182,13 +182,13 @@
             
             if (stripeImage && team1Logo && team2Logo) {
                 // Получаем размеры изображения
-                const imageRect = stripeImage.getBoundingClientRect();
-                const containerRect = document.querySelector('.image-container').getBoundingClientRect();
+                const imageWidth = stripeImage.offsetWidth;
+                const imageHeight = stripeImage.offsetHeight;
                 
-                // Вычисляем относительные координаты
+                // Вычисляем координаты относительно контейнера изображения
                 const imageLeft = 0; // Левый край изображения
-                const imageRight = imageRect.width; // Правый край изображения
-                const imageCenterY = imageRect.height / 2; // Центр по высоте
+                const imageRight = imageWidth; // Правый край изображения
+                const imageCenterY = imageHeight / 2; // Центр по высоте
                 
                 // Позиционируем левый логотип (центр на левом краю)
                 team1Logo.style.left = (imageLeft - 125) + 'px'; // 125px = половина ширины логотипа
