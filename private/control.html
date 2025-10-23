@@ -414,21 +414,25 @@
       padding: 2px 6px;
       border-radius: 4px;
       align-self: flex-start;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .preset-teams {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       min-width: 0;
       align-self: flex-start;
       flex-wrap: nowrap;
+      margin-left: 8px;
     }
     
     .preset-right {
       display: flex;
-      align-items: flex-start;
-      gap: 24px;
+      align-items: center;
+      gap: 12px;
       flex-shrink: 0;
       align-self: flex-start;
     }
@@ -1032,55 +1036,77 @@
       <!-- Предустановки будут загружены динамически -->
     </div>
     
-    <div id="addPresetForm" class="add-preset-form hidden">
-      <h3>Новая предустановка</h3>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Название матча</label>
-          <input type="text" id="presetName" placeholder="Например: Финал чемпионата">
+    <div id="addPresetForm" class="edit-preset-form hidden">
+      <h3 id="addPresetTitle" class="editable-title" onclick="startEditingTitle()">Новая предустановка</h3>
+      <input type="text" id="addPresetNameInput" class="hidden" onblur="finishEditingTitle()" onkeypress="handleTitleKeypress(event)">
+      
+      <div class="form-section">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Команда 1</label>
+            <input type="text" id="addPresetTeam1Name" placeholder="Название команды">
+          </div>
+          <div class="form-group">
+            <label>Город 1</label>
+            <input type="text" id="addPresetTeam1City" placeholder="Город">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Шорткод 1</label>
+            <input type="text" id="addPresetTeam1Short" maxlength="3" placeholder="АБВ">
+          </div>
+          <div class="form-group">
+            <label>Форма 1</label>
+            <input type="color" id="addPresetKit1Color" value="#2b2b2b">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Логотип 1</label>
+            <input type="file" id="addPresetTeam1Logo" accept="image/*" onchange="uploadLogo('team1', this)">
+            <div id="addPresetTeam1LogoPreview" class="logo-preview"></div>
+          </div>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Команда 1 - Название</label>
-          <input type="text" id="presetTeam1Name" placeholder="Название команды">
+      
+      <div class="team-divider"></div>
+      
+      <div class="form-section">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Команда 2</label>
+            <input type="text" id="addPresetTeam2Name" placeholder="Название команды">
+          </div>
+          <div class="form-group">
+            <label>Город 2</label>
+            <input type="text" id="addPresetTeam2City" placeholder="Город">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Команда 1 - Город</label>
-          <input type="text" id="presetTeam1City" placeholder="Город">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Шорткод 2</label>
+            <input type="text" id="addPresetTeam2Short" maxlength="3" placeholder="ГДЕ">
+          </div>
+          <div class="form-group">
+            <label>Форма 2</label>
+            <input type="color" id="addPresetKit2Color" value="#2b2b2b">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Команда 1 - Шорткод</label>
-          <input type="text" id="presetTeam1Short" placeholder="ХОЗ" maxlength="3">
-        </div>
-        <div class="form-group">
-          <label>Цвет формы 1</label>
-          <input type="color" id="presetKit1Color" value="#2b2b2b">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Команда 2 - Название</label>
-          <input type="text" id="presetTeam2Name" placeholder="Название команды">
-        </div>
-        <div class="form-group">
-          <label>Команда 2 - Город</label>
-          <input type="text" id="presetTeam2City" placeholder="Город">
-        </div>
-        <div class="form-group">
-          <label>Команда 2 - Шорткод</label>
-          <input type="text" id="presetTeam2Short" placeholder="ГОС" maxlength="3">
-        </div>
-        <div class="form-group">
-          <label>Цвет формы 2</label>
-          <input type="color" id="presetKit2Color" value="#2b2b2b">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Логотип 2</label>
+            <input type="file" id="addPresetTeam2Logo" accept="image/*" onchange="uploadLogo('team2', this)">
+            <div id="addPresetTeam2LogoPreview" class="logo-preview"></div>
+          </div>
         </div>
       </div>
-      <div class="form-row">
-        <button class="btn btn-primary" onclick="savePreset()">Сохранить</button>
-        <button class="btn" onclick="toggleAddPresetForm()">Отмена</button>
+      
+      <div class="form-buttons">
+        <button class="btn btn-primary" onclick="saveNewPreset()">Сохранить</button>
+        <button class="btn btn-secondary" onclick="cancelAddPreset()">Отмена</button>
+      </div>
     </div>
-  </div>
 
     <!-- Форма редактирования предустановки -->
     <div id="editPresetForm" class="edit-preset-form hidden">
@@ -1090,6 +1116,7 @@
         <h4 class="section-title">
           <span id="editPresetTeam1LogoMini" class="logo-mini"></span>
           Команда 1
+          <input type="file" id="editPresetTeam1Logo" accept="image/*" onchange="uploadLogo('team1', this)" style="display: none;">
         </h4>
         <div class="form-group">
           <label>Название</label>
@@ -1107,17 +1134,13 @@
           <label>Цвет формы</label>
           <input type="color" id="editPresetKit1Color" value="#2b2b2b">
           </div>
-        <div class="form-group">
-          <label>Логотип</label>
-          <input type="file" id="editPresetTeam1Logo" accept="image/*" onchange="uploadLogo('team1', this)">
-          <div id="editPresetTeam1LogoPreview" class="logo-preview"></div>
-          </div>
           </div>
       <div class="team-divider"></div>
       <div class="form-section">
         <h4 class="section-title">
           Команда 2
           <span id="editPresetTeam2LogoMini" class="logo-mini"></span>
+          <input type="file" id="editPresetTeam2Logo" accept="image/*" onchange="uploadLogo('team2', this)" style="display: none;">
         </h4>
         <div class="form-group">
           <label>Название</label>
@@ -1134,11 +1157,6 @@
         <div class="form-group">
           <label>Цвет формы</label>
           <input type="color" id="editPresetKit2Color" value="#2b2b2b">
-          </div>
-        <div class="form-group">
-          <label>Логотип</label>
-          <input type="file" id="editPresetTeam2Logo" accept="image/*" onchange="uploadLogo('team2', this)">
-          <div id="editPresetTeam2LogoPreview" class="logo-preview"></div>
           </div>
           </div>
       <div class="form-row">
@@ -1264,40 +1282,91 @@
     
     // Показ превью логотипа
     function showLogoPreview(team, url) {
-      const preview = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoPreview`);
-      preview.innerHTML = `<img src="${url}" alt="Логотип ${team}">`;
+      // Для формы редактирования
+      const editPreview = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoPreview`);
+      if (editPreview) {
+        editPreview.innerHTML = `<img src="${url}" alt="Логотип ${team}">`;
+      }
+      
+      // Для формы добавления
+      const addPreview = document.getElementById(`addPresetTeam${team === 'team1' ? '1' : '2'}LogoPreview`);
+      if (addPreview) {
+        addPreview.innerHTML = `<img src="${url}" alt="Логотип ${team}">`;
+      }
     }
     
     // Очистка логотипа
     function clearLogo(team) {
       uploadedLogos[team] = null;
-      const preview = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoPreview`);
-      preview.innerHTML = '<div class="no-logo">Нет логотипа</div>';
       
-      // Очищаем поле выбора файла
-      const fileInput = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}Logo`);
-      fileInput.value = '';
+      // Для формы редактирования
+      const editPreview = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoPreview`);
+      if (editPreview) {
+        editPreview.innerHTML = '<div class="no-logo">Нет логотипа</div>';
+      }
+      
+      // Для формы добавления
+      const addPreview = document.getElementById(`addPresetTeam${team === 'team1' ? '1' : '2'}LogoPreview`);
+      if (addPreview) {
+        addPreview.innerHTML = '<div class="no-logo">Нет логотипа</div>';
+      }
+      
+      // Очищаем поле выбора файла в форме редактирования
+      const editFileInput = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}Logo`);
+      if (editFileInput) {
+        editFileInput.value = '';
+      }
+      
+      // Очищаем поле выбора файла в форме добавления
+      const addFileInput = document.getElementById(`addPresetTeam${team === 'team1' ? '1' : '2'}Logo`);
+      if (addFileInput) {
+        addFileInput.value = '';
+      }
     }
     
     // Редактирование заголовка
     function startEditingTitle() {
-      const title = document.getElementById('editPresetTitle');
-      const input = document.getElementById('editPresetNameInput');
+      // Проверяем какая форма активна
+      const editTitle = document.getElementById('editPresetTitle');
+      const editInput = document.getElementById('editPresetNameInput');
+      const addTitle = document.getElementById('addPresetTitle');
+      const addInput = document.getElementById('addPresetNameInput');
       
-      title.classList.add('hidden');
-      input.classList.remove('hidden');
-      input.value = title.textContent;
-      input.focus();
-      input.select();
+      if (editTitle && !editTitle.classList.contains('hidden')) {
+        // Форма редактирования
+        editTitle.classList.add('hidden');
+        editInput.classList.remove('hidden');
+        editInput.value = editTitle.textContent;
+        editInput.focus();
+        editInput.select();
+      } else if (addTitle && !addTitle.classList.contains('hidden')) {
+        // Форма добавления
+        addTitle.classList.add('hidden');
+        addInput.classList.remove('hidden');
+        addInput.value = addTitle.textContent;
+        addInput.focus();
+        addInput.select();
+      }
     }
     
     function finishEditingTitle() {
-      const title = document.getElementById('editPresetTitle');
-      const input = document.getElementById('editPresetNameInput');
+      // Проверяем какая форма активна
+      const editTitle = document.getElementById('editPresetTitle');
+      const editInput = document.getElementById('editPresetNameInput');
+      const addTitle = document.getElementById('addPresetTitle');
+      const addInput = document.getElementById('addPresetNameInput');
       
-      title.textContent = input.value.trim() || 'Название матча';
-      title.classList.remove('hidden');
-      input.classList.add('hidden');
+      if (editInput && !editInput.classList.contains('hidden')) {
+        // Форма редактирования
+        editTitle.textContent = editInput.value.trim() || 'Название матча';
+        editTitle.classList.remove('hidden');
+        editInput.classList.add('hidden');
+      } else if (addInput && !addInput.classList.contains('hidden')) {
+        // Форма добавления
+        addTitle.textContent = addInput.value.trim() || 'Новая предустановка';
+        addTitle.classList.remove('hidden');
+        addInput.classList.add('hidden');
+      }
     }
     
     function handleTitleKeypress(event) {
@@ -1308,11 +1377,24 @@
     
     // Обновление миниатюр логотипов
     function updateLogoMini(team, logoUrl) {
-      const mini = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoMini`);
-      if (logoUrl) {
-        mini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">`;
-      } else {
-        mini.innerHTML = '';
+      // Для формы редактирования
+      const editMini = document.getElementById(`editPresetTeam${team === 'team1' ? '1' : '2'}LogoMini`);
+      if (editMini) {
+        if (logoUrl) {
+          editMini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">`;
+        } else {
+          editMini.innerHTML = '';
+        }
+      }
+      
+      // Для формы добавления (если есть миниатюры)
+      const addMini = document.getElementById(`addPresetTeam${team === 'team1' ? '1' : '2'}LogoMini`);
+      if (addMini) {
+        if (logoUrl) {
+          addMini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">`;
+        } else {
+          addMini.innerHTML = '';
+        }
       }
     }
     
@@ -1491,15 +1573,17 @@
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
-              <div class="preset-name">${preset.name}</div>
-              <div class="preset-teams">
-                <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
-                <span class="preset-team-name">${preset.team1Short.toUpperCase()}</span>
-                <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
-                <span class="preset-separator">:</span>
-                <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
-                <span class="preset-team-name">${preset.team2Short.toUpperCase()}</span>
-                <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
+              <div class="preset-name">
+                ${preset.name}
+                <span class="preset-teams">
+                  <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
+                  <span class="preset-team-name">${preset.team1Short.toUpperCase()}</span>
+                  <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
+                  <span class="preset-separator">:</span>
+                  <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
+                  <span class="preset-team-name">${preset.team2Short.toUpperCase()}</span>
+                  <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
+                </span>
               </div>
             </div>
             <div class="preset-right">
@@ -1601,6 +1685,72 @@
     }
 
     // Сохранение предустановки
+    async function saveNewPreset() {
+      const preset = {
+        name: document.getElementById('addPresetTitle').textContent.trim(),
+        team1Name: document.getElementById('addPresetTeam1Name').value.trim(),
+        team1City: document.getElementById('addPresetTeam1City').value.trim(),
+        team1Short: document.getElementById('addPresetTeam1Short').value.trim().toUpperCase(),
+        team2Name: document.getElementById('addPresetTeam2Name').value.trim(),
+        team2City: document.getElementById('addPresetTeam2City').value.trim(),
+        team2Short: document.getElementById('addPresetTeam2Short').value.trim().toUpperCase(),
+        kit1Color: document.getElementById('addPresetKit1Color').value,
+        kit2Color: document.getElementById('addPresetKit2Color').value,
+        team1Logo: uploadedLogos.team1 || '',
+        team2Logo: uploadedLogos.team2 || ''
+      };
+
+      // Валидация
+      if (!preset.name || preset.name === 'Новая предустановка') {
+        alert('Введите название матча');
+        return;
+      }
+      
+      if (!preset.team1Name || !preset.team2Name) {
+        alert('Введите названия обеих команд');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/presets?token=${getToken()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(preset)
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка сохранения предустановки');
+        }
+
+        // Очистка формы
+        document.getElementById('addPresetForm').querySelectorAll('input').forEach(input => {
+          if (input.type === 'text') input.value = '';
+          if (input.type === 'color') {
+            if (input.id.includes('Kit1')) input.value = '#2b2b2b';
+            if (input.id.includes('Kit2')) input.value = '#2b2b2b';
+          }
+        });
+        
+        // Очистка логотипов
+        uploadedLogos = { team1: null, team2: null };
+        document.getElementById('addPresetTeam1LogoPreview').innerHTML = '';
+        document.getElementById('addPresetTeam2LogoPreview').innerHTML = '';
+        
+        // Скрытие формы
+        document.getElementById('addPresetForm').classList.add('hidden');
+        
+        // Перезагрузка предустановок
+        await loadPresets();
+        
+        // Показ уведомления об успехе
+        showNotification('Предустановка создана!', 'success');
+        
+      } catch (error) {
+        console.error('Ошибка сохранения предустановки:', error);
+        showNotification('Ошибка сохранения предустановки', 'error');
+      }
+    }
+
     async function savePreset() {
       const preset = {
         name: document.getElementById('presetName').value.trim(),
@@ -1664,6 +1814,25 @@
     function toggleAddPresetForm() {
       const form = document.getElementById('addPresetForm');
       form.classList.toggle('hidden');
+    }
+    
+    function cancelAddPreset() {
+      // Очистка формы
+      document.getElementById('addPresetForm').querySelectorAll('input').forEach(input => {
+        if (input.type === 'text') input.value = '';
+        if (input.type === 'color') {
+          if (input.id.includes('Kit1')) input.value = '#2b2b2b';
+          if (input.id.includes('Kit2')) input.value = '#2b2b2b';
+        }
+      });
+      
+      // Очистка логотипов
+      uploadedLogos = { team1: null, team2: null };
+      document.getElementById('addPresetTeam1LogoPreview').innerHTML = '';
+      document.getElementById('addPresetTeam2LogoPreview').innerHTML = '';
+      
+      // Скрытие формы
+      document.getElementById('addPresetForm').classList.add('hidden');
     }
     
     // Редактирование предустановки
@@ -2006,6 +2175,6 @@
         }, 300);
       }, 3000);
     }
-    </script>
-  </body>
+  </script>
+</body>
 </html>
