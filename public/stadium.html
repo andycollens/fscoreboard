@@ -29,98 +29,249 @@
         }
 
         .stadium-content {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
             align-items: center;
-            justify-content: center;
-            gap: 50px;
+            justify-items: center;
+            width: 100%;
+            max-width: 100vw;
+            gap: 2vw;
+            padding: 0 2vw;
         }
 
-        .team-block {
+        /* Колонка 1: Логотип команды 1 с названием */
+        .team1-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 1.5vw;
         }
 
-        .team-logo {
-            width: 500px;
-            height: 500px;
+        .team1-logo {
+            width: 15vw;
+            height: 15vw;
+            max-width: 500px;
+            max-height: 500px;
+            min-width: 200px;
+            min-height: 200px;
             object-fit: contain;
             display: none;
         }
 
-        .team-logo.show {
+        .team1-logo.show {
             display: block;
         }
 
-        .team-name {
-            font-size: 48px;
-            font-weight: bold;
-            color: #fff;
-            text-align: center;
-            margin: 0;
-        }
-
-        .team-city {
-            font-size: 32px;
-            color: #ccc;
-            text-align: center;
-            margin: 0;
-        }
-
-        .team-score {
-            font-size: 300px;
-            font-weight: bold;
-            color: #fff;
-            text-align: center;
-            margin: 0;
-            line-height: 1;
-        }
-
-        .score-divider {
-            font-size: 300px;
-            font-weight: bold;
-            color: #fff;
-            text-align: center;
-            margin: 0;
-            line-height: 1;
-        }
-
-        .no-logo {
-            width: 500px;
-            height: 500px;
+        .team1-no-logo {
+            width: 15vw;
+            height: 15vw;
+            max-width: 500px;
+            max-height: 500px;
+            min-width: 200px;
+            min-height: 200px;
             background: #333;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #666;
-            font-size: 24px;
+            font-size: 2vw;
+        }
+
+        .team1-name {
+            font-size: 3vw;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .team1-city {
+            font-size: 2vw;
+            color: #ccc;
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Колонка 2: Счет команды 1 */
+        .team1-score {
+            font-size: 12vw;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 1;
+        }
+
+        /* Колонка 3: Разделитель с таймером */
+        .center-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1vw;
+        }
+
+        .tournament-title {
+            font-size: 2.5vw;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+        }
+
+        .score-divider {
+            font-size: 12vw;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .timer {
+            font-size: 2.5vw;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0.5vw 1vw;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5vw;
+            min-width: 8vw;
+        }
+
+        /* Колонка 4: Счет команды 2 */
+        .team2-score {
+            font-size: 12vw;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 1;
+        }
+
+        /* Колонка 5: Логотип команды 2 с названием */
+        .team2-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5vw;
+        }
+
+        .team2-logo {
+            width: 15vw;
+            height: 15vw;
+            max-width: 500px;
+            max-height: 500px;
+            min-width: 200px;
+            min-height: 200px;
+            object-fit: contain;
+            display: none;
+        }
+
+        .team2-logo.show {
+            display: block;
+        }
+
+        .team2-no-logo {
+            width: 15vw;
+            height: 15vw;
+            max-width: 500px;
+            max-height: 500px;
+            min-width: 200px;
+            min-height: 200px;
+            background: #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 2vw;
+        }
+
+        .team2-name {
+            font-size: 3vw;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .team2-city {
+            font-size: 2vw;
+            color: #ccc;
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Адаптивность для очень маленьких экранов */
+        @media (max-width: 768px) {
+            .stadium-content {
+                gap: 1vw;
+                padding: 0 1vw;
+            }
+            
+            .team1-logo, .team2-logo, .team1-no-logo, .team2-no-logo {
+                width: 20vw;
+                height: 20vw;
+                min-width: 150px;
+                min-height: 150px;
+            }
+            
+            .team1-score, .team2-score, .score-divider {
+                font-size: 15vw;
+            }
+            
+            .team1-name, .team2-name {
+                font-size: 4vw;
+            }
+            
+            .team1-city, .team2-city {
+                font-size: 3vw;
+            }
+            
+            .tournament-title {
+                font-size: 3vw;
+            }
+            
+            .timer {
+                font-size: 3vw;
+            }
         }
     </style>
 </head>
 <body>
     <div class="stadium-container">
         <div class="stadium-content">
-            <!-- Команда 1 -->
-            <div class="team-block">
-                <img id="team1Logo" src="" alt="Team 1 Logo" class="team-logo">
-                <div id="team1NoLogo" class="no-logo">ЛОГО</div>
-                <h2 id="team1Name" class="team-name">Команда 1</h2>
-                <p id="team1City" class="team-city">Город 1</p>
-                <div id="team1Score" class="team-score">0</div>
+            <!-- Колонка 1: Логотип команды 1 с названием -->
+            <div class="team1-section">
+                <img id="team1Logo" src="" alt="Team 1 Logo" class="team1-logo">
+                <div id="team1NoLogo" class="team1-no-logo">ЛОГО</div>
+                <h2 id="team1Name" class="team1-name">Команда 1</h2>
+                <p id="team1City" class="team1-city">Город 1</p>
             </div>
 
-            <!-- Разделитель счета -->
-            <div class="score-divider">:</div>
+            <!-- Колонка 2: Счет команды 1 -->
+            <div id="team1Score" class="team1-score">0</div>
 
-            <!-- Команда 2 -->
-            <div class="team-block">
-                <img id="team2Logo" src="" alt="Team 2 Logo" class="team-logo">
-                <div id="team2NoLogo" class="no-logo">ЛОГО</div>
-                <h2 id="team2Name" class="team-name">Команда 2</h2>
-                <p id="team2City" class="team-city">Город 2</p>
-                <div id="team2Score" class="team-score">0</div>
+            <!-- Колонка 3: Разделитель с таймером -->
+            <div class="center-section">
+                <div id="tournamentTitle" class="tournament-title">ISKRA CUP 2025</div>
+                <div class="score-divider">:</div>
+                <div id="timer" class="timer">00:00</div>
+            </div>
+
+            <!-- Колонка 4: Счет команды 2 -->
+            <div id="team2Score" class="team2-score">0</div>
+
+            <!-- Колонка 5: Логотип команды 2 с названием -->
+            <div class="team2-section">
+                <img id="team2Logo" src="" alt="Team 2 Logo" class="team2-logo">
+                <div id="team2NoLogo" class="team2-no-logo">ЛОГО</div>
+                <h2 id="team2Name" class="team2-name">Команда 2</h2>
+                <p id="team2City" class="team2-city">Город 2</p>
             </div>
         </div>
     </div>
@@ -141,6 +292,16 @@
         const team2Name = document.getElementById('team2Name');
         const team2City = document.getElementById('team2City');
         const team2Score = document.getElementById('team2Score');
+
+        const timer = document.getElementById('timer');
+        const tournamentTitle = document.getElementById('tournamentTitle');
+
+        // Форматирование времени
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
 
         // Обновление отображения
         function updateDisplay(data) {
@@ -171,6 +332,16 @@
             team2Name.textContent = data.team2 || 'Команда 2';
             team2City.textContent = data.team2City || 'Город 2';
             team2Score.textContent = data.score2 || 0;
+
+            // Таймер
+            if (data.timer !== undefined) {
+                timer.textContent = formatTime(data.timer);
+            }
+
+            // Название турнира (если передается)
+            if (data.tournamentTitle) {
+                tournamentTitle.textContent = data.tournamentTitle;
+            }
         }
 
         // Подключение к WebSocket
