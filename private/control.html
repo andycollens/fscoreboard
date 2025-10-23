@@ -371,7 +371,9 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       border: 1px solid #ddd;
       transition: all 0.2s;
+      box-sizing: border-box;
       width: 100%;
+      max-width: 100%;
     }
     
     .preset-card:hover {
@@ -382,24 +384,30 @@
       display: flex;
       align-items: center;
       flex: 1;
-      width: 100%;
+      min-width: 0;
+      overflow: hidden;
     }
     
     .preset-name {
       font-weight: bold;
+      font-size: 14px;
       margin-right: 8px;
+      white-space: nowrap;
     }
     
     .preset-teams {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex: 1;
+      min-width: 0;
     }
     
     .preset-team {
       display: flex;
       align-items: center;
       gap: 4px;
+      white-space: nowrap;
     }
     
     .preset-team-name {
@@ -412,6 +420,7 @@
       border-radius: 2px;
       border: 1px solid #ccc;
       display: inline-block;
+      flex-shrink: 0;
     }
     
     .preset-edit-link {
@@ -421,6 +430,8 @@
       cursor: pointer;
       font-size: 12px;
       margin-left: 16px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     
     .preset-edit-link:hover {
@@ -440,6 +451,7 @@
       justify-content: center;
       width: 32px;
       height: 32px;
+      flex-shrink: 0;
     }
     
     .preset-play-btn:hover {
@@ -804,7 +816,7 @@
         card.className = 'preset-card';
         card.innerHTML = `
           <div class="preset-content">
-            <div class="preset-name">${preset.name}</div>
+            <div class="preset-name">${preset.name} /</div>
             <div class="preset-teams">
               <div class="preset-team">
                 <span class="preset-team-name">${preset.team1Name}</span>
@@ -812,8 +824,8 @@
               </div>
               <span style="margin: 0 4px;">-</span>
               <div class="preset-team">
-                <span class="preset-team-name">${preset.team2Name}</span>
                 <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
+                <span class="preset-team-name">${preset.team2Name}</span>
               </div>
             </div>
             <span class="preset-edit-link" onclick="editPreset('${preset.id}')">edit</span>
