@@ -392,6 +392,7 @@
       align-items: center;
       flex: 1;
       min-width: 0;
+      overflow: hidden;
     }
     
     .preset-name {
@@ -402,16 +403,14 @@
       background: #e9ecef;
       padding: 2px 6px;
       border-radius: 4px;
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     
     .preset-teams {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
       min-width: 0;
+      flex: 1;
     }
     
     .preset-right {
@@ -421,20 +420,15 @@
       flex-shrink: 0;
     }
     
-    .preset-team {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-      max-width: 150px;
-      overflow: hidden;
-    }
-    
     .preset-team-name {
       font-size: 14px;
-      overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    
+    .preset-separator {
+      font-size: 14px;
+      color: #666;
+      margin: 0 2px;
     }
     
     .preset-kit-color {
@@ -890,17 +884,13 @@
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
-              <div class="preset-name">${preset.name} /</div>
+              <div class="preset-name">${preset.name}</div>
               <div class="preset-teams">
-                <div class="preset-team">
-                  <span class="preset-team-name">${preset.team1Name}</span>
-                  <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
-                </div>
-                <span style="margin: 0 4px;">-</span>
-                <div class="preset-team">
-                  <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
-                  <span class="preset-team-name">${preset.team2Name}</span>
-                </div>
+                <span class="preset-team-name">${preset.team1Name}</span>
+                <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
+                <span class="preset-separator">:</span>
+                <span class="preset-team-name">${preset.team2Name}</span>
+                <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
               </div>
             </div>
             <div class="preset-right">
