@@ -16,6 +16,24 @@ sudo apt update && sudo apt upgrade -y
 curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh | sudo bash
 ```
 
+**3. Краткие команды для установки:**
+```bash
+# Обновление системы
+sudo apt update && sudo apt upgrade -y
+
+# Установка FSCOREBOARD
+curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh | sudo bash
+
+# Проверка статуса
+fscoreboard-status
+
+# Обновление проекта
+fscoreboard-update
+
+# Перезапуск сервиса
+pm2 restart fscoreboard
+```
+
 **Что установится автоматически:**
 - ✅ Node.js 18.x, PM2, Nginx
 - ✅ Автогенерация ключей и токенов
