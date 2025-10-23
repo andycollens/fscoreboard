@@ -407,12 +407,23 @@ show_completion_info() {
     
     echo ""
     echo -e "${CYAN}🌐 Доступ к приложению:${NC}"
-    echo "• Основное приложение: http://$(curl -s ifconfig.me)"
-    echo "• Панель управления: http://$(curl -s ifconfig.me)/private/control.html"
-    echo "• API Health: http://$(curl -s ifconfig.me)/api/health"
+    SERVER_IP=$(curl -s ifconfig.me)
+    echo "• Панель управления: http://$SERVER_IP/private/control.html?token=MySecret111"
+    echo "• Табло vMix: http://$SERVER_IP/scoreboard_vmix.html"
+    echo "• Перерыв: http://$SERVER_IP/htbreak.html"
+    echo "• Счет перерыва: http://$SERVER_IP/htbreak_score.html"
+    echo "• Заставка: http://$SERVER_IP/preloader.html"
+    echo "• API Health: http://$SERVER_IP/api/health"
     
     echo ""
-    echo -e "${CYAN}🔧 Управление:${NC}"
+    echo -e "${CYAN}🎯 Как использовать:${NC}"
+    echo "• Откройте панель управления для настройки команд и таймера"
+    echo "• Используйте предустановки для быстрой настройки матчей"
+    echo "• Добавьте URL оверлеев в vMix как Web источники"
+    echo "• Управляйте таймером, счетом и цветами команд"
+    
+    echo ""
+    echo -e "${CYAN}🔧 Управление системой:${NC}"
     echo "• Статус: fscoreboard-status"
     echo "• Обновление: fscoreboard-update"
     echo "• Логи: pm2 logs fscoreboard"
@@ -427,9 +438,16 @@ show_completion_info() {
     
     echo ""
     echo -e "${YELLOW}⚠️  Важно:${NC}"
+    echo "• Токен доступа к панели управления: MySecret111"
     echo "• Сохраните API Token из .env файла"
     echo "• Настройте SSL сертификат для продакшн"
     echo "• Регулярно обновляйте систему: apt update && apt upgrade"
+    
+    echo ""
+    echo -e "${GREEN}📖 Документация:${NC}"
+    echo "• README: $PROJECT_DIR/README.md"
+    echo "• Быстрый старт: $PROJECT_DIR/QUICK_START.md"
+    echo "• Автоустановка: $PROJECT_DIR/AUTO_INSTALL.md"
     
     echo ""
     echo -e "${GREEN}🚀 FSCOREBOARD готов к работе!${NC}"
