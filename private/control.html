@@ -875,6 +875,20 @@
       background: #0056b3;
     }
     
+    .preset-team-logo {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 5px;
+    }
+    
+    .preset-logo-mini {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      border: 1px solid #ddd;
+      object-fit: cover;
+    }
+    
     .edit-preset-form .form-group input {
       width: 100%;
       padding: 8px 12px;
@@ -1232,7 +1246,7 @@
         
         if (response.ok) {
           const result = await response.json();
-          uploadedLogos[team] = result.filename;
+          uploadedLogos[team] = result.url; // Сохраняем полный URL
           showLogoPreview(team, result.url);
           updateLogoMini(team, result.url);
           showNotification('Логотип загружен успешно', 'success');
@@ -1470,21 +1484,27 @@
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
-          <div class="preset-name">${preset.name}</div>
-          <div class="preset-teams">
-                <span class="preset-team-name">${preset.team1Name}</span>
-                <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
+              <div class="preset-name">${preset.name}</div>
+              <div class="preset-teams">
+                <div class="preset-team">
+                  <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
+                  <span class="preset-team-name">${preset.team1Name}</span>
+                  <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
+                </div>
                 <span class="preset-separator">:</span>
-                <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
-                <span class="preset-team-name">${preset.team2Name}</span>
-            </div>
+                <div class="preset-team">
+                  <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
+                  <span class="preset-team-name">${preset.team2Name}</span>
+                  <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
+                </div>
+              </div>
             </div>
             <div class="preset-right">
               <span class="preset-edit-link" onclick="editPreset('${preset.id}')">edit</span>
               <button class="preset-play-btn" onclick="confirmApplyPreset('${preset.id}')" ${timerRunning ? 'disabled' : ''} title="Применить предустановку">
                 ▶
               </button>
-          </div>
+            </div>
           </div>
         `;
         
@@ -1678,6 +1698,7 @@
       } else {
         clearLogo('team1');
         updateLogoMini('team1', null);
+        uploadedLogos.team1 = null;
       }
       
       if (preset.team2Logo) {
@@ -1687,6 +1708,7 @@
       } else {
         clearLogo('team2');
         updateLogoMini('team2', null);
+        uploadedLogos.team2 = null;
       }
       
       // Показываем форму редактирования

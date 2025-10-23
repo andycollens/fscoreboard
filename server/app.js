@@ -203,6 +203,29 @@ app.put('/api/presets/:id', (req, res) => {
 
 app.delete('/api/presets/:id', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  // Находим пресет для удаления логотипов
+  const presetToDelete = matchPresets.find(p => p.id === req.params.id);
+  
+  // Удаляем логотипы если они есть
+  if (presetToDelete) {
+    if (presetToDelete.team1Logo) {
+      const logoPath = path.join(LOGOS_PATH, path.basename(presetToDelete.team1Logo));
+      if (fs.existsSync(logoPath)) {
+        fs.unlinkSync(logoPath);
+        console.log('Deleted team1 logo:', logoPath);
+      }
+    }
+    
+    if (presetToDelete.team2Logo) {
+      const logoPath = path.join(LOGOS_PATH, path.basename(presetToDelete.team2Logo));
+      if (fs.existsSync(logoPath)) {
+        fs.unlinkSync(logoPath);
+        console.log('Deleted team2 logo:', logoPath);
+      }
+    }
+  }
+  
   matchPresets = matchPresets.filter(p => p.id !== req.params.id);
   fs.writeFileSync(PRESETS_PATH, JSON.stringify(matchPresets, null, 2));
   res.json({ success: true });
