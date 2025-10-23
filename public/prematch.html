@@ -72,7 +72,7 @@
             text-align: center;
             color: white;
             z-index: 2;
-            width: 500px;
+            width: 520px;
         }
 
         .team2-info {
@@ -82,7 +82,7 @@
             text-align: center;
             color: white;
             z-index: 2;
-            width: 500px;
+            width: 520px;
         }
 
         .team-name {
@@ -174,6 +174,12 @@
             } else {
                 team2LogoEl.style.display = 'none';
             }
+            
+            // Автоматически подстраиваем размер шрифта
+            const team1Info = document.querySelector('.team1-info');
+            const team2Info = document.querySelector('.team2-info');
+            if (team1Info) adjustFontSize(team1Info);
+            if (team2Info) adjustFontSize(team2Info);
         }
 
         // Функция позиционирования логотипов и текстовых блоков
@@ -206,13 +212,13 @@
                 team2Logo.style.left = rightLogoX + 'px';
                 team2Logo.style.top = rightLogoY + 'px';
                 
-                // Позиционируем текстовые блоки: смещение на 320px от центра
-                const leftTextX = imageCenterX - 320 - 250; // Центр - 320px - половина ширины блока (250px)
+                // Позиционируем текстовые блоки: смещение на 365px от центра
+                const leftTextX = imageCenterX - 365 - 260; // Центр - 365px - половина ширины блока (260px)
                 const leftTextY = imageCenterY - 50; // Центр по высоте - половина высоты блока
                 team1Info.style.left = leftTextX + 'px';
                 team1Info.style.top = leftTextY + 'px';
                 
-                const rightTextX = imageCenterX + 320 - 250; // Центр + 320px - половина ширины блока (250px)
+                const rightTextX = imageCenterX + 365 - 260; // Центр + 365px - половина ширины блока (260px)
                 const rightTextY = imageCenterY - 50; // Центр по высоте - половина высоты блока
                 team2Info.style.left = rightTextX + 'px';
                 team2Info.style.top = rightTextY + 'px';
@@ -222,6 +228,30 @@
                 console.log('Right logo position:', rightLogoX, rightLogoY);
                 console.log('Left text position:', leftTextX, leftTextY);
                 console.log('Right text position:', rightTextX, rightTextY);
+            }
+        }
+
+        // Функция автоматического уменьшения шрифта для текстовых блоков
+        function adjustFontSize(teamInfo) {
+            const teamName = teamInfo.querySelector('.team-name');
+            const teamCity = teamInfo.querySelector('.team-city');
+            
+            if (teamName && teamCity) {
+                // Стандартные размеры
+                let nameSize = 47;
+                let citySize = 31;
+                
+                // Проверяем, помещается ли текст
+                teamName.style.fontSize = nameSize + 'px';
+                teamCity.style.fontSize = citySize + 'px';
+                
+                // Уменьшаем шрифт пока текст не поместится
+                while ((teamName.scrollWidth > teamInfo.offsetWidth || teamCity.scrollWidth > teamInfo.offsetWidth) && nameSize > 20) {
+                    nameSize -= 1;
+                    citySize -= 1;
+                    teamName.style.fontSize = nameSize + 'px';
+                    teamCity.style.fontSize = citySize + 'px';
+                }
             }
         }
 
