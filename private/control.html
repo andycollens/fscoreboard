@@ -65,6 +65,13 @@
       color: #333;
     }
     
+    .preset-shortcodes {
+      font-weight: normal;
+      color: #666;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    
     .preset-teams {
       display: flex;
       justify-content: space-between;
@@ -280,8 +287,8 @@
       flex-direction: row; 
       align-items: center; 
       justify-content: center; 
-      gap: 0; 
-      width: 120px; 
+      gap: 8px; 
+      width: auto; 
     }
     
     .kit-color {
@@ -971,7 +978,9 @@
             <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
           </div>
           <div class="kit-block">
+            <span id="team1LogoMini" class="logo-mini-main" onclick="document.getElementById('team1LogoUpload').click()"></span>
             <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
+            <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
           </div>
           <div class="team-input-row">
             <span class="label-caption">Название команды</span>
@@ -980,10 +989,6 @@
           <div class="city-input-row team-input-row">
             <span class="label-caption">Город</span>
             <input type="text" id="team1City" maxlength="30" placeholder="Не введено" />
-          </div>
-          <div class="logo-upload-row">
-            <span id="team1LogoMini" class="logo-mini-main" onclick="document.getElementById('team1LogoUpload').click()"></span>
-            <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
           </div>
         </div>
         <div class="divider"></div>
@@ -997,7 +1002,9 @@
             <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
           </div>
           <div class="kit-block">
+            <span id="team2LogoMini" class="logo-mini-main" onclick="document.getElementById('team2LogoUpload').click()"></span>
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
+            <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
           </div>
           <div class="team-input-row">
             <span class="label-caption">Название команды</span>
@@ -1006,10 +1013,6 @@
           <div class="city-input-row team-input-row">
             <span class="label-caption">Город</span>
             <input type="text" id="team2City" maxlength="30" placeholder="Не введено" />
-          </div>
-          <div class="logo-upload-row">
-            <span id="team2LogoMini" class="logo-mini-main" onclick="document.getElementById('team2LogoUpload').click()"></span>
-            <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
           </div>
         </div>
       </div>
@@ -1491,14 +1494,12 @@
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
-          <div class="preset-name">${preset.name}</div>
+              <div class="preset-name">${preset.name} <span class="preset-shortcodes">${preset.team1Shortcode.toUpperCase()} : ${preset.team2Shortcode.toUpperCase()}</span></div>
               <div class="preset-teams">
                 <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
-                <span class="preset-team-name">${preset.team1Name}</span>
                 <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
                 <span class="preset-separator">:</span>
                 <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
-                <span class="preset-team-name">${preset.team2Name}</span>
                 <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
               </div>
             </div>
