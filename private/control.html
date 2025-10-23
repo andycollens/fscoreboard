@@ -414,19 +414,15 @@
       padding: 2px 6px;
       border-radius: 4px;
       align-self: flex-start;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
     
     .preset-teams {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       min-width: 0;
       align-self: flex-start;
       flex-wrap: nowrap;
-      margin-left: 8px;
     }
     
     .preset-right {
@@ -863,6 +859,7 @@
       justify-content: center;
       flex-shrink: 0;
       cursor: pointer;
+      position: relative;
     }
     
     .logo-mini-main img {
@@ -870,6 +867,29 @@
       height: 100%;
       object-fit: cover;
       border-radius: 50%;
+    }
+    
+    .logo-delete-btn {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 16px;
+      height: 16px;
+      background: #dc3545;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 10;
+      border: 1px solid white;
+    }
+    
+    .logo-delete-btn:hover {
+      background: #c82333;
     }
     
     
@@ -980,7 +1000,9 @@
             <button type="button" class="score-btn" id="score1Inc">+</button>
           </div>
           <div class="short-label-row">
-            <span id="team1LogoMini" class="logo-mini-main" onclick="document.getElementById('team1LogoUpload').click()"></span>
+            <span id="team1LogoMini" class="logo-mini-main" onclick="document.getElementById('team1LogoUpload').click()">
+              <span class="logo-delete-btn hidden" onclick="clearMainLogo('team1'); event.stopPropagation()" title="Удалить логотип">×</span>
+            </span>
             <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
             <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
@@ -1002,7 +1024,9 @@
             <button type="button" class="score-btn" id="score2Inc">+</button>
           </div>
           <div class="short-label-row">
-            <span id="team2LogoMini" class="logo-mini-main" onclick="document.getElementById('team2LogoUpload').click()"></span>
+            <span id="team2LogoMini" class="logo-mini-main" onclick="document.getElementById('team2LogoUpload').click()">
+              <span class="logo-delete-btn hidden" onclick="clearMainLogo('team2'); event.stopPropagation()" title="Удалить логотип">×</span>
+            </span>
             <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
@@ -1429,8 +1453,11 @@
     // Обновление миниатюры в основной форме
     function updateMainLogoMini(team, logoUrl) {
       const mini = document.getElementById(`${team}LogoMini`);
+      const deleteBtn = mini.querySelector('.logo-delete-btn');
+      
       if (logoUrl) {
-        mini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">`;
+        mini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">
+          <span class="logo-delete-btn" onclick="clearMainLogo('${team}'); event.stopPropagation()" title="Удалить логотип">×</span>`;
       } else {
         mini.innerHTML = '';
       }
@@ -1449,6 +1476,42 @@
       const mini = document.getElementById(`${team}LogoMini`);
       const kitColor = document.getElementById(`kit${team === 'team1' ? '1' : '2'}Color`).value;
       mini.innerHTML = `<div style="width: 100%; height: 100%; background-color: ${kitColor}; border-radius: 50%;"></div>`;
+    }
+    
+    // Удаление логотипа из основной панели
+    async function clearMainLogo(team) {
+      const currentLogoUrl = state[`${team}Logo`];
+      
+      if (!currentLogoUrl) return;
+      
+      // Очищаем состояние
+      state[`${team}Logo`] = '';
+      
+      // Обновляем сервер
+      sendState();
+      
+      // Показываем цветной круг
+      showKitColorCircle(team);
+      
+      // Пытаемся удалить файл с сервера
+      try {
+        const filename = currentLogoUrl.split('/').pop();
+        const response = await fetch(`/api/logo/${filename}?token=${getToken()}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showNotification('Логотип удален', 'success');
+        } else if (response.status === 403) {
+          const result = await response.json();
+          if (result.protected) {
+            showNotification('Логотип защищен от удаления (используется в пресете)', 'info');
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка удаления логотипа:', error);
+        showNotification('Ошибка удаления логотипа', 'error');
+      }
     }
 
     // Настройка контролов
@@ -1573,17 +1636,15 @@
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
-              <div class="preset-name">
-                ${preset.name}
-                <span class="preset-teams">
-                  <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
-                  <span class="preset-team-name">${preset.team1Short.toUpperCase()}</span>
-                  <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
-                  <span class="preset-separator">:</span>
-                  <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
-                  <span class="preset-team-name">${preset.team2Short.toUpperCase()}</span>
-                  <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
-                </span>
+              <div class="preset-name">${preset.name}</div>
+              <div class="preset-teams">
+                <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
+                <span class="preset-team-name">${preset.team1Short.toUpperCase()}</span>
+                <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
+                <span class="preset-separator">:</span>
+                <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
+                <span class="preset-team-name">${preset.team2Short.toUpperCase()}</span>
+                <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
               </div>
             </div>
             <div class="preset-right">
