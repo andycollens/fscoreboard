@@ -267,6 +267,7 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
+      gap: 8px;
     }
     
     .short-label-row input[type="text"] {
@@ -975,10 +976,8 @@
             <button type="button" class="score-btn" id="score1Inc">+</button>
           </div>
           <div class="short-label-row">
-            <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
-          </div>
-          <div class="kit-block">
             <span id="team1LogoMini" class="logo-mini-main" onclick="document.getElementById('team1LogoUpload').click()"></span>
+            <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
             <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
           </div>
@@ -999,10 +998,8 @@
             <button type="button" class="score-btn" id="score2Inc">+</button>
           </div>
           <div class="short-label-row">
-            <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
-          </div>
-          <div class="kit-block">
             <span id="team2LogoMini" class="logo-mini-main" onclick="document.getElementById('team2LogoUpload').click()"></span>
+            <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
           </div>
@@ -1494,12 +1491,14 @@
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
-              <div class="preset-name">${preset.name} <span class="preset-shortcodes">${preset.team1Short.toUpperCase()} : ${preset.team2Short.toUpperCase()}</span></div>
+              <div class="preset-name">${preset.name}</div>
               <div class="preset-teams">
                 <span class="preset-team-logo">${preset.team1Logo ? `<img src="${preset.team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}</span>
+                <span class="preset-team-name">${preset.team1Short.toUpperCase()}</span>
                 <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
                 <span class="preset-separator">:</span>
                 <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
+                <span class="preset-team-name">${preset.team2Short.toUpperCase()}</span>
                 <span class="preset-team-logo">${preset.team2Logo ? `<img src="${preset.team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}</span>
               </div>
             </div>
