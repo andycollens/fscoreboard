@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prematch - FSCOREBOARD</title>
+    <style>
+        @font-face {
+            font-family: 'RPL';
+            src: url('/public/fonts/RPL.ttf') format('truetype');
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'RPL', Arial, sans-serif;
+        }
+
+        .prematch-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .stripe-image {
+            position: absolute;
+            bottom: 220px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            z-index: 1;
+        }
+
+        .team1-logo {
+            position: absolute;
+            left: 0;
+            bottom: 220px;
+            width: 300px;
+            height: 300px;
+            object-fit: contain;
+            z-index: 2;
+        }
+
+        .team2-logo {
+            position: absolute;
+            right: 0;
+            bottom: 220px;
+            width: 300px;
+            height: 300px;
+            object-fit: contain;
+            z-index: 2;
+        }
+
+        .team1-info {
+            position: absolute;
+            left: 50%;
+            bottom: 220px;
+            transform: translateX(-50%);
+            text-align: center;
+            color: white;
+            z-index: 2;
+            width: 50%;
+            left: 25%;
+        }
+
+        .team2-info {
+            position: absolute;
+            left: 50%;
+            bottom: 220px;
+            transform: translateX(-50%);
+            text-align: center;
+            color: white;
+            z-index: 2;
+            width: 50%;
+            left: 50%;
+        }
+
+        .team-name {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .team-city {
+            font-size: 32px;
+            font-weight: normal;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Адаптивность для разных разрешений */
+        @media (max-width: 1920px) {
+            .team-name {
+                font-size: 42px;
+            }
+            .team-city {
+                font-size: 28px;
+            }
+            .team1-logo, .team2-logo {
+                width: 250px;
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 1366px) {
+            .team-name {
+                font-size: 36px;
+            }
+            .team-city {
+                font-size: 24px;
+            }
+            .team1-logo, .team2-logo {
+                width: 200px;
+                height: 200px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .team-name {
+                font-size: 30px;
+            }
+            .team-city {
+                font-size: 20px;
+            }
+            .team1-logo, .team2-logo {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="prematch-container">
+        <!-- Фоновое изображение -->
+        <img src="/public/img/stripe_prematch.png" alt="Prematch Stripe" class="stripe-image">
+        
+        <!-- Логотип команды 1 -->
+        <img id="team1Logo" src="" alt="Team 1 Logo" class="team1-logo" style="display: none;">
+        
+        <!-- Логотип команды 2 -->
+        <img id="team2Logo" src="" alt="Team 2 Logo" class="team2-logo" style="display: none;">
+        
+        <!-- Информация о команде 1 -->
+        <div class="team1-info">
+            <div id="team1Name" class="team-name">Команда 1</div>
+            <div id="team1City" class="team-city">Город 1</div>
+        </div>
+        
+        <!-- Информация о команде 2 -->
+        <div class="team2-info">
+            <div id="team2Name" class="team-name">Команда 2</div>
+            <div id="team2City" class="team-city">Город 2</div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Подключение к WebSocket
+        const socket = io();
+
+        // Элементы DOM
+        const team1NameEl = document.getElementById('team1Name');
+        const team1CityEl = document.getElementById('team1City');
+        const team1LogoEl = document.getElementById('team1Logo');
+        const team2NameEl = document.getElementById('team2Name');
+        const team2CityEl = document.getElementById('team2City');
+        const team2LogoEl = document.getElementById('team2Logo');
+
+        // Обработка обновлений от сервера
+        socket.on('scoreboardUpdate', function(data) {
+            updateDisplay(data);
+        });
+
+        // Функция обновления отображения
+        function updateDisplay(data) {
+            // Обновляем названия команд
+            if (data.team1Name) {
+                team1NameEl.textContent = data.team1Name;
+            }
+            if (data.team1City) {
+                team1CityEl.textContent = data.team1City;
+            }
+            if (data.team2Name) {
+                team2NameEl.textContent = data.team2Name;
+            }
+            if (data.team2City) {
+                team2CityEl.textContent = data.team2City;
+            }
+
+            // Обновляем логотипы
+            if (data.team1Logo && data.team1Logo !== '') {
+                team1LogoEl.src = data.team1Logo;
+                team1LogoEl.style.display = 'block';
+            } else {
+                team1LogoEl.style.display = 'none';
+            }
+
+            if (data.team2Logo && data.team2Logo !== '') {
+                team2LogoEl.src = data.team2Logo;
+                team2LogoEl.style.display = 'block';
+            } else {
+                team2LogoEl.style.display = 'none';
+            }
+        }
+
+        // Запрос текущего состояния при загрузке страницы
+        socket.emit('getCurrentState');
+        
+        socket.on('currentState', function(data) {
+            updateDisplay(data);
+        });
+    </script>
+</body>
+</html>

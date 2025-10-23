@@ -133,6 +133,10 @@ app.get('/preloader.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'preloader.html'));
 });
 
+app.get('/prematch.html', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'prematch.html'));
+});
+
 app.get('/control', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../private', 'control.html'));
@@ -276,6 +280,11 @@ io.on('connection', (socket) => {
   
   // Отправляем текущее состояние при подключении
   socket.emit('scoreboardUpdate', state);
+  
+  // Обработчик запроса текущего состояния
+  socket.on('getCurrentState', () => {
+    socket.emit('currentState', state);
+  });
 
   // Изменение состояния с панели управления
   socket.on('updateScoreboard', (newState) => {
@@ -387,4 +396,5 @@ server.listen(PORT, () => {
   console.log(`Перерыв: http://localhost:${PORT}/htbreak.html`);
   console.log(`Счет перерыва: http://localhost:${PORT}/htbreak_score.html`);
   console.log(`Заставка: http://localhost:${PORT}/preloader.html`);
+  console.log(`Prematch: http://localhost:${PORT}/prematch.html`);
 });
