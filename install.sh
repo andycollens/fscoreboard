@@ -221,7 +221,7 @@ server {
     
     # Основное приложение
     location / {
-        proxy_pass http://localhost:$APP_PORT;
+        proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -234,7 +234,7 @@ server {
     
     # WebSocket поддержка
     location /socket.io/ {
-        proxy_pass http://localhost:$APP_PORT;
+        proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -315,8 +315,13 @@ git pull origin main
 # Установка зависимостей
 npm install --production
 
-# Перезапуск приложения
-pm2 restart fscoreboard
+# Остановка и удаление старого процесса
+pm2 stop fscoreboard 2>/dev/null || true
+pm2 delete fscoreboard 2>/dev/null || true
+
+# Запуск нового процесса
+pm2 start ecosystem.config.js
+pm2 save
 
 echo "✅ Обновление завершено: $(date)"
 EOF
