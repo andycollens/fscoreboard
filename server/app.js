@@ -141,6 +141,19 @@ app.get('/break.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'break.html'));
 });
 
+// ISKRA CUP pages
+app.get('/iskracup_prematch.html', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'iskracup_prematch.html'));
+});
+
+app.get('/iskracup_break.html', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'iskracup_break.html'));
+});
+
+app.get('/iskracup_scoreboard.html', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'iskracup_scoreboard.html'));
+});
+
 app.get('/control', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../private', 'control.html'));
