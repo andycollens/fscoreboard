@@ -93,7 +93,7 @@
             color: white;
             z-index: 2;
             width: 100px;
-            font-size: 35px;
+            font-size: 60px;
             font-weight: bold;
         }
 
@@ -105,7 +105,7 @@
             color: white;
             z-index: 2;
             width: 100px;
-            font-size: 35px;
+            font-size: 60px;
             font-weight: bold;
         }
 
@@ -198,12 +198,12 @@
                 team2CityEl.textContent = data.team2City;
             }
 
-            // Обновляем счета
-            if (data.team1Score !== undefined) {
-                team1ScoreEl.textContent = data.team1Score;
+            // Обновляем счета (используем те же поля что и в scoreboard_vmix.html)
+            if (data.score1 !== undefined) {
+                team1ScoreEl.textContent = typeof data.score1 === 'number' ? data.score1 : "0";
             }
-            if (data.team2Score !== undefined) {
-                team2ScoreEl.textContent = data.team2Score;
+            if (data.score2 !== undefined) {
+                team2ScoreEl.textContent = typeof data.score2 === 'number' ? data.score2 : "0";
             }
 
             // Обновляем логотипы
@@ -273,12 +273,12 @@
                 
                 // Позиционируем блоки со счетом: ±100px от центра
                 const leftScoreX = imageCenterX - 100 - 50; // Центр - 100px - половина ширины блока (50px)
-                const leftScoreY = imageCenterY - 17; // Центр по высоте - половина высоты блока
+                const leftScoreY = imageCenterY - 30; // Центр по высоте - половина высоты блока (увеличенный шрифт)
                 score1Block.style.left = leftScoreX + 'px';
                 score1Block.style.top = leftScoreY + 'px';
                 
                 const rightScoreX = imageCenterX + 100 - 50; // Центр + 100px - половина ширины блока (50px)
-                const rightScoreY = imageCenterY - 17; // Центр по высоте - половина высоты блока
+                const rightScoreY = imageCenterY - 30; // Центр по высоте - половина высоты блока (увеличенный шрифт)
                 score2Block.style.left = rightScoreX + 'px';
                 score2Block.style.top = rightScoreY + 'px';
                 
