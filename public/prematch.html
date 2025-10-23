@@ -86,13 +86,13 @@
         }
 
         .team-name {
-            font-size: 47px;
+            font-size: 35px;
             font-weight: bold;
             margin-bottom: 10px;
         }
 
         .team-city {
-            font-size: 31px;
+            font-size: 25px;
             font-weight: normal;
         }
 
@@ -237,9 +237,9 @@
             const teamCity = teamInfo.querySelector('.team-city');
             
             if (teamName && teamCity) {
-                // Стандартные размеры
-                let nameSize = 47;
-                let citySize = 31;
+                // Стандартные размеры (уменьшенные)
+                let nameSize = 35;
+                let citySize = 25;
                 
                 // Проверяем, помещается ли текст
                 teamName.style.fontSize = nameSize + 'px';
