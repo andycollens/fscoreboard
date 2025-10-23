@@ -383,9 +383,17 @@
     .preset-content {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       flex: 1;
       min-width: 0;
       overflow: hidden;
+    }
+    
+    .preset-left {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
     }
     
     .preset-name {
@@ -399,8 +407,14 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      flex: 1;
       min-width: 0;
+    }
+    
+    .preset-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
     }
     
     .preset-team {
@@ -439,28 +453,78 @@
     }
     
     .preset-play-btn {
-      background: #28a745;
-      color: white;
+      background: none;
       border: none;
-      border-radius: 4px;
-      padding: 6px 12px;
+      color: #28a745;
       cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 4px 8px;
       flex-shrink: 0;
     }
     
     .preset-play-btn:hover {
-      background: #218838;
+      color: #218838;
     }
     
     .preset-play-btn:disabled {
-      background: #ccc;
+      color: #ccc;
       cursor: not-allowed;
+    }
+    
+    .confirmation-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    
+    .confirmation-content {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    .confirmation-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    
+    .confirmation-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .confirmation-btn.confirm {
+      background: #28a745;
+      color: white;
+    }
+    
+    .confirmation-btn.confirm:hover {
+      background: #218838;
+    }
+    
+    .confirmation-btn.cancel {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .confirmation-btn.cancel:hover {
+      background: #5a6268;
     }
     
     .timer-running-warning {
@@ -816,29 +880,64 @@
         card.className = 'preset-card';
         card.innerHTML = `
           <div class="preset-content">
-            <div class="preset-name">${preset.name} /</div>
-            <div class="preset-teams">
-              <div class="preset-team">
-                <span class="preset-team-name">${preset.team1Name}</span>
-                <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
-              </div>
-              <span style="margin: 0 4px;">-</span>
-              <div class="preset-team">
-                <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
-                <span class="preset-team-name">${preset.team2Name}</span>
+            <div class="preset-left">
+              <div class="preset-name">${preset.name} /</div>
+              <div class="preset-teams">
+                <div class="preset-team">
+                  <span class="preset-team-name">${preset.team1Name}</span>
+                  <span class="preset-kit-color" style="background-color: ${preset.kit1Color}"></span>
+                </div>
+                <span style="margin: 0 4px;">-</span>
+                <div class="preset-team">
+                  <span class="preset-kit-color" style="background-color: ${preset.kit2Color}"></span>
+                  <span class="preset-team-name">${preset.team2Name}</span>
+                </div>
               </div>
             </div>
-            <span class="preset-edit-link" onclick="editPreset('${preset.id}')">edit</span>
+            <div class="preset-right">
+              <span class="preset-edit-link" onclick="editPreset('${preset.id}')">edit</span>
+              <button class="preset-play-btn" onclick="confirmApplyPreset('${preset.id}')" ${timerRunning ? 'disabled' : ''} title="Применить предустановку">
+                ▶
+              </button>
+            </div>
           </div>
-          <button class="preset-play-btn" onclick="applyPreset('${preset.id}')" ${timerRunning ? 'disabled' : ''} title="Применить предустановку">
-            ▶
-          </button>
         `;
         
         grid.appendChild(card);
       });
     }
 
+    // Подтверждение применения предустановки
+    function confirmApplyPreset(presetId) {
+      const preset = presets.find(p => p.id === presetId);
+      if (!preset) return;
+      
+      // Создание модального окна подтверждения
+      const modal = document.createElement('div');
+      modal.className = 'confirmation-modal';
+      modal.innerHTML = `
+        <div class="confirmation-content">
+          <h3>Применить предустановку?</h3>
+          <p>Вы уверены, что хотите применить предустановку "<strong>${preset.name}</strong>"?</p>
+          <p><small>Это заменит текущие данные команд.</small></p>
+          <div class="confirmation-buttons">
+            <button class="confirmation-btn confirm" onclick="applyPreset('${presetId}'); closeConfirmation()">Да, применить</button>
+            <button class="confirmation-btn cancel" onclick="closeConfirmation()">Отмена</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+    
+    // Закрытие модального окна
+    function closeConfirmation() {
+      const modal = document.querySelector('.confirmation-modal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+    
     // Применение предустановки
     function applyPreset(presetId) {
       const preset = presets.find(p => p.id === presetId);
