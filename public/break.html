@@ -113,7 +113,9 @@
             font-size: 29px;
             font-weight: bold;
             margin-bottom: 10px;
-            white-space: nowrap;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
         }
 
         .team-city {
@@ -298,19 +300,17 @@
             const teamCity = teamInfo.querySelector('.team-city');
             
             if (teamName && teamCity) {
-                // Стандартные размеры (уменьшенные)
+                // Стандартные размеры
                 let nameSize = 29;
                 let citySize = 21;
                 
-                // Проверяем, помещается ли текст
+                // Устанавливаем базовые размеры
                 teamName.style.fontSize = nameSize + 'px';
                 teamCity.style.fontSize = citySize + 'px';
                 
-                // Уменьшаем шрифт пока текст не поместится (более агрессивно)
-                while ((teamName.scrollWidth > teamInfo.offsetWidth || teamCity.scrollWidth > teamInfo.offsetWidth) && nameSize > 12) {
-                    nameSize -= 0.5; // Уменьшаем на 0.5px для более точной подгонки
-                    citySize -= 0.5;
-                    teamName.style.fontSize = nameSize + 'px';
+                // Уменьшаем шрифт только для города (название может переноситься)
+                while (teamCity.scrollWidth > teamInfo.offsetWidth && citySize > 12) {
+                    citySize -= 0.5; // Уменьшаем на 0.5px для более точной подгонки
                     teamCity.style.fontSize = citySize + 'px';
                 }
             }
