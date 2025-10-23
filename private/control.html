@@ -845,12 +845,12 @@
       width: 30px;
       height: 30px;
       border-radius: 4px;
-      border: 2px solid #ddd;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       background: #f5f5f5;
       flex-shrink: 0;
+      cursor: pointer;
     }
     
     .logo-mini-main img {
@@ -860,20 +860,6 @@
       border-radius: 2px;
     }
     
-    .logo-upload-btn {
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 6px 12px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-    
-    .logo-upload-btn:hover {
-      background: #0056b3;
-    }
     
     .preset-team-logo {
       display: inline-flex;
@@ -885,7 +871,6 @@
       width: 20px;
       height: 20px;
       border-radius: 3px;
-      border: 1px solid #ddd;
       object-fit: cover;
     }
     
@@ -915,7 +900,6 @@
       width: 50px;
       height: 50px;
       border-radius: 4px;
-      border: 1px solid #ddd;
       object-fit: cover;
     }
     
@@ -978,9 +962,8 @@
             <input type="text" id="team1City" maxlength="30" placeholder="Не введено" />
           </div>
           <div class="logo-upload-row">
-            <span id="team1LogoMini" class="logo-mini-main"></span>
+            <span id="team1LogoMini" class="logo-mini-main" onclick="document.getElementById('team1LogoUpload').click()"></span>
             <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
-            <button type="button" class="logo-upload-btn" onclick="document.getElementById('team1LogoUpload').click()">📷 Логотип</button>
           </div>
         </div>
         <div class="divider"></div>
@@ -1005,9 +988,8 @@
             <input type="text" id="team2City" maxlength="30" placeholder="Не введено" />
           </div>
           <div class="logo-upload-row">
-            <span id="team2LogoMini" class="logo-mini-main"></span>
+            <span id="team2LogoMini" class="logo-mini-main" onclick="document.getElementById('team2LogoUpload').click()"></span>
             <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
-            <button type="button" class="logo-upload-btn" onclick="document.getElementById('team2LogoUpload').click()">📷 Логотип</button>
           </div>
         </div>
       </div>
@@ -1567,14 +1549,18 @@
       // Применение логотипов
       if (preset.team1Logo) {
         updateMainLogoMini('team1', preset.team1Logo);
+        state.team1Logo = preset.team1Logo;
       } else {
         showKitColorCircle('team1');
+        state.team1Logo = '';
       }
       
       if (preset.team2Logo) {
         updateMainLogoMini('team2', preset.team2Logo);
+        state.team2Logo = preset.team2Logo;
       } else {
         showKitColorCircle('team2');
+        state.team2Logo = '';
       }
       
       // Отправка обновленного состояния
@@ -2004,7 +1990,6 @@
         }, 300);
       }, 3000);
     }
-  </script>
-</body>
-</html>
+    </script>
+  </body>
 </html>
