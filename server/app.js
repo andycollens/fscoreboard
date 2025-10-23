@@ -3,6 +3,7 @@ const http = require('http');
 const path = require('path');
 const socketio = require('socket.io');
 const fs = require('fs');
+const multer = require('multer');
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +14,38 @@ const PORT = process.env.PORT || 3001;
 const TOKEN = process.env.TOKEN || 'MySecret111';
 const SAVE_PATH = path.join(__dirname, 'state.json');
 const PRESETS_PATH = path.join(__dirname, 'presets.json');
+const LOGOS_PATH = path.join(__dirname, '..', 'public', 'logos');
+
+// Настройка multer для загрузки файлов
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, LOGOS_PATH);
+  },
+  filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const extension = path.extname(file.originalname);
+    const filename = `${file.fieldname}_${timestamp}${extension}`;
+    cb(null, filename);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Только изображения разрешены!'));
+    }
+  }
+});
 
 // ====== Состояние табло ======
 let state = {
@@ -31,7 +64,9 @@ let state = {
   team1Name: "",
   team2Name: "",
   team1City: "",
-  team2City: ""
+  team2City: "",
+  team1Logo: "",
+  team2Logo: ""
 };
 
 // ====== Предварительные настройки матчей ======
@@ -173,6 +208,41 @@ app.delete('/api/presets/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// ====== API для логотипов ======
+// Загрузка логотипа для команды
+app.post('/api/upload-logo', upload.single('logo'), (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  if (!req.file) {
+    return res.status(400).json({ error: 'Файл не загружен' });
+  }
+  
+  const logoUrl = `/public/logos/${req.file.filename}`;
+  res.json({ 
+    success: true, 
+    filename: req.file.filename,
+    url: logoUrl 
+  });
+});
+
+// Удаление логотипа
+app.delete('/api/logo/:filename', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const filePath = path.join(LOGOS_PATH, req.params.filename);
+  
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Файл не найден' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка удаления файла' });
+  }
+});
+
 // ====== WebSocket ======
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
@@ -206,7 +276,8 @@ io.on('connection', (socket) => {
     const keys = [
       'score1', 'score2', 'team1', 'team2',
       'team1Short', 'team2Short', 'kit1Color', 'kit2Color',
-      'team1Name', 'team2Name', 'team1City', 'team2City'
+      'team1Name', 'team2Name', 'team1City', 'team2City',
+      'team1Logo', 'team2Logo'
     ];
     keys.forEach(k => {
       if (k in newState) state[k] = newState[k];
