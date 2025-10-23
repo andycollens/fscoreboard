@@ -29,23 +29,23 @@
         }
 
         .stadium-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            display: flex;
             align-items: center;
-            justify-items: center;
+            justify-content: space-between;
             width: 100%;
             max-width: 100vw;
-            gap: 2vw;
             padding: 0 2vw;
             position: relative;
         }
 
-        /* Колонка 1: Логотип команды 1 с названием */
+        /* Команда 1 */
         .team1-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1.5vw;
+            gap: 20px;
+            flex: 1;
+            max-width: 25%;
         }
 
         .team1-logo {
@@ -53,8 +53,6 @@
             height: 400px;
             object-fit: contain;
             display: none;
-            position: absolute;
-            left: calc(20% - 430px);
         }
 
         .team1-logo.show {
@@ -71,8 +69,6 @@
             justify-content: center;
             color: #666;
             font-size: 24px;
-            position: absolute;
-            left: calc(20% - 430px);
         }
 
         .team1-name {
@@ -91,38 +87,40 @@
             margin: 0;
         }
 
-        /* Колонка 2: Счет команды 1 */
+        /* Счет команды 1 */
         .team1-score {
-            font-size: 13vw;
+            font-size: 200px;
             font-weight: bold;
             color: #fff;
             text-align: center;
             margin: 0;
             line-height: 1;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Колонка 3: Разделитель с таймером */
+        /* Центральная секция */
         .center-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1vw;
+            gap: 20px;
+            flex: 1;
+            max-width: 20%;
         }
 
         .tournament-title {
-            font-size: 2.5vw;
+            font-size: 48px;
             font-weight: bold;
             color: #fff;
             text-align: center;
             margin: 0;
-            position: absolute;
-            top: 50px;
-            left: 50%;
-            transform: translateX(-50%);
         }
 
         .score-divider {
-            font-size: 11vw;
+            font-size: 200px;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -131,30 +129,35 @@
         }
 
         .timer {
-            font-size: 2.5vw;
+            font-size: 48px;
             font-weight: bold;
             color: #fff;
             text-align: center;
             margin: 0;
-            margin-top: 50px;
         }
 
-        /* Колонка 4: Счет команды 2 */
+        /* Счет команды 2 */
         .team2-score {
-            font-size: 13vw;
+            font-size: 200px;
             font-weight: bold;
             color: #fff;
             text-align: center;
             margin: 0;
             line-height: 1;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Колонка 5: Логотип команды 2 с названием */
+        /* Команда 2 */
         .team2-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1.5vw;
+            gap: 20px;
+            flex: 1;
+            max-width: 25%;
         }
 
         .team2-logo {
@@ -162,8 +165,6 @@
             height: 400px;
             object-fit: contain;
             display: none;
-            position: absolute;
-            right: calc(20% - 430px);
         }
 
         .team2-logo.show {
@@ -180,8 +181,6 @@
             justify-content: center;
             color: #666;
             font-size: 24px;
-            position: absolute;
-            right: calc(20% - 430px);
         }
 
         .team2-name {
@@ -200,32 +199,60 @@
             margin: 0;
         }
 
-        /* Адаптивность для очень маленьких экранов */
-        @media (max-width: 768px) {
-            .stadium-content {
-                gap: 1vw;
-                padding: 0 1vw;
-            }
-            
+        /* Адаптивность для маленьких экранов */
+        @media (max-width: 1200px) {
             .team1-logo, .team2-logo, .team1-no-logo, .team2-no-logo {
                 width: 300px;
                 height: 300px;
             }
             
-            .team1-logo, .team1-no-logo {
-                left: calc(20% - 330px);
-            }
-            
-            .team2-logo, .team2-no-logo {
-                right: calc(20% - 330px);
-            }
-            
             .team1-score, .team2-score {
-                font-size: 15vw;
+                font-size: 150px;
             }
             
             .score-divider {
-                font-size: 13vw;
+                font-size: 150px;
+            }
+            
+            .team1-name, .team2-name {
+                font-size: 2.5vw;
+            }
+            
+            .team1-city, .team2-city {
+                font-size: 2vw;
+            }
+            
+            .tournament-title {
+                font-size: 36px;
+            }
+            
+            .timer {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stadium-content {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .team1-section, .team2-section {
+                max-width: 100%;
+            }
+            
+            .team1-logo, .team2-logo, .team1-no-logo, .team2-no-logo {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .team1-score, .team2-score {
+                font-size: 100px;
+            }
+            
+            .score-divider {
+                font-size: 100px;
             }
             
             .team1-name, .team2-name {
@@ -237,13 +264,11 @@
             }
             
             .tournament-title {
-                font-size: 3vw;
-                top: 30px;
+                font-size: 24px;
             }
             
             .timer {
-                font-size: 3vw;
-                margin-top: 30px;
+                font-size: 24px;
             }
         }
     </style>
@@ -251,7 +276,7 @@
 <body>
     <div class="stadium-container">
         <div class="stadium-content">
-            <!-- Колонка 1: Логотип команды 1 с названием -->
+            <!-- Команда 1 -->
             <div class="team1-section">
                 <img id="team1Logo" src="" alt="Team 1 Logo" class="team1-logo">
                 <div id="team1NoLogo" class="team1-no-logo">ЛОГО</div>
@@ -259,20 +284,20 @@
                 <p id="team1City" class="team1-city">Город 1</p>
             </div>
 
-            <!-- Колонка 2: Счет команды 1 -->
+            <!-- Счет команды 1 -->
             <div id="team1Score" class="team1-score">0</div>
 
-            <!-- Колонка 3: Разделитель с таймером -->
+            <!-- Центральная секция -->
             <div class="center-section">
                 <div id="tournamentTitle" class="tournament-title">ISKRA CUP 2025</div>
                 <div class="score-divider">:</div>
                 <div id="timer" class="timer">00:00</div>
             </div>
 
-            <!-- Колонка 4: Счет команды 2 -->
+            <!-- Счет команды 2 -->
             <div id="team2Score" class="team2-score">0</div>
 
-            <!-- Колонка 5: Логотип команды 2 с названием -->
+            <!-- Команда 2 -->
             <div class="team2-section">
                 <img id="team2Logo" src="" alt="Team 2 Logo" class="team2-logo">
                 <div id="team2NoLogo" class="team2-no-logo">ЛОГО</div>
