@@ -67,9 +67,8 @@
 
         .team1-info {
             position: absolute;
-            left: 25%;
-            top: 50%;
-            transform: translateX(-50%) translateY(-50%);
+            left: 0;
+            top: 0;
             text-align: center;
             color: white;
             z-index: 2;
@@ -78,9 +77,8 @@
 
         .team2-info {
             position: absolute;
-            left: 75%;
-            top: 50%;
-            transform: translateX(-50%) translateY(-50%);
+            left: 0;
+            top: 0;
             text-align: center;
             color: white;
             z-index: 2;
@@ -178,13 +176,15 @@
             }
         }
 
-        // Функция позиционирования логотипов
+        // Функция позиционирования логотипов и текстовых блоков
         function positionLogos() {
             const stripeImage = document.querySelector('.stripe-image');
             const team1Logo = document.getElementById('team1Logo');
             const team2Logo = document.getElementById('team2Logo');
+            const team1Info = document.querySelector('.team1-info');
+            const team2Info = document.querySelector('.team2-info');
             
-            if (stripeImage && team1Logo && team2Logo) {
+            if (stripeImage && team1Logo && team2Logo && team1Info && team2Info) {
                 // Получаем размеры изображения
                 const imageWidth = stripeImage.offsetWidth;
                 const imageHeight = stripeImage.offsetHeight;
@@ -195,7 +195,7 @@
                 const imageCenterX = imageWidth / 2; // Центр по ширине
                 const imageCenterY = imageHeight / 2; // Центр по высоте
                 
-                // Жесткая привязка: ±759px от центра изображения
+                // Позиционируем логотипы: ±759px от центра изображения
                 const leftLogoX = imageCenterX - 759 - 125; // Центр - 759px - половина логотипа
                 const leftLogoY = imageCenterY - 125; // Центр по высоте - половина логотипа
                 team1Logo.style.left = leftLogoX + 'px';
@@ -206,9 +206,22 @@
                 team2Logo.style.left = rightLogoX + 'px';
                 team2Logo.style.top = rightLogoY + 'px';
                 
+                // Позиционируем текстовые блоки: центр левой и правой половин
+                const leftTextX = (imageCenterX / 2) - 240; // Центр левой половины - половина ширины блока
+                const leftTextY = imageCenterY - 50; // Центр по высоте - половина высоты блока
+                team1Info.style.left = leftTextX + 'px';
+                team1Info.style.top = leftTextY + 'px';
+                
+                const rightTextX = (imageCenterX + imageCenterX / 2) - 240; // Центр правой половины - половина ширины блока
+                const rightTextY = imageCenterY - 50; // Центр по высоте - половина высоты блока
+                team2Info.style.left = rightTextX + 'px';
+                team2Info.style.top = rightTextY + 'px';
+                
                 console.log('Image center:', imageCenterX, imageCenterY);
                 console.log('Left logo position:', leftLogoX, leftLogoY);
                 console.log('Right logo position:', rightLogoX, rightLogoY);
+                console.log('Left text position:', leftTextX, leftTextY);
+                console.log('Right text position:', rightTextX, rightTextY);
             }
         }
 
