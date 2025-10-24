@@ -2246,7 +2246,7 @@
         warning.classList.add('hidden');
       }
       
-      // Блокировка/разблокировка полей при работе таймера
+      // Поля ввода команд всегда доступны для редактирования
       const fieldsToDisable = [
         'team1Name', 'team1City', 'team1Short', 'kit1Color',
         'team2Name', 'team2City', 'team2Short', 'kit2Color'
@@ -2254,11 +2254,8 @@
       
       fieldsToDisable.forEach(fieldId => {
         const field = document.getElementById(fieldId);
-        if (isRunning) {
-          field.classList.add('disabled-field');
-        } else {
-          field.classList.remove('disabled-field');
-        }
+        // Убираем блокировку - поля всегда доступны
+        field.classList.remove('disabled-field');
       });
       
       // Кнопка добавления предустановки всегда доступна
