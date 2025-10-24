@@ -2284,6 +2284,17 @@
       addBtn.disabled = false;
       addBtn.textContent = '+ Добавить предустановку';
       
+      // Убеждаемся, что форма редактирования остается доступной
+      const editForm = document.getElementById('editPresetForm');
+      if (editForm) {
+        // Если форма редактирования была открыта, восстанавливаем ее состояние
+        if (!editForm.classList.contains('hidden') && editingPresetId) {
+          editForm.style.display = 'block';
+          editForm.classList.remove('hidden');
+          console.log('Восстановлена форма редактирования для пресета:', editingPresetId);
+        }
+      }
+      
       // Блокировка только кнопок применения предустановок
       const playButtons = document.querySelectorAll('.preset-play-btn');
       playButtons.forEach(btn => {
