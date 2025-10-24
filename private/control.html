@@ -1237,6 +1237,13 @@
       team1Logo: '',
       team2Logo: ''
     };
+    
+    // Защита от случайного изменения счета
+    let lastScoreChange = {
+      team: null,
+      timestamp: 0,
+      value: 0
+    };
 
     // Инициализация
     document.addEventListener('DOMContentLoaded', function() {
@@ -1590,36 +1597,58 @@
         });
       };
 
-      // Счет
+      // Счет с защитой от случайных изменений
       document.getElementById('score1Inc').onclick = () => {
         const current = parseInt(document.getElementById('score1Value').textContent);
-        socket.emit('updateScoreboard', { 
-          score1: current + 1 
-        });
+        const newValue = current + 1;
+        
+        if (timerRunning && lastScoreChange.team === 'score1' && 
+            (Date.now() - lastScoreChange.timestamp) < 60000) {
+          if (!confirm('Похоже, вы уже прибавили счет совсем недавно. Подтвердите, что сейчас вы не случайно нажали второй раз?')) {
+            return;
+          }
+        }
+        
+        lastScoreChange = { team: 'score1', timestamp: Date.now(), value: newValue };
+        socket.emit('updateScoreboard', { score1: newValue });
       };
       
       document.getElementById('score1Dec').onclick = () => {
         const current = parseInt(document.getElementById('score1Value').textContent);
         if (current > 0) {
-          socket.emit('updateScoreboard', { 
-            score1: current - 1 
-          });
+          if (timerRunning) {
+            if (!confirm('Подтвердите уменьшение счета во время игры?')) {
+              return;
+            }
+          }
+          socket.emit('updateScoreboard', { score1: current - 1 });
         }
       };
       
       document.getElementById('score2Inc').onclick = () => {
         const current = parseInt(document.getElementById('score2Value').textContent);
-        socket.emit('updateScoreboard', { 
-          score2: current + 1 
-        });
+        const newValue = current + 1;
+        
+        if (timerRunning && lastScoreChange.team === 'score2' && 
+            (Date.now() - lastScoreChange.timestamp) < 60000) {
+          if (!confirm('Похоже, вы уже прибавили счет совсем недавно. Подтвердите, что сейчас вы не случайно нажали второй раз?')) {
+            return;
+          }
+        }
+        
+        lastScoreChange = { team: 'score2', timestamp: Date.now(), value: newValue };
+        socket.emit('updateScoreboard', { score2: newValue });
       };
       
       document.getElementById('score2Dec').onclick = () => {
         const current = parseInt(document.getElementById('score2Value').textContent);
         if (current > 0) {
-          socket.emit('updateScoreboard', { 
-            score2: current - 1 
-          });
+          if (timerRunning) {
+            if (!confirm('Подтвердите уменьшение счета во время игры?')) {
+              return;
+            }
+          }
+          socket.emit('updateScoreboard', { score2: current - 1 });
         }
       };
 
@@ -1692,6 +1721,7 @@
       presets.forEach(preset => {
         const card = document.createElement('div');
         card.className = 'preset-card';
+        card.setAttribute('data-preset-id', preset.id);
         card.innerHTML = `
           <div class="preset-content">
             <div class="preset-left">
@@ -2044,8 +2074,16 @@
         uploadedLogos.team2 = null;
       }
       
-      // Показываем форму редактирования
-      document.getElementById('editPresetForm').classList.remove('hidden');
+      // Скрываем карточку пресета и показываем форму редактирования на ее месте
+      const presetCard = document.querySelector(`[data-preset-id="${presetId}"]`);
+      if (presetCard) {
+        presetCard.style.display = 'none';
+        const editForm = document.getElementById('editPresetForm');
+        editForm.style.display = 'block';
+        editForm.classList.remove('hidden');
+        // Вставляем форму после карточки пресета
+        presetCard.parentNode.insertBefore(editForm, presetCard.nextSibling);
+      }
     }
     
     // Обновление предустановки
@@ -2113,7 +2151,17 @@
     function cancelEditPreset() {
       editingPresetId = null;
       originalPresetData = null;
-      document.getElementById('editPresetForm').classList.add('hidden');
+      
+      // Восстанавливаем карточку пресета
+      const presetCards = document.querySelectorAll('.preset-card');
+      presetCards.forEach(card => {
+        card.style.display = '';
+      });
+      
+      // Скрываем форму редактирования
+      const editForm = document.getElementById('editPresetForm');
+      editForm.classList.add('hidden');
+      editForm.style.display = 'none';
     }
     
     // Удаление предустановки из формы редактирования
