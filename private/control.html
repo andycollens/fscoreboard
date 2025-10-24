@@ -2164,6 +2164,7 @@
     
     // Отмена редактирования
     function cancelEditPreset() {
+      console.log('Отмена редактирования пресета:', editingPresetId);
       editingPresetId = null;
       originalPresetData = null;
       
@@ -2287,10 +2288,28 @@
       // Убеждаемся, что форма редактирования остается доступной
       const editForm = document.getElementById('editPresetForm');
       if (editForm) {
-        // Если форма редактирования была открыта, восстанавливаем ее состояние
-        if (!editForm.classList.contains('hidden') && editingPresetId) {
+        // Проверяем, была ли форма редактирования открыта
+        const wasEditFormOpen = !editForm.classList.contains('hidden') && editForm.style.display !== 'none';
+        
+        console.log('Состояние формы редактирования:', {
+          wasOpen: wasEditFormOpen,
+          editingPresetId: editingPresetId,
+          isRunning: isRunning,
+          formHidden: editForm.classList.contains('hidden'),
+          formDisplay: editForm.style.display
+        });
+        
+        if (wasEditFormOpen && editingPresetId) {
+          // Восстанавливаем форму редактирования
           editForm.style.display = 'block';
           editForm.classList.remove('hidden');
+          
+          // Убеждаемся, что карточка пресета скрыта
+          const presetCard = document.querySelector(`[data-preset-id="${editingPresetId}"]`);
+          if (presetCard) {
+            presetCard.style.display = 'none';
+          }
+          
           console.log('Восстановлена форма редактирования для пресета:', editingPresetId);
         }
       }
