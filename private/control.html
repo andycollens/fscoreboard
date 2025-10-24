@@ -2261,7 +2261,8 @@
         warning.classList.add('hidden');
       }
       
-      // Блокировка полей ввода команд во время работы таймера
+      // Блокировка только основных полей ввода команд во время работы таймера
+      // (не блокируем поля в форме редактирования пресетов)
       const fieldsToDisable = [
         'team1Name', 'team1City', 'team1Short', 'kit1Color',
         'team2Name', 'team2City', 'team2Short', 'kit2Color'
@@ -2269,10 +2270,12 @@
       
       fieldsToDisable.forEach(fieldId => {
         const field = document.getElementById(fieldId);
-        if (isRunning) {
-          field.classList.add('disabled-field');
-        } else {
-          field.classList.remove('disabled-field');
+        if (field && !field.closest('.edit-preset-form')) { // Исключаем поля в форме редактирования
+          if (isRunning) {
+            field.classList.add('disabled-field');
+          } else {
+            field.classList.remove('disabled-field');
+          }
         }
       });
       
