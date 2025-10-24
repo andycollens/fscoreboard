@@ -2080,14 +2080,22 @@
         presetCard.style.display = 'none';
         const editForm = document.getElementById('editPresetForm');
         
-        // Если форма уже была перемещена, сначала возвращаем ее в исходное место
+        // Полностью сбрасываем форму перед перемещением
         const presetsSection = document.querySelector('.presets-section');
-        if (editForm.parentNode !== presetsSection) {
+        
+        // Если форма не в правильном месте, принудительно перемещаем
+        if (editForm.parentNode && editForm.parentNode !== presetsSection) {
+          editForm.parentNode.removeChild(editForm);
           presetsSection.appendChild(editForm);
         }
         
+        // Сбрасываем все стили формы
+        editForm.style.position = '';
+        editForm.style.top = '';
+        editForm.style.left = '';
         editForm.style.display = 'block';
         editForm.classList.remove('hidden');
+        
         // Вставляем форму после карточки пресета
         presetCard.parentNode.insertBefore(editForm, presetCard.nextSibling);
       }
@@ -2159,23 +2167,30 @@
       editingPresetId = null;
       originalPresetData = null;
       
-      // Восстанавливаем карточку пресета
+      // Восстанавливаем все карточки пресетов
       const presetCards = document.querySelectorAll('.preset-card');
       presetCards.forEach(card => {
         card.style.display = '';
       });
       
-      // Возвращаем форму редактирования в исходное место и скрываем
+      // Полностью сбрасываем форму редактирования
       const editForm = document.getElementById('editPresetForm');
       const presetsSection = document.querySelector('.presets-section');
       
-      // Если форма не в исходном месте, перемещаем ее обратно
-      if (editForm.parentNode !== presetsSection) {
-        presetsSection.appendChild(editForm);
+      // Принудительно перемещаем форму в конец секции пресетов
+      if (editForm.parentNode) {
+        editForm.parentNode.removeChild(editForm);
       }
+      presetsSection.appendChild(editForm);
       
+      // Скрываем форму
       editForm.classList.add('hidden');
       editForm.style.display = 'none';
+      
+      // Сбрасываем все состояния формы
+      editForm.style.position = '';
+      editForm.style.top = '';
+      editForm.style.left = '';
     }
     
     // Удаление предустановки из формы редактирования
