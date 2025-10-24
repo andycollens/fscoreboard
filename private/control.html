@@ -2079,6 +2079,13 @@
       if (presetCard) {
         presetCard.style.display = 'none';
         const editForm = document.getElementById('editPresetForm');
+        
+        // Если форма уже была перемещена, сначала возвращаем ее в исходное место
+        const presetsSection = document.querySelector('.presets-section');
+        if (editForm.parentNode !== presetsSection) {
+          presetsSection.appendChild(editForm);
+        }
+        
         editForm.style.display = 'block';
         editForm.classList.remove('hidden');
         // Вставляем форму после карточки пресета
@@ -2158,8 +2165,15 @@
         card.style.display = '';
       });
       
-      // Скрываем форму редактирования
+      // Возвращаем форму редактирования в исходное место и скрываем
       const editForm = document.getElementById('editPresetForm');
+      const presetsSection = document.querySelector('.presets-section');
+      
+      // Если форма не в исходном месте, перемещаем ее обратно
+      if (editForm.parentNode !== presetsSection) {
+        presetsSection.appendChild(editForm);
+      }
+      
       editForm.classList.add('hidden');
       editForm.style.display = 'none';
     }
