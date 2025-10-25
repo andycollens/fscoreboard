@@ -47,9 +47,7 @@
         /* Средняя область (1/2 высоты) */
         .middle-section {
             flex: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative;
             background: #000;
         }
 
@@ -64,13 +62,15 @@
 
         /* Команда 1 */
         .team1-section {
-            flex: 1;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-300%, -50%);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 20px;
-            margin-top: 100px;
-            position: relative;
+            z-index: 5;
         }
 
         .team1-stripe {
@@ -128,10 +128,11 @@
 
         /* Счет 1 */
         .score1-section {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-120%, -50%);
+            z-index: 5;
         }
 
         .team1-score {
@@ -145,10 +146,11 @@
 
         /* Разделитель */
         .divider-section {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
         }
 
         .colon {
@@ -162,10 +164,11 @@
 
         /* Счет 2 */
         .score2-section {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(20%, -50%);
+            z-index: 5;
         }
 
         .team2-score {
@@ -179,13 +182,15 @@
 
         /* Команда 2 */
         .team2-section {
-            flex: 1;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(300%, -50%);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 20px;
-            margin-top: 100px;
-            position: relative;
+            z-index: 5;
         }
 
         .team2-stripe {
