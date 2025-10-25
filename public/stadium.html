@@ -73,22 +73,20 @@
             position: relative;
         }
 
-        .team1-emblight {
+        .team1-stripe {
             position: absolute;
-            left: -150px;
+            left: 0;
             top: 50%;
             transform: translateY(-50%);
-            width: 400px;
-            height: 600px;
-            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.25) 30%, rgba(255, 255, 255, 0.1) 60%, transparent 100%);
-            border-radius: 50%;
+            width: 3px;
+            height: 100px;
+            background: #2b2b2b;
             z-index: 1;
             opacity: 0;
-            transition: opacity 0.8s ease;
-            filter: blur(15px);
+            transition: opacity 0.5s ease;
         }
 
-        .team1-emblight.active {
+        .team1-stripe.active {
             opacity: 1;
         }
 
@@ -194,22 +192,20 @@
             position: relative;
         }
 
-        .team2-emblight {
+        .team2-stripe {
             position: absolute;
-            right: -150px;
+            right: 0;
             top: 50%;
             transform: translateY(-50%);
-            width: 400px;
-            height: 600px;
-            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.25) 30%, rgba(255, 255, 255, 0.1) 60%, transparent 100%);
-            border-radius: 50%;
+            width: 3px;
+            height: 100px;
+            background: #2b2b2b;
             z-index: 1;
             opacity: 0;
-            transition: opacity 0.8s ease;
-            filter: blur(15px);
+            transition: opacity 0.5s ease;
         }
 
-        .team2-emblight.active {
+        .team2-stripe.active {
             opacity: 1;
         }
 
@@ -350,7 +346,7 @@
             <div class="middle-content">
                 <!-- Команда 1 -->
                 <div class="team1-section">
-                    <div id="team1Emblight" class="team1-emblight"></div>
+                    <div id="team1Stripe" class="team1-stripe"></div>
                     <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
                     <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;">1</div>
                     <div class="team1-name" id="team1Name">Команда 1</div>
@@ -374,7 +370,7 @@
 
                 <!-- Команда 2 -->
                 <div class="team2-section">
-                    <div id="team2Emblight" class="team2-emblight"></div>
+                    <div id="team2Stripe" class="team2-stripe"></div>
                     <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
                     <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;">2</div>
                     <div class="team2-name" id="team2Name">Команда 2</div>
@@ -409,9 +405,9 @@
         const timer = document.getElementById('timer');
         const tournamentTitle = document.getElementById('tournamentTitle');
         
-        // Эмбилайт элементы
-        const team1Emblight = document.getElementById('team1Emblight');
-        const team2Emblight = document.getElementById('team2Emblight');
+        // Полоски элементов
+        const team1Stripe = document.getElementById('team1Stripe');
+        const team2Stripe = document.getElementById('team2Stripe');
 
         // Подключение к WebSocket
         socket.on('connect', () => {
@@ -424,18 +420,14 @@
             updateDisplay(data);
         });
 
-        // Функция обновления эмбилайта
-        function updateEmblight(team, color) {
-            const emblight = team === 'team1' ? team1Emblight : team2Emblight;
+        // Функция обновления полоски
+        function updateStripe(team, color) {
+            const stripe = team === 'team1' ? team1Stripe : team2Stripe;
             if (color && color !== '') {
-                // Преобразуем цвет в RGB для прозрачности
-                const rgb = hexToRgb(color);
-                if (rgb) {
-                    emblight.style.background = `radial-gradient(ellipse, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5) 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) 30%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15) 60%, transparent 100%)`;
-                    emblight.classList.add('active');
-                }
+                stripe.style.background = color;
+                stripe.classList.add('active');
             } else {
-                emblight.classList.remove('active');
+                stripe.classList.remove('active');
             }
         }
 
@@ -470,8 +462,8 @@
             team1City.textContent = data.team1City || 'Город 1';
             team1Score.textContent = data.score1 || 0;
 
-            // Обновляем эмбилайт для команды 1
-            updateEmblight('team1', data.kit1Color);
+            // Обновляем полоску для команды 1
+            updateStripe('team1', data.kit1Color);
 
             // Команда 2
             if (data.team2Logo && data.team2Logo !== '') {
@@ -490,8 +482,8 @@
             team2City.textContent = data.team2City || 'Город 2';
             team2Score.textContent = data.score2 || 0;
 
-            // Обновляем эмбилайт для команды 2
-            updateEmblight('team2', data.kit2Color);
+            // Обновляем полоску для команды 2
+            updateStripe('team2', data.kit2Color);
 
             // Таймер
             if (data.time !== undefined) {
@@ -508,11 +500,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Stadium страница загружена');
             
-            // Тестовая активация эмбилайта для проверки
+            // Тестовая активация полосок для проверки
             setTimeout(() => {
-                team1Emblight.classList.add('active');
-                team2Emblight.classList.add('active');
-                console.log('Эмбилайт активирован для тестирования');
+                team1Stripe.classList.add('active');
+                team2Stripe.classList.add('active');
+                console.log('Полоски активированы для тестирования');
             }, 1000);
         });
     </script>
