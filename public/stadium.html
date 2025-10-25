@@ -79,14 +79,11 @@
             background: #2b2b2b;
             margin: 10px auto;
             opacity: 0;
-            transform: scaleX(0);
-            transform-origin: center;
-            transition: all 0.8s ease;
+            transition: opacity 0.8s ease;
         }
 
         .team1-stripe.active {
             opacity: 1;
-            transform: scaleX(1);
         }
 
         .team1-logo {
@@ -141,7 +138,7 @@
             font-size: 600px;
             font-weight: bold;
             color: #fff;
-            text-align: right;
+            text-align: left;
             margin: 0;
             line-height: 1;
         }
@@ -175,7 +172,7 @@
             font-size: 600px;
             font-weight: bold;
             color: #fff;
-            text-align: left;
+            text-align: right;
             margin: 0;
             line-height: 1;
         }
@@ -197,14 +194,11 @@
             background: #2b2b2b;
             margin: 10px auto;
             opacity: 0;
-            transform: scaleX(0);
-            transform-origin: center;
-            transition: all 0.8s ease;
+            transition: opacity 0.8s ease;
         }
 
         .team2-stripe.active {
             opacity: 1;
-            transform: scaleX(1);
         }
 
         .team2-logo {
@@ -422,13 +416,16 @@
         function updateStripe(team, color) {
             const stripe = team === 'team1' ? team1Stripe : team2Stripe;
             if (color && color !== '') {
-                stripe.style.background = color;
+                // Создаем градиент: прозрачный -> цвет команды (30px) -> цвет команды (170px) -> прозрачный (200px)
+                stripe.style.background = `linear-gradient(to right, transparent, ${color} 30px, ${color} 170px, transparent 200px)`;
                 // Добавляем небольшую задержку для эффекта появления
                 setTimeout(() => {
                     stripe.classList.add('active');
                 }, 100);
             } else {
                 stripe.classList.remove('active');
+                // Сбрасываем фон, если нет цвета
+                stripe.style.background = `linear-gradient(to right, transparent, #2b2b2b 30px, #2b2b2b 170px, transparent 200px)`;
             }
         }
 
