@@ -515,9 +515,9 @@
             // Сбрасываем размер шрифта для точного измерения
             scoreElement.style.fontSize = fontSize + 'px';
             
-            // Принудительное уменьшение для двузначных чисел
+            // Плавное уменьшение для двузначных чисел
             if (scoreElement.textContent.length >= 2) {
-                fontSize = 300; // принудительно уменьшаем для двузначных
+                fontSize = 450; // уменьшаем до 450px для двузначных
                 scoreElement.style.fontSize = fontSize + 'px';
             }
             
