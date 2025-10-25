@@ -515,17 +515,19 @@
             // Сбрасываем размер шрифта для точного измерения
             scoreElement.style.fontSize = fontSize + 'px';
             
-            // Проверяем, помещается ли текст по ширине и высоте
-            while ((scoreElement.scrollWidth > maxWidth || scoreElement.scrollHeight > maxHeight) && fontSize > 100) {
-                fontSize -= 5; // уменьшаем на 5px для более точной подгонки
+            // Принудительное уменьшение для двузначных чисел
+            if (scoreElement.textContent.length >= 2) {
+                fontSize = 300; // принудительно уменьшаем для двузначных
                 scoreElement.style.fontSize = fontSize + 'px';
             }
             
-            // Дополнительная проверка для очень длинных чисел
-            if (scoreElement.textContent.length > 2 && fontSize > 300) {
-                fontSize = Math.min(fontSize, 300);
+            // Проверяем, помещается ли текст по ширине и высоте
+            while ((scoreElement.scrollWidth > maxWidth || scoreElement.scrollHeight > maxHeight) && fontSize > 100) {
+                fontSize -= 10; // уменьшаем на 10px для более быстрой подгонки
                 scoreElement.style.fontSize = fontSize + 'px';
             }
+            
+            console.log(`Счет: ${scoreElement.textContent}, размер шрифта: ${fontSize}px, ширина: ${scoreElement.scrollWidth}px`);
         }
 
         // Функция обновления отображения
