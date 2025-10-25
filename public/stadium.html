@@ -67,7 +67,7 @@
             top: 50%;
             transform: translate(-50%, -50%);
             width: 465px;
-            margin-left: -555px; /* 30px (половина разделителя) + 232.5px (половина ширины счета) + 232.5px (половина ширины команды) */
+            margin-left: -697.5px; /* 30px (половина разделителя) + 232.5px (половина ширины счета) + 232.5px (половина ширины счета) + 202.5px (половина ширины команды) */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -136,7 +136,7 @@
             top: 50%;
             transform: translate(-50%, -50%);
             width: 465px;
-            margin-left: -262.5px; /* 30px (половина разделителя) + 232.5px (половина ширины счета) */
+            margin-left: -232.5px; /* 30px (половина разделителя) + 202.5px (половина ширины счета) */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -188,7 +188,7 @@
             top: 50%;
             transform: translate(-50%, -50%);
             width: 465px;
-            margin-left: 262.5px; /* 30px (половина разделителя) + 232.5px (половина ширины счета) */
+            margin-left: 232.5px; /* 30px (половина разделителя) + 202.5px (половина ширины счета) */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -218,7 +218,7 @@
             top: 50%;
             transform: translate(-50%, -50%);
             width: 465px;
-            margin-left: 555px; /* 30px (половина разделителя) + 232.5px (половина ширины счета) + 232.5px (половина ширины команды) */
+            margin-left: 697.5px; /* 30px (половина разделителя) + 232.5px (половина ширины счета) + 232.5px (половина ширины счета) + 202.5px (половина ширины команды) */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -297,6 +297,34 @@
             text-align: center;
             margin: 0;
             line-height: 1;
+        }
+
+        /* Адаптивные размеры для больших экранов */
+        @media (max-width: 1920px) {
+            /* Адаптивные размеры секций */
+            .team1-section, .team2-section, .score1-section, .score2-section {
+                width: 24.2vw; /* 465px / 1920px * 100vw */
+            }
+            
+            .divider-section {
+                width: 3.125vw; /* 60px / 1920px * 100vw */
+            }
+            
+            .team1-section {
+                margin-left: -36.3vw; /* -697.5px / 1920px * 100vw */
+            }
+            
+            .team2-section {
+                margin-left: 36.3vw; /* 697.5px / 1920px * 100vw */
+            }
+            
+            .score1-section {
+                margin-left: -12.1vw; /* -232.5px / 1920px * 100vw */
+            }
+            
+            .score2-section {
+                margin-left: 12.1vw; /* 232.5px / 1920px * 100vw */
+            }
         }
 
         /* Адаптивность */
