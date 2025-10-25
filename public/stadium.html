@@ -70,6 +70,25 @@
             align-items: center;
             gap: 20px;
             margin-top: 100px;
+            position: relative;
+        }
+
+        .team1-emblight {
+            position: absolute;
+            left: -50%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .team1-emblight.active {
+            opacity: 1;
         }
 
         .team1-logo {
@@ -171,6 +190,25 @@
             align-items: center;
             gap: 20px;
             margin-top: 100px;
+            position: relative;
+        }
+
+        .team2-emblight {
+            position: absolute;
+            right: -50%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 200px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .team2-emblight.active {
+            opacity: 1;
         }
 
         .team2-logo {
@@ -310,6 +348,7 @@
             <div class="middle-content">
                 <!-- Команда 1 -->
                 <div class="team1-section">
+                    <div id="team1Emblight" class="team1-emblight"></div>
                     <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
                     <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;">1</div>
                     <div class="team1-name" id="team1Name">Команда 1</div>
@@ -333,6 +372,7 @@
 
                 <!-- Команда 2 -->
                 <div class="team2-section">
+                    <div id="team2Emblight" class="team2-emblight"></div>
                     <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
                     <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;">2</div>
                     <div class="team2-name" id="team2Name">Команда 2</div>
@@ -366,6 +406,10 @@
         
         const timer = document.getElementById('timer');
         const tournamentTitle = document.getElementById('tournamentTitle');
+        
+        // Эмбилайт элементы
+        const team1Emblight = document.getElementById('team1Emblight');
+        const team2Emblight = document.getElementById('team2Emblight');
 
         // Подключение к WebSocket
         socket.on('connect', () => {
@@ -377,6 +421,31 @@
             console.log('Stadium получил данные:', data);
             updateDisplay(data);
         });
+
+        // Функция обновления эмбилайта
+        function updateEmblight(team, color) {
+            const emblight = team === 'team1' ? team1Emblight : team2Emblight;
+            if (color && color !== '') {
+                // Преобразуем цвет в RGB для прозрачности
+                const rgb = hexToRgb(color);
+                if (rgb) {
+                    emblight.style.background = `radial-gradient(ellipse, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2) 50%, transparent 100%)`;
+                    emblight.classList.add('active');
+                }
+            } else {
+                emblight.classList.remove('active');
+            }
+        }
+
+        // Функция преобразования hex в RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
 
         // Функция обновления отображения
         function updateDisplay(data) {
@@ -399,6 +468,9 @@
             team1City.textContent = data.team1City || 'Город 1';
             team1Score.textContent = data.score1 || 0;
 
+            // Обновляем эмбилайт для команды 1
+            updateEmblight('team1', data.kit1Color);
+
             // Команда 2
             if (data.team2Logo && data.team2Logo !== '') {
                 team2Logo.src = data.team2Logo;
@@ -415,6 +487,9 @@
             team2Name.textContent = data.team2Name || 'Команда 2';
             team2City.textContent = data.team2City || 'Город 2';
             team2Score.textContent = data.score2 || 0;
+
+            // Обновляем эмбилайт для команды 2
+            updateEmblight('team2', data.kit2Color);
 
             // Таймер
             if (data.time !== undefined) {
