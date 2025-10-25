@@ -75,16 +75,17 @@
 
         .team1-emblight {
             position: absolute;
-            left: -100px;
+            left: -150px;
             top: 50%;
             transform: translateY(-50%);
-            width: 300px;
-            height: 500px;
-            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+            width: 400px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 30%, rgba(255, 255, 255, 0.03) 60%, transparent 100%);
             border-radius: 50%;
             z-index: 1;
             opacity: 0;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.8s ease;
+            filter: blur(20px);
         }
 
         .team1-emblight.active {
@@ -195,16 +196,17 @@
 
         .team2-emblight {
             position: absolute;
-            right: -100px;
+            right: -150px;
             top: 50%;
             transform: translateY(-50%);
-            width: 300px;
-            height: 500px;
-            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+            width: 400px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 30%, rgba(255, 255, 255, 0.03) 60%, transparent 100%);
             border-radius: 50%;
             z-index: 1;
             opacity: 0;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.8s ease;
+            filter: blur(20px);
         }
 
         .team2-emblight.active {
@@ -429,7 +431,7 @@
                 // Преобразуем цвет в RGB для прозрачности
                 const rgb = hexToRgb(color);
                 if (rgb) {
-                    emblight.style.background = `radial-gradient(ellipse, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4) 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2) 50%, transparent 100%)`;
+                    emblight.style.background = `radial-gradient(ellipse, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12) 0%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.06) 30%, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.02) 60%, transparent 100%)`;
                     emblight.classList.add('active');
                 }
             } else {
