@@ -144,7 +144,7 @@
         }
 
         .team1-score {
-            font-size: 550px;
+            font-size: 450px;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -196,7 +196,7 @@
         }
 
         .team2-score {
-            font-size: 550px;
+            font-size: 450px;
             font-weight: bold;
             color: #fff;
             text-align: center;
@@ -510,16 +510,10 @@
         function adjustScoreFontSize(scoreElement) {
             const maxWidth = 465; // максимальная ширина в пикселях
             const maxHeight = 550; // максимальная высота в пикселях
-            let fontSize = 550; // начальный размер шрифта
+            let fontSize = 450; // фиксированный размер шрифта для всех чисел
             
-            // Сбрасываем размер шрифта для точного измерения
+            // Устанавливаем фиксированный размер для всех чисел
             scoreElement.style.fontSize = fontSize + 'px';
-            
-            // Плавное уменьшение для двузначных чисел
-            if (scoreElement.textContent.length >= 2) {
-                fontSize = 450; // уменьшаем до 450px для двузначных
-                scoreElement.style.fontSize = fontSize + 'px';
-            }
             
             // Проверяем, помещается ли текст по ширине и высоте
             while ((scoreElement.scrollWidth > maxWidth || scoreElement.scrollHeight > maxHeight) && fontSize > 100) {
