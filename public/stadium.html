@@ -79,11 +79,14 @@
             background: #2b2b2b;
             margin: 10px auto;
             opacity: 0;
-            transition: opacity 0.5s ease;
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: all 0.8s ease;
         }
 
         .team1-stripe.active {
             opacity: 1;
+            transform: scaleX(1);
         }
 
         .team1-logo {
@@ -194,11 +197,14 @@
             background: #2b2b2b;
             margin: 10px auto;
             opacity: 0;
-            transition: opacity 0.5s ease;
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: all 0.8s ease;
         }
 
         .team2-stripe.active {
             opacity: 1;
+            transform: scaleX(1);
         }
 
         .team2-logo {
@@ -417,7 +423,10 @@
             const stripe = team === 'team1' ? team1Stripe : team2Stripe;
             if (color && color !== '') {
                 stripe.style.background = color;
-                stripe.classList.add('active');
+                // Добавляем небольшую задержку для эффекта появления
+                setTimeout(() => {
+                    stripe.classList.add('active');
+                }, 100);
             } else {
                 stripe.classList.remove('active');
             }
