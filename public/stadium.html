@@ -512,11 +512,18 @@
             const maxHeight = 550; // максимальная высота в пикселях
             let fontSize = 550; // начальный размер шрифта
             
+            // Сбрасываем размер шрифта для точного измерения
             scoreElement.style.fontSize = fontSize + 'px';
             
             // Проверяем, помещается ли текст по ширине и высоте
-            while ((scoreElement.scrollWidth > maxWidth || scoreElement.scrollHeight > maxHeight) && fontSize > 200) {
-                fontSize -= 10;
+            while ((scoreElement.scrollWidth > maxWidth || scoreElement.scrollHeight > maxHeight) && fontSize > 100) {
+                fontSize -= 5; // уменьшаем на 5px для более точной подгонки
+                scoreElement.style.fontSize = fontSize + 'px';
+            }
+            
+            // Дополнительная проверка для очень длинных чисел
+            if (scoreElement.textContent.length > 2 && fontSize > 300) {
+                fontSize = Math.min(fontSize, 300);
                 scoreElement.style.fontSize = fontSize + 'px';
             }
         }
@@ -582,12 +589,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Stadium страница загружена');
             
-            // Тестовая активация полосок для проверки
-            setTimeout(() => {
-                team1Stripe.classList.add('active');
-                team2Stripe.classList.add('active');
-                console.log('Полоски активированы для тестирования');
-            }, 1000);
+    // Тестовая активация полосок для проверки
+    setTimeout(() => {
+        team1Stripe.classList.add('active');
+        team2Stripe.classList.add('active');
+        console.log('Полоски активированы для тестирования');
+        
+        // Применяем адаптивный шрифт к счетам при загрузке
+        adjustScoreFontSize(team1Score);
+        adjustScoreFontSize(team2Score);
+        console.log('Адаптивный шрифт применен к счетам');
+    }, 1000);
         });
     </script>
 </body>
