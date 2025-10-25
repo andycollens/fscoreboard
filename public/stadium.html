@@ -75,14 +75,14 @@
 
         .team1-emblight {
             position: absolute;
-            left: -50%;
+            left: -100px;
             top: 50%;
             transform: translateY(-50%);
-            width: 200px;
-            height: 400px;
-            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+            width: 300px;
+            height: 500px;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
             border-radius: 50%;
-            z-index: -1;
+            z-index: 1;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -195,14 +195,14 @@
 
         .team2-emblight {
             position: absolute;
-            right: -50%;
+            right: -100px;
             top: 50%;
             transform: translateY(-50%);
-            width: 200px;
-            height: 400px;
-            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+            width: 300px;
+            height: 500px;
+            background: radial-gradient(ellipse, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
             border-radius: 50%;
-            z-index: -1;
+            z-index: 1;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -505,6 +505,13 @@
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Stadium страница загружена');
+            
+            // Тестовая активация эмбилайта для проверки
+            setTimeout(() => {
+                team1Emblight.classList.add('active');
+                team2Emblight.classList.add('active');
+                console.log('Эмбилайт активирован для тестирования');
+            }, 1000);
         });
     </script>
 </body>
