@@ -416,8 +416,8 @@
         function updateStripe(team, color) {
             const stripe = team === 'team1' ? team1Stripe : team2Stripe;
             if (color && color !== '') {
-                // Создаем градиент: прозрачный -> цвет команды (30px) -> цвет команды (170px) -> прозрачный (200px)
-                stripe.style.background = `linear-gradient(to right, transparent, ${color} 30px, ${color} 170px, transparent 200px)`;
+                // Создаем градиент: прозрачный -> цвет команды (70px) -> цвет команды (130px) -> прозрачный (200px)
+                stripe.style.background = `linear-gradient(to right, transparent, ${color} 70px, ${color} 130px, transparent 200px)`;
                 // Добавляем небольшую задержку для эффекта появления
                 setTimeout(() => {
                     stripe.classList.add('active');
@@ -425,7 +425,7 @@
             } else {
                 stripe.classList.remove('active');
                 // Сбрасываем фон, если нет цвета
-                stripe.style.background = `linear-gradient(to right, transparent, #2b2b2b 30px, #2b2b2b 170px, transparent 200px)`;
+                stripe.style.background = `linear-gradient(to right, transparent, #2b2b2b 70px, #2b2b2b 130px, transparent 200px)`;
             }
         }
 
