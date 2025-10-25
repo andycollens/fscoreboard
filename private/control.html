@@ -1229,6 +1229,11 @@
     let timerRunning = false;
     let editingPresetId = null;
     let originalPresetData = null;
+    
+    // Переменные для пятикратного нажатия SET
+    let setButtonClicks = 0;
+    let setButtonClickTimeout = null;
+    const SET_CLICK_RESET_TIME = 2000; // 2 секунды для сброса счетчика
     let uploadedLogos = {
       team1: null,
       team2: null
@@ -1591,10 +1596,48 @@
       };
       
       document.getElementById('setBtn').onclick = function() {
-        const seconds = getSecondsFromTimeInput('timeInput');
-        socket.emit('updateScoreboard', { 
-          timerSeconds: seconds 
-        });
+        // Увеличиваем счетчик нажатий
+        setButtonClicks++;
+        
+        // Сбрасываем предыдущий таймаут
+        if (setButtonClickTimeout) {
+          clearTimeout(setButtonClickTimeout);
+        }
+        
+        // Если достигли 5 нажатий
+        if (setButtonClicks >= 5) {
+          // Сбрасываем счетчик
+          setButtonClicks = 0;
+          
+          // Показываем подтверждение
+          if (confirm('Вы уверены, что хотите сбросить таймер и счет? Это действие нельзя отменить.')) {
+            // Сбрасываем таймер и счет
+            socket.emit('updateScoreboard', { 
+              timerSeconds: 0,
+              score1: 0,
+              score2: 0
+            });
+            
+            // Обновляем отображение
+            document.getElementById('timeInput').value = '00:00';
+            document.getElementById('score1Value').textContent = '0';
+            document.getElementById('score2Value').textContent = '0';
+            
+            console.log('Таймер и счет сброшены после пятикратного нажатия SET');
+          }
+        } else {
+          // Обычная функциональность SET
+          const seconds = getSecondsFromTimeInput('timeInput');
+          socket.emit('updateScoreboard', { 
+            timerSeconds: seconds 
+          });
+          
+          // Устанавливаем таймаут для сброса счетчика
+          setButtonClickTimeout = setTimeout(() => {
+            setButtonClicks = 0;
+            console.log('Счетчик нажатий SET сброшен');
+          }, SET_CLICK_RESET_TIME);
+        }
       };
 
       // Счет с защитой от случайных изменений
