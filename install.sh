@@ -296,10 +296,16 @@ check_installation_type() {
         echo ""
         
         echo ""
-        read -p "Продолжить установку? (Y/n): " continue_install
-        if [[ "$continue_install" =~ ^[Nn]$ ]]; then
-            print_info "Установка отменена"
-            exit 0
+        
+        # Проверяем интерактивность
+        if [ -t 0 ]; then
+            read -p "Продолжить установку? (Y/n): " continue_install
+            if [[ "$continue_install" =~ ^[Nn]$ ]]; then
+                print_info "Установка отменена"
+                exit 0
+            fi
+        else
+            print_info "Неинтерактивный режим - продолжаем установку автоматически"
         fi
         
         print_success "Продолжаем установку..."
@@ -577,15 +583,22 @@ main() {
     install_nginx
     check_installation_type
     
-    # Интерактивная настройка только для новых установок
-    if [ "$INSTALLATION_TYPE" = "fresh" ]; then
+    # Интерактивная настройка только для новых установок и интерактивного режима
+    if [ "$INSTALLATION_TYPE" = "fresh" ] && [ -t 0 ]; then
         interactive_setup
     else
-        # Для обновлений используем существующие настройки
-        PORT=$(grep -o 'PORT=[0-9]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "3001")
-        TOKEN=$(grep -o 'TOKEN=[^[:space:]]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$DEFAULT_TOKEN")
+        # Для обновлений или неинтерактивного режима используем автоматические настройки
+        if [ "$INSTALLATION_TYPE" = "update" ]; then
+            PORT=$(grep -o 'PORT=[0-9]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "3001")
+            TOKEN=$(grep -o 'TOKEN=[^[:space:]]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$DEFAULT_TOKEN")
+            print_info "Используются существующие настройки: порт $PORT"
+        else
+            PORT=$(find_free_port $DEFAULT_PORT)
+            TOKEN=$(generate_token)
+            print_info "Автоматически выбраны настройки: порт $PORT"
+        fi
         DOMAIN=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
-        print_info "Используются существующие настройки: порт $PORT, домен $DOMAIN"
+        print_info "Домен/IP: $DOMAIN"
     fi
     clone_repository
     install_dependencies
