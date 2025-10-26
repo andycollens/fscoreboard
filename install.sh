@@ -297,10 +297,13 @@ check_installation_type() {
         
         echo ""
         
-        # Проверяем интерактивность
-        if [ -t 0 ]; then
-            read -p "Продолжить установку? (Y/n): " continue_install
-            if [[ "$continue_install" =~ ^[Nn]$ ]]; then
+        # Проверяем интерактивность и наличие переменной окружения
+        if [ -t 0 ] && [ -z "$NONINTERACTIVE" ]; then
+            echo -n "Продолжить установку? (Y/n): "
+            read -t 10 continue_install
+            if [ $? -ne 0 ] || [ -z "$continue_install" ]; then
+                print_info "Таймаут или пустой ответ - продолжаем установку автоматически"
+            elif [[ "$continue_install" =~ ^[Nn]$ ]]; then
                 print_info "Установка отменена"
                 exit 0
             fi
@@ -574,6 +577,12 @@ print_results() {
 # Основная функция
 main() {
     print_header
+    
+    # Проверяем флаг принудительного неинтерактивного режима
+    if [ "$1" = "--non-interactive" ] || [ "$1" = "-y" ]; then
+        export NONINTERACTIVE=1
+        print_info "Принудительный неинтерактивный режим"
+    fi
     
     check_root
     check_system

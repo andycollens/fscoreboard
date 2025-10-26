@@ -20,11 +20,19 @@
 - ✅ **Готовые ссылки** для всех страниц
 
 #### Использование:
-```bash
-# Скачать и запустить
-curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh | sudo bash
 
-# Или скачать и запустить локально
+**Автоматическая установка (рекомендуется):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh | sudo bash
+```
+
+**Принудительный неинтерактивный режим:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh | sudo bash -s -- --non-interactive
+```
+
+**Интерактивная установка:**
+```bash
 wget https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh
 chmod +x install.sh
 sudo ./install.sh
