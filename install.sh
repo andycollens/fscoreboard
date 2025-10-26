@@ -224,9 +224,16 @@ check_installation_type() {
     local warnings=()
     
     # Проверка существующей установки FSCOREBOARD
-    if [ -d "$INSTALL_DIR" ]; then
+    if [ -d "$INSTALL_DIR" ] && [ -f "$INSTALL_DIR/server/app.js" ]; then
         is_existing_installation=true
-        print_info "Обнаружена существующая установка FSCOREBOARD"
+        print_info "Обнаружена существующая установка FSCOREBOARD в $INSTALL_DIR"
+        
+        # Проверяем статус PM2 процесса
+        if pm2 list | grep -q "fscoreboard.*online"; then
+            print_info "FSCOREBOARD процесс запущен в PM2"
+        else
+            print_warning "FSCOREBOARD процесс не запущен в PM2"
+        fi
     fi
     
     # Проверка Nginx конфигураций
@@ -265,7 +272,28 @@ check_installation_type() {
     # Определение типа установки
     if [ "$is_existing_installation" = true ]; then
         echo -e "\n${PURPLE}🔄 РЕЖИМ: ОБНОВЛЕНИЕ СУЩЕСТВУЮЩЕЙ УСТАНОВКИ${NC}"
-        echo -e "${CYAN}Будет выполнено обновление существующей установки FSCOREBOARD.${NC}"
+        echo -e "${CYAN}Обнаружена существующая установка FSCOREBOARD.${NC}"
+        echo ""
+        echo -e "${GREEN}✅ Что будет сделано:${NC}"
+        echo -e "  • Обновление кода из репозитория"
+        echo -e "  • Перезапуск сервисов с новой конфигурацией"
+        echo -e "  • Сохранение всех настроек и данных"
+        echo -e "  • Проверка работоспособности"
+        echo ""
+        
+        # Интерактивный запрос для обновления
+        if [ -t 0 ] && [ -z "$NONINTERACTIVE" ]; then
+            echo -n "Обновить существующую установку FSCOREBOARD? (Y/n): "
+            read -t 10 update_existing
+            if [ $? -ne 0 ] || [ -z "$update_existing" ]; then
+                print_info "Таймаут или пустой ответ - продолжаем обновление автоматически"
+            elif [[ "$update_existing" =~ ^[Nn]$ ]]; then
+                print_info "Обновление отменено"
+                exit 0
+            fi
+        else
+            print_info "Неинтерактивный режим - продолжаем обновление автоматически"
+        fi
     elif [ ${#warnings[@]} -gt 0 ]; then
         echo -e "\n${BLUE}🆕 РЕЖИМ: УСТАНОВКА НА СЕРВЕР С СУЩЕСТВУЮЩИМИ ПРОЕКТАМИ${NC}"
         echo -e "${CYAN}FSCOREBOARD будет установлен БЕЗОПАСНО рядом с существующими сервисами.${NC}"
@@ -545,23 +573,37 @@ verify_installation() {
 
 # Вывод результатов
 print_results() {
+    # Получаем актуальные данные
+    local current_domain=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+    local current_port=$(grep -o 'PORT=[0-9]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$PORT")
+    local current_token=$(grep -o 'TOKEN=[^[:space:]]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$TOKEN")
+    
     echo -e "\n${GREEN}╔══════════════════════════════════════════════════════════════════════════════╗"
-    echo "║                           УСТАНОВКА ЗАВЕРШЕНА!                              ║"
+    if [ "$INSTALLATION_TYPE" = "update" ]; then
+        echo "║                         ОБНОВЛЕНИЕ ЗАВЕРШЕНО!                              ║"
+    else
+        echo "║                           УСТАНОВКА ЗАВЕРШЕНА!                              ║"
+    fi
     echo "╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
     
-    echo -e "\n${CYAN}🌐 АДРЕСА СТРАНИЦ:${NC}"
-    echo -e "${YELLOW}Панель управления:${NC} http://$DOMAIN/private/control.html?token=$TOKEN"
-    echo -e "${YELLOW}Основное табло:${NC}     http://$DOMAIN/public/scoreboard_vmix.html"
-    echo -e "${YELLOW}Стадион:${NC}            http://$DOMAIN/public/stadium.html"
-    echo -e "${YELLOW}Перерыв:${NC}            http://$DOMAIN/public/htbreak.html"
-    echo -e "${YELLOW}ISKRA CUP табло:${NC}    http://$DOMAIN/public/iskracup_scoreboard.html"
-    echo -e "${YELLOW}ISKRA CUP перерыв:${NC}  http://$DOMAIN/public/iskracup_break.html"
-    echo -e "${YELLOW}ISKRA CUP прематч:${NC}  http://$DOMAIN/public/iskracup_prematch.html"
-    echo -e "${YELLOW}Загрузочный экран:${NC}  http://$DOMAIN/public/preloader.html"
+    echo -e "\n${CYAN}🌐 ГОТОВЫЕ ССЫЛКИ ДЛЯ КОПИРОВАНИЯ:${NC}"
+    echo -e "${YELLOW}Панель управления:${NC}"
+    echo -e "  ${GREEN}http://$current_domain/private/control.html?token=$current_token${NC}"
+    echo ""
+    echo -e "${YELLOW}Страницы табло:${NC}"
+    echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (основное табло)"
+    echo -e "  ${GREEN}http://$current_domain/public/stadium.html${NC}  (стадион)"
+    echo -e "  ${GREEN}http://$current_domain/public/htbreak.html${NC}  (перерыв)"
+    echo -e "  ${GREEN}http://$current_domain/public/preloader.html${NC}  (загрузочный экран)"
+    echo ""
+    echo -e "${YELLOW}ISKRA CUP страницы:${NC}"
+    echo -e "  ${GREEN}http://$current_domain/public/iskracup_scoreboard.html${NC}  (табло)"
+    echo -e "  ${GREEN}http://$current_domain/public/iskracup_break.html${NC}  (перерыв)"
+    echo -e "  ${GREEN}http://$current_domain/public/iskracup_prematch.html${NC}  (прематч)"
     
     echo -e "\n${CYAN}⚙️  КОНФИГУРАЦИЯ:${NC}"
-    echo -e "${YELLOW}Порт:${NC}               $PORT"
-    echo -e "${YELLOW}Токен:${NC}              $TOKEN"
+    echo -e "${YELLOW}Порт:${NC}               $current_port"
+    echo -e "${YELLOW}Токен:${NC}              $current_token"
     echo -e "${YELLOW}Директория:${NC}         $INSTALL_DIR"
     
     echo -e "\n${CYAN}🔧 УПРАВЛЕНИЕ:${NC}"
@@ -571,7 +613,7 @@ print_results() {
     echo -e "${YELLOW}Остановка:${NC}          pm2 stop fscoreboard"
     
     echo -e "\n${GREEN}🎉 FSCOREBOARD готов к использованию!${NC}"
-    echo -e "${BLUE}Откройте панель управления по ссылке выше для начала работы.${NC}"
+    echo -e "${BLUE}Скопируйте ссылку панели управления выше для начала работы.${NC}"
 }
 
 # Основная функция
