@@ -213,12 +213,18 @@ interactive_setup() {
     fi
 }
 
-# Проверка существующих проектов
-check_existing_projects() {
-    print_step "Проверка существующих проектов..."
+# Проверка типа установки и существующих проектов
+check_installation_type() {
+    print_step "Определение типа установки..."
     
-    local conflicts=()
+    local is_existing_installation=false
     local warnings=()
+    
+    # Проверка существующей установки FSCOREBOARD
+    if [ -d "$INSTALL_DIR" ]; then
+        is_existing_installation=true
+        print_info "Обнаружена существующая установка FSCOREBOARD"
+    fi
     
     # Проверка Nginx конфигураций
     if [ -d "$NGINX_SITES_ENABLED" ]; then
@@ -253,55 +259,76 @@ check_existing_projects() {
         warnings+=("ports")
     fi
     
+    # Определение типа установки
+    if [ "$is_existing_installation" = true ]; then
+        echo -e "\n${PURPLE}🔄 РЕЖИМ: ОБНОВЛЕНИЕ СУЩЕСТВУЮЩЕЙ УСТАНОВКИ${NC}"
+        echo -e "${CYAN}Будет выполнено обновление существующей установки FSCOREBOARD.${NC}"
+    elif [ ${#warnings[@]} -gt 0 ]; then
+        echo -e "\n${BLUE}🆕 РЕЖИМ: УСТАНОВКА НА СЕРВЕР С СУЩЕСТВУЮЩИМИ ПРОЕКТАМИ${NC}"
+        echo -e "${CYAN}FSCOREBOARD будет установлен БЕЗОПАСНО рядом с существующими сервисами.${NC}"
+    else
+        echo -e "\n${GREEN}🆕 РЕЖИМ: ЧИСТАЯ УСТАНОВКА${NC}"
+        echo -e "${CYAN}Выполняется установка на чистый сервер.${NC}"
+    fi
+    
     # Обработка конфликтов
     if [ ${#warnings[@]} -gt 0 ]; then
-        echo -e "\n${YELLOW}⚠️  ОБНАРУЖЕНЫ СУЩЕСТВУЮЩИЕ СЕРВИСЫ:${NC}"
-        echo -e "${CYAN}Это нормально для серверов с уже установленными проектами.${NC}"
-        echo -e "${CYAN}FSCOREBOARD будет установлен БЕЗОПАСНО рядом с существующими сервисами.${NC}"
         echo ""
         echo -e "${GREEN}✅ Что будет сделано:${NC}"
-        echo -e "  • Nginx: добавлена новая конфигурация (существующие сохранены)"
-        echo -e "  • PM2: добавлен новый процесс (существующие не затронуты)"
-        echo -e "  • Порты: выбран свободный порт или предложен альтернативный"
+        if [ "$is_existing_installation" = true ]; then
+            echo -e "  • Обновление кода из репозитория"
+            echo -e "  • Перезапуск сервисов с новой конфигурацией"
+            echo -e "  • Сохранение всех настроек и данных"
+        else
+            echo -e "  • Nginx: добавлена новая конфигурация (существующие сохранены)"
+            echo -e "  • PM2: добавлен новый процесс (существующие не затронуты)"
+            echo -e "  • Порты: выбран свободный порт или предложен альтернативный"
+        fi
         echo ""
         echo -e "${BLUE}🔧 Управление после установки:${NC}"
         echo -e "  • FSCOREBOARD: pm2 restart fscoreboard"
-        echo -e "  • Другие проекты: работают независимо"
+        if [ "$is_existing_installation" = false ]; then
+            echo -e "  • Другие проекты: работают независимо"
+        fi
         echo ""
         
-        read -p "Продолжить безопасную установку? (Y/n): " continue_install
+        read -p "Продолжить установку? (Y/n): " continue_install
         if [[ "$continue_install" =~ ^[Nn]$ ]]; then
             print_info "Установка отменена"
             exit 0
         fi
         
-        print_success "Продолжаем безопасную установку..."
+        print_success "Продолжаем установку..."
     else
         print_success "Конфликтов не обнаружено"
     fi
+    
+    # Сохраняем тип установки для использования в других функциях
+    export INSTALLATION_TYPE=$([ "$is_existing_installation" = true ] && echo "update" || echo "fresh")
 }
 
-# Клонирование репозитория
+# Клонирование или обновление репозитория
 clone_repository() {
-    print_step "Клонирование репозитория..."
-    
-    if [ -d "$INSTALL_DIR" ]; then
-        print_warning "Директория $INSTALL_DIR уже существует"
-        read -p "Удалить существующую установку? (y/N): " remove_existing
-        if [[ "$remove_existing" =~ ^[Yy]$ ]]; then
-            rm -rf "$INSTALL_DIR"
-            print_info "Существующая установка удалена"
-        else
-            print_info "Обновление существующей установки..."
-            cd "$INSTALL_DIR"
-            git pull origin main
-            return
+    if [ "$INSTALLATION_TYPE" = "update" ]; then
+        print_step "Обновление репозитория..."
+        cd "$INSTALL_DIR"
+        
+        # Создание резервной копии конфигурации
+        if [ -f ".env" ]; then
+            cp .env .env.backup.$(date +%Y%m%d_%H%M%S)
+            print_info "Создана резервная копия конфигурации"
         fi
+        
+        # Обновление кода
+        git fetch origin
+        git reset --hard origin/main
+        print_success "Код обновлен из репозитория"
+    else
+        print_step "Клонирование репозитория..."
+        git clone "$REPO_URL" "$INSTALL_DIR"
+        chown -R $SUDO_USER:$SUDO_USER "$INSTALL_DIR"
+        print_success "Репозиторий клонирован"
     fi
-    
-    git clone "$REPO_URL" "$INSTALL_DIR"
-    chown -R $SUDO_USER:$SUDO_USER "$INSTALL_DIR"
-    print_success "Репозиторий клонирован"
 }
 
 # Установка зависимостей
@@ -387,36 +414,71 @@ EOF
     fi
 }
 
-# Создание .env файла
+# Создание или обновление .env файла
 create_env_file() {
-    print_step "Создание файла конфигурации..."
-    
-    cat > "$INSTALL_DIR/.env" << EOF
+    if [ "$INSTALLATION_TYPE" = "update" ]; then
+        print_step "Обновление файла конфигурации..."
+        
+        # Восстанавливаем резервную копию если есть
+        local latest_backup=$(ls -t "$INSTALL_DIR"/.env.backup.* 2>/dev/null | head -1)
+        if [ -n "$latest_backup" ]; then
+            cp "$latest_backup" "$INSTALL_DIR/.env"
+            print_info "Восстановлена конфигурация из резервной копии"
+        fi
+        
+        # Обновляем только если файл не существует
+        if [ ! -f "$INSTALL_DIR/.env" ]; then
+            cat > "$INSTALL_DIR/.env" << EOF
 PORT=$PORT
 TOKEN=$TOKEN
 NODE_ENV=production
 EOF
+            print_info "Создан новый файл .env"
+        else
+            print_info "Сохранена существующая конфигурация"
+        fi
+    else
+        print_step "Создание файла конфигурации..."
+        
+        cat > "$INSTALL_DIR/.env" << EOF
+PORT=$PORT
+TOKEN=$TOKEN
+NODE_ENV=production
+EOF
+        print_success "Файл .env создан"
+    fi
     
     chown $SUDO_USER:$SUDO_USER "$INSTALL_DIR/.env"
-    print_success "Файл .env создан"
 }
 
 # Запуск приложения
 start_application() {
-    print_step "Запуск приложения..."
-    
-    cd "$INSTALL_DIR"
-    
-    # Остановка существующего процесса если есть
-    pm2 stop fscoreboard 2>/dev/null || true
-    pm2 delete fscoreboard 2>/dev/null || true
-    
-    # Запуск нового процесса
-    pm2 start server/app.js --name fscoreboard --env production
-    pm2 save
-    pm2 startup systemd -u $SUDO_USER --hp /home/$SUDO_USER
-    
-    print_success "Приложение запущено"
+    if [ "$INSTALLATION_TYPE" = "update" ]; then
+        print_step "Перезапуск приложения..."
+        cd "$INSTALL_DIR"
+        
+        # Перезапуск существующего процесса
+        pm2 restart fscoreboard 2>/dev/null || {
+            print_warning "Процесс не найден, запускаем заново"
+            pm2 start server/app.js --name fscoreboard --env production
+        }
+        pm2 save
+        print_success "Приложение перезапущено"
+    else
+        print_step "Запуск приложения..."
+        cd "$INSTALL_DIR"
+        
+        # Остановка существующего процесса если есть
+        pm2 stop fscoreboard 2>/dev/null || true
+        pm2 delete fscoreboard 2>/dev/null || true
+        
+        # Запуск нового процесса
+        pm2 start server/app.js --name fscoreboard --env production
+        pm2 save
+        pm2 startup systemd -u $SUDO_USER --hp /home/$SUDO_USER
+        
+        print_success "Приложение запущено"
+    fi
 }
 
 # Перезапуск Nginx
@@ -509,7 +571,7 @@ main() {
     install_nodejs
     install_pm2
     install_nginx
-    check_existing_projects
+    check_installation_type
     interactive_setup
     clone_repository
     install_dependencies
