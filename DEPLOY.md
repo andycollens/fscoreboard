@@ -72,6 +72,8 @@ npm install
 
 ## 3. Настройка Nginx
 
+> **📋 Важно:** FSCOREBOARD использует Express.js сервер для раздачи всех статических файлов. Nginx работает только как reverse proxy, перенаправляя все запросы на Express сервер (порт 3001). Статические файлы доступны через пути `/public/` и `/private/`.
+
 ### Создание конфигурации Nginx
 ```bash
 sudo nano /etc/nginx/sites-available/fscoreboard
@@ -83,15 +85,7 @@ server {
     listen 80;
     server_name _;  # Работает с любым доменом или IP
 
-    # Статические файлы (HTML страницы)
-    location ~ \.(html|css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        root /opt/fscoreboard/public;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        try_files $uri =404;
-    }
-
-    # WebSocket поддержка
+    # WebSocket поддержка для Socket.IO
     location /socket.io/ {
         proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
@@ -103,7 +97,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # API и основное приложение
+    # Все остальные запросы проксируются на Express сервер
     location / {
         proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
@@ -165,16 +159,16 @@ http://YOUR_SERVER_IP/private/control.html
 ```
 
 **Основные страницы табло:**
-- `http://YOUR_SERVER_IP/scoreboard_vmix.html` - основное табло
-- `http://YOUR_SERVER_IP/stadium.html` - стадион
-- `http://YOUR_SERVER_IP/htbreak.html` - перерыв
-- `http://YOUR_SERVER_IP/htbreak_score.html` - перерыв со счетом
-- `http://YOUR_SERVER_IP/preloader.html` - загрузочный экран
+- `http://YOUR_SERVER_IP/public/scoreboard_vmix.html` - основное табло
+- `http://YOUR_SERVER_IP/public/stadium.html` - стадион
+- `http://YOUR_SERVER_IP/public/htbreak.html` - перерыв
+- `http://YOUR_SERVER_IP/public/htbreak_score.html` - перерыв со счетом
+- `http://YOUR_SERVER_IP/public/preloader.html` - загрузочный экран
 
 **ISKRA CUP страницы:**
-- `http://YOUR_SERVER_IP/iskracup_break.html` - ISKRA CUP перерыв
-- `http://YOUR_SERVER_IP/iskracup_prematch.html` - ISKRA CUP прематч
-- `http://YOUR_SERVER_IP/iskracup_scoreboard.html` - ISKRA CUP табло
+- `http://YOUR_SERVER_IP/public/iskracup_break.html` - ISKRA CUP перерыв
+- `http://YOUR_SERVER_IP/public/iskracup_prematch.html` - ISKRA CUP прематч
+- `http://YOUR_SERVER_IP/public/iskracup_scoreboard.html` - ISKRA CUP табло
 
 ## 7. Настройка SSL (опционально)
 
@@ -226,7 +220,24 @@ git pull origin main
 pm2 restart fscoreboard
 ```
 
-## 10. Функциональность системы
+## 10. Архитектура системы
+
+### Как работает FSCOREBOARD:
+1. **Express.js сервер** (порт 3001) - основное приложение
+2. **Nginx** - reverse proxy, перенаправляет запросы на Express
+3. **Статические файлы** - обслуживаются через Express по путям:
+   - `/public/` - страницы табло и ресурсы
+   - `/private/` - панель управления
+4. **Socket.IO** - WebSocket соединения для real-time обновлений
+5. **PM2** - управление процессами Node.js
+
+### Структура URL:
+- `http://IP/private/control.html` - панель управления
+- `http://IP/public/scoreboard_vmix.html` - основное табло
+- `http://IP/public/stadium.html` - стадионное табло
+- `http://IP/public/iskracup_*.html` - ISKRA CUP страницы
+
+## 11. Функциональность системы
 
 ### Основные возможности:
 - **Управление матчем** - таймер, счет, команды
@@ -309,6 +320,8 @@ sudo systemctl enable nginx && sudo systemctl start nginx
 ```
 
 **Затем настройте Nginx согласно разделу 3.**
+
+> **⚠️ ВАЖНО:** После установки обязательно настройте Nginx конфигурацию, иначе статические файлы не будут загружаться!
 
 ## Поддержка
 
