@@ -78,12 +78,27 @@ check_system() {
     print_success "Система совместима"
 }
 
-# Обновление системы
-update_system() {
-    print_step "Обновление системы..."
-    apt update -y
-    apt upgrade -y
-    print_success "Система обновлена"
+# Проверка обновлений (опционально)
+check_updates() {
+    print_step "Проверка обновлений системы..."
+    
+    local updates_available=$(apt list --upgradable 2>/dev/null | grep -c "upgradable" || echo "0")
+    
+    if [ "$updates_available" -gt 0 ]; then
+        print_warning "Доступно $updates_available обновлений пакетов"
+        read -p "Обновить систему перед установкой? (y/N): " update_system
+        
+        if [[ "$update_system" =~ ^[Yy]$ ]]; then
+            print_info "Обновление системы..."
+            apt update -y
+            apt upgrade -y
+            print_success "Система обновлена"
+        else
+            print_info "Обновление пропущено"
+        fi
+    else
+        print_success "Система актуальна"
+    fi
 }
 
 # Проверка и установка Node.js
@@ -203,6 +218,7 @@ check_existing_projects() {
     print_step "Проверка существующих проектов..."
     
     local conflicts=()
+    local warnings=()
     
     # Проверка Nginx конфигураций
     if [ -d "$NGINX_SITES_ENABLED" ]; then
@@ -210,7 +226,7 @@ check_existing_projects() {
         if [ "$nginx_configs" -gt 0 ]; then
             print_warning "Найдены существующие конфигурации Nginx:"
             ls -la $NGINX_SITES_ENABLED/
-            conflicts+=("nginx")
+            warnings+=("nginx")
         fi
     fi
     
@@ -220,7 +236,7 @@ check_existing_projects() {
         if [ "$pm2_processes" -gt 0 ]; then
             print_warning "Найдены запущенные PM2 процессы:"
             pm2 list
-            conflicts+=("pm2")
+            warnings+=("pm2")
         fi
     fi
     
@@ -234,16 +250,32 @@ check_existing_projects() {
     
     if [ ${#occupied_ports[@]} -gt 0 ]; then
         print_warning "Занятые порты: ${occupied_ports[*]}"
-        conflicts+=("ports")
+        warnings+=("ports")
     fi
     
-    if [ ${#conflicts[@]} -gt 0 ]; then
-        print_warning "Обнаружены конфликты: ${conflicts[*]}"
-        read -p "Продолжить установку? (y/N): " continue_install
-        if [[ ! "$continue_install" =~ ^[Yy]$ ]]; then
+    # Обработка конфликтов
+    if [ ${#warnings[@]} -gt 0 ]; then
+        echo -e "\n${YELLOW}⚠️  ОБНАРУЖЕНЫ СУЩЕСТВУЮЩИЕ СЕРВИСЫ:${NC}"
+        echo -e "${CYAN}Это нормально для серверов с уже установленными проектами.${NC}"
+        echo -e "${CYAN}FSCOREBOARD будет установлен БЕЗОПАСНО рядом с существующими сервисами.${NC}"
+        echo ""
+        echo -e "${GREEN}✅ Что будет сделано:${NC}"
+        echo -e "  • Nginx: добавлена новая конфигурация (существующие сохранены)"
+        echo -e "  • PM2: добавлен новый процесс (существующие не затронуты)"
+        echo -e "  • Порты: выбран свободный порт или предложен альтернативный"
+        echo ""
+        echo -e "${BLUE}🔧 Управление после установки:${NC}"
+        echo -e "  • FSCOREBOARD: pm2 restart fscoreboard"
+        echo -e "  • Другие проекты: работают независимо"
+        echo ""
+        
+        read -p "Продолжить безопасную установку? (Y/n): " continue_install
+        if [[ "$continue_install" =~ ^[Nn]$ ]]; then
             print_info "Установка отменена"
             exit 0
         fi
+        
+        print_success "Продолжаем безопасную установку..."
     else
         print_success "Конфликтов не обнаружено"
     fi
@@ -473,7 +505,7 @@ main() {
     
     check_root
     check_system
-    update_system
+    check_updates
     install_nodejs
     install_pm2
     install_nginx
