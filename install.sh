@@ -169,6 +169,50 @@ find_free_port() {
     exit 1
 }
 
+# Поиск уникального имени для PM2 процесса
+find_unique_pm2_name() {
+    local base_name="fscoreboard"
+    local name="$base_name"
+    local counter=1
+    
+    while pm2 list --no-color 2>/dev/null | grep -q " $name "; do
+        name="${base_name}_${counter}"
+        counter=$((counter + 1))
+    done
+    
+    echo "$name"
+}
+
+# Проверка и освобождение порта
+ensure_port_free() {
+    local port=$1
+    local processes=$(netstat -tlnp 2>/dev/null | grep ":$port " | awk '{print $7}' | cut -d'/' -f1 | sort -u)
+    
+    if [ -n "$processes" ]; then
+        print_warning "Порт $port занят процессами: $processes"
+        
+        for pid in $processes; do
+            if [ "$pid" != "0" ] && [ "$pid" != "-" ]; then
+                print_info "Останавливаем процесс $pid на порту $port"
+                kill -9 "$pid" 2>/dev/null || true
+            fi
+        done
+        
+        sleep 2
+        
+        # Проверяем, освободился ли порт
+        if netstat -tlnp 2>/dev/null | grep -q ":$port "; then
+            print_warning "Порт $port все еще занят, ищем альтернативный"
+            return 1
+        else
+            print_success "Порт $port освобожден"
+            return 0
+        fi
+    fi
+    
+    return 0
+}
+
 # Генерация токена
 generate_token() {
     openssl rand -hex 16
@@ -494,32 +538,42 @@ EOF
 
 # Запуск приложения
 start_application() {
-    if [ "$INSTALLATION_TYPE" = "update" ]; then
-        print_step "Перезапуск приложения..."
-        cd "$INSTALL_DIR"
+    print_step "Запуск приложения..."
+    cd "$INSTALL_DIR"
+    
+    # Получаем уникальное имя для процесса
+    PM2_NAME=$(find_unique_pm2_name)
+    print_info "Используем имя процесса: $PM2_NAME"
+    
+    # Останавливаем и удаляем существующие процессы с похожими именами
+    pm2 stop fscoreboard 2>/dev/null || true
+    pm2 delete fscoreboard 2>/dev/null || true
+    
+    # Останавливаем процессы с похожими именами
+    for i in {1..10}; do
+        pm2 stop "fscoreboard_$i" 2>/dev/null || true
+        pm2 delete "fscoreboard_$i" 2>/dev/null || true
+    done
+    
+    # Проверяем и освобождаем порт
+    if ! ensure_port_free $PORT; then
+        print_warning "Не удалось освободить порт $PORT, ищем альтернативный"
+        PORT=$(find_free_port $PORT)
+        print_info "Выбран альтернативный порт: $PORT"
         
-        # Перезапуск существующего процесса
-        pm2 restart fscoreboard 2>/dev/null || {
-            print_warning "Процесс не найден, запускаем заново"
-            pm2 start server/app.js --name fscoreboard --env production
-        }
-        pm2 save
-        print_success "Приложение перезапущено"
-    else
-        print_step "Запуск приложения..."
-        cd "$INSTALL_DIR"
-        
-        # Остановка существующего процесса если есть
-        pm2 stop fscoreboard 2>/dev/null || true
-        pm2 delete fscoreboard 2>/dev/null || true
-        
-        # Запуск нового процесса
-        pm2 start server/app.js --name fscoreboard --env production
-        pm2 save
-        pm2 startup systemd -u $SUDO_USER --hp /home/$SUDO_USER
-        
-        print_success "Приложение запущено"
+        # Обновляем .env файл с новым портом
+        sed -i "s/PORT=.*/PORT=$PORT/" "$INSTALL_DIR/.env"
     fi
+    
+    # Запуск нового процесса
+    pm2 start server/app.js --name "$PM2_NAME" --env production
+    pm2 save
+    
+    if [ "$INSTALLATION_TYPE" = "fresh" ]; then
+        pm2 startup systemd -u $SUDO_USER --hp /home/$SUDO_USER
+    fi
+    
+    print_success "Приложение запущено как '$PM2_NAME' на порту $PORT"
 }
 
 # Перезапуск Nginx
@@ -536,7 +590,7 @@ verify_installation() {
     # Ожидание запуска приложения
     sleep 5
     
-    # Проверка PM2
+    # Проверка PM2 (используем динамическое имя)
     if pm2 list | grep -q "fscoreboard.*online"; then
         print_success "PM2 процесс запущен"
     else
@@ -618,6 +672,7 @@ print_results() {
     echo -e "${YELLOW}Логи:${NC}               pm2 logs fscoreboard"
     echo -e "${YELLOW}Перезапуск:${NC}         pm2 restart fscoreboard"
     echo -e "${YELLOW}Остановка:${NC}          pm2 stop fscoreboard"
+    echo -e "${YELLOW}Поиск процесса:${NC}     pm2 list | grep fscoreboard"
     
     echo -e "\n${GREEN}🎉 FSCOREBOARD готов к использованию!${NC}"
     echo -e "${BLUE}Скопируйте ссылку панели управления выше для начала работы.${NC}"
@@ -675,6 +730,7 @@ main() {
         print_error "Установка завершена с ошибками"
         print_info "Проверьте логи: pm2 logs fscoreboard"
         print_info "Попробуйте перезапустить: pm2 restart fscoreboard"
+        print_info "Или найдите процесс: pm2 list"
     fi
     
     echo -e "\n${PURPLE}🔍 ОТЛАДКА: Функция main завершена${NC}"
