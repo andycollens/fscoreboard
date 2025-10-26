@@ -82,7 +82,10 @@ check_system() {
 check_updates() {
     print_step "Проверка обновлений системы..."
     
-    local updates_available=$(apt list --upgradable 2>/dev/null | grep -c "upgradable" || echo "0")
+    local updates_available=$(apt list --upgradable 2>/dev/null | grep -c "upgradable" 2>/dev/null || echo "0")
+    
+    # Убираем лишние символы и проверяем что это число
+    updates_available=$(echo "$updates_available" | tr -d '\n\r' | grep -o '^[0-9]*$' || echo "0")
     
     if [ "$updates_available" -gt 0 ]; then
         print_warning "Доступно $updates_available обновлений пакетов"
@@ -292,6 +295,7 @@ check_installation_type() {
         fi
         echo ""
         
+        echo ""
         read -p "Продолжить установку? (Y/n): " continue_install
         if [[ "$continue_install" =~ ^[Nn]$ ]]; then
             print_info "Установка отменена"
@@ -572,7 +576,17 @@ main() {
     install_pm2
     install_nginx
     check_installation_type
-    interactive_setup
+    
+    # Интерактивная настройка только для новых установок
+    if [ "$INSTALLATION_TYPE" = "fresh" ]; then
+        interactive_setup
+    else
+        # Для обновлений используем существующие настройки
+        PORT=$(grep -o 'PORT=[0-9]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "3001")
+        TOKEN=$(grep -o 'TOKEN=[^[:space:]]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$DEFAULT_TOKEN")
+        DOMAIN=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+        print_info "Используются существующие настройки: порт $PORT, домен $DOMAIN"
+    fi
     clone_repository
     install_dependencies
     create_directories
