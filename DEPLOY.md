@@ -6,7 +6,7 @@
 
 - Ubuntu 24.04 LTS
 - Root доступ или sudo права
-- Доменное имя (для SSL)
+- Доменное имя (опционально) или IP-адрес сервера
 
 ## 1. Подготовка сервера
 
@@ -17,7 +17,7 @@ sudo apt update && sudo apt upgrade -y
 
 ### Установка Node.js LTS
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
@@ -29,6 +29,8 @@ sudo npm install -g pm2
 ### Установка Nginx
 ```bash
 sudo apt install nginx -y
+sudo systemctl enable nginx
+sudo systemctl start nginx
 ```
 
 ## 2. Развёртывание приложения
@@ -36,108 +38,130 @@ sudo apt install nginx -y
 ### Клонирование репозитория
 ```bash
 cd /opt
-sudo git clone <your-repository-url> fscoreboard
+sudo git clone https://github.com/andycollens/fscoreboard.git
+sudo chown -R $USER:$USER /opt/fscoreboard
 cd fscoreboard
 ```
 
 ### Установка зависимостей
 ```bash
-sudo npm ci --only=production
+npm install
 ```
 
-### Создание пользователя для приложения
-```bash
-sudo useradd -r -s /bin/false fscoreboard
-sudo chown -R fscoreboard:fscoreboard /opt/fscoreboard
-```
+## 3. Настройка Nginx
 
-### Настройка окружения
-```bash
-sudo cp env.example .env
-sudo nano .env
-```
-
-Настройте переменные в `.env`:
-```env
-PORT=3001
-TOKEN=your-very-secure-token-here
-SAVE_PATH=/opt/fscoreboard/server/state.json
-NODE_ENV=production
-```
-
-### Создание директории для логов
-```bash
-sudo mkdir -p /opt/fscoreboard/logs
-sudo chown fscoreboard:fscoreboard /opt/fscoreboard/logs
-```
-
-## 3. Настройка PM2
-
-### Запуск приложения через PM2
-```bash
-cd /opt/fscoreboard
-sudo pm2 start ecosystem.config.js --env production
-```
-
-### Сохранение конфигурации PM2
-```bash
-sudo pm2 save
-```
-
-### Настройка автозапуска
-```bash
-sudo pm2 startup
-# Выполните команду, которую выведет PM2
-```
-
-### Проверка статуса
-```bash
-sudo pm2 status
-sudo pm2 logs fscoreboard
-```
-
-## 4. Настройка Nginx
-
-### Копирование конфигурации
-```bash
-sudo cp nginx-scoreboard.conf /etc/nginx/sites-available/fscoreboard
-sudo ln -s /etc/nginx/sites-available/fscoreboard /etc/nginx/sites-enabled/
-```
-
-### Редактирование конфигурации
+### Создание конфигурации Nginx
 ```bash
 sudo nano /etc/nginx/sites-available/fscoreboard
 ```
 
-Замените `your-domain.com` на ваш домен:
+**Вставьте следующую конфигурацию:**
 ```nginx
-server_name your-domain.com;
+server {
+    listen 80;
+    server_name _;  # Работает с любым доменом или IP
+
+    # Статические файлы (HTML страницы)
+    location ~ \.(html|css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        root /opt/fscoreboard/public;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # WebSocket поддержка
+    location /socket.io/ {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # API и основное приложение
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Логи
+    access_log /var/log/nginx/fscoreboard_access.log;
+    error_log /var/log/nginx/fscoreboard_error.log;
+}
 ```
 
-### Удаление дефолтной конфигурации
+### Активация конфигурации
 ```bash
+sudo ln -s /etc/nginx/sites-available/fscoreboard /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default
-```
-
-### Проверка конфигурации
-```bash
 sudo nginx -t
+sudo systemctl reload nginx
 ```
 
-### Перезапуск Nginx
+## 4. Настройка PM2
+
+### Запуск приложения
 ```bash
-sudo systemctl restart nginx
-sudo systemctl enable nginx
+cd /opt/fscoreboard
+pm2 start server/app.js --name fscoreboard
+pm2 save
+pm2 startup
 ```
 
-## 5. Настройка SSL (Let's Encrypt)
+### Проверка статуса
+```bash
+pm2 status
+pm2 logs fscoreboard
+```
+
+## 5. Настройка файрвола
+
+```bash
+sudo ufw allow ssh
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
+```
+
+## 6. Проверка развёртывания
+
+### Проверка доступности
+Замените `YOUR_SERVER_IP` на IP-адрес вашего сервера:
+
+**Панель управления:**
+```
+http://YOUR_SERVER_IP/private/control.html
+```
+
+**Основные страницы табло:**
+- `http://YOUR_SERVER_IP/scoreboard_vmix.html` - основное табло
+- `http://YOUR_SERVER_IP/stadium.html` - стадион
+- `http://YOUR_SERVER_IP/htbreak.html` - перерыв
+- `http://YOUR_SERVER_IP/htbreak_score.html` - перерыв со счетом
+- `http://YOUR_SERVER_IP/preloader.html` - загрузочный экран
+
+**ISKRA CUP страницы:**
+- `http://YOUR_SERVER_IP/iskracup_break.html` - ISKRA CUP перерыв
+- `http://YOUR_SERVER_IP/iskracup_prematch.html` - ISKRA CUP прематч
+- `http://YOUR_SERVER_IP/iskracup_scoreboard.html` - ISKRA CUP табло
+
+## 7. Настройка SSL (опционально)
 
 ### Установка Certbot
 ```bash
 sudo apt install certbot python3-certbot-nginx -y
 ```
 
-### Получение SSL сертификата
+### Получение SSL сертификата (только если есть домен)
 ```bash
 sudo certbot --nginx -d your-domain.com
 ```
@@ -152,46 +176,12 @@ sudo crontab -e
 0 12 * * * /usr/bin/certbot renew --quiet
 ```
 
-## 6. Настройка файрвола
-
-```bash
-sudo ufw allow ssh
-sudo ufw allow 'Nginx Full'
-sudo ufw enable
-```
-
-## 7. Проверка развёртывания
-
-### Проверка статуса сервисов
-```bash
-sudo systemctl status nginx
-sudo pm2 status
-```
-
-### Проверка доступности
-```bash
-curl -I http://localhost:3001/healthz
-curl -I https://your-domain.com/healthz
-```
-
-### Тестирование панели управления
-Откройте в браузере:
-```
-https://your-domain.com/control?token=your-very-secure-token-here
-```
-
-### Тестирование оверлеев
-- `https://your-domain.com/scoreboard_vmix.html`
-- `https://your-domain.com/htbreak.html`
-- `https://your-domain.com/htbreak_score.html`
-- `https://your-domain.com/preloader.html`
-
 ## 8. Мониторинг и логи
 
 ### Просмотр логов PM2
 ```bash
-sudo pm2 logs fscoreboard
-sudo pm2 logs fscoreboard --lines 100
+pm2 logs fscoreboard
+pm2 logs fscoreboard --lines 100
 ```
 
 ### Просмотр логов Nginx
@@ -202,69 +192,33 @@ sudo tail -f /var/log/nginx/error.log
 
 ### Мониторинг ресурсов
 ```bash
-sudo pm2 monit
+pm2 monit
 ```
 
-## 9. Резервное копирование
-
-### Создание скрипта бэкапа
-```bash
-sudo nano /opt/backup-fscoreboard.sh
-```
-
-```bash
-#!/bin/bash
-BACKUP_DIR="/opt/backups/fscoreboard"
-DATE=$(date +%Y%m%d_%H%M%S)
-
-mkdir -p $BACKUP_DIR
-
-# Бэкап состояния
-cp /opt/fscoreboard/server/state.json $BACKUP_DIR/state_$DATE.json
-
-# Бэкап логов
-tar -czf $BACKUP_DIR/logs_$DATE.tar.gz /opt/fscoreboard/logs/
-
-# Очистка старых бэкапов (старше 30 дней)
-find $BACKUP_DIR -name "*.json" -mtime +30 -delete
-find $BACKUP_DIR -name "*.tar.gz" -mtime +30 -delete
-
-echo "Backup completed: $DATE"
-```
-
-```bash
-sudo chmod +x /opt/backup-fscoreboard.sh
-```
-
-### Настройка автоматического бэкапа
-```bash
-sudo crontab -e
-```
-
-Добавьте:
-```
-0 2 * * * /opt/backup-fscoreboard.sh
-```
-
-## 10. Обновление приложения
-
-### Остановка приложения
-```bash
-sudo pm2 stop fscoreboard
-```
+## 9. Обновление приложения
 
 ### Обновление кода
 ```bash
 cd /opt/fscoreboard
-sudo git pull origin main
-sudo npm ci --only=production
+git pull origin main
+pm2 restart fscoreboard
 ```
 
-### Запуск обновлённого приложения
-```bash
-sudo pm2 start fscoreboard
-sudo pm2 save
-```
+## 10. Функциональность системы
+
+### Основные возможности:
+- **Управление матчем** - таймер, счет, команды
+- **Предустановки** - сохранение и загрузка настроек матчей
+- **Логотипы команд** - загрузка и управление логотипами
+- **Защита от случайных действий** - подтверждение критических операций
+- **Множественные страницы отображения** - для разных сценариев использования
+
+### Страницы отображения:
+- **scoreboard_vmix.html** - основное табло для vMix
+- **stadium.html** - стадионное табло
+- **htbreak.html** - экран перерыва
+- **preloader.html** - загрузочный экран
+- **ISKRA CUP страницы** - специализированные страницы для турнира
 
 ## Устранение неполадок
 
@@ -276,7 +230,7 @@ sudo lsof -i :3001
 
 ### Проблемы с правами доступа
 ```bash
-sudo chown -R fscoreboard:fscoreboard /opt/fscoreboard
+sudo chown -R $USER:$USER /opt/fscoreboard
 sudo chmod -R 755 /opt/fscoreboard
 ```
 
@@ -289,14 +243,19 @@ sudo journalctl -u nginx
 
 ### Проблемы с PM2
 ```bash
-sudo pm2 logs fscoreboard --err
-sudo pm2 restart fscoreboard
+pm2 logs fscoreboard --err
+pm2 restart fscoreboard
+```
+
+### Перезапуск всех сервисов
+```bash
+pm2 restart fscoreboard
+sudo systemctl restart nginx
 ```
 
 ## Безопасность
 
 - Регулярно обновляйте систему: `sudo apt update && sudo apt upgrade`
-- Используйте сильные токены в `.env`
 - Настройте fail2ban для защиты от брутфорса
 - Регулярно проверяйте логи на подозрительную активность
 - Настройте мониторинг ресурсов сервера
@@ -304,7 +263,35 @@ sudo pm2 restart fscoreboard
 ## Производительность
 
 - Настройте мониторинг CPU и памяти
-- Используйте CDN для статических файлов
+- Используйте CDN для статических файлов (опционально)
 - Настройте кэширование в Nginx
 - Рассмотрите использование Redis для сессий (если необходимо)
 
+## Быстрая установка (одной командой)
+
+Для опытных пользователей - полная установка одной командой:
+
+```bash
+sudo apt update && sudo apt upgrade -y && \
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
+sudo apt-get install -y nodejs nginx && \
+sudo npm install -g pm2 && \
+cd /opt && \
+sudo git clone https://github.com/andycollens/fscoreboard.git && \
+sudo chown -R $USER:$USER /opt/fscoreboard && \
+cd fscoreboard && \
+npm install && \
+pm2 start server/app.js --name fscoreboard && \
+pm2 save && pm2 startup && \
+sudo systemctl enable nginx && sudo systemctl start nginx
+```
+
+**Затем настройте Nginx согласно разделу 3.**
+
+## Поддержка
+
+При возникновении проблем:
+1. Проверьте логи: `pm2 logs fscoreboard`
+2. Проверьте статус сервисов: `pm2 status` и `sudo systemctl status nginx`
+3. Проверьте конфигурацию Nginx: `sudo nginx -t`
+4. Убедитесь, что порт 3001 свободен: `sudo netstat -tlnp | grep :3001`
