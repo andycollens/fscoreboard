@@ -573,10 +573,17 @@ verify_installation() {
 
 # Вывод результатов
 print_results() {
+    print_step "Подготовка результатов установки..."
+    
     # Получаем актуальные данные
     local current_domain=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
     local current_port=$(grep -o 'PORT=[0-9]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$PORT")
     local current_token=$(grep -o 'TOKEN=[^[:space:]]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$TOKEN")
+    
+    # Отладочная информация
+    print_info "Домен: $current_domain"
+    print_info "Порт: $current_port"
+    print_info "Токен: $current_token"
     
     echo -e "\n${GREEN}╔══════════════════════════════════════════════════════════════════════════════╗"
     if [ "$INSTALLATION_TYPE" = "update" ]; then
@@ -658,8 +665,16 @@ main() {
     create_env_file
     start_application
     restart_nginx
-    verify_installation
+    # Всегда показываем результаты, даже если есть ошибки
     print_results
+    
+    if verify_installation; then
+        print_success "Установка завершена успешно!"
+    else
+        print_error "Установка завершена с ошибками"
+        print_info "Проверьте логи: pm2 logs fscoreboard"
+        print_info "Попробуйте перезапустить: pm2 restart fscoreboard"
+    fi
 }
 
 # Запуск
