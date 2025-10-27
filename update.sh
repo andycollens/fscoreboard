@@ -332,7 +332,16 @@ install_links_command() {
     # Создаем глобальную команду
     ln -sf "/opt/fscoreboard/fscoreboard-links.sh" /usr/local/bin/fscoreboard-links
     
-    print_success "Команда fscoreboard-links установлена"
+    # Дополнительно исправляем права на симлинк
+    chmod +x /usr/local/bin/fscoreboard-links
+    
+    # Проверяем, что команда работает
+    if /usr/local/bin/fscoreboard-links --help >/dev/null 2>&1 || /usr/local/bin/fscoreboard-links >/dev/null 2>&1; then
+        print_success "Команда fscoreboard-links установлена и работает"
+    else
+        print_warning "Команда установлена, но может потребоваться перезагрузка терминала"
+    fi
+    
     print_info "Использование: fscoreboard-links"
 }
 
