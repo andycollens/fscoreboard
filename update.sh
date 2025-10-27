@@ -173,6 +173,11 @@ detect_changes() {
     RELOAD_NGINX=false
     FULL_RESTART=false
     
+    # Проверяем, есть ли PM2 процесс
+    if ! pm2 list | grep -q "fscoreboard"; then
+        print_info "PM2 процесс не найден, будет создан новый"
+    fi
+    
     if [ "$has_server_changes" = true ] || [ "$has_config_changes" = true ]; then
         UPDATE_DEPENDENCIES=true
     fi
