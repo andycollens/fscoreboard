@@ -319,6 +319,23 @@ reload_nginx() {
     fi
 }
 
+# Установка команды для получения ссылок
+install_links_command() {
+    print_step "Установка команды для получения ссылок..."
+    
+    # Скачиваем скрипт для ссылок
+    curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/fscoreboard-links.sh -o "/opt/fscoreboard/fscoreboard-links.sh"
+    
+    # Делаем исполняемым
+    chmod +x "/opt/fscoreboard/fscoreboard-links.sh"
+    
+    # Создаем глобальную команду
+    ln -sf "/opt/fscoreboard/fscoreboard-links.sh" /usr/local/bin/fscoreboard-links
+    
+    print_success "Команда fscoreboard-links установлена"
+    print_info "Использование: fscoreboard-links"
+}
+
 # Полная переустановка
 full_reinstall() {
     if [ "$FULL_RESTART" = true ]; then
@@ -405,6 +422,7 @@ main() {
     detect_changes
     update_code
     update_dependencies
+    install_links_command
     restart_application
     reload_nginx
     full_reinstall

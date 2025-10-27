@@ -549,6 +549,23 @@ EOF
     chown $SUDO_USER:$SUDO_USER "$INSTALL_DIR/.env"
 }
 
+# Установка команды для получения ссылок
+install_links_command() {
+    print_step "Установка команды для получения ссылок..."
+    
+    # Скачиваем скрипт для ссылок
+    curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/fscoreboard-links.sh -o "$INSTALL_DIR/fscoreboard-links.sh"
+    
+    # Делаем исполняемым
+    chmod +x "$INSTALL_DIR/fscoreboard-links.sh"
+    
+    # Создаем глобальную команду
+    ln -sf "$INSTALL_DIR/fscoreboard-links.sh" /usr/local/bin/fscoreboard-links
+    
+    print_success "Команда fscoreboard-links установлена"
+    print_info "Использование: fscoreboard-links"
+}
+
 # Запуск приложения
 start_application() {
     print_step "Запуск приложения..."
@@ -768,6 +785,7 @@ main() {
     create_directories
     create_nginx_config
     create_env_file
+    install_links_command
     start_application
     restart_nginx
     # Всегда показываем результаты, даже если есть ошибки
