@@ -59,17 +59,17 @@ npm start
 ```
 
 ### Доступ к интерфейсам
-- **Панель управления**: `http://localhost:3001/control?token=MySecret111`
-- **Табло vMix**: `http://localhost:3001/scoreboard_vmix.html`
-- **Перерыв**: `http://localhost:3001/htbreak.html`
-- **Счет перерыва**: `http://localhost:3001/htbreak_score.html`
-- **Заставка**: `http://localhost:3001/preloader.html`
-- **Стадион**: `http://localhost:3001/stadium.html`
+- **Панель управления**: `http://localhost:PORT/control?token=TOKEN`
+- **Табло vMix**: `http://localhost:PORT/scoreboard_vmix.html`
+- **Перерыв**: `http://localhost:PORT/htbreak.html`
+- **Счет перерыва**: `http://localhost:PORT/htbreak_score.html`
+- **Заставка**: `http://localhost:PORT/preloader.html`
+- **Стадион**: `http://localhost:PORT/stadium.html`
 
 ### ISKRA CUP страницы
-- **ISKRA CUP Табло**: `http://localhost:3001/iskracup_scoreboard.html`
-- **ISKRA CUP Перерыв**: `http://localhost:3001/iskracup_break.html`
-- **ISKRA CUP Прематч**: `http://localhost:3001/iskracup_prematch.html`
+- **ISKRA CUP Табло**: `http://localhost:PORT/iskracup_scoreboard.html`
+- **ISKRA CUP Перерыв**: `http://localhost:PORT/iskracup_break.html`
+- **ISKRA CUP Прематч**: `http://localhost:PORT/iskracup_prematch.html`
 
 ## ✨ Основные функции
 

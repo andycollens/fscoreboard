@@ -6,10 +6,10 @@ services:
     container_name: fscoreboard
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "3002:3002"
     environment:
       - NODE_ENV=production
-      - PORT=3001
+      - PORT=3002
       - TOKEN=${TOKEN:-your-secret-token-here}
       - SAVE_PATH=/app/server/state.json
     volumes:
@@ -18,7 +18,7 @@ services:
     networks:
       - fscoreboard-network
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/healthz', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/healthz', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
       interval: 30s
       timeout: 10s
       retries: 3

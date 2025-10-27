@@ -5,7 +5,7 @@ module.exports = {
       script: 'server/app.js',
       cwd: './',
       env: {
-        PORT: 3001,
+        PORT: 3002,
         TOKEN: 'MySecret111'
       },
       instances: 1,

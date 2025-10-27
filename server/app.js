@@ -10,7 +10,7 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 // ====== Конфигурация ======
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const TOKEN = process.env.TOKEN || 'MySecret111';
 const SAVE_PATH = path.join(__dirname, 'state.json');
 const PRESETS_PATH = path.join(__dirname, 'presets.json');
