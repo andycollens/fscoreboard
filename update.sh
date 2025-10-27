@@ -20,6 +20,8 @@ print_header() {
     echo "║                           FSCOREBOARD UPDATE                              ║"
     echo "║                        Универсальное обновление проекта                   ║"
     echo "╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "\n${YELLOW}⚠️  ВНИМАНИЕ: Этот скрипт предназначен только для обновления уже установленного FSCOREBOARD!${NC}"
+    echo -e "${CYAN}Если FSCOREBOARD не установлен, используйте install.sh для установки.${NC}\n"
 }
 
 print_step() {
@@ -91,6 +93,9 @@ check_installation() {
     
     if [ "$is_installed" = false ]; then
         print_error "FSCOREBOARD не установлен. Используйте install.sh для установки."
+        echo -e "\n${YELLOW}💡 Для установки FSCOREBOARD используйте:${NC}"
+        echo -e "${GREEN}curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh | sudo bash${NC}"
+        echo -e "\n${CYAN}Этот скрипт предназначен только для обновления уже установленного проекта.${NC}"
         exit 1
     fi
     
@@ -385,6 +390,15 @@ print_results() {
 # Основная функция
 main() {
     print_header
+    
+    # Дополнительная проверка "на дурака" - если ничего не найдено, сразу выходим
+    if [ ! -d "/opt/fscoreboard" ] && ! pm2 list | grep -q "fscoreboard" && [ ! -f "/etc/nginx/sites-enabled/fscoreboard" ] && [ ! -f "/etc/nginx/sites-available/fscoreboard" ]; then
+        print_error "FSCOREBOARD не установлен на этом сервере!"
+        echo -e "\n${YELLOW}💡 Для установки FSCOREBOARD используйте:${NC}"
+        echo -e "${GREEN}curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/install.sh | sudo bash${NC}"
+        echo -e "\n${CYAN}Этот скрипт предназначен только для обновления уже установленного проекта.${NC}"
+        exit 1
+    fi
     
     check_root
     check_installation
