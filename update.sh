@@ -160,11 +160,37 @@ update_code() {
     print_info "Создание резервной копии..."
     cp -r . ../fscoreboard_backup_$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
     
+    # Сохраняем пользовательские данные
+    print_info "Сохранение пользовательских данных..."
+    local backup_dir="/tmp/fscoreboard_data_backup_$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$backup_dir"
+    
+    # Сохраняем файлы данных
+    [ -f "server/state.json" ] && cp "server/state.json" "$backup_dir/"
+    [ -f "server/presets.json" ] && cp "server/presets.json" "$backup_dir/"
+    [ -d "public/logos" ] && cp -r "public/logos" "$backup_dir/"
+    [ -f ".env" ] && cp ".env" "$backup_dir/"
+    
     # Обновляем код
     git fetch origin
     git reset --hard origin/main
     
-    print_success "Код обновлен"
+    # Восстанавливаем пользовательские данные
+    print_info "Восстановление пользовательских данных..."
+    [ -f "$backup_dir/state.json" ] && cp "$backup_dir/state.json" "server/"
+    [ -f "$backup_dir/presets.json" ] && cp "$backup_dir/presets.json" "server/"
+    [ -d "$backup_dir/logos" ] && cp -r "$backup_dir/logos" "public/"
+    [ -f "$backup_dir/.env" ] && cp "$backup_dir/.env" "."
+    
+    # Устанавливаем правильные права
+    chown -R root:root server/state.json server/presets.json 2>/dev/null || true
+    chown -R root:root public/logos 2>/dev/null || true
+    chown root:root .env 2>/dev/null || true
+    
+    # Очищаем временную папку
+    rm -rf "$backup_dir"
+    
+    print_success "Код обновлен, пользовательские данные сохранены"
 }
 
 # Обновление зависимостей
