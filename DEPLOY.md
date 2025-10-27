@@ -161,7 +161,6 @@ http://YOUR_SERVER_IP/private/control.html
 **Основные страницы табло:**
 - `http://YOUR_SERVER_IP/public/scoreboard_vmix.html` - основное табло
 - `http://YOUR_SERVER_IP/public/stadium.html` - стадион
-- `http://YOUR_SERVER_IP/public/htbreak.html` - перерыв
 - `http://YOUR_SERVER_IP/public/htbreak_score.html` - перерыв со счетом
 - `http://YOUR_SERVER_IP/public/preloader.html` - загрузочный экран
 
@@ -249,7 +248,6 @@ pm2 restart fscoreboard
 ### Страницы отображения:
 - **scoreboard_vmix.html** - основное табло для vMix
 - **stadium.html** - стадионное табло
-- **htbreak.html** - экран перерыва
 - **preloader.html** - загрузочный экран
 - **ISKRA CUP страницы** - специализированные страницы для турнира
 

@@ -481,7 +481,6 @@ server.listen(PORT, () => {
   console.log(`Сервер запущен на http://localhost:${PORT}`);
   console.log(`Панель управления: http://localhost:${PORT}/control?token=${TOKEN}`);
   console.log(`Табло vMix: http://localhost:${PORT}/scoreboard_vmix.html`);
-  console.log(`Перерыв: http://localhost:${PORT}/htbreak.html`);
   console.log(`Счет перерыва: http://localhost:${PORT}/htbreak_score.html`);
   console.log(`Заставка: http://localhost:${PORT}/preloader.html`);
   console.log(`Prematch: http://localhost:${PORT}/prematch.html`);

@@ -678,7 +678,6 @@ print_results() {
     echo -e "${YELLOW}Страницы табло:${NC}"
     echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (основное табло)"
     echo -e "  ${GREEN}http://$current_domain/public/stadium.html${NC}  (стадион)"
-    echo -e "  ${GREEN}http://$current_domain/public/htbreak.html${NC}  (перерыв)"
     echo -e "  ${GREEN}http://$current_domain/public/preloader.html${NC}  (загрузочный экран)"
     echo ""
     echo -e "${YELLOW}ISKRA CUP страницы:${NC}"

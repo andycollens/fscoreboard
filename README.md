@@ -61,7 +61,6 @@ npm start
 ### Доступ к интерфейсам
 - **Панель управления**: `http://localhost:PORT/control?token=TOKEN`
 - **Табло vMix**: `http://localhost:PORT/scoreboard_vmix.html`
-- **Перерыв**: `http://localhost:PORT/htbreak.html`
 - **Счет перерыва**: `http://localhost:PORT/htbreak_score.html`
 - **Заставка**: `http://localhost:PORT/preloader.html`
 - **Стадион**: `http://localhost:PORT/stadium.html`
@@ -125,7 +124,6 @@ fscoreboard/
 │   └── app.js              # Основной сервер
 ├── public/
 │   ├── scoreboard_vmix.html # Табло для vMix
-│   ├── htbreak.html        # Перерыв
 │   ├── htbreak_score.html   # Счет перерыва
 │   ├── preloader.html       # Заставка
 │   ├── fonts/RPL.ttf        # Шрифт
