@@ -52,10 +52,47 @@ check_root() {
 
 # Проверка, что проект установлен
 check_installation() {
-    if [ ! -d "/opt/fscoreboard" ]; then
+    local is_installed=false
+    
+    # Проверяем наличие директории проекта
+    if [ -d "/opt/fscoreboard" ]; then
+        is_installed=true
+        print_info "Найдена директория проекта: /opt/fscoreboard"
+    fi
+    
+    # Проверяем наличие PM2 процесса
+    if pm2 list | grep -q "fscoreboard.*online"; then
+        is_installed=true
+        print_info "Найден активный PM2 процесс fscoreboard"
+    elif pm2 list | grep -q "fscoreboard"; then
+        is_installed=true
+        print_info "Найден неактивный PM2 процесс fscoreboard"
+    fi
+    
+    # Проверяем наличие конфигурации Nginx
+    if [ -f "/etc/nginx/sites-enabled/fscoreboard" ] || [ -f "/etc/nginx/sites-available/fscoreboard" ]; then
+        is_installed=true
+        print_info "Найдена конфигурация Nginx для FSCOREBOARD"
+    fi
+    
+    # Проверяем наличие файлов данных
+    if [ -f "/opt/fscoreboard/server/state.json" ] || [ -f "/opt/fscoreboard/server/presets.json" ]; then
+        is_installed=true
+        print_info "Найдены файлы данных FSCOREBOARD"
+    fi
+    
+    # Проверяем наличие .env файла
+    if [ -f "/opt/fscoreboard/.env" ]; then
+        is_installed=true
+        print_info "Найден файл конфигурации .env"
+    fi
+    
+    if [ "$is_installed" = false ]; then
         print_error "FSCOREBOARD не установлен. Используйте install.sh для установки."
         exit 1
     fi
+    
+    print_success "FSCOREBOARD обнаружен, продолжаем обновление"
 }
 
 # Определение типа изменений
@@ -212,19 +249,40 @@ restart_application() {
         
         cd /opt/fscoreboard
         
-        # Перезапускаем PM2 процесс
-        pm2 restart fscoreboard --update-env
+        # Проверяем, есть ли процесс в PM2
+        if pm2 list | grep -q "fscoreboard"; then
+            print_info "Перезапуск существующего процесса..."
+            pm2 restart fscoreboard --update-env
+        else
+            print_info "Запуск нового процесса..."
+            pm2 start ecosystem.config.js
+            pm2 save
+        fi
         
         # Ждем запуска
         sleep 3
         
         # Проверяем статус
         if pm2 list | grep -q "fscoreboard.*online"; then
-            print_success "Приложение перезапущено"
+            print_success "Приложение запущено"
         else
-            print_error "Ошибка при перезапуске приложения"
+            print_warning "Приложение не запустилось, проверяем логи..."
             pm2 logs fscoreboard --lines 10
-            return 1
+            
+            # Пытаемся запустить заново
+            print_info "Попытка повторного запуска..."
+            pm2 delete fscoreboard 2>/dev/null || true
+            pm2 start ecosystem.config.js
+            pm2 save
+            
+            sleep 3
+            
+            if pm2 list | grep -q "fscoreboard.*online"; then
+                print_success "Приложение запущено после повторной попытки"
+            else
+                print_error "Не удалось запустить приложение"
+                return 1
+            fi
         fi
     fi
 }
