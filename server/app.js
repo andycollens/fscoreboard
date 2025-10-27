@@ -117,7 +117,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // ====== Раздача статики ======
 app.use('/public', express.static(path.join(__dirname, '../public')));
-app.use('/private', express.static(path.join(__dirname, '../private')));
+// app.use('/private', express.static(path.join(__dirname, '../private'))); // Отключено для безопасности
 
 // ====== Маршруты ======
 app.get('/scoreboard_vmix.html', (_, res) => {
@@ -161,6 +161,12 @@ app.get('/stadium.html', (_, res) => {
 app.get('/control', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../private', 'control.html'));
+});
+
+// Защита статических файлов в /private/
+app.get('/private/*', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  res.sendFile(path.join(__dirname, '..', req.path));
 });
 
 // ====== API для предустановок ======
