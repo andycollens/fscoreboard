@@ -565,8 +565,32 @@ start_application() {
         sed -i "s/PORT=.*/PORT=$PORT/" "$INSTALL_DIR/.env"
     fi
     
-    # Запуск нового процесса
-    pm2 start server/app.js --name "$PM2_NAME" --env production
+    # Создаем ecosystem.config.js для правильной работы с переменными окружения
+    cat > "$INSTALL_DIR/ecosystem.config.js" << EOF
+module.exports = {
+  apps: [{
+    name: '$PM2_NAME',
+    script: 'server/app.js',
+    cwd: '$INSTALL_DIR',
+    env: {
+      NODE_ENV: 'production',
+      PORT: '$PORT',
+      TOKEN: '$TOKEN'
+    },
+    instances: 1,
+    exec_mode: 'fork',
+    watch: false,
+    max_memory_restart: '1G',
+    error_file: '/root/.pm2/logs/$PM2_NAME-error.log',
+    out_file: '/root/.pm2/logs/$PM2_NAME-out.log',
+    log_file: '/root/.pm2/logs/$PM2_NAME-combined.log',
+    time: true
+  }]
+};
+EOF
+
+    # Запуск через ecosystem файл
+    pm2 start ecosystem.config.js
     pm2 save
     
     if [ "$INSTALLATION_TYPE" = "fresh" ]; then
