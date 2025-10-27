@@ -286,6 +286,12 @@ check_installation_type() {
         if [ "$nginx_configs" -gt 0 ]; then
             print_warning "Найдены существующие конфигурации Nginx:"
             ls -la $NGINX_SITES_ENABLED/
+            
+            # Специальная проверка для default конфигурации
+            if [ -L "$NGINX_SITES_ENABLED/default" ]; then
+                print_warning "⚠️  Обнаружена default конфигурация Nginx - будет отключена для избежания конфликтов"
+            fi
+            
             warnings+=("nginx")
         fi
     fi
@@ -436,6 +442,13 @@ create_directories() {
 # Создание конфигурации Nginx
 create_nginx_config() {
     print_step "Создание конфигурации Nginx..."
+    
+    # Отключаем default конфигурацию Nginx, чтобы избежать конфликтов
+    if [ -L "$NGINX_SITES_ENABLED/default" ]; then
+        print_info "Отключение default конфигурации Nginx для избежания конфликтов..."
+        rm -f "$NGINX_SITES_ENABLED/default"
+        print_success "Default конфигурация отключена"
+    fi
     
     local nginx_config="$NGINX_SITES_AVAILABLE/fscoreboard"
     
@@ -603,8 +616,22 @@ EOF
 # Перезапуск Nginx
 restart_nginx() {
     print_step "Перезапуск Nginx..."
-    systemctl reload nginx
-    print_success "Nginx перезапущен"
+    
+    # Дополнительная проверка - убеждаемся, что default отключен
+    if [ -L "$NGINX_SITES_ENABLED/default" ]; then
+        print_warning "Default конфигурация все еще активна, отключаем..."
+        rm -f "$NGINX_SITES_ENABLED/default"
+    fi
+    
+    # Проверяем конфигурацию перед перезапуском
+    if nginx -t; then
+        systemctl reload nginx
+        print_success "Nginx перезапущен"
+    else
+        print_error "Ошибка в конфигурации Nginx"
+        print_info "Проверьте конфигурацию: nginx -t"
+        return 1
+    fi
 }
 
 # Проверка работоспособности
