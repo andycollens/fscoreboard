@@ -256,16 +256,16 @@ restart_application() {
         
         cd /opt/fscoreboard
         
-        # Проверяем, есть ли процесс в PM2
-        local process_name=$(pm2 list | grep "fscoreboard" | awk '{print $2}' | head -1)
-        if [ -n "$process_name" ]; then
-            print_info "Перезапуск существующего процесса: $process_name"
-            pm2 restart "$process_name" --update-env
-        else
-            print_info "Запуск нового процесса..."
-            pm2 start ecosystem.config.js
-            pm2 save
-        fi
+    # Проверяем, есть ли процесс в PM2 (любое имя с fscoreboard)
+    local process_name=$(pm2 list | grep "fscoreboard" | awk '{print $2}' | head -1)
+    if [ -n "$process_name" ]; then
+        print_info "Перезапуск существующего процесса: $process_name"
+        pm2 restart "$process_name" --update-env
+    else
+        print_info "Запуск нового процесса..."
+        pm2 start ecosystem.config.js
+        pm2 save
+    fi
         
         # Ждем запуска
         sleep 3
@@ -275,11 +275,19 @@ restart_application() {
             print_success "Приложение запущено"
         else
             print_warning "Приложение не запустилось, проверяем логи..."
-            pm2 logs fscoreboard --lines 10
+            local process_name=$(pm2 list | grep "fscoreboard" | awk '{print $2}' | head -1)
+            if [ -n "$process_name" ]; then
+                pm2 logs "$process_name" --lines 10
+            else
+                pm2 logs --lines 10
+            fi
             
             # Пытаемся запустить заново
             print_info "Попытка повторного запуска..."
-            pm2 delete fscoreboard 2>/dev/null || true
+            local process_name=$(pm2 list | grep "fscoreboard" | awk '{print $2}' | head -1)
+            if [ -n "$process_name" ]; then
+                pm2 delete "$process_name" 2>/dev/null || true
+            fi
             pm2 start ecosystem.config.js
             pm2 save
             
