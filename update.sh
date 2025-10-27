@@ -60,13 +60,15 @@ check_installation() {
         print_info "Найдена директория проекта: /opt/fscoreboard"
     fi
     
-    # Проверяем наличие PM2 процесса
+    # Проверяем наличие PM2 процесса (любое имя с fscoreboard)
     if pm2 list | grep -q "fscoreboard.*online"; then
         is_installed=true
-        print_info "Найден активный PM2 процесс fscoreboard"
+        local process_name=$(pm2 list | grep "fscoreboard.*online" | awk '{print $2}')
+        print_info "Найден активный PM2 процесс: $process_name"
     elif pm2 list | grep -q "fscoreboard"; then
         is_installed=true
-        print_info "Найден неактивный PM2 процесс fscoreboard"
+        local process_name=$(pm2 list | grep "fscoreboard" | awk '{print $2}')
+        print_info "Найден неактивный PM2 процесс: $process_name"
     fi
     
     # Проверяем наличие конфигурации Nginx
@@ -255,9 +257,10 @@ restart_application() {
         cd /opt/fscoreboard
         
         # Проверяем, есть ли процесс в PM2
-        if pm2 list | grep -q "fscoreboard"; then
-            print_info "Перезапуск существующего процесса..."
-            pm2 restart fscoreboard --update-env
+        local process_name=$(pm2 list | grep "fscoreboard" | awk '{print $2}' | head -1)
+        if [ -n "$process_name" ]; then
+            print_info "Перезапуск существующего процесса: $process_name"
+            pm2 restart "$process_name" --update-env
         else
             print_info "Запуск нового процесса..."
             pm2 start ecosystem.config.js
