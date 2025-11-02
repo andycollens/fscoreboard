@@ -89,3 +89,5 @@ echo "• Проверка cron: crontab -l"
 echo "• Статус PM2: pm2 status"
 echo ""
 echo -e "${GREEN}🚀 Готово!${NC}"
+
+

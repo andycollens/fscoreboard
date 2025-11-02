@@ -22,3 +22,5 @@ curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/instal
 echo -e "${GREEN}✅ Установка завершена!${NC}"
 echo -e "${YELLOW}Для проверки статуса: fscoreboard-status${NC}"
 echo -e "${YELLOW}Для обновления: fscoreboard-update${NC}"
+
+
