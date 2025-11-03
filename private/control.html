@@ -2698,48 +2698,39 @@
             <small style="color: #999; font-size: 11px; white-space: nowrap; margin-left: 15px;">Имя пресета будет сформировано автоматически</small>
           </div>
           
-          <!-- Выбор времени матча -->
-          <div class="form-section" style="margin-bottom: 20px;">
-            <div class="form-group">
-              <label><strong>Время матча</strong></label>
-              <input type="time" class="editPresetMatchTimeInline" value="${matchTime}" onchange="updateEditPresetNameInline('${tournamentId}', '${presetId}')" style="width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 17px; -webkit-appearance: none; appearance: none;">
-            </div>
-          </div>
-          
-          <div class="form-section">
-            <h4 class="section-title">Команда 1</h4>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Выберите команду из турнира</label>
+          <!-- Компактная строка: Время матча, Команда 1, Цвет формы 1 -->
+          <div class="form-section" style="margin-bottom: 15px;">
+            <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+              <div class="form-group" style="flex: 0 0 auto;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Время матча</label>
+                <input type="time" class="editPresetMatchTimeInline" value="${matchTime}" onchange="updateEditPresetNameInline('${tournamentId}', '${presetId}')" style="width: 120px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; -webkit-appearance: none; appearance: none;">
+              </div>
+              <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Команда 1</label>
                 <select class="editPresetTeam1SelectInline" onchange="onEditTeam1SelectedInline('${tournamentId}', '${presetId}', this)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                   <option value="">-- Выберите команду --</option>
                 </select>
               </div>
-            </div>
-            <div class="form-row" style="margin-top: 10px;">
-              <div class="form-group">
-                <label>Цвет формы</label>
-                <input type="color" class="editPresetKit1ColorInline" value="${preset.kit1Color || '#2b2b2b'}" style="width: 100px; height: 40px; padding: 0;">
+              <div class="form-group" style="flex: 0 0 auto;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Цвет формы</label>
+                <input type="color" class="editPresetKit1ColorInline" value="${preset.kit1Color || '#2b2b2b'}" style="width: 80px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
               </div>
             </div>
           </div>
           
-          <div class="team-divider"></div>
-          
-          <div class="form-section">
-            <h4 class="section-title">Команда 2</h4>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Выберите команду из турнира</label>
+          <!-- Компактная строка: Команда 2, Цвет формы 2 -->
+          <div class="form-section" style="margin-bottom: 20px;">
+            <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+              <div class="form-group" style="flex: 0 0 auto; width: 120px;"></div>
+              <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Команда 2</label>
                 <select class="editPresetTeam2SelectInline" onchange="onEditTeam2SelectedInline('${tournamentId}', '${presetId}', this)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                   <option value="">-- Выберите команду --</option>
                 </select>
               </div>
-            </div>
-            <div class="form-row" style="margin-top: 10px;">
-              <div class="form-group">
-                <label>Цвет формы</label>
-                <input type="color" class="editPresetKit2ColorInline" value="${preset.kit2Color || '#2b2b2b'}" onchange="this.dataset.manualEdit = 'true'" style="width: 100px; height: 40px; padding: 0;">
+              <div class="form-group" style="flex: 0 0 auto;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Цвет формы</label>
+                <input type="color" class="editPresetKit2ColorInline" value="${preset.kit2Color || '#2b2b2b'}" onchange="this.dataset.manualEdit = 'true'" style="width: 80px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
               </div>
             </div>
           </div>
