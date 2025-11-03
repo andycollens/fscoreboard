@@ -1359,21 +1359,25 @@
       value: 0
     };
 
-    // Функция обновления UI из данных сервера (выносим в отдельную функцию для переиспользования)
+    // Простая функция обновления UI - точно как в stadium.html
+    // Без сложных проверок, просто обновляем элементы напрямую
     function updateUIFromServerData(data) {
       console.log('Updating UI from server data:', data);
       ready = false;
       
-      // Обновление таймера (работает корректно, используем как эталон)
+      // Обновление таймера
       const isRunning = !!data.timerRunning;
       timerRunning = isRunning;
-      window.timerRunning = isRunning; // Сохраняем в window для доступа из onclick
-      setPlayPauseIcon('playPauseIcon', isRunning);
-      setTimeInputFromSeconds('timeInput', data.timerSeconds || 0);
+      window.timerRunning = isRunning;
+      const playPauseIconEl = document.getElementById('playPauseIcon');
+      if (playPauseIconEl) setPlayPauseIcon('playPauseIcon', isRunning);
       const timeInputEl = document.getElementById('timeInput');
-      if (timeInputEl) timeInputEl.disabled = isRunning;
+      if (timeInputEl) {
+        setTimeInputFromSeconds('timeInput', data.timerSeconds || 0);
+        timeInputEl.disabled = isRunning;
+      }
       
-      // Показ/скрытие предупреждения о таймере
+      // Предупреждение о таймере
       const warning = document.getElementById('timerWarning');
       if (warning) {
         if (isRunning) {
@@ -1383,12 +1387,11 @@
         }
       }
       
-      // Блокировка только основных полей ввода команд во время работы таймера
+      // Блокировка полей при таймере
       const fieldsToDisable = [
         'team1Name', 'team1City', 'team1Short', 'kit1Color',
         'team2Name', 'team2City', 'team2Short', 'kit2Color'
       ];
-      
       fieldsToDisable.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field && !field.closest('.edit-preset-form')) {
@@ -1402,9 +1405,8 @@
         }
       });
       
-      // КНОПКИ СЧЕТА НЕ БЛОКИРУЕМ
-      const scoreButtons = ['score1Inc', 'score1Dec', 'score2Inc', 'score2Dec'];
-      scoreButtons.forEach(btnId => {
+      // Кнопки счета всегда доступны
+      ['score1Inc', 'score1Dec', 'score2Inc', 'score2Dec'].forEach(btnId => {
         const btn = document.getElementById(btnId);
         if (btn) {
           btn.classList.remove('disabled-field');
@@ -1415,31 +1417,17 @@
         }
       });
       
-      // Кнопка добавления предустановки всегда доступна
-      const addBtn = document.getElementById('addPresetBtn');
-      if (addBtn) {
-        addBtn.disabled = false;
-        addBtn.textContent = '+ Добавить предустановку';
-      }
-      
-      // Обновление счета
+      // Обновление счета - точно как в iskracup_scoreboard.html
       const score1ValueEl = document.getElementById('score1Value');
       const score2ValueEl = document.getElementById('score2Value');
       if (score1ValueEl) {
-        score1ValueEl.textContent = typeof data.score1 === 'number' ? data.score1 : (data.score1 || 0);
+        score1ValueEl.textContent = typeof data.score1 === 'number' ? data.score1 : "0";
       }
       if (score2ValueEl) {
-        score2ValueEl.textContent = typeof data.score2 === 'number' ? data.score2 : (data.score2 || 0);
+        score2ValueEl.textContent = typeof data.score2 === 'number' ? data.score2 : "0";
       }
       
-      // Обновление команд - ВАЖНО: обновляем ДАЖЕ если элементы еще не загружены
-      // Сохраняем данные для применения после загрузки DOM
-      if (typeof updateUIFromServerData.cachedData === 'undefined') {
-        updateUIFromServerData.cachedData = null;
-      }
-      updateUIFromServerData.cachedData = data;
-      
-      // Пытаемся обновить сразу
+      // Обновление команд - точно как в stadium.html (прямое обновление без проверок)
       const team1NameEl = document.getElementById('team1Name');
       const team1CityEl = document.getElementById('team1City');
       const team1ShortEl = document.getElementById('team1Short');
@@ -1449,6 +1437,7 @@
       const kit1ColorEl = document.getElementById('kit1Color');
       const kit2ColorEl = document.getElementById('kit2Color');
       
+      // Обновляем напрямую как в stadium.html
       if (team1NameEl) team1NameEl.value = data.team1Name || '';
       if (team2NameEl) team2NameEl.value = data.team2Name || '';
       if (team1CityEl) team1CityEl.value = data.team1City || '';
@@ -1458,7 +1447,7 @@
       if (kit1ColorEl) kit1ColorEl.value = data.kit1Color || '#2b2b2b';
       if (kit2ColorEl) kit2ColorEl.value = data.kit2Color || '#2b2b2b';
       
-      // Обновление логотипов
+      // Обновление логотипов - точно как в stadium.html
       state.team1Logo = data.team1Logo || '';
       if (data.team1Logo && data.team1Logo.trim() !== '') {
         updateMainLogoMini('team1', data.team1Logo);
@@ -1478,32 +1467,21 @@
         renderTournamentPresets();
       }
       
-      // Восстанавливаем ready
-      setTimeout(() => { 
-        ready = true;
-        console.log('State loaded and ready for user input. Current state:', {
-          score1: data.score1,
-          score2: data.score2,
-          team1Name: data.team1Name,
-          team2Name: data.team2Name,
-          team1Logo: data.team1Logo ? 'has logo' : 'no logo',
-          team2Logo: data.team2Logo ? 'has logo' : 'no logo'
-        });
-      }, 100);
+      ready = true;
     }
     
-    // КРИТИЧНО: Регистрируем обработчик socket ДО загрузки DOM
-    // Это гарантирует, что данные будут получены при подключении
+    // Регистрируем обработчик ТОЧНО как в stadium.html - без дополнительных проверок
     socket.on('connect', () => {
       console.log('Socket connected, waiting for initial state from server...');
     });
     
-    // Регистрируем обработчик получения данных от сервера ДО DOMContentLoaded
+    // Обработчик получения данных - точно как в stadium.html и iskracup_scoreboard.html
     socket.on('scoreboardUpdate', (data) => {
+      console.log('Received scoreboardUpdate from server:', data);
       updateUIFromServerData(data);
     });
     
-    // Обработчик получения текущего состояния по запросу
+    // Обработчик получения состояния по запросу
     socket.on('currentState', (data) => {
       console.log('Received currentState from server:', data);
       if (data) {
@@ -1516,24 +1494,14 @@
       setupControls();
       setupEditFormHandlers();
       
-      // Применяем кэшированные данные, если они были получены до загрузки DOM
-      if (updateUIFromServerData.cachedData) {
-        console.log('Applying cached server data after DOM load');
-        setTimeout(() => {
-          updateUIFromServerData(updateUIFromServerData.cachedData);
-        }, 100);
-      }
-      
-      // После загрузки DOM проверяем, пришли ли данные от сервера
+      // Простая проверка - если данные не пришли, запрашиваем через небольшую задержку
       setTimeout(() => {
         const team1NameEl = document.getElementById('team1Name');
-        const team1NameValue = team1NameEl ? team1NameEl.value : '';
-        // Если поля пустые, значит данные не пришли - запрашиваем
-        if (!team1NameValue && !ready) {
+        if (team1NameEl && !team1NameEl.value) {
           console.log('Fields are empty, requesting initial state from server...');
           socket.emit('getCurrentState');
         }
-      }, 1000);
+      }, 500);
     });
     
     // Загрузка турниров
