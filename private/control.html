@@ -1403,6 +1403,9 @@
       // Заполняем команды турнира
       fillTeamsFromTournament(tournament);
       
+      // Обновляем имя пресета (показывает "Команда 1 - Команда 2")
+      updatePresetName();
+      
       // Показываем форму
       const form = document.getElementById('addPresetForm');
       if (form) {
