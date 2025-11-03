@@ -2553,34 +2553,43 @@
         return;
       }
       
-      // Ищем элементы формы
-      const tournamentSelect = formContainer.querySelector('.addPresetTournament');
+      console.log('Form container found:', formContainer.id, formContainer);
+      
+      // Ищем элементы формы - используем более точные селекторы
+      const tournamentSelect = formContainer.querySelector('select.addPresetTournament');
       const tournamentId = tournamentSelect?.value;
-      const team1Select = formContainer.querySelector('.addPresetTeam1Select');
-      const team2Select = formContainer.querySelector('.addPresetTeam2Select');
+      const team1Select = formContainer.querySelector('select.addPresetTeam1Select');
+      const team2Select = formContainer.querySelector('select.addPresetTeam2Select');
+      
+      console.log('Found elements:', {
+        tournamentSelect: !!tournamentSelect,
+        tournamentId: tournamentId,
+        team1Select: !!team1Select,
+        team2Select: !!team2Select
+      });
       
       // Проверяем наличие элементов
       if (!tournamentSelect) {
-        console.error('Tournament select not found', formContainer);
-        alert('Ошибка: не найден селект турнира');
+        console.error('Tournament select not found', formContainer.innerHTML.substring(0, 500));
+        alert('Ошибка: не найден селект турнира в форме');
         return;
       }
       
       if (!team1Select) {
-        console.error('Team1 select not found', formContainer);
+        console.error('Team1 select not found', formContainer.innerHTML.substring(0, 500));
         alert('Ошибка: не найден селект команды 1');
         return;
       }
       
       if (!team2Select) {
-        console.error('Team2 select not found', formContainer);
+        console.error('Team2 select not found', formContainer.innerHTML.substring(0, 500));
         alert('Ошибка: не найден селект команды 2');
         return;
       }
       
-      if (!tournamentId) {
+      if (!tournamentId || tournamentId.trim() === '') {
         console.error('Tournament ID is empty', tournamentSelect);
-        alert('Ошибка: турнир не выбран');
+        alert('Ошибка: турнир не выбран. Пожалуйста, перезагрузите страницу и попробуйте снова.');
         return;
       }
       
