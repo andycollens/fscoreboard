@@ -792,12 +792,15 @@
       width: 100%;
       clear: both;
       margin-top: 15px;
+      box-sizing: border-box;
     }
     
     .tournament-presets {
       display: block;
       width: 100%;
       margin-top: 15px;
+      clear: both;
+      box-sizing: border-box;
     }
     
     .tournament-presets.hidden {
@@ -1402,7 +1405,7 @@
         const teamCount = tournament.teams ? tournament.teams.length : 0;
         const card = document.createElement('div');
         card.className = 'preset-card';
-        card.style.cssText = 'padding: 15px; margin-bottom: 10px; cursor: default;';
+        card.style.cssText = 'padding: 15px; margin-bottom: 10px; cursor: default; display: block; width: 100%; box-sizing: border-box;';
         
         const startDate = tournament.startDate ? new Date(tournament.startDate).toLocaleDateString('ru-RU') : '';
         const endDate = tournament.endDate ? new Date(tournament.endDate).toLocaleDateString('ru-RU') : '';
@@ -1420,8 +1423,8 @@
             </button>
           </div>
           <div id="presetForm_${tournament.id}" class="tournament-preset-form hidden" style="width: 100%; margin-top: 15px; clear: both; display: block;"></div>
-          <div id="presets-${tournament.id}" class="tournament-presets hidden" style="width: 100%; margin-top: 15px;">
-            <div id="presets-list-${tournament.id}" class="presets-list">
+          <div id="presets-${tournament.id}" class="tournament-presets hidden" style="width: 100%; margin-top: 15px; clear: both; display: block;">
+            <div id="presets-list-${tournament.id}" class="presets-list" style="width: 100%; display: flex; flex-direction: column;">
               <!-- Пресеты будут загружены динамически -->
             </div>
           </div>
