@@ -1360,10 +1360,25 @@
     };
 
     // Инициализация
+    // Регистрируем обработчик socket ПЕРЕД загрузкой DOM
+    // Это критично для получения данных при подключении
+    socket.on('connect', () => {
+      console.log('Socket connected, waiting for initial state from server...');
+    });
+    
     document.addEventListener('DOMContentLoaded', function() {
       loadTournaments();
       setupControls();
       setupEditFormHandlers();
+      
+      // После загрузки DOM проверяем, пришли ли данные от сервера
+      // Если нет, запрашиваем состояние явно
+      setTimeout(() => {
+        if (!ready) {
+          console.log('Requesting initial state from server...');
+          socket.emit('getCurrentState');
+        }
+      }, 500);
     });
     
     // Загрузка турниров
