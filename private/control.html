@@ -2776,6 +2776,13 @@
     function renderTournamentPresets() {
       if (!tournaments || tournaments.length === 0) return;
       
+      // КРИТИЧНО: Не перерисовываем пресеты, если открыта форма редактирования
+      // Это предотвращает закрытие формы при обновлении состояния во время таймера
+      if (editingPresetId) {
+        console.log('Skipping renderTournamentPresets - editing form is open:', editingPresetId);
+        return;
+      }
+      
       tournaments.forEach(tournament => {
         const presetsContainer = document.getElementById(`presets-list-${tournament.id}`);
         if (!presetsContainer) return;
