@@ -3852,15 +3852,19 @@
           // Сохраняем состояние видимости пресетов
           const presetsDiv = document.getElementById(`presets-${tournamentId}`);
           const wasHidden = presetsDiv ? presetsDiv.classList.contains('hidden') : false;
-          
+
+          // КРИТИЧНО: очищаем editingPresetId ПЕРЕД перерисовкой
+          editingPresetId = null;
+          originalPresetData = null;
+
           await loadPresets();
-          await loadTournaments(); // Обновляем только счетчик пресетов, НЕ изменяем команды
-          
+          await loadTournaments();
+
           // Очищаем uploadedLogos после сохранения, чтобы не влиять на следующее редактирование
           uploadedLogos.team1 = null;
           uploadedLogos.team2 = null;
-          
-          // Восстанавливаем состояние видимости
+
+          // Восстанавливаем состояние видимости и перерисовываем
           if (presetsDiv) {
             if (wasHidden) {
               presetsDiv.classList.add('hidden');
@@ -3868,15 +3872,10 @@
             } else {
               presetsDiv.classList.remove('hidden');
               expandedPresets.add(tournamentId);
-              renderTournamentPresets(); // Рендерим если видим
             }
           }
-          
-          // КРИТИЧНО: Очищаем editingPresetId ПОСЛЕ успешного сохранения
-          // Это позволяет renderTournamentPresets() перерисовать пресеты без закрытия формы
-          editingPresetId = null;
-          originalPresetData = null;
-          
+          renderTournamentPresets();
+
           showNotification('Пресет обновлен!', 'success');
         } else {
           throw new Error('Ошибка обновления пресета');
