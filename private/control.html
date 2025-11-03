@@ -1752,6 +1752,16 @@
           logoContainer.style.display = 'none';
           if (logoImg) logoImg.style.display = 'none';
         }
+        // Очищаем миниатюру логотипа в новом формате
+        const newLogoPreview = formContainer.querySelector('.addPresetTeam1LogoPreview');
+        if (newLogoPreview) {
+          newLogoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
+        }
+        // Сбрасываем цвет формы
+        const colorInput = formContainer.querySelector('#addPresetKit1Color');
+        if (colorInput) {
+          colorInput.value = '#2b2b2b';
+        }
         // Обновляем имя пресета после очистки выбора
         setTimeout(() => updatePresetNameForForm(selectElement), 0);
         return;
@@ -1775,7 +1785,7 @@
         }
       }
       
-      // Обновляем миниатюру логотипа в новом компактном формате
+      // Обновляем миниатюру логотипа в новом компактном формате (слева от выпадайки)
       const newLogoPreview = formContainer.querySelector('.addPresetTeam1LogoPreview');
       if (newLogoPreview) {
         if (team.logo) {
@@ -1789,17 +1799,39 @@
       const nameInput = formContainer.querySelector('#addPresetTeam1Name') || formContainer.querySelector('[id*="Team1Name"]');
       const cityInput = formContainer.querySelector('#addPresetTeam1City') || formContainer.querySelector('[id*="Team1City"]');
       const shortInput = formContainer.querySelector('#addPresetTeam1Short') || formContainer.querySelector('[id*="Team1Short"]');
-      const colorInput = formContainer.querySelector('#addPresetKit1Color') || formContainer.querySelector('[id*="Kit1Color"]');
+      
+      // Ищем поле цвета - сначала по ID, потом по селектору
+      let colorInput = formContainer.querySelector('#addPresetKit1Color');
+      if (!colorInput) {
+        colorInput = formContainer.querySelector('[id*="Kit1Color"]');
+      }
+      if (!colorInput) {
+        // Ищем в родительском контейнере формы
+        const formGroup = selectElement.closest('.form-group');
+        if (formGroup) {
+          const parentSection = formGroup.closest('.form-section');
+          if (parentSection) {
+            colorInput = parentSection.querySelector('input[type="color"]');
+          }
+        }
+      }
       
       if (nameInput) nameInput.value = team.name || '';
       if (cityInput) cityInput.value = team.city || '';
       if (shortInput) shortInput.value = team.short || '';
+      
       if (colorInput) {
-        colorInput.value = team.kitColor || '#2b2b2b';
-        // Принудительно обновляем визуальное отображение цвета
+        const teamColor = team.kitColor || '#2b2b2b';
+        colorInput.value = teamColor;
+        // Принудительно обновляем визуальное отображение цвета через несколько методов
+        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+        colorInput.dispatchEvent(new Event('change', { bubbles: true }));
+        // Также обновляем через setTimeout для гарантии
         setTimeout(() => {
-          colorInput.style.backgroundColor = colorInput.value;
-        }, 0);
+          if (colorInput && colorInput.value !== teamColor) {
+            colorInput.value = teamColor;
+          }
+        }, 10);
       }
       
       // Обновляем имя пресета после выбора команды
@@ -1845,7 +1877,7 @@
         }
       }
       
-      // Обновляем миниатюру логотипа в новом компактном формате
+      // Обновляем миниатюру логотипа в новом компактном формате (слева от выпадайки)
       const newLogoPreview = formContainer.querySelector('.addPresetTeam2LogoPreview');
       if (newLogoPreview) {
         if (team.logo) {
@@ -1859,17 +1891,39 @@
       const nameInput = formContainer.querySelector('#addPresetTeam2Name') || formContainer.querySelector('[id*="Team2Name"]');
       const cityInput = formContainer.querySelector('#addPresetTeam2City') || formContainer.querySelector('[id*="Team2City"]');
       const shortInput = formContainer.querySelector('#addPresetTeam2Short') || formContainer.querySelector('[id*="Team2Short"]');
-      const colorInput = formContainer.querySelector('#addPresetKit2Color') || formContainer.querySelector('[id*="Kit2Color"]');
+      
+      // Ищем поле цвета - сначала по ID, потом по селектору
+      let colorInput = formContainer.querySelector('#addPresetKit2Color');
+      if (!colorInput) {
+        colorInput = formContainer.querySelector('[id*="Kit2Color"]');
+      }
+      if (!colorInput) {
+        // Ищем в родительском контейнере формы
+        const formGroup = selectElement.closest('.form-group');
+        if (formGroup) {
+          const parentSection = formGroup.closest('.form-section');
+          if (parentSection) {
+            colorInput = parentSection.querySelector('input[type="color"]');
+          }
+        }
+      }
       
       if (nameInput) nameInput.value = team.name || '';
       if (cityInput) cityInput.value = team.city || '';
       if (shortInput) shortInput.value = team.short || '';
+      
       if (colorInput) {
-        colorInput.value = team.kitColor || '#2b2b2b';
-        // Принудительно обновляем визуальное отображение цвета
+        const teamColor = team.kitColor || '#2b2b2b';
+        colorInput.value = teamColor;
+        // Принудительно обновляем визуальное отображение цвета через несколько методов
+        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+        colorInput.dispatchEvent(new Event('change', { bubbles: true }));
+        // Также обновляем через setTimeout для гарантии
         setTimeout(() => {
-          colorInput.style.backgroundColor = colorInput.value;
-        }, 0);
+          if (colorInput && colorInput.value !== teamColor) {
+            colorInput.value = teamColor;
+          }
+        }, 10);
       }
       
       // Обновляем имя пресета после выбора команды
