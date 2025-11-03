@@ -727,6 +727,7 @@ print_results() {
     echo -e "\n${CYAN}🌐 ГОТОВЫЕ ССЫЛКИ ДЛЯ КОПИРОВАНИЯ:${NC}"
     echo -e "${YELLOW}Панель управления:${NC}"
     echo -e "  ${GREEN}http://$current_domain/private/control.html?token=$current_token${NC}"
+    echo -e "  ${GREEN}http://$current_domain/private/settings.html?token=$current_token${NC}  (настройки турниров)"
     echo ""
     echo -e "${YELLOW}Страницы табло:${NC}"
     echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (основное табло)"
