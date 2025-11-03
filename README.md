@@ -128,7 +128,7 @@ pm2 logs fscoreboard
 
 ### Обновление
 ```bash
-# Автоматическое обновление
+# Автоматическое обновление (рекомендуется)
 curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/update.sh | sudo bash
 
 # Ручное обновление через Git
