@@ -633,7 +633,7 @@
         max-width: 100% !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
-        padding: 15px !important;
+        padding: 10px !important;
         -webkit-box-sizing: border-box !important;
       }
       
@@ -644,18 +644,26 @@
         flex-direction: column !important;
         -webkit-align-items: flex-start !important;
         align-items: flex-start !important;
-        gap: 5px !important;
-        margin-bottom: 15px !important;
+        gap: 3px !important;
+        margin-bottom: 8px !important;
         margin-top: 0 !important;
+      }
+      
+      [id^="presetFormContent_"] > div:first-child h4 {
+        margin: 0 !important;
+        padding: 0 !important;
       }
       
       [id^="presetFormContent_"] > div:first-child small {
         margin-left: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
         width: 100% !important;
         text-align: left !important;
         white-space: normal !important;
         -webkit-hyphens: auto !important;
         hyphens: auto !important;
+        padding: 0 !important;
       }
       
       [id^="presetFormContent_"] > div:nth-child(2) {
@@ -665,9 +673,9 @@
         flex-direction: column !important;
         -webkit-align-items: stretch !important;
         align-items: stretch !important;
-        gap: 8px !important;
+        gap: 5px !important;
         width: 100% !important;
-        margin-bottom: 15px !important;
+        margin-bottom: 8px !important;
         margin-top: 0 !important;
         -webkit-box-sizing: border-box !important;
         box-sizing: border-box !important;
@@ -677,7 +685,7 @@
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
-        padding: 8px !important;
+        padding: 6px !important;
         -webkit-box-sizing: border-box !important;
         box-sizing: border-box !important;
         -webkit-appearance: none !important;
@@ -692,13 +700,17 @@
         word-break: break-word !important;
         -webkit-word-break: break-word !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 4px 0 !important;
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
         color: #1976d2 !important;
         font-size: 14px !important;
+        font-weight: 600 !important;
+        line-height: 1.4 !important;
         -webkit-text-size-adjust: 100% !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
       }
       
       /* Секции с командами - компактные как в редактировании */
@@ -1545,7 +1557,7 @@
       <!-- Строка с временем и именем пресета -->
       <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; width: 100%; flex-wrap: nowrap;">
         <input type="time" class="addPresetMatchTime" value="19:00" step="60" onchange="updatePresetNameForForm(this)" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; -webkit-appearance: none; appearance: none; flex-shrink: 0;">
-        <h3 class="addPresetTitle" style="margin: 0; color: #1976d2; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">19:00 / Команда 1 - Команда 2</h3>
+        <h3 class="addPresetTitle" style="margin: 0; color: #1976d2; flex: 1; min-width: 0;">19:00 / Команда 1 - Команда 2</h3>
       </div>
       
       <!-- Компактная строка: Команда 1 с лого, цвет формы 1 -->
