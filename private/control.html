@@ -3156,6 +3156,19 @@
       // Обновляем имя пресета
       updateEditPresetNameInline(tournamentId, presetId);
       
+      // КРИТИЧНО: Устанавливаем editingPresetId ПЕРЕД показом формы
+      // Это защищает форму от перерисовки при обновлении состояния от сервера
+      editingPresetId = presetId;
+      originalPresetData = {
+        name: preset.name,
+        team1Name: preset.team1Name,
+        team2Name: preset.team2Name,
+        kit1Color: preset.kit1Color,
+        kit2Color: preset.kit2Color
+      };
+      
+      console.log('Edit form opened, editingPresetId set to:', presetId);
+      
       // Теперь скрываем presetItem и показываем форму редактирования
       presetItem.style.display = 'none';
       editForm.classList.remove('hidden');
