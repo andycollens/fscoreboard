@@ -4009,6 +4009,7 @@
       // Обновление таймера
       const isRunning = !!data.timerRunning;
       timerRunning = isRunning;
+      window.timerRunning = isRunning; // Сохраняем в window для доступа из onclick
       setPlayPauseIcon('playPauseIcon', isRunning);
       setTimeInputFromSeconds('timeInput', data.timerSeconds || 0);
       document.getElementById('timeInput').disabled = isRunning;
@@ -4022,7 +4023,7 @@
       }
       
       // Блокировка только основных полей ввода команд во время работы таймера
-      // (не блокируем поля в форме редактирования пресетов)
+      // (не блокируем поля в форме редактирования пресетов и кнопки счета)
       const fieldsToDisable = [
         'team1Name', 'team1City', 'team1Short', 'kit1Color',
         'team2Name', 'team2City', 'team2Short', 'kit2Color'
@@ -4033,9 +4034,22 @@
         if (field && !field.closest('.edit-preset-form')) { // Исключаем поля в форме редактирования
           if (isRunning) {
             field.classList.add('disabled-field');
+            field.disabled = true; // Дополнительная блокировка
           } else {
             field.classList.remove('disabled-field');
+            field.disabled = false;
           }
+        }
+      });
+      
+      // КНОПКИ СЧЕТА НЕ БЛОКИРУЕМ - они всегда доступны (только с подтверждением при таймере)
+      const scoreButtons = ['score1Inc', 'score1Dec', 'score2Inc', 'score2Dec'];
+      scoreButtons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.classList.remove('disabled-field');
+          btn.disabled = false;
+          btn.style.pointerEvents = 'auto';
         }
       });
       
