@@ -1103,17 +1103,19 @@
     </div>
     
     <div id="addPresetForm" class="edit-preset-form hidden">
-      <h3 id="addPresetTitle" class="editable-title" onclick="startEditingTitle()">Новая предустановка</h3>
-      <input type="text" id="addPresetNameInput" class="hidden" onblur="finishEditingTitle()" onkeypress="handleTitleKeypress(event)">
+      <!-- Скрытый селект турнира для логики -->
+      <select id="addPresetTournament" onchange="onTournamentSelected()" style="display: none;">
+        <option value="">-- Выберите турнир --</option>
+      </select>
       
-      <!-- Выбор турнира (скрыт, заполняется автоматически) -->
-      <div class="form-section" style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+      <h3 id="addPresetTitle" style="margin-top: 0; margin-bottom: 20px; color: #1976d2;">19:00 / Новая предустановка</h3>
+      
+      <!-- Выбор времени матча -->
+      <div class="form-section" style="margin-bottom: 20px;">
         <div class="form-group">
-          <label><strong>Турнир:</strong> <span id="selectedTournamentName" style="color: #338af3; font-weight: bold;"></span></label>
-          <select id="addPresetTournament" onchange="onTournamentSelected()" style="display: none;">
-            <option value="">-- Выберите турнир --</option>
-          </select>
-          <small style="color: #666; display: block; margin-top: 5px;">Команды будут выбраны из этого турнира</small>
+          <label><strong>Время матча</strong></label>
+          <input type="time" id="addPresetMatchTime" value="19:00" onchange="updatePresetName()" style="width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 17px; -webkit-appearance: none; appearance: none;">
+          <small style="color: #666; display: block; margin-top: 5px;">Имя пресета будет сформировано автоматически</small>
         </div>
       </div>
       
@@ -1371,7 +1373,12 @@
     }
     
     // Открытие формы создания пресета из турнира
-    function openAddPresetFromTournament(tournamentId) {
+    async function openAddPresetFromTournament(tournamentId) {
+      // Убеждаемся что турниры загружены
+      if (tournaments.length === 0) {
+        await loadTournaments();
+      }
+      
       const tournament = tournaments.find(t => t.id === tournamentId);
       if (!tournament) {
         alert('Турнир не найден');
@@ -1391,22 +1398,44 @@
         localStorage.setItem('lastSelectedTournament', tournamentId);
       }
       
-      // Показываем название турнира
-      const tournamentNameSpan = document.getElementById('selectedTournamentName');
-      if (tournamentNameSpan) {
-        tournamentNameSpan.textContent = tournament.name;
-      }
-      
       // Заполняем команды турнира
-      onTournamentSelected();
+      fillTeamsFromTournament(tournament);
       
       // Показываем форму
       const form = document.getElementById('addPresetForm');
       if (form) {
         form.classList.remove('hidden');
         // Прокручиваем к форме
-        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setTimeout(() => {
+          form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
       }
+    }
+    
+    // Заполнение команд из турнира
+    function fillTeamsFromTournament(tournament) {
+      if (!tournament || !tournament.teams) return;
+      
+      // Заполняем селекты команд
+      const team1Select = document.getElementById('addPresetTeam1Select');
+      const team2Select = document.getElementById('addPresetTeam2Select');
+      
+      if (!team1Select || !team2Select) return;
+      
+      team1Select.innerHTML = '<option value="">-- Выберите команду --</option>';
+      team2Select.innerHTML = '<option value="">-- Выберите команду --</option>';
+      
+      tournament.teams.forEach(team => {
+        const option1 = document.createElement('option');
+        option1.value = team.id;
+        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        team1Select.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = team.id;
+        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        team2Select.appendChild(option2);
+      });
     }
     
     // Обработка выбора турнира
@@ -1455,6 +1484,7 @@
       
       if (!tournamentId || !teamId) {
         hideTeam1Details();
+        updatePresetName();
         return;
       }
       
@@ -1467,6 +1497,7 @@
       selectedTeams.team1 = team;
       fillTeam1Fields(team);
       showTeam1Details();
+      updatePresetName();
     }
     
     // Обработка выбора команды 2
@@ -1476,6 +1507,7 @@
       
       if (!tournamentId || !teamId) {
         hideTeam2Details();
+        updatePresetName();
         return;
       }
       
@@ -1488,6 +1520,27 @@
       selectedTeams.team2 = team;
       fillTeam2Fields(team);
       showTeam2Details();
+      updatePresetName();
+    }
+    
+    // Обновление имени пресета автоматически
+    function updatePresetName() {
+      const timeInput = document.getElementById('addPresetMatchTime');
+      const titleElement = document.getElementById('addPresetTitle');
+      
+      if (!timeInput || !titleElement) return;
+      
+      const matchTime = timeInput.value || '19:00';
+      const team1Name = selectedTeams.team1 ? selectedTeams.team1.name : '';
+      const team2Name = selectedTeams.team2 ? selectedTeams.team2.name : '';
+      
+      if (team1Name && team2Name) {
+        titleElement.textContent = `${matchTime} / ${team1Name} - ${team2Name}`;
+      } else if (team1Name || team2Name) {
+        titleElement.textContent = `${matchTime} / ${team1Name || team2Name}`;
+      } else {
+        titleElement.textContent = `${matchTime} / Новая предустановка`;
+      }
     }
     
     // Заполнение полей команды 1
@@ -1683,13 +1736,11 @@
       }
     }
     
-    // Редактирование заголовка
+    // Редактирование заголовка (только для формы редактирования)
     function startEditingTitle() {
-      // Проверяем какая форма активна
+      // Проверяем только форму редактирования
       const editTitle = document.getElementById('editPresetTitle');
       const editInput = document.getElementById('editPresetNameInput');
-      const addTitle = document.getElementById('addPresetTitle');
-      const addInput = document.getElementById('addPresetNameInput');
       
       if (editTitle && !editTitle.classList.contains('hidden')) {
         // Форма редактирования
@@ -1698,33 +1749,19 @@
         editInput.value = editTitle.textContent;
         editInput.focus();
         editInput.select();
-      } else if (addTitle && !addTitle.classList.contains('hidden')) {
-        // Форма добавления
-        addTitle.classList.add('hidden');
-        addInput.classList.remove('hidden');
-        addInput.value = addTitle.textContent;
-        addInput.focus();
-        addInput.select();
       }
     }
     
     function finishEditingTitle() {
-      // Проверяем какая форма активна
+      // Проверяем только форму редактирования
       const editTitle = document.getElementById('editPresetTitle');
       const editInput = document.getElementById('editPresetNameInput');
-      const addTitle = document.getElementById('addPresetTitle');
-      const addInput = document.getElementById('addPresetNameInput');
       
       if (editInput && !editInput.classList.contains('hidden')) {
         // Форма редактирования
         editTitle.textContent = editInput.value.trim() || 'Название матча';
         editTitle.classList.remove('hidden');
         editInput.classList.add('hidden');
-      } else if (addInput && !addInput.classList.contains('hidden')) {
-        // Форма добавления
-        addTitle.textContent = addInput.value.trim() || 'Новая предустановка';
-        addTitle.classList.remove('hidden');
-        addInput.classList.add('hidden');
       }
     }
     
@@ -2210,12 +2247,21 @@
       const tournamentId = document.getElementById('addPresetTournament').value;
       
       if (!tournamentId) {
-        alert('Выберите турнир');
+        alert('Турнир не выбран');
         return;
       }
       
+      if (!selectedTeams.team1 || !selectedTeams.team2) {
+        alert('Выберите обе команды из турнира');
+        return;
+      }
+      
+      // Формируем имя пресета автоматически
+      const matchTime = document.getElementById('addPresetMatchTime').value || '19:00';
+      const presetName = `${matchTime} / ${selectedTeams.team1.name} - ${selectedTeams.team2.name}`;
+      
       const preset = {
-        name: document.getElementById('addPresetTitle').textContent.trim(),
+        name: presetName,
         team1Name: document.getElementById('addPresetTeam1Name').value.trim(),
         team1City: document.getElementById('addPresetTeam1City').value.trim(),
         team1Short: document.getElementById('addPresetTeam1Short').value.trim().toUpperCase(),
@@ -2229,18 +2275,8 @@
       };
 
       // Валидация
-      if (!preset.name || preset.name === 'Новая предустановка') {
-        alert('Введите название матча');
-        return;
-      }
-      
-      if (!selectedTeams.team1 || !selectedTeams.team2) {
-        alert('Выберите обе команды из турнира');
-        return;
-      }
-      
       if (!preset.team1Name || !preset.team2Name) {
-        alert('Введите названия обеих команд');
+        alert('Названия команд обязательны');
         return;
       }
 
@@ -2360,10 +2396,6 @@
         select.value = '';
       }
       
-      const tournamentNameSpan = document.getElementById('selectedTournamentName');
-      if (tournamentNameSpan) {
-        tournamentNameSpan.textContent = '';
-      }
       
       document.getElementById('addPresetTeam1Select').innerHTML = '<option value="">-- Выберите команду --</option>';
       document.getElementById('addPresetTeam2Select').innerHTML = '<option value="">-- Выберите команду --</option>';
