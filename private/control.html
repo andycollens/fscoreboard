@@ -4072,6 +4072,8 @@
           btn.classList.remove('disabled-field');
           btn.disabled = false;
           btn.style.pointerEvents = 'auto';
+          btn.style.cursor = 'pointer';
+          btn.style.opacity = '1';
         }
       });
       
@@ -4131,29 +4133,39 @@
       
       // Обновление команд (всегда обновляем, даже при перезагрузке страницы)
       // Используем сохраненные значения из сервера, не дефолтные
-      if (data.team1Short !== undefined) {
-        document.getElementById('team1Short').value = data.team1Short || "";
+      // Важно: обновляем ВСЕ поля даже если значение пустое, чтобы не сохранить старые значения
+      const team1NameEl = document.getElementById('team1Name');
+      const team1CityEl = document.getElementById('team1City');
+      const team1ShortEl = document.getElementById('team1Short');
+      const team2NameEl = document.getElementById('team2Name');
+      const team2CityEl = document.getElementById('team2City');
+      const team2ShortEl = document.getElementById('team2Short');
+      const kit1ColorEl = document.getElementById('kit1Color');
+      const kit2ColorEl = document.getElementById('kit2Color');
+      
+      if (team1ShortEl && data.team1Short !== undefined) {
+        team1ShortEl.value = data.team1Short || "";
       }
-      if (data.team2Short !== undefined) {
-        document.getElementById('team2Short').value = data.team2Short || "";
+      if (team2ShortEl && data.team2Short !== undefined) {
+        team2ShortEl.value = data.team2Short || "";
       }
-      if (data.kit1Color !== undefined) {
-        document.getElementById('kit1Color').value = data.kit1Color || "#2b2b2b";
+      if (kit1ColorEl && data.kit1Color !== undefined) {
+        kit1ColorEl.value = data.kit1Color || "#2b2b2b";
       }
-      if (data.kit2Color !== undefined) {
-        document.getElementById('kit2Color').value = data.kit2Color || "#2b2b2b";
+      if (kit2ColorEl && data.kit2Color !== undefined) {
+        kit2ColorEl.value = data.kit2Color || "#2b2b2b";
       }
-      if (data.team1Name !== undefined) {
-        document.getElementById('team1Name').value = data.team1Name || "";
+      if (team1NameEl && data.team1Name !== undefined) {
+        team1NameEl.value = data.team1Name || "";
       }
-      if (data.team2Name !== undefined) {
-        document.getElementById('team2Name').value = data.team2Name || "";
+      if (team2NameEl && data.team2Name !== undefined) {
+        team2NameEl.value = data.team2Name || "";
       }
-      if (data.team1City !== undefined) {
-        document.getElementById('team1City').value = data.team1City || "";
+      if (team1CityEl && data.team1City !== undefined) {
+        team1CityEl.value = data.team1City || "";
       }
-      if (data.team2City !== undefined) {
-        document.getElementById('team2City').value = data.team2City || "";
+      if (team2CityEl && data.team2City !== undefined) {
+        team2CityEl.value = data.team2City || "";
       }
       
       // Обновление логотипов (всегда обновляем, даже при перезагрузке страницы)
