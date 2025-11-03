@@ -2617,12 +2617,18 @@
         return;
       }
       
-      // Скрываем все другие формы редактирования
-      document.querySelectorAll('.preset-edit-form-inline').forEach(form => {
-        if (!form.classList.contains('hidden')) {
-          form.classList.add('hidden');
-          form.innerHTML = '';
+      // Восстанавливаем видимость всех пресетов, которые были в режиме редактирования
+      document.querySelectorAll('.preset-item').forEach(item => {
+        if (item.style.display === 'none' || item.classList.contains('edit-mode')) {
+          item.style.display = '';
+          item.classList.remove('edit-mode');
         }
+      });
+      
+      // Скрываем все формы редактирования и очищаем их содержимое
+      document.querySelectorAll('.preset-edit-form-inline').forEach(form => {
+        form.classList.add('hidden');
+        form.innerHTML = '';
       });
       
       // Скрываем форму создания пресета если открыта
@@ -2638,47 +2644,53 @@
         expandedPresets.add(tournamentId);
       }
       
-      // Находим элемент пресета
-      const presetItem = document.querySelector(`[data-preset-id="${presetId}"][data-tournament-id="${tournamentId}"]`);
-      if (!presetItem) return;
+      // Находим wrapper пресета
+      const presetWrapper = document.querySelector(`.preset-item-wrapper[data-preset-id="${presetId}"][data-tournament-id="${tournamentId}"]`);
+      if (!presetWrapper) {
+        alert('Элемент пресета не найден');
+        return;
+      }
       
-      // Скрываем информацию пресета
-      const presetInfo = presetItem.querySelector('div[style*="flex: 1"]');
-      if (presetInfo) {
-        presetInfo.style.display = 'none';
+      // Находим элемент пресета внутри wrapper
+      const presetItem = presetWrapper.querySelector('.preset-item');
+      if (!presetItem) {
+        alert('Элемент пресета не найден');
+        return;
       }
       
       // Показываем форму редактирования на месте пресета
       const editForm = presetWrapper.querySelector(`#preset-edit-form-${tournamentId}-${presetId}`);
-      if (editForm) {
-        editForm.classList.remove('hidden');
-        presetItem.classList.add('edit-mode');
-        
-        // Определяем текущие ID команд или находим их по именам
-        let currentTeam1Id = preset.team1Id;
-        let currentTeam2Id = preset.team2Id;
-        
-        // Если ID не сохранены, пытаемся найти по имени
-        if (!currentTeam1Id && preset.team1Name) {
-          const team = tournament.teams.find(t => t.name === preset.team1Name);
-          if (team) currentTeam1Id = team.id;
+      if (!editForm) {
+        alert('Форма редактирования не найдена');
+        return;
+      }
+      
+      // Определяем текущие ID команд или находим их по именам
+      let currentTeam1Id = preset.team1Id;
+      let currentTeam2Id = preset.team2Id;
+      
+      // Если ID не сохранены, пытаемся найти по имени
+      if (!currentTeam1Id && preset.team1Name) {
+        const team = tournament.teams.find(t => t.name === preset.team1Name);
+        if (team) currentTeam1Id = team.id;
+      }
+      
+      if (!currentTeam2Id && preset.team2Name) {
+        const team = tournament.teams.find(t => t.name === preset.team2Name);
+        if (team) currentTeam2Id = team.id;
+      }
+      
+      // Извлекаем время из имени пресета (формат: "19:00 / Команда 1 - Команда 2")
+      let matchTime = '19:00';
+      if (preset.name && preset.name.includes(' / ')) {
+        const timeMatch = preset.name.match(/^(\d{2}:\d{2})\s*\/\s*/);
+        if (timeMatch) {
+          matchTime = timeMatch[1];
         }
-        
-        if (!currentTeam2Id && preset.team2Name) {
-          const team = tournament.teams.find(t => t.name === preset.team2Name);
-          if (team) currentTeam2Id = team.id;
-        }
-        
-        // Извлекаем время из имени пресета (формат: "19:00 / Команда 1 - Команда 2")
-        let matchTime = '19:00';
-        if (preset.name && preset.name.includes(' / ')) {
-          const timeMatch = preset.name.match(/^(\d{2}:\d{2})\s*\/\s*/);
-          if (timeMatch) {
-            matchTime = timeMatch[1];
-          }
-        }
-        
-        editForm.innerHTML = `
+      }
+      
+      // Заполняем форму содержимым ПЕРЕД показом
+      editForm.innerHTML = `
           <h4 style="margin-top: 0;">Редактировать пресет</h4>
           
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%;">
@@ -2737,32 +2749,36 @@
             <button class="btn btn-secondary" onclick="cancelEditPresetInline('${tournamentId}', '${presetId}')">Отмена</button>
           </div>
         `;
+      
+      // Заполняем селекты команд
+      const team1Select = editForm.querySelector('.editPresetTeam1SelectInline');
+      const team2Select = editForm.querySelector('.editPresetTeam2SelectInline');
+      
+      tournament.teams.forEach(team => {
+        const option1 = document.createElement('option');
+        option1.value = team.id;
+        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        if (currentTeam1Id && team.id === currentTeam1Id) {
+          option1.selected = true;
+        }
+        team1Select.appendChild(option1);
         
-        // Заполняем селекты команд
-        const team1Select = editForm.querySelector('.editPresetTeam1SelectInline');
-        const team2Select = editForm.querySelector('.editPresetTeam2SelectInline');
-        
-        tournament.teams.forEach(team => {
-          const option1 = document.createElement('option');
-          option1.value = team.id;
-          option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
-          if (currentTeam1Id && team.id === currentTeam1Id) {
-            option1.selected = true;
-          }
-          team1Select.appendChild(option1);
-          
-          const option2 = document.createElement('option');
-          option2.value = team.id;
-          option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
-          if (currentTeam2Id && team.id === currentTeam2Id) {
-            option2.selected = true;
-          }
-          team2Select.appendChild(option2);
-        });
-        
-        // Обновляем имя пресета
-        updateEditPresetNameInline(tournamentId, presetId);
-      }
+        const option2 = document.createElement('option');
+        option2.value = team.id;
+        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        if (currentTeam2Id && team.id === currentTeam2Id) {
+          option2.selected = true;
+        }
+        team2Select.appendChild(option2);
+      });
+      
+      // Обновляем имя пресета
+      updateEditPresetNameInline(tournamentId, presetId);
+      
+      // Теперь скрываем presetItem и показываем форму редактирования
+      presetItem.style.display = 'none';
+      editForm.classList.remove('hidden');
+      presetItem.classList.add('edit-mode');
     }
     
     // Обновление имени пресета при редактировании
@@ -2972,19 +2988,18 @@
       if (!presetWrapper) return;
       
       const presetItem = presetWrapper.querySelector('.preset-item');
-      if (presetItem) {
-        presetItem.classList.remove('edit-mode');
-      }
-      
       const editForm = presetWrapper.querySelector(`#preset-edit-form-${tournamentId}-${presetId}`);
+      
+      // Скрываем форму редактирования
       if (editForm) {
         editForm.classList.add('hidden');
         editForm.innerHTML = '';
       }
       
-      const presetInfo = presetItem?.querySelector('div[style*="flex: 1"]');
-      if (presetInfo) {
-        presetInfo.style.display = 'block';
+      // Показываем presetItem обратно
+      if (presetItem) {
+        presetItem.style.display = '';
+        presetItem.classList.remove('edit-mode');
       }
     }
 
