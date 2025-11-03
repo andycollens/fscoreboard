@@ -1949,22 +1949,15 @@
             </div>
           </div>
           <div id="presetForm_${tournament.id}" class="tournament-preset-form hidden" style="width: 100%; margin-top: 15px; clear: both; display: block;"></div>
-          <div id="presets-${tournament.id}" class="tournament-presets" style="width: 100%; margin-top: 15px; clear: both; display: block;">
-            <div style="display: flex; justify-content: flex-end; align-items: flex-start; width: 100%; margin-bottom: 10px;">
-              <span class="preset-edit-link" onclick="openAddPresetFromTournament('${tournament.id}'); event.stopPropagation();" ${teamCount < 2 ? 'style="opacity: 0.5; cursor: not-allowed; pointer-events: none;" title="Нужно минимум 2 команды в турнире"' : 'title="Добавить пресет"'} style="text-align: right;">+add</span>
-            </div>
-            <div id="presets-list-${tournament.id}" class="presets-list" style="width: 100%; display: flex; flex-direction: column;">
-              <!-- Пресеты будут загружены динамически -->
-            </div>
-          </div>
+          <div id="presets-${tournament.id}" class="tournament-presets" style="width: 100%; margin-top: 15px; clear: both; display: block;"></div>
         `;
         
         container.appendChild(card);
       });
     }
     
-    // Открытие формы создания пресета из турнира
-    async function openAddPresetFromTournament(tournamentId) {
+    // Открытие формы создания пресета из турнира (опционально для конкретного дня)
+    async function openAddPresetFromTournament(tournamentId, dayDate) {
       // Убеждаемся что турниры загружены
       if (tournaments.length === 0) {
         await loadTournaments();
@@ -2011,12 +2004,15 @@
       formContainer.appendChild(form);
       formContainer.classList.remove('hidden');
       
-      // Устанавливаем выбранный турнир в форме
+      // Устанавливаем выбранный турнир и день в форме
       const select = form.querySelector('.addPresetTournament');
       if (select) {
         select.value = tournamentId;
         // Также сохраняем в data-атрибут формы для надежности
         form.dataset.tournamentId = tournamentId;
+        if (dayDate) {
+          form.dataset.matchDate = dayDate; // YYYY-MM-DD
+        }
         localStorage.setItem('lastSelectedTournament', tournamentId);
         console.log('Set tournament ID:', tournamentId, 'in form:', form.id);
       }
@@ -2024,8 +2020,8 @@
       // Заполняем команды турнира в этой форме
       fillTeamsFromTournamentForForm(tournament, form);
       
-      // Находим последний созданный пресет из этого турнира для получения времени по умолчанию
-      const tournamentPresets = presets.filter(p => p.tournamentId === tournamentId);
+      // Находим последний созданный пресет из выбранного дня для получения времени по умолчанию
+      const tournamentPresets = presets.filter(p => p.tournamentId === tournamentId && (!dayDate || p.matchDate === dayDate));
       let defaultTime = '19:00';
       
       if (tournamentPresets.length > 0) {
@@ -3192,8 +3188,8 @@
       }
       
       tournaments.forEach(tournament => {
-        const presetsContainer = document.getElementById(`presets-list-${tournament.id}`);
-        if (!presetsContainer) return;
+        const presetsRoot = document.getElementById(`presets-${tournament.id}`);
+        if (!presetsRoot) return;
         
         // Фильтруем пресеты этого турнира
         const tournamentPresets = presets.filter(p => p && p.tournamentId === tournament.id);
@@ -3213,14 +3209,48 @@
         // Добавляем в expandedPresets если еще не добавлен (для сохранения состояния)
         expandedPresets.add(tournament.id);
         
+        // Готовим секции дней
+        presetsRoot.innerHTML = '';
+        const days = [];
+        if (tournament.startDate && tournament.endDate) {
+          const start = new Date(tournament.startDate);
+          const end = new Date(tournament.endDate);
+          start.setHours(0,0,0,0);
+          end.setHours(0,0,0,0);
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const iso = d.toISOString().slice(0,10);
+            days.push({ iso, label: d.toLocaleDateString('ru-RU', { weekday: 'short', day: '2-digit', month: '2-digit' }) });
+          }
+        }
+        if (days.length === 0) days.push({ iso: null, label: 'Без даты' });
+        
+        // Создаем секции дней
+        days.forEach(({ iso, label }) => {
+          const section = document.createElement('div');
+          section.className = 'tournament-day-section';
+          section.style.cssText = 'width: 100%; box-sizing: border-box; margin-bottom: 12px;';
+          section.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0;">
+              <div style="font-weight: 600; color: #333;">${label}</div>
+              <span class="preset-edit-link" onclick="openAddPresetFromTournament('${tournament.id}', '${iso || ''}'); event.stopPropagation();" title="Добавить пресет">+add</span>
+            </div>
+            <div id="presets-list-${tournament.id}-${iso || 'nodate'}" class="presets-list" style="width: 100%; display: flex; flex-direction: column;"></div>
+          `;
+          presetsRoot.appendChild(section);
+        });
+        
+        // Если совсем нет пресетов
         if (tournamentPresets.length === 0) {
-          presetsContainer.innerHTML = '<div style="padding: 10px; color: #999; font-size: 12px;">Пресетов пока нет</div>';
+          const firstKey = days[0] ? days[0].iso || 'nodate' : 'nodate';
+          const emptyEl = document.getElementById(`presets-list-${tournament.id}-${firstKey}`);
+          if (emptyEl) emptyEl.innerHTML = '<div style="padding: 10px; color: #999; font-size: 12px;">Пресетов пока нет</div>';
           return;
         }
         
-        presetsContainer.innerHTML = '';
-        
         tournamentPresets.forEach(preset => {
+          const dayKey = preset.matchDate || (days[0] ? days[0].iso : null);
+          const listTarget = document.getElementById(`presets-list-${tournament.id}-${dayKey || 'nodate'}`) || document.getElementById(`presets-list-${tournament.id}-${days[0] ? days[0].iso : 'nodate'}`);
+          if (!listTarget) return;
           // Находим команды из турнира для получения актуальных логотипов
           let team1 = null;
           let team2 = null;
@@ -3282,7 +3312,7 @@
           presetWrapper.appendChild(presetItem);
           presetWrapper.appendChild(editForm);
           
-          presetsContainer.appendChild(presetWrapper);
+          listTarget.appendChild(presetWrapper);
         });
       });
     }
@@ -4173,6 +4203,7 @@
       const preset = {
         name: presetName,
         tournamentId: tournamentId,
+        matchDate: formContainer?.dataset?.matchDate || null,
         team1Id: team1Id,
         team2Id: team2Id,
         team1Name: (team1NameInput?.value.trim()) || team1.name,
