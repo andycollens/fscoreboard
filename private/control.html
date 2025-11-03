@@ -2716,12 +2716,20 @@
       if (!team) return;
       
       // Обновляем цвет формы из пресета (если он сохранен), иначе из команды
-      const colorInput = selectElement.closest('.preset-edit-form-inline').querySelector('.editPresetKit1ColorInline');
+      const editForm = selectElement.closest('.preset-edit-form-inline');
+      const colorInput = editForm?.querySelector('.editPresetKit1ColorInline');
       if (colorInput && !colorInput.dataset.manualEdit) {
-        // Сначала пробуем взять цвет из пресета
-        const preset = presets.find(p => p.id === selectElement.closest('.preset-edit-form-inline').id.split('-').pop());
-        if (preset && preset.kit1Color) {
-          colorInput.value = preset.kit1Color;
+        // Извлекаем ID пресета из ID формы (preset-edit-form-TOURNAMENT_ID-PRESET_ID)
+        const formId = editForm.id;
+        const presetIdMatch = formId.match(/preset-edit-form-[^-]+-(.+)$/);
+        if (presetIdMatch) {
+          const presetId = presetIdMatch[1];
+          const preset = presets.find(p => p.id === presetId);
+          if (preset && preset.kit1Color) {
+            colorInput.value = preset.kit1Color;
+          } else {
+            colorInput.value = team.kitColor || '#2b2b2b';
+          }
         } else {
           colorInput.value = team.kitColor || '#2b2b2b';
         }
