@@ -3428,6 +3428,11 @@
       const presetItem = presetWrapper.querySelector('.preset-item');
       const editForm = presetWrapper.querySelector(`#preset-edit-form-${tournamentId}-${presetId}`);
       
+      // КРИТИЧНО: Очищаем editingPresetId ПЕРЕД закрытием формы
+      // Это предотвращает срабатывание защитных проверок при перерисовке
+      editingPresetId = null;
+      originalPresetData = null;
+      
       // Скрываем форму редактирования
       if (editForm) {
         editForm.classList.add('hidden');
@@ -3439,6 +3444,8 @@
         presetItem.style.display = '';
         presetItem.classList.remove('edit-mode');
       }
+      
+      console.log('Edit form closed via Cancel button');
     }
 
     // Подтверждение применения предустановки
