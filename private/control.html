@@ -1801,7 +1801,11 @@
       if (nameInput) nameInput.value = team.name || '';
       if (cityInput) cityInput.value = team.city || '';
       if (shortInput) shortInput.value = team.short || '';
-      if (colorInput) colorInput.value = team.kitColor || '#2b2b2b';
+      if (colorInput) {
+        colorInput.value = team.kitColor || '#2b2b2b';
+        // Принудительно обновляем визуальное отображение цвета
+        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
       
       // Показываем детали команды
       const detailsRow = formContainer.querySelector('#addPresetTeam1Details') || formContainer.querySelector('[id*="Team1Details"]');
@@ -1874,7 +1878,11 @@
       if (nameInput) nameInput.value = team.name || '';
       if (cityInput) cityInput.value = team.city || '';
       if (shortInput) shortInput.value = team.short || '';
-      if (colorInput) colorInput.value = team.kitColor || '#2b2b2b';
+      if (colorInput) {
+        colorInput.value = team.kitColor || '#2b2b2b';
+        // Принудительно обновляем визуальное отображение цвета
+        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
       
       // Показываем детали команды
       const detailsRow = formContainer.querySelector('#addPresetTeam2Details') || formContainer.querySelector('[id*="Team2Details"]');
@@ -2911,11 +2919,16 @@
         }
       }
       
-      // Обновляем цвет формы из команды (если пользователь не менял цвет вручную)
+      // Обновляем цвет формы из команды (если пользователь не менял цвет вручную в текущей сессии)
       const colorInput = editForm?.querySelector('.editPresetKit1ColorInline');
-      if (colorInput && !colorInput.dataset.manualEdit) {
-        // Всегда берем цвет из выбранной команды
-        colorInput.value = team.kitColor || '#2b2b2b';
+      if (colorInput) {
+        // Проверяем, был ли цвет изменен вручную в текущей сессии редактирования
+        if (!colorInput.dataset.manualEdit) {
+          // Всегда берем цвет из выбранной команды и обновляем
+          colorInput.value = team.kitColor || '#2b2b2b';
+          // Принудительно обновляем визуальное отображение
+          colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
       }
       
       updateEditPresetNameInline(tournamentId, presetId);
@@ -2957,11 +2970,16 @@
         }
       }
       
-      // Обновляем цвет формы из команды (если пользователь не менял цвет вручную)
+      // Обновляем цвет формы из команды (если пользователь не менял цвет вручную в текущей сессии)
       const colorInput = editForm?.querySelector('.editPresetKit2ColorInline');
-      if (colorInput && !colorInput.dataset.manualEdit) {
-        // Всегда берем цвет из выбранной команды
-        colorInput.value = team.kitColor || '#2b2b2b';
+      if (colorInput) {
+        // Проверяем, был ли цвет изменен вручную в текущей сессии редактирования
+        if (!colorInput.dataset.manualEdit) {
+          // Всегда берем цвет из выбранной команды и обновляем
+          colorInput.value = team.kitColor || '#2b2b2b';
+          // Принудительно обновляем визуальное отображение
+          colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
       }
       
       updateEditPresetNameInline(tournamentId, presetId);
