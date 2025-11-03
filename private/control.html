@@ -1206,7 +1206,7 @@
           </div>
           <div class="form-group">
             <label>Цвет формы</label>
-            <input type="color" id="addPresetKit1Color" value="#2b2b2b" readonly style="pointer-events: none;">
+            <input type="color" id="addPresetKit1Color" value="#2b2b2b">
           </div>
         </div>
         <div class="form-row" style="display: none;" id="addPresetTeam1LogoRow">
@@ -1251,7 +1251,7 @@
           </div>
           <div class="form-group">
             <label>Цвет формы</label>
-            <input type="color" id="addPresetKit2Color" value="#2b2b2b" readonly style="pointer-events: none;">
+            <input type="color" id="addPresetKit2Color" value="#2b2b2b">
           </div>
         </div>
         <div class="form-row" style="display: none;" id="addPresetTeam2LogoRow">
@@ -2798,10 +2798,17 @@
         if (presetColor !== teamColor) {
           // Цвет был изменен вручную, помечаем как manualEdit
           kit1ColorInput.dataset.manualEdit = 'true';
+          // Устанавливаем цвет из пресета
+          kit1ColorInput.value = presetColor;
         } else {
           // Цвет совпадает с командой, оставляем возможность автоматического обновления
           kit1ColorInput.dataset.manualEdit = undefined;
+          // Устанавливаем цвет из команды
+          kit1ColorInput.value = teamColor;
         }
+      } else if (!selectedTeam1 && kit1ColorInput) {
+        // Если команда не выбрана, устанавливаем цвет из пресета если есть
+        kit1ColorInput.value = preset.kit1Color || '#2b2b2b';
       }
       
       if (selectedTeam2 && kit2ColorInput) {
@@ -2810,10 +2817,17 @@
         if (presetColor !== teamColor) {
           // Цвет был изменен вручную, помечаем как manualEdit
           kit2ColorInput.dataset.manualEdit = 'true';
+          // Устанавливаем цвет из пресета
+          kit2ColorInput.value = presetColor;
         } else {
           // Цвет совпадает с командой, оставляем возможность автоматического обновления
           kit2ColorInput.dataset.manualEdit = undefined;
+          // Устанавливаем цвет из команды
+          kit2ColorInput.value = teamColor;
         }
+      } else if (!selectedTeam2 && kit2ColorInput) {
+        // Если команда не выбрана, устанавливаем цвет из пресета если есть
+        kit2ColorInput.value = preset.kit2Color || '#2b2b2b';
       }
       
       // Обновляем имя пресета
