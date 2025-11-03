@@ -4107,30 +4107,50 @@
       document.getElementById('score1Value').textContent = data.score1 ?? 0;
       document.getElementById('score2Value').textContent = data.score2 ?? 0;
       
-      // Обновление команд
-      document.getElementById('team1Short').value = data.team1Short ?? "";
-      document.getElementById('team2Short').value = data.team2Short ?? "";
-      document.getElementById('kit1Color').value = data.kit1Color ?? "#2b2b2b";
-      document.getElementById('kit2Color').value = data.kit2Color ?? "#2b2b2b";
-      document.getElementById('team1Name').value = data.team1Name ?? "";
-      document.getElementById('team2Name').value = data.team2Name ?? "";
-      document.getElementById('team1City').value = data.team1City ?? "";
-      document.getElementById('team2City').value = data.team2City ?? "";
-      
-      // Обновление логотипов
-      state.team1Logo = data.team1Logo || '';
-      state.team2Logo = data.team2Logo || '';
-      
-      if (data.team1Logo) {
-        updateMainLogoMini('team1', data.team1Logo);
-      } else {
-        showKitColorCircle('team1');
+      // Обновление команд (всегда обновляем, даже при перезагрузке страницы)
+      // Используем сохраненные значения из сервера, не дефолтные
+      if (data.team1Short !== undefined) {
+        document.getElementById('team1Short').value = data.team1Short || "";
+      }
+      if (data.team2Short !== undefined) {
+        document.getElementById('team2Short').value = data.team2Short || "";
+      }
+      if (data.kit1Color !== undefined) {
+        document.getElementById('kit1Color').value = data.kit1Color || "#2b2b2b";
+      }
+      if (data.kit2Color !== undefined) {
+        document.getElementById('kit2Color').value = data.kit2Color || "#2b2b2b";
+      }
+      if (data.team1Name !== undefined) {
+        document.getElementById('team1Name').value = data.team1Name || "";
+      }
+      if (data.team2Name !== undefined) {
+        document.getElementById('team2Name').value = data.team2Name || "";
+      }
+      if (data.team1City !== undefined) {
+        document.getElementById('team1City').value = data.team1City || "";
+      }
+      if (data.team2City !== undefined) {
+        document.getElementById('team2City').value = data.team2City || "";
       }
       
-      if (data.team2Logo) {
-        updateMainLogoMini('team2', data.team2Logo);
-      } else {
-        showKitColorCircle('team2');
+      // Обновление логотипов (всегда обновляем, даже при перезагрузке страницы)
+      if (data.team1Logo !== undefined) {
+        state.team1Logo = data.team1Logo || '';
+        if (data.team1Logo) {
+          updateMainLogoMini('team1', data.team1Logo);
+        } else {
+          showKitColorCircle('team1');
+        }
+      }
+      
+      if (data.team2Logo !== undefined) {
+        state.team2Logo = data.team2Logo || '';
+        if (data.team2Logo) {
+          updateMainLogoMini('team2', data.team2Logo);
+        } else {
+          showKitColorCircle('team2');
+        }
       }
       
       // Перерисовка предустановок с учетом состояния таймера
