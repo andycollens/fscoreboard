@@ -4055,11 +4055,13 @@
       updateShort();
     }
 
-    // Обновление UI при получении данных
+    // Обновление UI при получении данных (синхронизация с сервером)
+    // Срабатывает при подключении (загрузка состояния) и при изменениях от других клиентов
     socket.on('scoreboardUpdate', (data) => {
+      console.log('Received scoreboardUpdate from server:', data);
       ready = false;
       
-      // Обновление таймера
+      // Обновление таймера (работает корректно, используем как эталон)
       const isRunning = !!data.timerRunning;
       timerRunning = isRunning;
       window.timerRunning = isRunning; // Сохраняем в window для доступа из onclick
