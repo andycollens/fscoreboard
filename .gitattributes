@@ -1,15 +1,16 @@
-# Установка кодировки для всех текстовых файлов
+# Auto detect text files and perform LF normalization
 * text=auto eol=lf
 
-# Явно указываем UTF-8 для всех текстовых файлов
+# Explicitly declare text files with UTF-8 encoding
 *.html text charset=utf-8
 *.js text charset=utf-8
 *.json text charset=utf-8
 *.md text charset=utf-8
 *.txt text charset=utf-8
 *.sh text charset=utf-8
+*.bat text charset=utf-8
 
-# Бинарные файлы
+# Binary files
 *.png binary
 *.jpg binary
 *.jpeg binary
@@ -18,4 +19,5 @@
 *.ttf binary
 *.woff binary
 *.woff2 binary
+*.webp binary
 
