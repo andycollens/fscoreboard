@@ -1566,8 +1566,8 @@
               <div style="font-size: 12px; color: #666;">${dates}</div>
               <div style="font-size: 12px; color: #999; margin-top: 3px;">Команд: ${teamCount} | Пресетов: <span id="presetCount-${tournament.id}">0</span></div>
             </div>
-            <button class="btn btn-primary" onclick="openAddPresetFromTournament('${tournament.id}'); event.stopPropagation();" id="addPresetBtn_${tournament.id}" ${teamCount < 2 ? 'disabled title="Нужно минимум 2 команды в турнире"' : ''} style="flex-shrink: 0;">
-              + Добавить пресет
+            <button class="btn btn-primary" onclick="openAddPresetFromTournament('${tournament.id}'); event.stopPropagation();" id="addPresetBtn_${tournament.id}" ${teamCount < 2 ? 'disabled title="Нужно минимум 2 команды в турнире"' : 'title="Добавить пресет"'} style="flex-shrink: 0;">
+              +
             </button>
           </div>
           <div id="presetForm_${tournament.id}" class="tournament-preset-form hidden" style="width: 100%; margin-top: 15px; clear: both; display: block;"></div>
