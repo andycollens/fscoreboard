@@ -1379,7 +1379,7 @@
               + Добавить пресет
             </button>
           </div>
-          <div id="presetForm_${tournament.id}" class="tournament-preset-form hidden"></div>
+          <div id="presetForm_${tournament.id}" class="tournament-preset-form hidden" style="width: 100%; margin-top: 15px; clear: both;"></div>
         `;
         
         container.appendChild(card);
@@ -1723,7 +1723,7 @@
       }
       
       // Обновляем имя пресета после выбора команды
-      setTimeout(() => updatePresetNameForForm(selectElement), 0);
+      updatePresetNameForForm(selectElement);
     }
     
     function onTeam2SelectedForForm(selectElement) {
@@ -1743,7 +1743,7 @@
           if (logoImg) logoImg.style.display = 'none';
         }
         // Обновляем имя пресета после очистки выбора
-        setTimeout(() => updatePresetNameForForm(selectElement), 0);
+        updatePresetNameForForm(selectElement);
         return;
       }
       
@@ -1796,7 +1796,7 @@
       }
       
       // Обновляем имя пресета после выбора команды
-      setTimeout(() => updatePresetNameForForm(selectElement), 0);
+      updatePresetNameForForm(selectElement);
     }
     
     function onTournamentSelectedForForm(selectElement) {
