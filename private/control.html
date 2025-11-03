@@ -3292,7 +3292,6 @@
           presetsRoot.appendChild(section);
           
           // Устанавливаем состояние сворачивания для этого дня
-          const dayKeyFull = `${tournament.id}-${dayKey}`;
           const listEl = document.getElementById(`presets-list-${tournament.id}-${dayKey}`);
           const headerEl = section.querySelector('.day-header');
           const arrowEl = headerEl ? headerEl.querySelector('.day-toggle-arrow') : null;
