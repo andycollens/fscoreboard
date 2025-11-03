@@ -2675,7 +2675,7 @@
               </div>
               <div class="preset-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
                 <span class="preset-edit-link" onclick="editPresetInline('${tournament.id}', '${preset.id}')">edit</span>
-                <span class="preset-apply-symbol" onclick="applyPreset('${preset.id}')" ${timerRunning ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''} title="Применить предустановку">▶</span>
+                <span class="preset-apply-symbol" onclick="if (!window.timerRunning) applyPreset('${preset.id}')" ${timerRunning ? 'style="opacity: 0.5; cursor: not-allowed; pointer-events: none;"' : ''} title="Применить предустановку">▶</span>
               </div>
             </div>
           `;
