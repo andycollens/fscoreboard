@@ -457,7 +457,6 @@
       text-decoration-style: dashed;
       cursor: pointer;
       font-size: 12px;
-      margin-left: 16px;
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -466,23 +465,38 @@
       color: #666;
     }
     
-    .preset-play-btn {
-      background: none;
-      border: none;
-      color: #28a745;
+    .preset-delete-link {
+      color: #dc3545;
+      text-decoration: underline;
+      text-decoration-style: dashed;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      padding: 4px 8px;
+      font-size: 12px;
+      white-space: nowrap;
       flex-shrink: 0;
     }
     
-    .preset-play-btn:hover {
-      color: #218838;
+    .preset-delete-link:hover {
+      color: #c82333;
+    }
+    
+    .preset-play-btn {
+      padding: 6px 12px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    
+    .preset-play-btn:hover:not(:disabled) {
+      background: #1565c0;
     }
     
     .preset-play-btn:disabled {
-      color: #ccc;
+      opacity: 0.5;
       cursor: not-allowed;
     }
     
@@ -1421,7 +1435,7 @@
             </button>
           </div>
           <div id="presetForm_${tournament.id}" class="tournament-preset-form hidden" style="width: 100%; margin-top: 15px; clear: both; display: block;"></div>
-          <div id="presets-${tournament.id}" class="tournament-presets hidden" style="width: 100%; margin-top: 15px; clear: both; display: block;">
+          <div id="presets-${tournament.id}" class="tournament-presets" style="width: 100%; margin-top: 15px; clear: both; display: block;">
             <div id="presets-list-${tournament.id}" class="presets-list" style="width: 100%; display: flex; flex-direction: column;">
               <!-- Пресеты будут загружены динамически -->
             </div>
@@ -2434,15 +2448,17 @@
     function toggleTournamentPresets(tournamentId) {
       const presetsDiv = document.getElementById(`presets-${tournamentId}`);
       if (presetsDiv) {
-        const isExpanded = !presetsDiv.classList.contains('hidden');
-        if (isExpanded) {
-          presetsDiv.classList.add('hidden');
-          expandedPresets.delete(tournamentId);
-        } else {
+        const isHidden = presetsDiv.classList.contains('hidden');
+        if (isHidden) {
+          // Показываем пресеты
           presetsDiv.classList.remove('hidden');
           expandedPresets.add(tournamentId);
           // Загружаем пресеты если еще не загружены
           renderTournamentPresets();
+        } else {
+          // Скрываем пресеты
+          presetsDiv.classList.add('hidden');
+          expandedPresets.delete(tournamentId);
         }
       }
     }
@@ -2464,10 +2480,14 @@
           presetCountEl.textContent = tournamentPresets.length;
         }
         
-        // Показываем пресеты только если секция раскрыта
-        if (!expandedPresets.has(tournament.id)) {
+        // Показываем пресеты только если секция не скрыта
+        const presetsDiv = document.getElementById(`presets-${tournament.id}`);
+        if (presetsDiv && presetsDiv.classList.contains('hidden')) {
           return;
         }
+        
+        // Добавляем в expandedPresets если еще не добавлен (для сохранения состояния)
+        expandedPresets.add(tournament.id);
         
         if (tournamentPresets.length === 0) {
           presetsContainer.innerHTML = '<div style="padding: 10px; color: #999; font-size: 12px;">Пресетов пока нет</div>';
@@ -2477,6 +2497,20 @@
         presetsContainer.innerHTML = '';
         
         tournamentPresets.forEach(preset => {
+          // Находим команды из турнира для получения актуальных логотипов
+          let team1 = null;
+          let team2 = null;
+          if (preset.team1Id && tournament.teams) {
+            team1 = tournament.teams.find(t => t.id === preset.team1Id);
+          }
+          if (preset.team2Id && tournament.teams) {
+            team2 = tournament.teams.find(t => t.id === preset.team2Id);
+          }
+          
+          // Используем актуальные логотипы из команд турнира, если команды найдены
+          const team1Logo = (team1 && team1.logo) ? team1.logo : (preset.team1Logo || '');
+          const team2Logo = (team2 && team2.logo) ? team2.logo : (preset.team2Logo || '');
+          
           // Создаем контейнер для пресета (блок на всю ширину)
           const presetWrapper = document.createElement('div');
           presetWrapper.className = 'preset-item-wrapper';
@@ -2492,18 +2526,28 @@
           presetItem.setAttribute('data-tournament-id', tournament.id);
           
           presetItem.innerHTML = `
-            <div style="flex: 1;">
-              <div style="font-weight: bold; color: #333; margin-bottom: 3px;">${preset.name}</div>
-              <div style="font-size: 12px; color: #666;">
-                ${preset.team1Short ? preset.team1Short.toUpperCase() : ''} 
-                <span style="margin: 0 5px;">:</span>
-                ${preset.team2Short ? preset.team2Short.toUpperCase() : ''}
+            <div class="preset-content" style="flex: 1; display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <div class="preset-left" style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0;">
+                <div class="preset-name" style="font-weight: bold; color: #333; font-size: 15px;">${preset.name}</div>
+                <div class="preset-teams" style="display: flex; align-items: center; gap: 6px;">
+                  <span class="preset-team-logo">
+                    ${team1Logo ? `<img src="${team1Logo}" alt="Логотип ${preset.team1Name}" class="preset-logo-mini">` : ''}
+                  </span>
+                  <span class="preset-team-name" style="font-size: 12px; color: #666;">${preset.team1Short ? preset.team1Short.toUpperCase() : ''}</span>
+                  <span class="preset-kit-color" style="background-color: ${preset.kit1Color || '#2b2b2b'}; width: 12px; height: 12px; border-radius: 2px; border: 1px solid #ccc; display: inline-block;"></span>
+                  <span class="preset-separator" style="color: #666; font-weight: bold; margin: 0 2px;">:</span>
+                  <span class="preset-kit-color" style="background-color: ${preset.kit2Color || '#2b2b2b'}; width: 12px; height: 12px; border-radius: 2px; border: 1px solid #ccc; display: inline-block;"></span>
+                  <span class="preset-team-name" style="font-size: 12px; color: #666;">${preset.team2Short ? preset.team2Short.toUpperCase() : ''}</span>
+                  <span class="preset-team-logo">
+                    ${team2Logo ? `<img src="${team2Logo}" alt="Логотип ${preset.team2Name}" class="preset-logo-mini">` : ''}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
-              <span class="team-edit-link" onclick="editPresetInline('${tournament.id}', '${preset.id}')">edit</span>
-              <span class="team-delete-link" onclick="deletePresetFromTournament('${tournament.id}', '${preset.id}')">delete</span>
-              <button class="btn btn-small btn-primary" onclick="applyPreset('${preset.id}')" ${timerRunning ? 'disabled' : ''} style="padding: 4px 8px; font-size: 12px;">▶ Применить</button>
+              <div class="preset-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                <span class="preset-edit-link" onclick="editPresetInline('${tournament.id}', '${preset.id}')">edit</span>
+                <span class="preset-delete-link" onclick="deletePresetFromTournament('${tournament.id}', '${preset.id}')">delete</span>
+                <button class="preset-play-btn" onclick="applyPreset('${preset.id}')" ${timerRunning ? 'disabled' : ''} title="Применить предустановку">▶ Применить</button>
+              </div>
             </div>
           `;
           
@@ -2530,15 +2574,25 @@
         });
         
         if (response.ok) {
-          // Сохраняем состояние раскрытия
-          const wasExpanded = expandedPresets.has(tournamentId);
+          // Сохраняем состояние видимости пресетов
+          const presetsDiv = document.getElementById(`presets-${tournamentId}`);
+          const wasHidden = presetsDiv ? presetsDiv.classList.contains('hidden') : false;
+          
           await loadPresets();
-          if (wasExpanded) {
-            expandedPresets.add(tournamentId);
-            toggleTournamentPresets(tournamentId);
-            toggleTournamentPresets(tournamentId); // Двойной переключатель чтобы восстановить состояние
-          }
           await loadTournaments(); // Обновляем счетчик
+          
+          // Восстанавливаем состояние видимости
+          if (presetsDiv) {
+            if (wasHidden) {
+              presetsDiv.classList.add('hidden');
+              expandedPresets.delete(tournamentId);
+            } else {
+              presetsDiv.classList.remove('hidden');
+              expandedPresets.add(tournamentId);
+              renderTournamentPresets(); // Рендерим если видим
+            }
+          }
+          
           showNotification('Пресет удален!', 'success');
         } else {
           throw new Error('Ошибка удаления пресета');
@@ -2883,15 +2937,25 @@
         });
         
         if (response.ok) {
-          // Сохраняем состояние раскрытия
-          const wasExpanded = expandedPresets.has(tournamentId);
+          // Сохраняем состояние видимости пресетов
+          const presetsDiv = document.getElementById(`presets-${tournamentId}`);
+          const wasHidden = presetsDiv ? presetsDiv.classList.contains('hidden') : false;
+          
           await loadPresets();
-          if (wasExpanded) {
-            expandedPresets.add(tournamentId);
-            toggleTournamentPresets(tournamentId);
-            toggleTournamentPresets(tournamentId); // Восстанавливаем состояние
-          }
           await loadTournaments(); // Обновляем счетчик
+          
+          // Восстанавливаем состояние видимости
+          if (presetsDiv) {
+            if (wasHidden) {
+              presetsDiv.classList.add('hidden');
+              expandedPresets.delete(tournamentId);
+            } else {
+              presetsDiv.classList.remove('hidden');
+              expandedPresets.add(tournamentId);
+              renderTournamentPresets(); // Рендерим если видим
+            }
+          }
+          
           showNotification('Пресет обновлен!', 'success');
         } else {
           throw new Error('Ошибка обновления пресета');
@@ -2993,6 +3057,36 @@
       const preset = presets.find(p => p.id === presetId);
       if (!preset) return;
       
+      // Находим турнир и команды для получения актуальных логотипов
+      let team1Logo = '';
+      let team2Logo = '';
+      
+      if (preset.tournamentId) {
+        const tournament = tournaments.find(t => t.id === preset.tournamentId);
+        if (tournament && tournament.teams) {
+          if (preset.team1Id) {
+            const team1 = tournament.teams.find(t => t.id === preset.team1Id);
+            if (team1 && team1.logo) {
+              team1Logo = team1.logo;
+            }
+          }
+          if (preset.team2Id) {
+            const team2 = tournament.teams.find(t => t.id === preset.team2Id);
+            if (team2 && team2.logo) {
+              team2Logo = team2.logo;
+            }
+          }
+        }
+      }
+      
+      // Если не нашли в турнире, используем значения из пресета (для обратной совместимости)
+      if (!team1Logo && preset.team1Logo) {
+        team1Logo = preset.team1Logo;
+      }
+      if (!team2Logo && preset.team2Logo) {
+        team2Logo = preset.team2Logo;
+      }
+      
       // Применение данных предустановки к основным полям
       document.getElementById('team1Name').value = preset.team1Name;
       document.getElementById('team1City').value = preset.team1City;
@@ -3004,9 +3098,10 @@
       document.getElementById('team2Short').value = preset.team2Short;
       document.getElementById('kit2Color').value = preset.kit2Color;
       
-      // Копирование логотипов (создание уникальных копий)
-      if (preset.team1Logo) {
-        const copiedLogoUrl = await copyLogoFromPreset('team1', preset.team1Logo);
+      // Копирование логотипов из турнира (создание уникальных копий для основной панели)
+      // Это НЕ изменяет логотипы команд в турнире, только применяет их к панели
+      if (team1Logo) {
+        const copiedLogoUrl = await copyLogoFromPreset('team1', team1Logo);
         updateMainLogoMini('team1', copiedLogoUrl);
         state.team1Logo = copiedLogoUrl;
       } else {
@@ -3014,8 +3109,8 @@
         state.team1Logo = '';
       }
       
-      if (preset.team2Logo) {
-        const copiedLogoUrl = await copyLogoFromPreset('team2', preset.team2Logo);
+      if (team2Logo) {
+        const copiedLogoUrl = await copyLogoFromPreset('team2', team2Logo);
         updateMainLogoMini('team2', copiedLogoUrl);
         state.team2Logo = copiedLogoUrl;
       } else {
@@ -3197,22 +3292,24 @@
             formWrapper.innerHTML = '';
           }
           
-          // Сохраняем состояние раскрытия и tournamentId
-          const wasExpanded = expandedPresets.has(tournamentId);
+          // Сохраняем состояние видимости пресетов
+          const presetsDiv = document.getElementById(`presets-${tournamentId}`);
+          const wasHidden = presetsDiv ? presetsDiv.classList.contains('hidden') : false;
           
           // Перезагружаем пресеты и турниры
           await loadPresets();
           await loadTournaments();
           
-          // Восстанавливаем состояние раскрытия секции пресетов
-          if (wasExpanded || !wasExpanded) { // Всегда раскрываем после создания пресета
-            expandedPresets.add(tournamentId);
-            const presetsDiv = document.getElementById(`presets-${tournamentId}`);
-            if (presetsDiv) {
+          // Восстанавливаем состояние видимости (по умолчанию пресеты видны)
+          if (presetsDiv) {
+            if (wasHidden) {
+              presetsDiv.classList.add('hidden');
+              expandedPresets.delete(tournamentId);
+            } else {
               presetsDiv.classList.remove('hidden');
+              expandedPresets.add(tournamentId);
+              renderTournamentPresets(); // Рендерим если видим
             }
-            // Рендерим пресеты
-            renderTournamentPresets();
           }
           
           showNotification('Предустановка создана!', 'success');

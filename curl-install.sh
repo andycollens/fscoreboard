@@ -24,3 +24,4 @@ echo -e "${YELLOW}Для проверки статуса: fscoreboard-status${NC
 echo -e "${YELLOW}Для обновления: fscoreboard-update${NC}"
 
 
+

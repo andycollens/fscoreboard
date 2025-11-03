@@ -634,6 +634,8 @@
         try {
           const formData = new FormData();
           formData.append('logo', logoFile);
+          formData.append('tournamentId', tournamentId);
+          // Для новой команды teamId еще нет, будет создан уникальный файл
           
           const uploadResponse = await fetch(`/api/upload-logo?token=${getToken()}`, {
             method: 'POST',
@@ -846,8 +848,23 @@
       // Загружаем новый логотип если выбран
       if (logoFile) {
         try {
+          // Удаляем старый логотип если он был
+          const oldLogoUrl = editForm.dataset.currentLogo || '';
+          if (oldLogoUrl) {
+            try {
+              const oldFilename = oldLogoUrl.split('/').pop();
+              await fetch(`/api/logo/${oldFilename}?token=${getToken()}`, {
+                method: 'DELETE'
+              });
+            } catch (error) {
+              console.error('Ошибка удаления старого логотипа:', error);
+            }
+          }
+          
           const formData = new FormData();
           formData.append('logo', logoFile);
+          formData.append('tournamentId', tournamentId);
+          formData.append('teamId', teamId);
           
           const uploadResponse = await fetch(`/api/upload-logo?token=${getToken()}`, {
             method: 'POST',

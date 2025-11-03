@@ -24,8 +24,25 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9);
     const extension = path.extname(file.originalname);
-    const filename = `${file.fieldname}_${timestamp}${extension}`;
+    
+    // Если передан tournamentId и teamId, используем их для уникальности
+    const tournamentId = req.body.tournamentId || req.query.tournamentId || '';
+    const teamId = req.body.teamId || req.query.teamId || '';
+    
+    let filename;
+    if (tournamentId && teamId) {
+      // Для редактирования команды: tournamentId_teamId_timestamp_random.ext
+      filename = `team_${tournamentId}_${teamId}_${timestamp}_${random}${extension}`;
+    } else if (tournamentId) {
+      // Для новой команды: tournamentId_timestamp_random.ext
+      filename = `team_${tournamentId}_${timestamp}_${random}${extension}`;
+    } else {
+      // Для основной панели или других случаев: fieldname_timestamp_random.ext
+      filename = `${file.fieldname}_${timestamp}_${random}${extension}`;
+    }
+    
     cb(null, filename);
   }
 });
