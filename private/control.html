@@ -465,18 +465,30 @@
       color: #666;
     }
     
-    .preset-delete-link {
-      color: #dc3545;
-      text-decoration: underline;
-      text-decoration-style: dashed;
+    .preset-apply-symbol {
+      color: #1976d2;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 20px;
       white-space: nowrap;
       flex-shrink: 0;
+      font-weight: bold;
+      user-select: none;
+      transition: all 0.2s;
+      padding: 4px 8px;
+      border-radius: 4px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     
-    .preset-delete-link:hover {
-      color: #c82333;
+    .preset-apply-symbol:hover {
+      color: #1565c0;
+      background: #e3f2fd;
+    }
+    
+    .preset-apply-symbol[style*="opacity: 0.5"] {
+      pointer-events: none;
     }
     
     .preset-play-btn {
@@ -726,8 +738,8 @@
         margin-left: 0;
       }
       
-      .preset-play-btn {
-        font-size: 18px;
+      .preset-apply-symbol {
+        font-size: 24px;
         padding: 6px 10px;
       }
       
@@ -2663,8 +2675,7 @@
               </div>
               <div class="preset-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
                 <span class="preset-edit-link" onclick="editPresetInline('${tournament.id}', '${preset.id}')">edit</span>
-                <span class="preset-delete-link" onclick="deletePresetFromTournament('${tournament.id}', '${preset.id}')">delete</span>
-                <button class="preset-play-btn" onclick="applyPreset('${preset.id}')" ${timerRunning ? 'disabled' : ''} title="Применить предустановку">▶ Применить</button>
+                <span class="preset-apply-symbol" onclick="applyPreset('${preset.id}')" ${timerRunning ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''} title="Применить предустановку">▶</span>
               </div>
             </div>
           `;
@@ -4062,15 +4073,19 @@
         }
       }
       
-      // Блокировка только кнопок применения предустановок
-      const playButtons = document.querySelectorAll('.preset-play-btn');
-      playButtons.forEach(btn => {
+      // Блокировка символов применения предустановок
+      const applySymbols = document.querySelectorAll('.preset-apply-symbol');
+      applySymbols.forEach(symbol => {
         if (isRunning) {
-          btn.disabled = true;
-          btn.title = 'Нельзя применять предустановки во время работы таймера';
+          symbol.style.opacity = '0.5';
+          symbol.style.cursor = 'not-allowed';
+          symbol.style.pointerEvents = 'none';
+          symbol.title = 'Нельзя применять предустановки во время работы таймера';
         } else {
-          btn.disabled = false;
-          btn.title = 'Применить предустановку';
+          symbol.style.opacity = '';
+          symbol.style.cursor = '';
+          symbol.style.pointerEvents = '';
+          symbol.title = 'Применить предустановку';
         }
       });
       
