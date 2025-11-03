@@ -1854,6 +1854,16 @@
           logoContainer.style.display = 'none';
           if (logoImg) logoImg.style.display = 'none';
         }
+        // Очищаем миниатюру логотипа в новом формате
+        const newLogoPreview = formContainer.querySelector('.addPresetTeam2LogoPreview');
+        if (newLogoPreview) {
+          newLogoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
+        }
+        // Сбрасываем цвет формы
+        const colorInput = formContainer.querySelector('#addPresetKit2Color');
+        if (colorInput) {
+          colorInput.value = '#2b2b2b';
+        }
         // Обновляем имя пресета после очистки выбора
         updatePresetNameForForm(selectElement);
         return;
