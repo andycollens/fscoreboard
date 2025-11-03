@@ -211,13 +211,61 @@ app.get('/api/presets', (req, res) => {
   res.json(matchPresets);
 });
 
+// Функция для копирования логотипа команды в логотип пресета
+// Если logoUrl это логотип команды (начинается с /public/logos/team_),
+// создается независимая копия с префиксом preset_
+function copyTeamLogoToPreset(logoUrl, presetId, teamNum) {
+  if (!logoUrl || !logoUrl.trim()) return logoUrl;
+  
+  // Извлекаем имя файла из URL
+  const filename = logoUrl.split('/').pop();
+  
+  // Проверяем, является ли это логотипом команды (начинается с team_)
+  if (!filename || !filename.startsWith('team_')) {
+    // Если это не логотип команды (например, уже скопированный preset_ или пусто),
+    // возвращаем как есть
+    return logoUrl;
+  }
+  
+  try {
+    // Создаем новое имя файла для пресета
+    const extension = path.extname(filename);
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9);
+    const newFilename = `preset_${presetId}_team${teamNum}_${timestamp}_${random}${extension}`;
+    
+    // Копируем файл
+    const sourcePath = path.join(LOGOS_PATH, filename);
+    const destPath = path.join(LOGOS_PATH, newFilename);
+    
+    if (fs.existsSync(sourcePath)) {
+      fs.copyFileSync(sourcePath, destPath);
+      const newUrl = `/public/logos/${newFilename}`;
+      console.log(`Copied team logo to preset logo: ${sourcePath} -> ${destPath}`);
+      return newUrl;
+    } else {
+      console.warn(`Source logo file not found: ${sourcePath}`);
+      return logoUrl; // Возвращаем оригинал, если файл не найден
+    }
+  } catch (error) {
+    console.error('Error copying team logo to preset:', error);
+    return logoUrl; // Возвращаем оригинал при ошибке
+  }
+}
+
 app.post('/api/presets', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
   
   console.log('Creating new preset:', req.body);
   
+  const presetId = Date.now().toString();
+  
+  // Копируем логотипы команд в независимые файлы пресета
+  const team1LogoUrl = copyTeamLogoToPreset(req.body.team1Logo || '', presetId, 1);
+  const team2LogoUrl = copyTeamLogoToPreset(req.body.team2Logo || '', presetId, 2);
+  
   const newPreset = {
-    id: Date.now().toString(),
+    id: presetId,
     name: req.body.name,
     tournamentId: req.body.tournamentId || null,
     // Новое поле: дата матча (день), строка в формате YYYY-MM-DD
@@ -232,8 +280,8 @@ app.post('/api/presets', (req, res) => {
     team2Short: req.body.team2Short,
     kit1Color: req.body.kit1Color,
     kit2Color: req.body.kit2Color,
-    team1Logo: req.body.team1Logo || '',
-    team2Logo: req.body.team2Logo || ''
+    team1Logo: team1LogoUrl,
+    team2Logo: team2LogoUrl
   };
   
   matchPresets.push(newPreset);
@@ -255,6 +303,85 @@ app.put('/api/presets/:id', (req, res) => {
   
   console.log('Updating preset:', presetId, req.body);
   
+  const oldPreset = matchPresets[presetIndex];
+  const newTeam1Logo = req.body.team1Logo || '';
+  const newTeam2Logo = req.body.team2Logo || '';
+  
+  // Если логотип изменился, копируем новый (если это логотип команды)
+  let finalTeam1Logo = newTeam1Logo;
+  if (newTeam1Logo !== oldPreset.team1Logo && newTeam1Logo) {
+    // Удаляем старый логотип пресета (если это был логотип пресета, а не команды)
+    if (oldPreset.team1Logo) {
+      const oldFilename = oldPreset.team1Logo.split('/').pop();
+      if (oldFilename && oldFilename.startsWith('preset_')) {
+        const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
+        if (fs.existsSync(oldLogoPath)) {
+          try {
+            fs.unlinkSync(oldLogoPath);
+            console.log('Deleted old preset logo:', oldLogoPath);
+          } catch (error) {
+            console.error('Error deleting old preset logo:', error);
+          }
+        }
+      }
+    }
+    // Копируем новый логотип команды (если это логотип команды)
+    finalTeam1Logo = copyTeamLogoToPreset(newTeam1Logo, presetId, 1);
+  } else if (!newTeam1Logo) {
+    // Если новый логотип пустой, удаляем старый логотип пресета
+    if (oldPreset.team1Logo) {
+      const oldFilename = oldPreset.team1Logo.split('/').pop();
+      if (oldFilename && oldFilename.startsWith('preset_')) {
+        const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
+        if (fs.existsSync(oldLogoPath)) {
+          try {
+            fs.unlinkSync(oldLogoPath);
+            console.log('Deleted old preset logo (cleared):', oldLogoPath);
+          } catch (error) {
+            console.error('Error deleting old preset logo:', error);
+          }
+        }
+      }
+    }
+  }
+  
+  let finalTeam2Logo = newTeam2Logo;
+  if (newTeam2Logo !== oldPreset.team2Logo && newTeam2Logo) {
+    // Удаляем старый логотип пресета (если это был логотип пресета, а не команды)
+    if (oldPreset.team2Logo) {
+      const oldFilename = oldPreset.team2Logo.split('/').pop();
+      if (oldFilename && oldFilename.startsWith('preset_')) {
+        const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
+        if (fs.existsSync(oldLogoPath)) {
+          try {
+            fs.unlinkSync(oldLogoPath);
+            console.log('Deleted old preset logo:', oldLogoPath);
+          } catch (error) {
+            console.error('Error deleting old preset logo:', error);
+          }
+        }
+      }
+    }
+    // Копируем новый логотип команды (если это логотип команды)
+    finalTeam2Logo = copyTeamLogoToPreset(newTeam2Logo, presetId, 2);
+  } else if (!newTeam2Logo) {
+    // Если новый логотип пустой, удаляем старый логотип пресета
+    if (oldPreset.team2Logo) {
+      const oldFilename = oldPreset.team2Logo.split('/').pop();
+      if (oldFilename && oldFilename.startsWith('preset_')) {
+        const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
+        if (fs.existsSync(oldLogoPath)) {
+          try {
+            fs.unlinkSync(oldLogoPath);
+            console.log('Deleted old preset logo (cleared):', oldLogoPath);
+          } catch (error) {
+            console.error('Error deleting old preset logo:', error);
+          }
+        }
+      }
+    }
+  }
+  
   // Обновляем предустановку
   matchPresets[presetIndex] = {
     ...matchPresets[presetIndex],
@@ -271,8 +398,8 @@ app.put('/api/presets/:id', (req, res) => {
     team2Short: req.body.team2Short,
     kit1Color: req.body.kit1Color,
     kit2Color: req.body.kit2Color,
-    team1Logo: req.body.team1Logo || '',
-    team2Logo: req.body.team2Logo || ''
+    team1Logo: finalTeam1Logo,
+    team2Logo: finalTeam2Logo
   };
   
   fs.writeFileSync(PRESETS_PATH, JSON.stringify(matchPresets, null, 2));
@@ -293,26 +420,54 @@ app.delete('/api/presets/:id', (req, res) => {
     return (state.team1Logo === logoUrl || state.team2Logo === logoUrl);
   }
   
-  // Удаляем логотипы если они есть и не используются в активной секции
+  // Удаляем только логотипы пресетов (начинающиеся с preset_), НЕ удаляем логотипы команд (team_)
   if (presetToDelete) {
-    if (presetToDelete.team1Logo && !isLogoInUse(presetToDelete.team1Logo)) {
-      const logoPath = path.join(LOGOS_PATH, path.basename(presetToDelete.team1Logo));
-      if (fs.existsSync(logoPath)) {
-        fs.unlinkSync(logoPath);
-        console.log('Deleted team1 logo:', logoPath);
+    // Обрабатываем team1Logo
+    if (presetToDelete.team1Logo) {
+      const filename = presetToDelete.team1Logo.split('/').pop();
+      // Удаляем ТОЛЬКО если это логотип пресета (начинается с preset_)
+      // Логотипы команд (team_) НИКОГДА не удаляются при удалении пресета
+      if (filename && filename.startsWith('preset_')) {
+        if (!isLogoInUse(presetToDelete.team1Logo)) {
+          const logoPath = path.join(LOGOS_PATH, filename);
+          if (fs.existsSync(logoPath)) {
+            try {
+              fs.unlinkSync(logoPath);
+              console.log('Deleted preset team1 logo:', logoPath);
+            } catch (error) {
+              console.error('Error deleting preset logo:', error);
+            }
+          }
+        } else {
+          console.log('Protected preset team1 logo from deletion (in use in scoreboard):', presetToDelete.team1Logo);
+        }
+      } else {
+        console.log('Skipped deletion of team logo (team logo, not preset logo):', presetToDelete.team1Logo);
       }
-    } else if (presetToDelete.team1Logo && isLogoInUse(presetToDelete.team1Logo)) {
-      console.log('Protected team1 logo from deletion (in use):', presetToDelete.team1Logo);
     }
     
-    if (presetToDelete.team2Logo && !isLogoInUse(presetToDelete.team2Logo)) {
-      const logoPath = path.join(LOGOS_PATH, path.basename(presetToDelete.team2Logo));
-      if (fs.existsSync(logoPath)) {
-        fs.unlinkSync(logoPath);
-        console.log('Deleted team2 logo:', logoPath);
+    // Обрабатываем team2Logo
+    if (presetToDelete.team2Logo) {
+      const filename = presetToDelete.team2Logo.split('/').pop();
+      // Удаляем ТОЛЬКО если это логотип пресета (начинается с preset_)
+      // Логотипы команд (team_) НИКОГДА не удаляются при удалении пресета
+      if (filename && filename.startsWith('preset_')) {
+        if (!isLogoInUse(presetToDelete.team2Logo)) {
+          const logoPath = path.join(LOGOS_PATH, filename);
+          if (fs.existsSync(logoPath)) {
+            try {
+              fs.unlinkSync(logoPath);
+              console.log('Deleted preset team2 logo:', logoPath);
+            } catch (error) {
+              console.error('Error deleting preset logo:', error);
+            }
+          }
+        } else {
+          console.log('Protected preset team2 logo from deletion (in use in scoreboard):', presetToDelete.team2Logo);
+        }
+      } else {
+        console.log('Skipped deletion of team logo (team logo, not preset logo):', presetToDelete.team2Logo);
       }
-    } else if (presetToDelete.team2Logo && isLogoInUse(presetToDelete.team2Logo)) {
-      console.log('Protected team2 logo from deletion (in use):', presetToDelete.team2Logo);
     }
   }
   
@@ -468,18 +623,25 @@ app.delete('/api/tournaments/:id', (req, res) => {
     return res.status(404).json({ error: 'Tournament not found' });
   }
   
-  // Удаляем логотипы команд турнира
+  // Удаляем логотипы команд турнира (ТОЛЬКО логотипы команд team_, не пресетов preset_)
   if (tournament.teams) {
     tournament.teams.forEach(team => {
       if (team.logo) {
-        const logoPath = path.join(LOGOS_PATH, path.basename(team.logo));
-        if (fs.existsSync(logoPath)) {
-          try {
-            fs.unlinkSync(logoPath);
-            console.log('Deleted team logo:', logoPath);
-          } catch (error) {
-            console.error('Error deleting logo:', error);
+        const filename = team.logo.split('/').pop();
+        // Удаляем ТОЛЬКО если это логотип команды (начинается с team_)
+        // Логотипы пресетов (preset_) НИКОГДА не удаляются при удалении турнира
+        if (filename && filename.startsWith('team_')) {
+          const logoPath = path.join(LOGOS_PATH, filename);
+          if (fs.existsSync(logoPath)) {
+            try {
+              fs.unlinkSync(logoPath);
+              console.log('Deleted team logo:', logoPath);
+            } catch (error) {
+              console.error('Error deleting team logo:', error);
+            }
           }
+        } else {
+          console.log('Skipped deletion (preset logo, not team logo):', team.logo);
         }
       }
     });
@@ -581,16 +743,23 @@ app.delete('/api/tournaments/:id/teams/:teamId', (req, res) => {
     return res.status(404).json({ error: 'Team not found' });
   }
   
-  // Удаляем логотип команды если есть
+  // Удаляем логотип команды если есть (ТОЛЬКО логотипы команд team_, не пресетов preset_)
   if (team.logo) {
-    const logoPath = path.join(LOGOS_PATH, path.basename(team.logo));
-    if (fs.existsSync(logoPath)) {
-      try {
-        fs.unlinkSync(logoPath);
-        console.log('Deleted team logo:', logoPath);
-      } catch (error) {
-        console.error('Error deleting logo:', error);
+    const filename = team.logo.split('/').pop();
+    // Удаляем ТОЛЬКО если это логотип команды (начинается с team_)
+    // Логотипы пресетов (preset_) НИКОГДА не удаляются при удалении команды
+    if (filename && filename.startsWith('team_')) {
+      const logoPath = path.join(LOGOS_PATH, filename);
+      if (fs.existsSync(logoPath)) {
+        try {
+          fs.unlinkSync(logoPath);
+          console.log('Deleted team logo:', logoPath);
+        } catch (error) {
+          console.error('Error deleting team logo:', error);
+        }
       }
+    } else {
+      console.log('Skipped deletion (preset logo, not team logo):', team.logo);
     }
   }
   
