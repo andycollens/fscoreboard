@@ -1108,14 +1108,16 @@
         <option value="">-- Выберите турнир --</option>
       </select>
       
-      <h3 id="addPresetTitle" style="margin-top: 0; margin-bottom: 20px; color: #1976d2;">19:00 / Новая предустановка</h3>
+      <h3 id="addPresetTitle" style="margin-top: 0; margin-bottom: 20px; color: #1976d2;">19:00 / Команда 1 - Команда 2</h3>
       
       <!-- Выбор времени матча -->
       <div class="form-section" style="margin-bottom: 20px;">
         <div class="form-group">
           <label><strong>Время матча</strong></label>
-          <input type="time" id="addPresetMatchTime" value="19:00" onchange="updatePresetName()" style="width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 17px; -webkit-appearance: none; appearance: none;">
-          <small style="color: #666; display: block; margin-top: 5px;">Имя пресета будет сформировано автоматически</small>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="time" id="addPresetMatchTime" value="19:00" onchange="updatePresetName()" style="width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 17px; -webkit-appearance: none; appearance: none;">
+            <small style="color: #999; font-size: 11px; flex: 1;">Имя пресета будет сформировано автоматически</small>
+          </div>
         </div>
       </div>
       
@@ -1497,7 +1499,7 @@
       selectedTeams.team1 = team;
       fillTeam1Fields(team);
       showTeam1Details();
-      updatePresetName();
+      updatePresetName(); // Обновляем имя сразу при выборе команды
     }
     
     // Обработка выбора команды 2
@@ -1520,7 +1522,7 @@
       selectedTeams.team2 = team;
       fillTeam2Fields(team);
       showTeam2Details();
-      updatePresetName();
+      updatePresetName(); // Обновляем имя сразу при выборе команды
     }
     
     // Обновление имени пресета автоматически
@@ -1531,16 +1533,10 @@
       if (!timeInput || !titleElement) return;
       
       const matchTime = timeInput.value || '19:00';
-      const team1Name = selectedTeams.team1 ? selectedTeams.team1.name : '';
-      const team2Name = selectedTeams.team2 ? selectedTeams.team2.name : '';
+      const team1Name = selectedTeams.team1 ? selectedTeams.team1.name : 'Команда 1';
+      const team2Name = selectedTeams.team2 ? selectedTeams.team2.name : 'Команда 2';
       
-      if (team1Name && team2Name) {
-        titleElement.textContent = `${matchTime} / ${team1Name} - ${team2Name}`;
-      } else if (team1Name || team2Name) {
-        titleElement.textContent = `${matchTime} / ${team1Name || team2Name}`;
-      } else {
-        titleElement.textContent = `${matchTime} / Новая предустановка`;
-      }
+      titleElement.textContent = `${matchTime} / ${team1Name} - ${team2Name}`;
     }
     
     // Заполнение полей команды 1
@@ -2244,19 +2240,12 @@
 
     // Сохранение предустановки
     async function saveNewPreset() {
-      const tournamentId = document.getElementById('addPresetTournament').value;
-      
-      if (!tournamentId) {
-        alert('Турнир не выбран');
-        return;
-      }
-      
       if (!selectedTeams.team1 || !selectedTeams.team2) {
         alert('Выберите обе команды из турнира');
         return;
       }
       
-      // Формируем имя пресета автоматически
+      // Формируем имя пресета автоматически из времени и названий команд
       const matchTime = document.getElementById('addPresetMatchTime').value || '19:00';
       const presetName = `${matchTime} / ${selectedTeams.team1.name} - ${selectedTeams.team2.name}`;
       
@@ -2396,9 +2385,10 @@
         select.value = '';
       }
       
-      // Сброс времени
+      // Сброс времени и имени
       document.getElementById('addPresetMatchTime').value = '19:00';
-      document.getElementById('addPresetTitle').textContent = '19:00 / Новая предустановка';
+      selectedTeams = { team1: null, team2: null };
+      document.getElementById('addPresetTitle').textContent = '19:00 / Команда 1 - Команда 2';
       
       document.getElementById('addPresetTeam1Select').innerHTML = '<option value="">-- Выберите команду --</option>';
       document.getElementById('addPresetTeam2Select').innerHTML = '<option value="">-- Выберите команду --</option>';
