@@ -4232,12 +4232,24 @@
       // Перерисовка предустановок с учетом состояния таймера
       // НЕ перерендериваем если открыта форма редактирования
       if (!editingPresetId) {
-        renderPresets();
+        renderTournamentPresets();
       } else {
         console.log('Пропускаем перерендеринг пресетов - открыта форма редактирования');
       }
       
-      setTimeout(() => { ready = true; }, 50);
+      // Восстанавливаем ready для возможности дальнейших изменений
+      // Важно: делаем это после всех обновлений UI
+      setTimeout(() => { 
+        ready = true;
+        console.log('State loaded and ready for user input. Current state:', {
+          score1: data.score1,
+          score2: data.score2,
+          team1Name: data.team1Name,
+          team2Name: data.team2Name,
+          team1Logo: data.team1Logo ? 'has logo' : 'no logo',
+          team2Logo: data.team2Logo ? 'has logo' : 'no logo'
+        });
+      }, 100);
     });
 
     // Вспомогательные функции
