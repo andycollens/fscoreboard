@@ -3414,6 +3414,11 @@
             }
           }
           
+          // КРИТИЧНО: Очищаем editingPresetId ПОСЛЕ успешного сохранения
+          // Это позволяет renderTournamentPresets() перерисовать пресеты без закрытия формы
+          editingPresetId = null;
+          originalPresetData = null;
+          
           showNotification('Пресет обновлен!', 'success');
         } else {
           throw new Error('Ошибка обновления пресета');
@@ -3421,6 +3426,7 @@
       } catch (error) {
         console.error('Ошибка обновления пресета:', error);
         showNotification('Ошибка обновления пресета', 'error');
+        // В случае ошибки не очищаем editingPresetId, чтобы форма осталась открытой
       }
     }
     
