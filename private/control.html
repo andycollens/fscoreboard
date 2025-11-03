@@ -794,6 +794,29 @@
       margin-top: 15px;
     }
     
+    .tournament-presets {
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+    }
+    
+    .tournament-presets.hidden {
+      display: none;
+    }
+    
+    .preset-edit-form-inline {
+      background: #fff;
+      border: 2px solid #2196f3;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      width: 100%;
+    }
+    
+    .preset-item.edit-mode {
+      background: #f8f9fa;
+    }
+    
     .edit-preset-form {
       background: #e3f2fd;
       border: 2px solid #2196f3;
@@ -1325,6 +1348,12 @@
         if (response.ok) {
           tournaments = await response.json();
           renderTournamentsForPresets();
+          // Загружаем пресеты после загрузки турниров
+          if (presets.length === 0) {
+            await loadPresets();
+          } else {
+            renderTournamentPresets();
+          }
         }
       } catch (error) {
         console.error('Ошибка загрузки турниров:', error);
@@ -2598,7 +2627,7 @@
             <div class="form-row" style="margin-top: 10px;">
               <div class="form-group">
                 <label>Цвет формы</label>
-                <input type="color" class="editPresetKit2ColorInline" value="${preset.kit2Color || '#2b2b2b'}" style="width: 100px; height: 40px; padding: 0;">
+                <input type="color" class="editPresetKit2ColorInline" value="${preset.kit2Color || '#2b2b2b'}" onchange="this.dataset.manualEdit = 'true'" style="width: 100px; height: 40px; padding: 0;">
               </div>
             </div>
           </div>
@@ -2686,10 +2715,16 @@
       const team = tournament.teams.find(t => t.id === teamId);
       if (!team) return;
       
-      // Обновляем цвет формы из команды (если не был изменен вручную)
+      // Обновляем цвет формы из пресета (если он сохранен), иначе из команды
       const colorInput = selectElement.closest('.preset-edit-form-inline').querySelector('.editPresetKit1ColorInline');
       if (colorInput && !colorInput.dataset.manualEdit) {
-        colorInput.value = team.kitColor || '#2b2b2b';
+        // Сначала пробуем взять цвет из пресета
+        const preset = presets.find(p => p.id === selectElement.closest('.preset-edit-form-inline').id.split('-').pop());
+        if (preset && preset.kit1Color) {
+          colorInput.value = preset.kit1Color;
+        } else {
+          colorInput.value = team.kitColor || '#2b2b2b';
+        }
       }
       
       updateEditPresetNameInline(tournamentId, presetId);
@@ -2709,10 +2744,24 @@
       const team = tournament.teams.find(t => t.id === teamId);
       if (!team) return;
       
-      // Обновляем цвет формы из команды (если не был изменен вручную)
-      const colorInput = selectElement.closest('.preset-edit-form-inline').querySelector('.editPresetKit2ColorInline');
+      // Обновляем цвет формы из пресета (если он сохранен), иначе из команды
+      const editForm = selectElement.closest('.preset-edit-form-inline');
+      const colorInput = editForm?.querySelector('.editPresetKit2ColorInline');
       if (colorInput && !colorInput.dataset.manualEdit) {
-        colorInput.value = team.kitColor || '#2b2b2b';
+        // Извлекаем ID пресета из ID формы (preset-edit-form-TOURNAMENT_ID-PRESET_ID)
+        const formId = editForm.id;
+        const presetIdMatch = formId.match(/preset-edit-form-[^-]+-(.+)$/);
+        if (presetIdMatch) {
+          const presetId = presetIdMatch[1];
+          const preset = presets.find(p => p.id === presetId);
+          if (preset && preset.kit2Color) {
+            colorInput.value = preset.kit2Color;
+          } else {
+            colorInput.value = team.kitColor || '#2b2b2b';
+          }
+        } else {
+          colorInput.value = team.kitColor || '#2b2b2b';
+        }
       }
       
       updateEditPresetNameInline(tournamentId, presetId);

@@ -240,6 +240,9 @@ app.put('/api/presets/:id', (req, res) => {
   matchPresets[presetIndex] = {
     ...matchPresets[presetIndex],
     name: req.body.name,
+    tournamentId: req.body.tournamentId !== undefined ? req.body.tournamentId : matchPresets[presetIndex].tournamentId,
+    team1Id: req.body.team1Id !== undefined ? req.body.team1Id : matchPresets[presetIndex].team1Id,
+    team2Id: req.body.team2Id !== undefined ? req.body.team2Id : matchPresets[presetIndex].team2Id,
     team1Name: req.body.team1Name,
     team1City: req.body.team1City,
     team1Short: req.body.team1Short,
