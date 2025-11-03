@@ -202,6 +202,9 @@ app.post('/api/presets', (req, res) => {
   const newPreset = {
     id: Date.now().toString(),
     name: req.body.name,
+    tournamentId: req.body.tournamentId || null,
+    team1Id: req.body.team1Id || null,
+    team2Id: req.body.team2Id || null,
     team1Name: req.body.team1Name,
     team1City: req.body.team1City,
     team1Short: req.body.team1Short,
