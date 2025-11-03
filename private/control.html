@@ -1556,7 +1556,7 @@
       
       <!-- Строка с временем и именем пресета -->
       <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; width: 100%; flex-wrap: nowrap;">
-        <input type="time" class="addPresetMatchTime" value="19:00" step="60" onchange="updatePresetNameForForm(this)" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; -webkit-appearance: none; appearance: none; flex-shrink: 0;">
+        <input type="time" class="addPresetMatchTime" value="19:00" step="60" onchange="updatePresetNameForForm(this)" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; -webkit-appearance: none; appearance: none; flex-shrink: 0;" pattern="[0-9]{2}:[0-9]{2}" data-format="24">
         <h3 class="addPresetTitle" style="margin: 0; color: #1976d2; flex: 1; min-width: 0;">19:00 / Команда 1 - Команда 2</h3>
       </div>
       
@@ -3417,7 +3417,7 @@
           
           <!-- Строка с временем и именем пресета -->
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; width: 100%; flex-wrap: nowrap;">
-            <input type="time" class="editPresetMatchTimeInline" value="${matchTime}" onchange="updateEditPresetNameInline('${tournamentId}', '${presetId}')" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; -webkit-appearance: none; appearance: none; flex-shrink: 0;">
+            <input type="time" class="editPresetMatchTimeInline" value="${matchTime}" onchange="updateEditPresetNameInline('${tournamentId}', '${presetId}')" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; -webkit-appearance: none; appearance: none; flex-shrink: 0;" pattern="[0-9]{2}:[0-9]{2}" data-format="24">
             <h3 class="editPresetTitleInline" style="margin: 0; color: #1976d2; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${preset.name}</h3>
           </div>
           
