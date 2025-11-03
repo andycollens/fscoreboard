@@ -496,8 +496,8 @@
             </div>
             <div class="tournament-actions" onclick="event.stopPropagation()">
               <button class="btn btn-primary btn-small" onclick="showAddTeamForm('${tournament.id}')">+ Команда</button>
-              <button class="btn btn-secondary btn-small" onclick="editTournament('${tournament.id}')">✏️</button>
-              <button class="btn btn-danger btn-small" onclick="deleteTournament('${tournament.id}')">🗑️</button>
+              <span class="team-edit-link" onclick="editTournament('${tournament.id}')">edit</span>
+              <span class="team-delete-link" onclick="deleteTournament('${tournament.id}')">delete</span>
             </div>
           </div>
           <div class="tournament-teams" id="teams-${tournament.id}">
