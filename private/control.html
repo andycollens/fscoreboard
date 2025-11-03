@@ -2719,7 +2719,7 @@
               </div>
               <div class="form-group" style="flex-shrink: 0;">
                 <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Цвет формы</label>
-                <input type="color" class="editPresetKit1ColorInline" value="${preset.kit1Color || '#2b2b2b'}" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                <input type="color" class="editPresetKit1ColorInline" value="${preset.kit1Color || '#2b2b2b'}" onchange="this.dataset.manualEdit = 'true'" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
               </div>
             </div>
           </div>
@@ -2756,6 +2756,11 @@
       const team2Select = editForm.querySelector('.editPresetTeam2SelectInline');
       const team1LogoPreview = editForm.querySelector('.editPresetTeam1LogoPreview');
       const team2LogoPreview = editForm.querySelector('.editPresetTeam2LogoPreview');
+      const kit1ColorInput = editForm.querySelector('.editPresetKit1ColorInline');
+      const kit2ColorInput = editForm.querySelector('.editPresetKit2ColorInline');
+      
+      let selectedTeam1 = null;
+      let selectedTeam2 = null;
       
       tournament.teams.forEach(team => {
         const option1 = document.createElement('option');
@@ -2763,6 +2768,7 @@
         option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
         if (currentTeam1Id && team.id === currentTeam1Id) {
           option1.selected = true;
+          selectedTeam1 = team;
           // Обновляем логотип для выбранной команды 1
           if (team1LogoPreview && team.logo) {
             team1LogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
@@ -2775,6 +2781,7 @@
         option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
         if (currentTeam2Id && team.id === currentTeam2Id) {
           option2.selected = true;
+          selectedTeam2 = team;
           // Обновляем логотип для выбранной команды 2
           if (team2LogoPreview && team.logo) {
             team2LogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
@@ -2782,6 +2789,32 @@
         }
         team2Select.appendChild(option2);
       });
+      
+      // Проверяем, был ли цвет изменен пользователем вручную в пресете
+      // Если цвет пресета отличается от цвета команды - значит пользователь менял его
+      if (selectedTeam1 && kit1ColorInput) {
+        const presetColor = preset.kit1Color || '#2b2b2b';
+        const teamColor = selectedTeam1.kitColor || '#2b2b2b';
+        if (presetColor !== teamColor) {
+          // Цвет был изменен вручную, помечаем как manualEdit
+          kit1ColorInput.dataset.manualEdit = 'true';
+        } else {
+          // Цвет совпадает с командой, оставляем возможность автоматического обновления
+          kit1ColorInput.dataset.manualEdit = undefined;
+        }
+      }
+      
+      if (selectedTeam2 && kit2ColorInput) {
+        const presetColor = preset.kit2Color || '#2b2b2b';
+        const teamColor = selectedTeam2.kitColor || '#2b2b2b';
+        if (presetColor !== teamColor) {
+          // Цвет был изменен вручную, помечаем как manualEdit
+          kit2ColorInput.dataset.manualEdit = 'true';
+        } else {
+          // Цвет совпадает с командой, оставляем возможность автоматического обновления
+          kit2ColorInput.dataset.manualEdit = undefined;
+        }
+      }
       
       // Обновляем имя пресета
       updateEditPresetNameInline(tournamentId, presetId);
@@ -2842,6 +2875,11 @@
         if (logoPreview) {
           logoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
         }
+        // Сбрасываем флаг manualEdit при сбросе команды
+        const colorInput = editForm?.querySelector('.editPresetKit1ColorInline');
+        if (colorInput) {
+          colorInput.dataset.manualEdit = undefined;
+        }
         updateEditPresetNameInline(tournamentId, presetId);
         return;
       }
@@ -2859,23 +2897,11 @@
         }
       }
       
-      // Обновляем цвет формы из пресета (если он сохранен), иначе из команды
+      // Обновляем цвет формы из команды (если пользователь не менял цвет вручную)
       const colorInput = editForm?.querySelector('.editPresetKit1ColorInline');
       if (colorInput && !colorInput.dataset.manualEdit) {
-        // Извлекаем ID пресета из ID формы (preset-edit-form-TOURNAMENT_ID-PRESET_ID)
-        const formId = editForm.id;
-        const presetIdMatch = formId.match(/preset-edit-form-[^-]+-(.+)$/);
-        if (presetIdMatch) {
-          const presetId = presetIdMatch[1];
-          const preset = presets.find(p => p.id === presetId);
-          if (preset && preset.kit1Color) {
-            colorInput.value = preset.kit1Color;
-          } else {
-            colorInput.value = team.kitColor || '#2b2b2b';
-          }
-        } else {
-          colorInput.value = team.kitColor || '#2b2b2b';
-        }
+        // Всегда берем цвет из выбранной команды
+        colorInput.value = team.kitColor || '#2b2b2b';
       }
       
       updateEditPresetNameInline(tournamentId, presetId);
@@ -2895,6 +2921,11 @@
         if (logoPreview) {
           logoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
         }
+        // Сбрасываем флаг manualEdit при сбросе команды
+        const colorInput = editForm?.querySelector('.editPresetKit2ColorInline');
+        if (colorInput) {
+          colorInput.dataset.manualEdit = undefined;
+        }
         updateEditPresetNameInline(tournamentId, presetId);
         return;
       }
@@ -2912,23 +2943,11 @@
         }
       }
       
-      // Обновляем цвет формы из пресета (если он сохранен), иначе из команды
+      // Обновляем цвет формы из команды (если пользователь не менял цвет вручную)
       const colorInput = editForm?.querySelector('.editPresetKit2ColorInline');
       if (colorInput && !colorInput.dataset.manualEdit) {
-        // Извлекаем ID пресета из ID формы (preset-edit-form-TOURNAMENT_ID-PRESET_ID)
-        const formId = editForm.id;
-        const presetIdMatch = formId.match(/preset-edit-form-[^-]+-(.+)$/);
-        if (presetIdMatch) {
-          const presetId = presetIdMatch[1];
-          const preset = presets.find(p => p.id === presetId);
-          if (preset && preset.kit2Color) {
-            colorInput.value = preset.kit2Color;
-          } else {
-            colorInput.value = team.kitColor || '#2b2b2b';
-          }
-        } else {
-          colorInput.value = team.kitColor || '#2b2b2b';
-        }
+        // Всегда берем цвет из выбранной команды
+        colorInput.value = team.kitColor || '#2b2b2b';
       }
       
       updateEditPresetNameInline(tournamentId, presetId);
@@ -2982,8 +3001,8 @@
         team2Name: team2.name,
         team2City: team2.city || '',
         team2Short: team2.short || '',
-        kit1Color: kit1ColorInput.value || team1.kitColor || '#2b2b2b',
-        kit2Color: kit2ColorInput.value || team2.kitColor || '#2b2b2b',
+        kit1Color: kit1ColorInput.value || '#2b2b2b',
+        kit2Color: kit2ColorInput.value || '#2b2b2b',
         team1Logo: team1.logo || '',
         team2Logo: team2.logo || ''
       };
@@ -3323,8 +3342,8 @@
         team2Name: (team2NameInput?.value.trim()) || team2.name,
         team2City: (team2CityInput?.value.trim()) || team2.city || '',
         team2Short: (team2ShortInput?.value.trim().toUpperCase()) || team2.short || '',
-        kit1Color: (team1KitColorInput?.value) || team1.kitColor || '#2b2b2b',
-        kit2Color: (team2KitColorInput?.value) || team2.kitColor || '#2b2b2b',
+        kit1Color: (team1KitColorInput?.value) || '#2b2b2b',
+        kit2Color: (team2KitColorInput?.value) || '#2b2b2b',
         team1Logo: team1.logo || '',
         team2Logo: team2.logo || ''
       };
