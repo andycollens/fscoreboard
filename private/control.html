@@ -626,16 +626,23 @@
       }
       
       /* Стили для формы создания пресета в мобильной версии - точно как форма редактирования */
+      /* Специфичные стили для Safari на iPhone */
       [id^="presetFormContent_"] {
         box-sizing: border-box !important;
         width: 100% !important;
         max-width: 100% !important;
         overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
         padding: 15px !important;
+        -webkit-box-sizing: border-box !important;
       }
       
       [id^="presetFormContent_"] > div:first-child {
+        display: -webkit-flex !important;
+        display: flex !important;
+        -webkit-flex-direction: column !important;
         flex-direction: column !important;
+        -webkit-align-items: flex-start !important;
         align-items: flex-start !important;
         gap: 5px !important;
         margin-bottom: 15px !important;
@@ -647,16 +654,23 @@
         width: 100% !important;
         text-align: left !important;
         white-space: normal !important;
+        -webkit-hyphens: auto !important;
+        hyphens: auto !important;
       }
       
       [id^="presetFormContent_"] > div:nth-child(2) {
+        display: -webkit-flex !important;
+        display: flex !important;
+        -webkit-flex-direction: column !important;
         flex-direction: column !important;
+        -webkit-align-items: stretch !important;
         align-items: stretch !important;
         gap: 8px !important;
         width: 100% !important;
         margin-bottom: 15px !important;
         margin-top: 0 !important;
-        display: flex !important;
+        -webkit-box-sizing: border-box !important;
+        box-sizing: border-box !important;
       }
       
       [id^="presetFormContent_"] .addPresetMatchTime {
@@ -664,13 +678,19 @@
         max-width: 100% !important;
         margin: 0 !important;
         padding: 8px !important;
+        -webkit-box-sizing: border-box !important;
         box-sizing: border-box !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        border-radius: 4px !important;
+        -webkit-border-radius: 4px !important;
       }
       
       [id^="presetFormContent_"] .addPresetTitle {
         width: 100% !important;
         white-space: normal !important;
         word-break: break-word !important;
+        -webkit-word-break: break-word !important;
         margin: 0 !important;
         padding: 0 !important;
         display: block !important;
@@ -678,6 +698,7 @@
         opacity: 1 !important;
         color: #1976d2 !important;
         font-size: 14px !important;
+        -webkit-text-size-adjust: 100% !important;
       }
       
       /* Секции с командами - компактные как в редактировании */
