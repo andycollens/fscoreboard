@@ -1193,7 +1193,7 @@
           </div>
           <div class="form-group" style="flex-shrink: 0;">
             <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Цвет формы</label>
-            <input type="color" id="addPresetKit1Color" value="#2b2b2b" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+            <input type="color" class="addPresetKit1Color" id="addPresetKit1Color" value="#2b2b2b" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
           </div>
         </div>
       </div>
@@ -1219,7 +1219,7 @@
           </div>
           <div class="form-group" style="flex-shrink: 0;">
             <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Цвет формы</label>
-            <input type="color" id="addPresetKit2Color" value="#2b2b2b" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+            <input type="color" class="addPresetKit2Color" id="addPresetKit2Color" value="#2b2b2b" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
           </div>
         </div>
       </div>
@@ -1754,7 +1754,6 @@
       }
       
       if (!formContainer) {
-        console.error('Form container not found for team1 selection');
         return;
       }
       
@@ -1767,7 +1766,7 @@
         if (logoPreview) {
           logoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
         }
-        const colorInput = formContainer.querySelector('#addPresetKit1Color');
+        const colorInput = formContainer.querySelector('.addPresetKit1Color');
         if (colorInput) {
           colorInput.value = '#2b2b2b';
         }
@@ -1793,7 +1792,7 @@
       }
       
       // Обновляем цвет формы из команды (точно как в форме редактирования)
-      const colorInput = formContainer.querySelector('#addPresetKit1Color');
+      const colorInput = formContainer.querySelector('.addPresetKit1Color');
       if (colorInput) {
         // Всегда берем цвет из выбранной команды и обновляем
         const teamColor = team.kitColor || '#2b2b2b';
@@ -1845,7 +1844,7 @@
         if (logoPreview) {
           logoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
         }
-        const colorInput = formContainer.querySelector('#addPresetKit2Color');
+        const colorInput = formContainer.querySelector('.addPresetKit2Color');
         if (colorInput) {
           colorInput.value = '#2b2b2b';
         }
@@ -1871,7 +1870,7 @@
       }
       
       // Обновляем цвет формы из команды (точно как в форме редактирования)
-      const colorInput = formContainer.querySelector('#addPresetKit2Color');
+      const colorInput = formContainer.querySelector('.addPresetKit2Color');
       if (colorInput) {
         // Всегда берем цвет из выбранной команды и обновляем
         colorInput.value = team.kitColor || '#2b2b2b';
@@ -3035,6 +3034,11 @@
       const matchTime = timeInput.value || '19:00';
       const presetName = `${matchTime} / ${team1.name} - ${team2.name}`;
       
+      // Определяем логотипы: если был загружен новый логотип для пресета, используем его,
+      // иначе берем из команды. Это НЕ изменяет логотип команды - только сохраняет в пресет.
+      const team1Logo = uploadedLogos.team1 || team1.logo || '';
+      const team2Logo = uploadedLogos.team2 || team2.logo || '';
+      
       const preset = {
         name: presetName,
         tournamentId: tournamentId,
@@ -3048,8 +3052,8 @@
         team2Short: team2.short || '',
         kit1Color: kit1ColorInput.value || '#2b2b2b',
         kit2Color: kit2ColorInput.value || '#2b2b2b',
-        team1Logo: team1.logo || '',
-        team2Logo: team2.logo || ''
+        team1Logo: team1Logo,
+        team2Logo: team2Logo
       };
       
       try {
@@ -3065,7 +3069,11 @@
           const wasHidden = presetsDiv ? presetsDiv.classList.contains('hidden') : false;
           
           await loadPresets();
-          await loadTournaments(); // Обновляем счетчик
+          await loadTournaments(); // Обновляем только счетчик пресетов, НЕ изменяем команды
+          
+          // Очищаем uploadedLogos после сохранения, чтобы не влиять на следующее редактирование
+          uploadedLogos.team1 = null;
+          uploadedLogos.team2 = null;
           
           // Восстанавливаем состояние видимости
           if (presetsDiv) {
@@ -3369,14 +3377,14 @@
       const team1NameInput = formContainer.querySelector('[id*="Team1Name"]');
       const team1CityInput = formContainer.querySelector('[id*="Team1City"]');
       const team1ShortInput = formContainer.querySelector('[id*="Team1Short"]');
-      // Ищем поле цвета напрямую по ID (как в форме редактирования)
-      const team1KitColorInput = formContainer.querySelector('#addPresetKit1Color');
+      // Ищем поле цвета по классу (как в форме редактирования)
+      const team1KitColorInput = formContainer.querySelector('.addPresetKit1Color');
       
       const team2NameInput = formContainer.querySelector('[id*="Team2Name"]');
       const team2CityInput = formContainer.querySelector('[id*="Team2City"]');
       const team2ShortInput = formContainer.querySelector('[id*="Team2Short"]');
-      // Ищем поле цвета напрямую по ID (как в форме редактирования)
-      const team2KitColorInput = formContainer.querySelector('#addPresetKit2Color');
+      // Ищем поле цвета по классу (как в форме редактирования)
+      const team2KitColorInput = formContainer.querySelector('.addPresetKit2Color');
       
       // Берем цвет из input или из команды (как в форме редактирования)
       const kit1Color = team1KitColorInput?.value || team1.kitColor || '#2b2b2b';
