@@ -1794,14 +1794,23 @@
         }
       }
       
-      // Обновляем цвет формы из команды (как в форме редактирования)
+      // Обновляем цвет формы из команды (как в форме редактирования) - используем прямое присваивание value
       const colorInput = formContainer.querySelector('#addPresetKit1Color');
       if (colorInput) {
-        // Всегда берем цвет из выбранной команды и обновляем
-        colorInput.value = team.kitColor || '#2b2b2b';
-        // Принудительно обновляем визуальное отображение
+        const teamColor = team.kitColor || '#2b2b2b';
+        // Прямое присваивание значения
+        colorInput.value = teamColor;
+        // Принудительно обновляем визуальное отображение через несколько методов
+        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+        colorInput.dispatchEvent(new Event('change', { bubbles: true }));
+        // Также обновляем стиль напрямую для гарантии визуального обновления
         setTimeout(() => {
-          colorInput.style.backgroundColor = colorInput.value;
+          if (colorInput) {
+            colorInput.value = teamColor;
+            // Для input type="color" нужно явно триггерить обновление
+            const event = new Event('input', { bubbles: true });
+            colorInput.dispatchEvent(event);
+          }
         }, 0);
       }
       
@@ -1876,14 +1885,23 @@
         }
       }
       
-      // Обновляем цвет формы из команды (как в форме редактирования)
+      // Обновляем цвет формы из команды (как в форме редактирования) - используем прямое присваивание value
       const colorInput = formContainer.querySelector('#addPresetKit2Color');
       if (colorInput) {
-        // Всегда берем цвет из выбранной команды и обновляем
-        colorInput.value = team.kitColor || '#2b2b2b';
-        // Принудительно обновляем визуальное отображение
+        const teamColor = team.kitColor || '#2b2b2b';
+        // Прямое присваивание значения
+        colorInput.value = teamColor;
+        // Принудительно обновляем визуальное отображение через несколько методов
+        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+        colorInput.dispatchEvent(new Event('change', { bubbles: true }));
+        // Также обновляем стиль напрямую для гарантии визуального обновления
         setTimeout(() => {
-          colorInput.style.backgroundColor = colorInput.value;
+          if (colorInput) {
+            colorInput.value = teamColor;
+            // Для input type="color" нужно явно триггерить обновление
+            const event = new Event('input', { bubbles: true });
+            colorInput.dispatchEvent(event);
+          }
         }, 0);
       }
       
@@ -3375,12 +3393,18 @@
       const team1NameInput = formContainer.querySelector('[id*="Team1Name"]');
       const team1CityInput = formContainer.querySelector('[id*="Team1City"]');
       const team1ShortInput = formContainer.querySelector('[id*="Team1Short"]');
-      const team1KitColorInput = formContainer.querySelector('[id*="Kit1Color"]');
+      // Ищем поле цвета напрямую по ID (как в форме редактирования)
+      const team1KitColorInput = formContainer.querySelector('#addPresetKit1Color');
       
       const team2NameInput = formContainer.querySelector('[id*="Team2Name"]');
       const team2CityInput = formContainer.querySelector('[id*="Team2City"]');
       const team2ShortInput = formContainer.querySelector('[id*="Team2Short"]');
-      const team2KitColorInput = formContainer.querySelector('[id*="Kit2Color"]');
+      // Ищем поле цвета напрямую по ID (как в форме редактирования)
+      const team2KitColorInput = formContainer.querySelector('#addPresetKit2Color');
+      
+      // Берем цвет из input или из команды (как в форме редактирования)
+      const kit1Color = team1KitColorInput?.value || team1.kitColor || '#2b2b2b';
+      const kit2Color = team2KitColorInput?.value || team2.kitColor || '#2b2b2b';
       
       const preset = {
         name: presetName,
@@ -3393,8 +3417,8 @@
         team2Name: (team2NameInput?.value.trim()) || team2.name,
         team2City: (team2CityInput?.value.trim()) || team2.city || '',
         team2Short: (team2ShortInput?.value.trim().toUpperCase()) || team2.short || '',
-        kit1Color: (team1KitColorInput?.value) || '#2b2b2b',
-        kit2Color: (team2KitColorInput?.value) || '#2b2b2b',
+        kit1Color: kit1Color,
+        kit2Color: kit2Color,
         team1Logo: team1.logo || '',
         team2Logo: team2.logo || ''
       };
