@@ -1374,11 +1374,21 @@
       // После загрузки DOM проверяем, пришли ли данные от сервера
       // Если нет, запрашиваем состояние явно
       setTimeout(() => {
-        if (!ready) {
-          console.log('Requesting initial state from server...');
+        const team1NameEl = document.getElementById('team1Name');
+        const team1NameValue = team1NameEl ? team1NameEl.value : '';
+        // Если поля пустые, значит данные не пришли - запрашиваем
+        if (!team1NameValue && !ready) {
+          console.log('Fields are empty, requesting initial state from server...');
           socket.emit('getCurrentState');
         }
       }, 500);
+    });
+    
+    // Обработчик получения текущего состояния по запросу
+    socket.on('currentState', (data) => {
+      console.log('Received currentState from server:', data);
+      // Обновляем UI теми же данными, что и при scoreboardUpdate
+      socket.emit('scoreboardUpdate', data); // Эмулируем событие для использования того же обработчика
     });
     
     // Загрузка турниров
