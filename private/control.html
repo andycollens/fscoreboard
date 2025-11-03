@@ -2546,9 +2546,8 @@
       });
     }
 
-    // Отправка состояния
+    // Отправка состояния на сервер для сохранения (железобетонное сохранение)
     function sendState() {
-      // Не блокируем отправку даже если ready=false, так как это может быть при инициализации
       // Получаем текущие логотипы из состояния
       const team1Logo = state.team1Logo || '';
       const team2Logo = state.team2Logo || '';
@@ -2564,6 +2563,7 @@
       const kit2ColorEl = document.getElementById('kit2Color');
       
       // Формируем объект состояния для отправки на сервер
+      // ВАЖНО: отправляем все поля, чтобы сервер сохранил полное состояние
       const stateUpdate = {};
       
       if (team1NameEl) stateUpdate.team1Name = team1NameEl.value || '';
@@ -2579,7 +2579,8 @@
       stateUpdate.team1Logo = team1Logo;
       stateUpdate.team2Logo = team2Logo;
       
-      // Отправляем на сервер для синхронизации со всеми клиентами
+      // ОТПРАВЛЯЕМ НА СЕРВЕР - это сохранит состояние в state.json
+      // Сервер автоматически сохранит все данные и разошлет всем клиентам
       socket.emit('updateScoreboard', stateUpdate);
     }
 
@@ -3402,8 +3403,20 @@
         state.team2Logo = '';
       }
       
-      // Отправка обновленного состояния
-      sendState();
+      // СРАЗУ отправляем полное состояние на сервер для сохранения
+      // Это критично для сохранения данных при перезагрузке
+      socket.emit('updateScoreboard', {
+        team1Name: preset.team1Name || '',
+        team1City: preset.team1City || '',
+        team1Short: preset.team1Short || '',
+        team2Name: preset.team2Name || '',
+        team2City: preset.team2City || '',
+        team2Short: preset.team2Short || '',
+        kit1Color: preset.kit1Color || '#2b2b2b',
+        kit2Color: preset.kit2Color || '#2b2b2b',
+        team1Logo: state.team1Logo || '',
+        team2Logo: state.team2Logo || ''
+      });
       
       // Показ уведомления
       showNotification(`Применена предустановка: ${preset.name}`, 'success');
