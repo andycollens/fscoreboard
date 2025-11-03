@@ -2230,7 +2230,11 @@
     
     // Настройка обработчиков для формы редактирования
     function setupEditFormHandlers() {
-      // Обработчик клика вне формы редактирования
+      // Обработчик клика вне формы редактирования ОТКЛЮЧЕН
+      // Форма редактирования теперь закрывается ТОЛЬКО по нажатию на кнопки "Сохранить" или "Отмена"
+      // Это предотвращает случайное закрытие формы во время работы таймера
+      // Старый код удален для предотвращения автоматического закрытия
+      /*
       document.addEventListener('click', function(event) {
         const editForm = document.getElementById('editPresetForm');
         const editLinks = document.querySelectorAll('.preset-edit-link');
@@ -2241,6 +2245,7 @@
           handleEditFormClose();
         }
       });
+      */
       
       // Обработчики изменений в полях формы
       const formFields = [
