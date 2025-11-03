@@ -1621,15 +1621,33 @@
       
       // Получаем контейнер формы - может быть передан timeInput или select элемент
       let formContainer = timeInputOrSelect.closest('[id^="presetFormContent_"]');
+      
+      // Если не нашли через closest (элемент может быть в другом контексте)
       if (!formContainer) {
-        // Если не нашли через closest, попробуем найти через родителя
+        // Пробуем найти через родителя select элемента
+        if (timeInputOrSelect.tagName === 'SELECT') {
+          const parent = timeInputOrSelect.parentElement;
+          if (parent) {
+            formContainer = parent.closest('[id^="presetFormContent_"]');
+          }
+        }
+      }
+      
+      // Если все еще не нашли, ищем открытую форму на странице
+      if (!formContainer) {
         formContainer = document.querySelector('[id^="presetFormContent_"]');
       }
       
-      if (!formContainer) return;
+      if (!formContainer) {
+        console.warn('Preset form container not found');
+        return;
+      }
       
       const titleElement = formContainer.querySelector('.addPresetTitle');
-      if (!titleElement) return;
+      if (!titleElement) {
+        console.warn('Preset title element not found');
+        return;
+      }
       
       // Получаем время матча
       const timeInput = formContainer.querySelector('.addPresetMatchTime');
