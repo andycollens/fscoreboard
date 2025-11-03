@@ -1359,11 +1359,156 @@
       value: 0
     };
 
-    // Инициализация
-    // Регистрируем обработчик socket ПЕРЕД загрузкой DOM
-    // Это критично для получения данных при подключении
+    // Функция обновления UI из данных сервера (выносим в отдельную функцию для переиспользования)
+    function updateUIFromServerData(data) {
+      console.log('Updating UI from server data:', data);
+      ready = false;
+      
+      // Обновление таймера (работает корректно, используем как эталон)
+      const isRunning = !!data.timerRunning;
+      timerRunning = isRunning;
+      window.timerRunning = isRunning; // Сохраняем в window для доступа из onclick
+      setPlayPauseIcon('playPauseIcon', isRunning);
+      setTimeInputFromSeconds('timeInput', data.timerSeconds || 0);
+      const timeInputEl = document.getElementById('timeInput');
+      if (timeInputEl) timeInputEl.disabled = isRunning;
+      
+      // Показ/скрытие предупреждения о таймере
+      const warning = document.getElementById('timerWarning');
+      if (warning) {
+        if (isRunning) {
+          warning.classList.remove('hidden');
+        } else {
+          warning.classList.add('hidden');
+        }
+      }
+      
+      // Блокировка только основных полей ввода команд во время работы таймера
+      const fieldsToDisable = [
+        'team1Name', 'team1City', 'team1Short', 'kit1Color',
+        'team2Name', 'team2City', 'team2Short', 'kit2Color'
+      ];
+      
+      fieldsToDisable.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field && !field.closest('.edit-preset-form')) {
+          if (isRunning) {
+            field.classList.add('disabled-field');
+            field.disabled = true;
+          } else {
+            field.classList.remove('disabled-field');
+            field.disabled = false;
+          }
+        }
+      });
+      
+      // КНОПКИ СЧЕТА НЕ БЛОКИРУЕМ
+      const scoreButtons = ['score1Inc', 'score1Dec', 'score2Inc', 'score2Dec'];
+      scoreButtons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.classList.remove('disabled-field');
+          btn.disabled = false;
+          btn.style.pointerEvents = 'auto';
+          btn.style.cursor = 'pointer';
+          btn.style.opacity = '1';
+        }
+      });
+      
+      // Кнопка добавления предустановки всегда доступна
+      const addBtn = document.getElementById('addPresetBtn');
+      if (addBtn) {
+        addBtn.disabled = false;
+        addBtn.textContent = '+ Добавить предустановку';
+      }
+      
+      // Обновление счета
+      const score1ValueEl = document.getElementById('score1Value');
+      const score2ValueEl = document.getElementById('score2Value');
+      if (score1ValueEl) {
+        score1ValueEl.textContent = typeof data.score1 === 'number' ? data.score1 : (data.score1 || 0);
+      }
+      if (score2ValueEl) {
+        score2ValueEl.textContent = typeof data.score2 === 'number' ? data.score2 : (data.score2 || 0);
+      }
+      
+      // Обновление команд - ВАЖНО: обновляем ДАЖЕ если элементы еще не загружены
+      // Сохраняем данные для применения после загрузки DOM
+      if (typeof updateUIFromServerData.cachedData === 'undefined') {
+        updateUIFromServerData.cachedData = null;
+      }
+      updateUIFromServerData.cachedData = data;
+      
+      // Пытаемся обновить сразу
+      const team1NameEl = document.getElementById('team1Name');
+      const team1CityEl = document.getElementById('team1City');
+      const team1ShortEl = document.getElementById('team1Short');
+      const team2NameEl = document.getElementById('team2Name');
+      const team2CityEl = document.getElementById('team2City');
+      const team2ShortEl = document.getElementById('team2Short');
+      const kit1ColorEl = document.getElementById('kit1Color');
+      const kit2ColorEl = document.getElementById('kit2Color');
+      
+      if (team1NameEl) team1NameEl.value = data.team1Name || '';
+      if (team2NameEl) team2NameEl.value = data.team2Name || '';
+      if (team1CityEl) team1CityEl.value = data.team1City || '';
+      if (team2CityEl) team2CityEl.value = data.team2City || '';
+      if (team1ShortEl) team1ShortEl.value = data.team1Short || '';
+      if (team2ShortEl) team2ShortEl.value = data.team2Short || '';
+      if (kit1ColorEl) kit1ColorEl.value = data.kit1Color || '#2b2b2b';
+      if (kit2ColorEl) kit2ColorEl.value = data.kit2Color || '#2b2b2b';
+      
+      // Обновление логотипов
+      state.team1Logo = data.team1Logo || '';
+      if (data.team1Logo && data.team1Logo.trim() !== '') {
+        updateMainLogoMini('team1', data.team1Logo);
+      } else {
+        showKitColorCircle('team1');
+      }
+      
+      state.team2Logo = data.team2Logo || '';
+      if (data.team2Logo && data.team2Logo.trim() !== '') {
+        updateMainLogoMini('team2', data.team2Logo);
+      } else {
+        showKitColorCircle('team2');
+      }
+      
+      // Перерисовка предустановок
+      if (!editingPresetId) {
+        renderTournamentPresets();
+      }
+      
+      // Восстанавливаем ready
+      setTimeout(() => { 
+        ready = true;
+        console.log('State loaded and ready for user input. Current state:', {
+          score1: data.score1,
+          score2: data.score2,
+          team1Name: data.team1Name,
+          team2Name: data.team2Name,
+          team1Logo: data.team1Logo ? 'has logo' : 'no logo',
+          team2Logo: data.team2Logo ? 'has logo' : 'no logo'
+        });
+      }, 100);
+    }
+    
+    // КРИТИЧНО: Регистрируем обработчик socket ДО загрузки DOM
+    // Это гарантирует, что данные будут получены при подключении
     socket.on('connect', () => {
       console.log('Socket connected, waiting for initial state from server...');
+    });
+    
+    // Регистрируем обработчик получения данных от сервера ДО DOMContentLoaded
+    socket.on('scoreboardUpdate', (data) => {
+      updateUIFromServerData(data);
+    });
+    
+    // Обработчик получения текущего состояния по запросу
+    socket.on('currentState', (data) => {
+      console.log('Received currentState from server:', data);
+      if (data) {
+        updateUIFromServerData(data);
+      }
     });
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -1371,8 +1516,15 @@
       setupControls();
       setupEditFormHandlers();
       
+      // Применяем кэшированные данные, если они были получены до загрузки DOM
+      if (updateUIFromServerData.cachedData) {
+        console.log('Applying cached server data after DOM load');
+        setTimeout(() => {
+          updateUIFromServerData(updateUIFromServerData.cachedData);
+        }, 100);
+      }
+      
       // После загрузки DOM проверяем, пришли ли данные от сервера
-      // Если нет, запрашиваем состояние явно
       setTimeout(() => {
         const team1NameEl = document.getElementById('team1Name');
         const team1NameValue = team1NameEl ? team1NameEl.value : '';
@@ -1381,14 +1533,7 @@
           console.log('Fields are empty, requesting initial state from server...');
           socket.emit('getCurrentState');
         }
-      }, 500);
-    });
-    
-    // Обработчик получения текущего состояния по запросу
-    socket.on('currentState', (data) => {
-      console.log('Received currentState from server:', data);
-      // Обновляем UI теми же данными, что и при scoreboardUpdate
-      socket.emit('scoreboardUpdate', data); // Эмулируем событие для использования того же обработчика
+      }, 1000);
     });
     
     // Загрузка турниров
@@ -4080,181 +4225,8 @@
       updateShort();
     }
 
-    // Обновление UI при получении данных (синхронизация с сервером)
-    // Срабатывает при подключении (загрузка состояния) и при изменениях от других клиентов
-    socket.on('scoreboardUpdate', (data) => {
-      console.log('Received scoreboardUpdate from server:', data);
-      ready = false;
-      
-      // Обновление таймера (работает корректно, используем как эталон)
-      const isRunning = !!data.timerRunning;
-      timerRunning = isRunning;
-      window.timerRunning = isRunning; // Сохраняем в window для доступа из onclick
-      setPlayPauseIcon('playPauseIcon', isRunning);
-      setTimeInputFromSeconds('timeInput', data.timerSeconds || 0);
-      document.getElementById('timeInput').disabled = isRunning;
-      
-      // Показ/скрытие предупреждения о таймере
-      const warning = document.getElementById('timerWarning');
-      if (isRunning) {
-        warning.classList.remove('hidden');
-      } else {
-        warning.classList.add('hidden');
-      }
-      
-      // Блокировка только основных полей ввода команд во время работы таймера
-      // (не блокируем поля в форме редактирования пресетов и кнопки счета)
-      const fieldsToDisable = [
-        'team1Name', 'team1City', 'team1Short', 'kit1Color',
-        'team2Name', 'team2City', 'team2Short', 'kit2Color'
-      ];
-      
-      fieldsToDisable.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field && !field.closest('.edit-preset-form')) { // Исключаем поля в форме редактирования
-          if (isRunning) {
-            field.classList.add('disabled-field');
-            field.disabled = true; // Дополнительная блокировка
-          } else {
-            field.classList.remove('disabled-field');
-            field.disabled = false;
-          }
-        }
-      });
-      
-      // КНОПКИ СЧЕТА НЕ БЛОКИРУЕМ - они всегда доступны (только с подтверждением при таймере)
-      const scoreButtons = ['score1Inc', 'score1Dec', 'score2Inc', 'score2Dec'];
-      scoreButtons.forEach(btnId => {
-        const btn = document.getElementById(btnId);
-        if (btn) {
-          btn.classList.remove('disabled-field');
-          btn.disabled = false;
-          btn.style.pointerEvents = 'auto';
-          btn.style.cursor = 'pointer';
-          btn.style.opacity = '1';
-        }
-      });
-      
-      // Кнопка добавления предустановки всегда доступна
-      const addBtn = document.getElementById('addPresetBtn');
-      addBtn.disabled = false;
-      addBtn.textContent = '+ Добавить предустановку';
-      
-      // Убеждаемся, что форма редактирования остается доступной
-      const editForm = document.getElementById('editPresetForm');
-      if (editForm) {
-        // Проверяем, была ли форма редактирования открыта
-        const wasEditFormOpen = !editForm.classList.contains('hidden') && editForm.style.display !== 'none';
-        
-        console.log('Состояние формы редактирования:', {
-          wasOpen: wasEditFormOpen,
-          editingPresetId: editingPresetId,
-          isRunning: isRunning,
-          formHidden: editForm.classList.contains('hidden'),
-          formDisplay: editForm.style.display
-        });
-        
-        if (wasEditFormOpen && editingPresetId) {
-          // Восстанавливаем форму редактирования
-          editForm.style.display = 'block';
-          editForm.classList.remove('hidden');
-          
-          // Убеждаемся, что карточка пресета скрыта
-          const presetCard = document.querySelector(`[data-preset-id="${editingPresetId}"]`);
-          if (presetCard) {
-            presetCard.style.display = 'none';
-          }
-          
-          console.log('Восстановлена форма редактирования для пресета:', editingPresetId);
-        }
-      }
-      
-      // Блокировка символов применения предустановок
-      const applySymbols = document.querySelectorAll('.preset-apply-symbol');
-      applySymbols.forEach(symbol => {
-        if (isRunning) {
-          symbol.style.opacity = '0.5';
-          symbol.style.cursor = 'not-allowed';
-          symbol.style.pointerEvents = 'none';
-          symbol.title = 'Нельзя применять предустановки во время работы таймера';
-        } else {
-          symbol.style.opacity = '';
-          symbol.style.cursor = '';
-          symbol.style.pointerEvents = '';
-          symbol.title = 'Применить предустановку';
-        }
-      });
-      
-      // Обновление счета (точно как в stadium.html и других страницах)
-      // Простое обновление напрямую из данных сервера
-      const score1ValueEl = document.getElementById('score1Value');
-      const score2ValueEl = document.getElementById('score2Value');
-      if (score1ValueEl) {
-        score1ValueEl.textContent = typeof data.score1 === 'number' ? data.score1 : (data.score1 || 0);
-      }
-      if (score2ValueEl) {
-        score2ValueEl.textContent = typeof data.score2 === 'number' ? data.score2 : (data.score2 || 0);
-      }
-      
-      // Обновление команд (точно как в stadium.html - простое прямое обновление)
-      // Все поля обновляются из данных сервера без сложных проверок
-      const team1NameEl = document.getElementById('team1Name');
-      const team1CityEl = document.getElementById('team1City');
-      const team1ShortEl = document.getElementById('team1Short');
-      const team2NameEl = document.getElementById('team2Name');
-      const team2CityEl = document.getElementById('team2City');
-      const team2ShortEl = document.getElementById('team2Short');
-      const kit1ColorEl = document.getElementById('kit1Color');
-      const kit2ColorEl = document.getElementById('kit2Color');
-      
-      // Обновляем поля напрямую из данных (как в stadium.html)
-      if (team1NameEl) team1NameEl.value = data.team1Name || '';
-      if (team2NameEl) team2NameEl.value = data.team2Name || '';
-      if (team1CityEl) team1CityEl.value = data.team1City || '';
-      if (team2CityEl) team2CityEl.value = data.team2City || '';
-      if (team1ShortEl) team1ShortEl.value = data.team1Short || '';
-      if (team2ShortEl) team2ShortEl.value = data.team2Short || '';
-      if (kit1ColorEl) kit1ColorEl.value = data.kit1Color || '#2b2b2b';
-      if (kit2ColorEl) kit2ColorEl.value = data.kit2Color || '#2b2b2b';
-      
-      // Обновление логотипов (точно как в stadium.html)
-      // Сохраняем логотипы в состояние и обновляем отображение
-      state.team1Logo = data.team1Logo || '';
-      if (data.team1Logo && data.team1Logo.trim() !== '') {
-        updateMainLogoMini('team1', data.team1Logo);
-      } else {
-        showKitColorCircle('team1');
-      }
-      
-      state.team2Logo = data.team2Logo || '';
-      if (data.team2Logo && data.team2Logo.trim() !== '') {
-        updateMainLogoMini('team2', data.team2Logo);
-      } else {
-        showKitColorCircle('team2');
-      }
-      
-      // Перерисовка предустановок с учетом состояния таймера
-      // НЕ перерендериваем если открыта форма редактирования
-      if (!editingPresetId) {
-        renderTournamentPresets();
-      } else {
-        console.log('Пропускаем перерендеринг пресетов - открыта форма редактирования');
-      }
-      
-      // Восстанавливаем ready для возможности дальнейших изменений
-      // Важно: делаем это после всех обновлений UI
-      setTimeout(() => { 
-        ready = true;
-        console.log('State loaded and ready for user input. Current state:', {
-          score1: data.score1,
-          score2: data.score2,
-          team1Name: data.team1Name,
-          team2Name: data.team2Name,
-          team1Logo: data.team1Logo ? 'has logo' : 'no logo',
-          team2Logo: data.team2Logo ? 'has logo' : 'no logo'
-        });
-      }, 100);
-    });
+    // ОБРАБОТЧИК ПЕРЕНЕСЕН ВЫШЕ - используется updateUIFromServerData
+    // Дублирующий обработчик удален
 
     // Вспомогательные функции
     function setPlayPauseIcon(iconId, isPlaying) {
