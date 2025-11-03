@@ -1076,7 +1076,6 @@
   <div class="presets-section">
     <div class="presets-header">
       <h2>Предустановки матчей</h2>
-      <button class="btn btn-primary" onclick="toggleAddPresetForm()" id="addPresetBtn">+ Добавить предустановку</button>
     </div>
     
     <!-- Предупреждение о работающем таймере -->
@@ -1084,22 +1083,37 @@
       ⚠️ Таймер запущен! Блокированы: изменение команд, применение предустановок. Доступно: управление счетом, создание/редактирование предустановок.
     </div>
     
-    <div id="presetsGrid" class="presets-grid">
-      <!-- Предустановки будут загружены динамически -->
+    <!-- Список турниров для создания пресетов -->
+    <div id="tournamentsForPresets" style="margin-bottom: 30px;">
+      <h3 style="margin-bottom: 15px; color: #333;">Создать пресет из турнира:</h3>
+      <div id="tournamentsListForPresets" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Список турниров будет загружен динамически -->
+      </div>
+      <div id="tournamentsEmptyState" class="empty-state" style="padding: 20px; text-align: center; color: #999;">
+        Нет созданных турниров. Создайте турнир в <a href="/private/settings.html?token=" id="settingsLinkInPresets" style="color: #338af3;">настройках</a>, чтобы добавить пресеты.
+      </div>
+    </div>
+    
+    <!-- Существующие предустановки -->
+    <div style="margin-top: 30px;">
+      <h3 style="margin-bottom: 15px; color: #333;">Существующие предустановки:</h3>
+      <div id="presetsGrid" class="presets-grid">
+        <!-- Предустановки будут загружены динамически -->
+      </div>
     </div>
     
     <div id="addPresetForm" class="edit-preset-form hidden">
       <h3 id="addPresetTitle" class="editable-title" onclick="startEditingTitle()">Новая предустановка</h3>
       <input type="text" id="addPresetNameInput" class="hidden" onblur="finishEditingTitle()" onkeypress="handleTitleKeypress(event)">
       
-      <!-- Выбор турнира -->
+      <!-- Выбор турнира (скрыт, заполняется автоматически) -->
       <div class="form-section" style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
         <div class="form-group">
-          <label><strong>Турнир *</strong></label>
-          <select id="addPresetTournament" onchange="onTournamentSelected()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+          <label><strong>Турнир:</strong> <span id="selectedTournamentName" style="color: #338af3; font-weight: bold;"></span></label>
+          <select id="addPresetTournament" onchange="onTournamentSelected()" style="display: none;">
             <option value="">-- Выберите турнир --</option>
           </select>
-          <small style="color: #666; display: block; margin-top: 5px;">Команды будут выбраны из выбранного турнира</small>
+          <small style="color: #666; display: block; margin-top: 5px;">Команды будут выбраны из этого турнира</small>
         </div>
       </div>
       
@@ -1296,31 +1310,102 @@
         const response = await fetch(`/api/tournaments?token=${getToken()}`);
         if (response.ok) {
           tournaments = await response.json();
-          populateTournamentSelect();
+          renderTournamentsForPresets();
         }
       } catch (error) {
         console.error('Ошибка загрузки турниров:', error);
       }
     }
     
-    // Заполнение селекта турниров
-    function populateTournamentSelect() {
-      const select = document.getElementById('addPresetTournament');
-      if (!select) return;
+    // Отображение турниров для создания пресетов
+    function renderTournamentsForPresets() {
+      const container = document.getElementById('tournamentsListForPresets');
+      const emptyState = document.getElementById('tournamentsEmptyState');
       
-      select.innerHTML = '<option value="">-- Выберите турнир --</option>';
+      if (!container) return;
+      
+      if (tournaments.length === 0) {
+        container.style.display = 'none';
+        if (emptyState) {
+          const settingsLink = document.getElementById('settingsLinkInPresets');
+          if (settingsLink) {
+            settingsLink.href = `/private/settings.html?token=${getToken()}`;
+          }
+          emptyState.style.display = 'block';
+        }
+        return;
+      }
+      
+      container.style.display = 'flex';
+      if (emptyState) {
+        emptyState.style.display = 'none';
+      }
+      
+      container.innerHTML = '';
+      
       tournaments.forEach(tournament => {
-        const option = document.createElement('option');
-        option.value = tournament.id;
-        option.textContent = tournament.name;
-        select.appendChild(option);
+        const teamCount = tournament.teams ? tournament.teams.length : 0;
+        const card = document.createElement('div');
+        card.className = 'preset-card';
+        card.style.cssText = 'padding: 15px; margin-bottom: 10px; cursor: default;';
+        
+        const startDate = tournament.startDate ? new Date(tournament.startDate).toLocaleDateString('ru-RU') : '';
+        const endDate = tournament.endDate ? new Date(tournament.endDate).toLocaleDateString('ru-RU') : '';
+        const dates = startDate && endDate ? `${startDate} - ${endDate}` : (startDate || endDate || 'Даты не указаны');
+        
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="flex: 1;">
+              <div style="font-weight: bold; font-size: 16px; color: #333; margin-bottom: 5px;">${tournament.name}</div>
+              <div style="font-size: 12px; color: #666;">${dates}</div>
+              <div style="font-size: 12px; color: #999; margin-top: 3px;">Команд: ${teamCount}</div>
+            </div>
+            <button class="btn btn-primary" onclick="openAddPresetFromTournament('${tournament.id}')" ${teamCount < 2 ? 'disabled title="Нужно минимум 2 команды в турнире"' : ''}>
+              + Добавить пресет
+            </button>
+          </div>
+        `;
+        
+        container.appendChild(card);
       });
+    }
+    
+    // Открытие формы создания пресета из турнира
+    function openAddPresetFromTournament(tournamentId) {
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament) {
+        alert('Турнир не найден');
+        return;
+      }
       
-      // Восстанавливаем последний выбранный турнир из localStorage
-      const lastTournamentId = localStorage.getItem('lastSelectedTournament');
-      if (lastTournamentId && tournaments.find(t => t.id === lastTournamentId)) {
-        select.value = lastTournamentId;
-        onTournamentSelected();
+      if (!tournament.teams || tournament.teams.length < 2) {
+        alert('В турнире должно быть минимум 2 команды для создания пресета');
+        return;
+      }
+      
+      // Устанавливаем выбранный турнир
+      const select = document.getElementById('addPresetTournament');
+      if (select) {
+        select.value = tournamentId;
+        // Сохраняем выбор в localStorage
+        localStorage.setItem('lastSelectedTournament', tournamentId);
+      }
+      
+      // Показываем название турнира
+      const tournamentNameSpan = document.getElementById('selectedTournamentName');
+      if (tournamentNameSpan) {
+        tournamentNameSpan.textContent = tournament.name;
+      }
+      
+      // Заполняем команды турнира
+      onTournamentSelected();
+      
+      // Показываем форму
+      const form = document.getElementById('addPresetForm');
+      if (form) {
+        form.classList.remove('hidden');
+        // Прокручиваем к форме
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
     
@@ -2258,18 +2343,6 @@
       }
     }
 
-    // Переключение формы добавления предустановки
-    function toggleAddPresetForm() {
-      const form = document.getElementById('addPresetForm');
-      const isHidden = form.classList.contains('hidden');
-      
-      if (isHidden) {
-        // Перезагружаем турниры при открытии формы
-        loadTournaments();
-      }
-      
-      form.classList.toggle('hidden');
-    }
     
     function cancelAddPreset() {
       // Очистка формы
@@ -2282,7 +2355,16 @@
       });
       
       // Очистка селектов
-      document.getElementById('addPresetTournament').value = '';
+      const select = document.getElementById('addPresetTournament');
+      if (select) {
+        select.value = '';
+      }
+      
+      const tournamentNameSpan = document.getElementById('selectedTournamentName');
+      if (tournamentNameSpan) {
+        tournamentNameSpan.textContent = '';
+      }
+      
       document.getElementById('addPresetTeam1Select').innerHTML = '<option value="">-- Выберите команду --</option>';
       document.getElementById('addPresetTeam2Select').innerHTML = '<option value="">-- Выберите команду --</option>';
       
