@@ -4158,13 +4158,19 @@
         }
       });
       
-      // Обновление счета
-      document.getElementById('score1Value').textContent = data.score1 ?? 0;
-      document.getElementById('score2Value').textContent = data.score2 ?? 0;
+      // Обновление счета (ВСЕГДА из сервера, как таймер)
+      // Счет должен сохраняться и синхронизироваться между устройствами
+      const score1ValueEl = document.getElementById('score1Value');
+      const score2ValueEl = document.getElementById('score2Value');
+      if (score1ValueEl) {
+        score1ValueEl.textContent = (data.score1 !== undefined && data.score1 !== null) ? data.score1 : 0;
+      }
+      if (score2ValueEl) {
+        score2ValueEl.textContent = (data.score2 !== undefined && data.score2 !== null) ? data.score2 : 0;
+      }
       
-      // Обновление команд (всегда обновляем, даже при перезагрузке страницы)
-      // Используем сохраненные значения из сервера, не дефолтные
-      // Важно: обновляем ВСЕ поля даже если значение пустое, чтобы не сохранить старые значения
+      // Обновление команд (ВСЕГДА из сервера, как таймер)
+      // Все поля должны сохраняться и синхронизироваться между устройствами
       const team1NameEl = document.getElementById('team1Name');
       const team1CityEl = document.getElementById('team1City');
       const team1ShortEl = document.getElementById('team1Short');
@@ -4174,35 +4180,38 @@
       const kit1ColorEl = document.getElementById('kit1Color');
       const kit2ColorEl = document.getElementById('kit2Color');
       
-      if (team1ShortEl && data.team1Short !== undefined) {
-        team1ShortEl.value = data.team1Short || "";
+      // Обновляем ВСЕ поля из данных сервера (даже если пустые строки)
+      // Это гарантирует синхронизацию между устройствами и восстановление при перезагрузке
+      if (team1NameEl) {
+        team1NameEl.value = (data.team1Name !== undefined) ? (data.team1Name || "") : "";
       }
-      if (team2ShortEl && data.team2Short !== undefined) {
-        team2ShortEl.value = data.team2Short || "";
+      if (team2NameEl) {
+        team2NameEl.value = (data.team2Name !== undefined) ? (data.team2Name || "") : "";
       }
-      if (kit1ColorEl && data.kit1Color !== undefined) {
-        kit1ColorEl.value = data.kit1Color || "#2b2b2b";
+      if (team1CityEl) {
+        team1CityEl.value = (data.team1City !== undefined) ? (data.team1City || "") : "";
       }
-      if (kit2ColorEl && data.kit2Color !== undefined) {
-        kit2ColorEl.value = data.kit2Color || "#2b2b2b";
+      if (team2CityEl) {
+        team2CityEl.value = (data.team2City !== undefined) ? (data.team2City || "") : "";
       }
-      if (team1NameEl && data.team1Name !== undefined) {
-        team1NameEl.value = data.team1Name || "";
+      if (team1ShortEl) {
+        team1ShortEl.value = (data.team1Short !== undefined) ? (data.team1Short || "") : "";
       }
-      if (team2NameEl && data.team2Name !== undefined) {
-        team2NameEl.value = data.team2Name || "";
+      if (team2ShortEl) {
+        team2ShortEl.value = (data.team2Short !== undefined) ? (data.team2Short || "") : "";
       }
-      if (team1CityEl && data.team1City !== undefined) {
-        team1CityEl.value = data.team1City || "";
+      if (kit1ColorEl) {
+        kit1ColorEl.value = (data.kit1Color !== undefined) ? (data.kit1Color || "#2b2b2b") : "#2b2b2b";
       }
-      if (team2CityEl && data.team2City !== undefined) {
-        team2CityEl.value = data.team2City || "";
+      if (kit2ColorEl) {
+        kit2ColorEl.value = (data.kit2Color !== undefined) ? (data.kit2Color || "#2b2b2b") : "#2b2b2b";
       }
       
-      // Обновление логотипов (всегда обновляем, даже при перезагрузке страницы)
+      // Обновление логотипов (ВСЕГДА из сервера, как таймер)
+      // Логотипы должны сохраняться и синхронизироваться между устройствами
       if (data.team1Logo !== undefined) {
         state.team1Logo = data.team1Logo || '';
-        if (data.team1Logo) {
+        if (data.team1Logo && data.team1Logo.trim() !== '') {
           updateMainLogoMini('team1', data.team1Logo);
         } else {
           showKitColorCircle('team1');
@@ -4211,7 +4220,7 @@
       
       if (data.team2Logo !== undefined) {
         state.team2Logo = data.team2Logo || '';
-        if (data.team2Logo) {
+        if (data.team2Logo && data.team2Logo.trim() !== '') {
           updateMainLogoMini('team2', data.team2Logo);
         } else {
           showKitColorCircle('team2');
