@@ -2449,14 +2449,16 @@
     
     // Отображение пресетов для турниров
     function renderTournamentPresets() {
+      if (!tournaments || tournaments.length === 0) return;
+      
       tournaments.forEach(tournament => {
         const presetsContainer = document.getElementById(`presets-list-${tournament.id}`);
         if (!presetsContainer) return;
         
         // Фильтруем пресеты этого турнира
-        const tournamentPresets = presets.filter(p => p.tournamentId === tournament.id);
+        const tournamentPresets = presets.filter(p => p && p.tournamentId === tournament.id);
         
-        // Обновляем счетчик пресетов
+        // Обновляем счетчик пресетов (всегда, даже если секция не раскрыта)
         const presetCountEl = document.getElementById(`presetCount-${tournament.id}`);
         if (presetCountEl) {
           presetCountEl.textContent = tournamentPresets.length;
@@ -3195,8 +3197,24 @@
             formWrapper.innerHTML = '';
           }
           
-          // Перезагружаем турниры чтобы отобразить новый пресет
+          // Сохраняем состояние раскрытия и tournamentId
+          const wasExpanded = expandedPresets.has(tournamentId);
+          
+          // Перезагружаем пресеты и турниры
+          await loadPresets();
           await loadTournaments();
+          
+          // Восстанавливаем состояние раскрытия секции пресетов
+          if (wasExpanded || !wasExpanded) { // Всегда раскрываем после создания пресета
+            expandedPresets.add(tournamentId);
+            const presetsDiv = document.getElementById(`presets-${tournamentId}`);
+            if (presetsDiv) {
+              presetsDiv.classList.remove('hidden');
+            }
+            // Рендерим пресеты
+            renderTournamentPresets();
+          }
+          
           showNotification('Предустановка создана!', 'success');
         } else {
           throw new Error('Ошибка сохранения предустановки');
