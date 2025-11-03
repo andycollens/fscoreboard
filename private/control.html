@@ -817,6 +817,18 @@
       background: #f8f9fa;
     }
     
+    .preset-item-wrapper {
+      width: 100%;
+      margin-bottom: 10px;
+      display: block;
+    }
+    
+    .presets-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
     .edit-preset-form {
       background: #e3f2fd;
       border: 2px solid #2196f3;
@@ -2446,9 +2458,17 @@
         presetsContainer.innerHTML = '';
         
         tournamentPresets.forEach(preset => {
+          // Создаем контейнер для пресета (блок на всю ширину)
+          const presetWrapper = document.createElement('div');
+          presetWrapper.className = 'preset-item-wrapper';
+          presetWrapper.style.cssText = 'width: 100%; margin-bottom: 10px;';
+          presetWrapper.setAttribute('data-preset-id', preset.id);
+          presetWrapper.setAttribute('data-tournament-id', tournament.id);
+          
+          // Элемент пресета (информация и кнопки)
           const presetItem = document.createElement('div');
           presetItem.className = 'preset-item';
-          presetItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px; margin-bottom: 8px; background: #f8f9fa; border-radius: 6px; border: 1px solid #ddd;';
+          presetItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #ddd; width: 100%; box-sizing: border-box;';
           presetItem.setAttribute('data-preset-id', preset.id);
           presetItem.setAttribute('data-tournament-id', tournament.id);
           
@@ -2461,15 +2481,22 @@
                 ${preset.team2Short ? preset.team2Short.toUpperCase() : ''}
               </div>
             </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
               <span class="team-edit-link" onclick="editPresetInline('${tournament.id}', '${preset.id}')">edit</span>
               <span class="team-delete-link" onclick="deletePresetFromTournament('${tournament.id}', '${preset.id}')">delete</span>
               <button class="btn btn-small btn-primary" onclick="applyPreset('${preset.id}')" ${timerRunning ? 'disabled' : ''} style="padding: 4px 8px; font-size: 12px;">▶ Применить</button>
             </div>
-            <div id="preset-edit-form-${tournament.id}-${preset.id}" class="preset-edit-form-inline hidden"></div>
           `;
           
-          presetsContainer.appendChild(presetItem);
+          // Форма редактирования (отдельный элемент, вставляется после presetItem)
+          const editForm = document.createElement('div');
+          editForm.id = `preset-edit-form-${tournament.id}-${preset.id}`;
+          editForm.className = 'preset-edit-form-inline hidden';
+          
+          presetWrapper.appendChild(presetItem);
+          presetWrapper.appendChild(editForm);
+          
+          presetsContainer.appendChild(presetWrapper);
         });
       });
     }
@@ -2549,7 +2576,7 @@
       }
       
       // Показываем форму редактирования на месте пресета
-      const editForm = document.getElementById(`preset-edit-form-${tournamentId}-${presetId}`);
+      const editForm = presetWrapper.querySelector(`#preset-edit-form-${tournamentId}-${presetId}`);
       if (editForm) {
         editForm.classList.remove('hidden');
         presetItem.classList.add('edit-mode');
@@ -2858,12 +2885,15 @@
     
     // Отмена редактирования пресета inline
     function cancelEditPresetInline(tournamentId, presetId) {
-      const presetItem = document.querySelector(`[data-preset-id="${presetId}"][data-tournament-id="${tournamentId}"]`);
+      const presetWrapper = document.querySelector(`.preset-item-wrapper[data-preset-id="${presetId}"][data-tournament-id="${tournamentId}"]`);
+      if (!presetWrapper) return;
+      
+      const presetItem = presetWrapper.querySelector('.preset-item');
       if (presetItem) {
         presetItem.classList.remove('edit-mode');
       }
       
-      const editForm = document.getElementById(`preset-edit-form-${tournamentId}-${presetId}`);
+      const editForm = presetWrapper.querySelector(`#preset-edit-form-${tournamentId}-${presetId}`);
       if (editForm) {
         editForm.classList.add('hidden');
         editForm.innerHTML = '';
