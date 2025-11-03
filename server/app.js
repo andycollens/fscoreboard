@@ -220,6 +220,8 @@ app.post('/api/presets', (req, res) => {
     id: Date.now().toString(),
     name: req.body.name,
     tournamentId: req.body.tournamentId || null,
+    // Новое поле: дата матча (день), строка в формате YYYY-MM-DD
+    matchDate: req.body.matchDate || null,
     team1Id: req.body.team1Id || null,
     team2Id: req.body.team2Id || null,
     team1Name: req.body.team1Name,
@@ -257,6 +259,7 @@ app.put('/api/presets/:id', (req, res) => {
   matchPresets[presetIndex] = {
     ...matchPresets[presetIndex],
     name: req.body.name,
+    matchDate: req.body.matchDate !== undefined ? req.body.matchDate : matchPresets[presetIndex].matchDate || null,
     tournamentId: req.body.tournamentId !== undefined ? req.body.tournamentId : matchPresets[presetIndex].tournamentId,
     team1Id: req.body.team1Id !== undefined ? req.body.team1Id : matchPresets[presetIndex].team1Id,
     team2Id: req.body.team2Id !== undefined ? req.body.team2Id : matchPresets[presetIndex].team2Id,
