@@ -1752,12 +1752,11 @@
           logoContainer.style.display = 'none';
           if (logoImg) logoImg.style.display = 'none';
         }
-        // Очищаем миниатюру логотипа в новом формате
-        const newLogoPreview = formContainer.querySelector('.addPresetTeam1LogoPreview');
-        if (newLogoPreview) {
-          newLogoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
+        // Очищаем логотип и цвет при сбросе выбора (как в форме редактирования)
+        const logoPreview = formContainer.querySelector('.addPresetTeam1LogoPreview');
+        if (logoPreview) {
+          logoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
         }
-        // Сбрасываем цвет формы
         const colorInput = formContainer.querySelector('#addPresetKit1Color');
         if (colorInput) {
           colorInput.value = '#2b2b2b';
@@ -1785,54 +1784,35 @@
         }
       }
       
-      // Обновляем миниатюру логотипа в новом компактном формате (слева от выпадайки)
-      const newLogoPreview = formContainer.querySelector('.addPresetTeam1LogoPreview');
-      if (newLogoPreview) {
+      // Обновляем логотип команды (как в форме редактирования)
+      const logoPreview = formContainer.querySelector('.addPresetTeam1LogoPreview');
+      if (logoPreview) {
         if (team.logo) {
-          newLogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          logoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
         } else {
-          newLogoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
+          logoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
         }
       }
       
-      // Заполняем поля команды (скрытые для совместимости)
+      // Обновляем цвет формы из команды (как в форме редактирования)
+      const colorInput = formContainer.querySelector('#addPresetKit1Color');
+      if (colorInput) {
+        // Всегда берем цвет из выбранной команды и обновляем
+        colorInput.value = team.kitColor || '#2b2b2b';
+        // Принудительно обновляем визуальное отображение
+        setTimeout(() => {
+          colorInput.style.backgroundColor = colorInput.value;
+        }, 0);
+      }
+      
+      // Заполняем скрытые поля команды (для совместимости)
       const nameInput = formContainer.querySelector('#addPresetTeam1Name') || formContainer.querySelector('[id*="Team1Name"]');
       const cityInput = formContainer.querySelector('#addPresetTeam1City') || formContainer.querySelector('[id*="Team1City"]');
       const shortInput = formContainer.querySelector('#addPresetTeam1Short') || formContainer.querySelector('[id*="Team1Short"]');
       
-      // Ищем поле цвета - сначала по ID, потом по селектору
-      let colorInput = formContainer.querySelector('#addPresetKit1Color');
-      if (!colorInput) {
-        colorInput = formContainer.querySelector('[id*="Kit1Color"]');
-      }
-      if (!colorInput) {
-        // Ищем в родительском контейнере формы
-        const formGroup = selectElement.closest('.form-group');
-        if (formGroup) {
-          const parentSection = formGroup.closest('.form-section');
-          if (parentSection) {
-            colorInput = parentSection.querySelector('input[type="color"]');
-          }
-        }
-      }
-      
       if (nameInput) nameInput.value = team.name || '';
       if (cityInput) cityInput.value = team.city || '';
       if (shortInput) shortInput.value = team.short || '';
-      
-      if (colorInput) {
-        const teamColor = team.kitColor || '#2b2b2b';
-        colorInput.value = teamColor;
-        // Принудительно обновляем визуальное отображение цвета через несколько методов
-        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
-        colorInput.dispatchEvent(new Event('change', { bubbles: true }));
-        // Также обновляем через setTimeout для гарантии
-        setTimeout(() => {
-          if (colorInput && colorInput.value !== teamColor) {
-            colorInput.value = teamColor;
-          }
-        }, 10);
-      }
       
       // Обновляем имя пресета после выбора команды
       updatePresetNameForForm(selectElement);
@@ -1854,12 +1834,11 @@
           logoContainer.style.display = 'none';
           if (logoImg) logoImg.style.display = 'none';
         }
-        // Очищаем миниатюру логотипа в новом формате
-        const newLogoPreview = formContainer.querySelector('.addPresetTeam2LogoPreview');
-        if (newLogoPreview) {
-          newLogoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
+        // Очищаем логотип и цвет при сбросе выбора (как в форме редактирования)
+        const logoPreview = formContainer.querySelector('.addPresetTeam2LogoPreview');
+        if (logoPreview) {
+          logoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
         }
-        // Сбрасываем цвет формы
         const colorInput = formContainer.querySelector('#addPresetKit2Color');
         if (colorInput) {
           colorInput.value = '#2b2b2b';
@@ -1887,54 +1866,35 @@
         }
       }
       
-      // Обновляем миниатюру логотипа в новом компактном формате (слева от выпадайки)
-      const newLogoPreview = formContainer.querySelector('.addPresetTeam2LogoPreview');
-      if (newLogoPreview) {
+      // Обновляем логотип команды (как в форме редактирования)
+      const logoPreview = formContainer.querySelector('.addPresetTeam2LogoPreview');
+      if (logoPreview) {
         if (team.logo) {
-          newLogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          logoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
         } else {
-          newLogoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
+          logoPreview.innerHTML = '<div style="font-size: 10px; color: #999;">Лого</div>';
         }
       }
       
-      // Заполняем поля команды (скрытые для совместимости)
+      // Обновляем цвет формы из команды (как в форме редактирования)
+      const colorInput = formContainer.querySelector('#addPresetKit2Color');
+      if (colorInput) {
+        // Всегда берем цвет из выбранной команды и обновляем
+        colorInput.value = team.kitColor || '#2b2b2b';
+        // Принудительно обновляем визуальное отображение
+        setTimeout(() => {
+          colorInput.style.backgroundColor = colorInput.value;
+        }, 0);
+      }
+      
+      // Заполняем скрытые поля команды (для совместимости)
       const nameInput = formContainer.querySelector('#addPresetTeam2Name') || formContainer.querySelector('[id*="Team2Name"]');
       const cityInput = formContainer.querySelector('#addPresetTeam2City') || formContainer.querySelector('[id*="Team2City"]');
       const shortInput = formContainer.querySelector('#addPresetTeam2Short') || formContainer.querySelector('[id*="Team2Short"]');
       
-      // Ищем поле цвета - сначала по ID, потом по селектору
-      let colorInput = formContainer.querySelector('#addPresetKit2Color');
-      if (!colorInput) {
-        colorInput = formContainer.querySelector('[id*="Kit2Color"]');
-      }
-      if (!colorInput) {
-        // Ищем в родительском контейнере формы
-        const formGroup = selectElement.closest('.form-group');
-        if (formGroup) {
-          const parentSection = formGroup.closest('.form-section');
-          if (parentSection) {
-            colorInput = parentSection.querySelector('input[type="color"]');
-          }
-        }
-      }
-      
       if (nameInput) nameInput.value = team.name || '';
       if (cityInput) cityInput.value = team.city || '';
       if (shortInput) shortInput.value = team.short || '';
-      
-      if (colorInput) {
-        const teamColor = team.kitColor || '#2b2b2b';
-        colorInput.value = teamColor;
-        // Принудительно обновляем визуальное отображение цвета через несколько методов
-        colorInput.dispatchEvent(new Event('input', { bubbles: true }));
-        colorInput.dispatchEvent(new Event('change', { bubbles: true }));
-        // Также обновляем через setTimeout для гарантии
-        setTimeout(() => {
-          if (colorInput && colorInput.value !== teamColor) {
-            colorInput.value = teamColor;
-          }
-        }, 10);
-      }
       
       // Обновляем имя пресета после выбора команды
       updatePresetNameForForm(selectElement);
@@ -4123,4 +4083,5 @@
     });
   </script>
 </body>
+</html>
 </html>
