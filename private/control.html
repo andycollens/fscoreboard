@@ -1447,7 +1447,10 @@
       const select = form.querySelector('.addPresetTournament');
       if (select) {
         select.value = tournamentId;
+        // Также сохраняем в data-атрибут формы для надежности
+        form.dataset.tournamentId = tournamentId;
         localStorage.setItem('lastSelectedTournament', tournamentId);
+        console.log('Set tournament ID:', tournamentId, 'in form:', form.id);
       }
       
       // Заполняем команды турнира в этой форме
@@ -2557,24 +2560,37 @@
       
       // Ищем элементы формы - используем более точные селекторы
       const tournamentSelect = formContainer.querySelector('select.addPresetTournament');
-      const tournamentId = tournamentSelect?.value;
+      
+      // Получаем tournamentId из селекта, data-атрибута или из ID формы
+      let tournamentId = tournamentSelect?.value;
+      
+      // Если tournamentId пустой, пытаемся получить из data-атрибута формы
+      if (!tournamentId || tournamentId.trim() === '') {
+        tournamentId = formContainer.dataset.tournamentId;
+      }
+      
+      // Если все еще пустой, пытаемся извлечь его из ID формы (presetFormContent_TOURNAMENT_ID)
+      if (!tournamentId || tournamentId.trim() === '') {
+        const formId = formContainer.id;
+        const match = formId.match(/presetFormContent_(.+)/);
+        if (match && match[1]) {
+          tournamentId = match[1];
+          console.log('Extracted tournament ID from form ID:', tournamentId);
+        }
+      }
+      
       const team1Select = formContainer.querySelector('select.addPresetTeam1Select');
       const team2Select = formContainer.querySelector('select.addPresetTeam2Select');
       
       console.log('Found elements:', {
         tournamentSelect: !!tournamentSelect,
         tournamentId: tournamentId,
+        formId: formContainer.id,
         team1Select: !!team1Select,
         team2Select: !!team2Select
       });
       
       // Проверяем наличие элементов
-      if (!tournamentSelect) {
-        console.error('Tournament select not found', formContainer.innerHTML.substring(0, 500));
-        alert('Ошибка: не найден селект турнира в форме');
-        return;
-      }
-      
       if (!team1Select) {
         console.error('Team1 select not found', formContainer.innerHTML.substring(0, 500));
         alert('Ошибка: не найден селект команды 1');
@@ -2588,8 +2604,8 @@
       }
       
       if (!tournamentId || tournamentId.trim() === '') {
-        console.error('Tournament ID is empty', tournamentSelect);
-        alert('Ошибка: турнир не выбран. Пожалуйста, перезагрузите страницу и попробуйте снова.');
+        console.error('Tournament ID is empty', { tournamentSelect, formId: formContainer.id });
+        alert('Ошибка: не удалось определить турнир. Пожалуйста, закройте и откройте форму создания пресета заново.');
         return;
       }
       
