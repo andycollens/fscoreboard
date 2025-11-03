@@ -574,6 +574,45 @@
         padding: 10px;
       }
       
+      /* Стили для карточки турнира в мобильной версии */
+      .tournament-card {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+      }
+      
+      .tournament-card > div:first-child {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0 5px;
+        flex-wrap: nowrap;
+        gap: 10px;
+      }
+      
+      .tournament-card > div:first-child > div:first-child {
+        flex: 1 !important;
+        min-width: 0 !important;
+        max-width: calc(100% - 60px) !important;
+        box-sizing: border-box !important;
+        overflow: hidden;
+      }
+      
+      .tournament-card button[id^="addPresetBtn_"] {
+        flex-shrink: 0 !important;
+        min-width: 40px !important;
+        max-width: 40px !important;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        font-size: 20px !important;
+        box-sizing: border-box !important;
+      }
+      
       .camera-content {
         padding: 15px;
         margin-bottom: 15px;
