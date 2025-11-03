@@ -2459,7 +2459,8 @@
 
       // Счет с защитой от случайных изменений
       document.getElementById('score1Inc').onclick = () => {
-        const current = parseInt(document.getElementById('score1Value').textContent);
+        const score1ValueEl = document.getElementById('score1Value');
+        const current = parseInt(score1ValueEl.textContent) || 0;
         const newValue = current + 1;
         
         if (timerRunning && lastScoreChange.team === 'score1' && 
@@ -2470,23 +2471,32 @@
         }
         
         lastScoreChange = { team: 'score1', timestamp: Date.now(), value: newValue };
+        // Обновляем визуально сразу, до получения ответа от сервера
+        score1ValueEl.textContent = newValue;
+        // Отправляем на сервер для синхронизации
         socket.emit('updateScoreboard', { score1: newValue });
       };
       
       document.getElementById('score1Dec').onclick = () => {
-        const current = parseInt(document.getElementById('score1Value').textContent);
+        const score1ValueEl = document.getElementById('score1Value');
+        const current = parseInt(score1ValueEl.textContent) || 0;
         if (current > 0) {
           if (timerRunning) {
             if (!confirm('Подтвердите уменьшение счета во время игры?')) {
               return;
             }
           }
-          socket.emit('updateScoreboard', { score1: current - 1 });
+          const newValue = current - 1;
+          // Обновляем визуально сразу, до получения ответа от сервера
+          score1ValueEl.textContent = newValue;
+          // Отправляем на сервер для синхронизации
+          socket.emit('updateScoreboard', { score1: newValue });
         }
       };
       
       document.getElementById('score2Inc').onclick = () => {
-        const current = parseInt(document.getElementById('score2Value').textContent);
+        const score2ValueEl = document.getElementById('score2Value');
+        const current = parseInt(score2ValueEl.textContent) || 0;
         const newValue = current + 1;
         
         if (timerRunning && lastScoreChange.team === 'score2' && 
@@ -2497,18 +2507,26 @@
         }
         
         lastScoreChange = { team: 'score2', timestamp: Date.now(), value: newValue };
+        // Обновляем визуально сразу, до получения ответа от сервера
+        score2ValueEl.textContent = newValue;
+        // Отправляем на сервер для синхронизации
         socket.emit('updateScoreboard', { score2: newValue });
       };
       
       document.getElementById('score2Dec').onclick = () => {
-        const current = parseInt(document.getElementById('score2Value').textContent);
+        const score2ValueEl = document.getElementById('score2Value');
+        const current = parseInt(score2ValueEl.textContent) || 0;
         if (current > 0) {
           if (timerRunning) {
             if (!confirm('Подтвердите уменьшение счета во время игры?')) {
               return;
             }
           }
-          socket.emit('updateScoreboard', { score2: current - 1 });
+          const newValue = current - 1;
+          // Обновляем визуально сразу, до получения ответа от сервера
+          score2ValueEl.textContent = newValue;
+          // Отправляем на сервер для синхронизации
+          socket.emit('updateScoreboard', { score2: newValue });
         }
       };
 
