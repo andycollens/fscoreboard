@@ -1694,7 +1694,23 @@
       
       const team1Select = formContainer.querySelector('.addPresetTeam1Select');
       const team2Select = formContainer.querySelector('.addPresetTeam2Select');
-      const tournamentId = formContainer.querySelector('.addPresetTournament')?.value;
+      
+      // Получаем tournamentId из разных источников (для надежности)
+      let tournamentId = formContainer.querySelector('.addPresetTournament')?.value;
+      
+      // Если tournamentId не найден в селекте, пытаемся получить из data-атрибута формы или из ID формы
+      if (!tournamentId || tournamentId.trim() === '') {
+        tournamentId = formContainer.dataset.tournamentId;
+      }
+      
+      // Если все еще не найдено, пытаемся извлечь из ID формы (presetFormContent_TOURNAMENT_ID)
+      if (!tournamentId || tournamentId.trim() === '') {
+        const formId = formContainer.id;
+        const match = formId.match(/presetFormContent_(.+)/);
+        if (match && match[1]) {
+          tournamentId = match[1];
+        }
+      }
       
       let team1Name = 'Команда 1';
       let team2Name = 'Команда 2';
