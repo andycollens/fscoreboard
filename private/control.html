@@ -582,6 +582,11 @@
         overflow: hidden;
       }
       
+      .tournament-card {
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      
       .tournament-card > div:first-child {
         display: flex !important;
         justify-content: space-between !important;
@@ -589,41 +594,46 @@
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        padding: 0 5px;
-        flex-wrap: nowrap;
-        gap: 10px;
+        padding: 10px 15px !important;
+        flex-wrap: nowrap !important;
+        gap: 10px !important;
+        margin: 0 !important;
       }
       
       .tournament-card > div:first-child > div:first-child {
         flex: 1 !important;
         min-width: 0 !important;
-        max-width: calc(100% - 60px) !important;
+        max-width: calc(100% - 45px) !important;
         box-sizing: border-box !important;
-        overflow: hidden;
+        overflow: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
       
       .tournament-card button[id^="addPresetBtn_"] {
         flex-shrink: 0 !important;
-        min-width: 40px !important;
-        max-width: 40px !important;
-        width: 40px !important;
-        height: 40px !important;
+        min-width: 35px !important;
+        max-width: 35px !important;
+        width: 35px !important;
+        height: 35px !important;
         padding: 0 !important;
-        font-size: 20px !important;
+        font-size: 16px !important;
         box-sizing: border-box !important;
-        margin-left: 8px !important;
+        margin: 0 !important;
+        line-height: 35px !important;
       }
       
-      /* Стили для формы создания пресета в мобильной версии */
+      /* Стили для формы создания пресета в мобильной версии - точно как форма редактирования */
       [id^="presetFormContent_"] {
         box-sizing: border-box !important;
         width: 100% !important;
         max-width: 100% !important;
         overflow-x: hidden !important;
         padding: 15px !important;
+        margin: 0 !important;
       }
       
-      /* Заголовок формы создания пресета */
+      /* Заголовок формы создания пресета - компактный как в редактировании */
       [id^="presetFormContent_"] > div:first-child {
         display: flex !important;
         flex-direction: column !important;
@@ -631,28 +641,34 @@
         gap: 5px !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        margin-top: 0 !important;
         margin-bottom: 15px !important;
       }
       
       [id^="presetFormContent_"] > div:first-child h4 {
         margin: 0 !important;
         width: 100% !important;
+        padding: 0 !important;
       }
       
       [id^="presetFormContent_"] > div:first-child small {
         margin-left: 0 !important;
+        margin-top: 0 !important;
         width: 100% !important;
         text-align: left !important;
         white-space: normal !important;
+        padding: 0 !important;
       }
       
-      /* Строка с временем и именем пресета */
+      /* Строка с временем и именем пресета - компактная как в редактировании */
       [id^="presetFormContent_"] > div:nth-child(2) {
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 8px !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        margin-bottom: 15px !important;
+        margin-top: 0 !important;
       }
       
       [id^="presetFormContent_"] .addPresetMatchTime {
@@ -666,13 +682,16 @@
         max-width: 100% !important;
         white-space: normal !important;
         word-break: break-word !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
       
-      /* Секции с командами */
+      /* Секции с командами - компактные как в редактировании */
       [id^="presetFormContent_"] .form-section {
         width: 100% !important;
         box-sizing: border-box !important;
         margin-bottom: 15px !important;
+        margin-top: 0 !important;
       }
       
       [id^="presetFormContent_"] .form-section > div {
@@ -688,6 +707,7 @@
         max-width: 100% !important;
         box-sizing: border-box !important;
         flex-shrink: 1 !important;
+        margin: 0 !important;
       }
       
       [id^="presetFormContent_"] .form-group[style*="flex-shrink: 0"] {
@@ -708,6 +728,7 @@
       [id^="presetFormContent_"] .addPresetTeam2LogoPreview {
         align-self: flex-start !important;
         margin-bottom: 5px !important;
+        margin-top: 0 !important;
       }
       
       [id^="presetFormContent_"] .form-group > div[style*="flex: 1"] {
@@ -729,6 +750,13 @@
         max-width: 100% !important;
         height: 45px !important;
         box-sizing: border-box !important;
+      }
+      
+      /* Кнопки формы */
+      [id^="presetFormContent_"] .form-buttons {
+        margin-top: 15px !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
       }
       
       /* Карточки пресетов */
