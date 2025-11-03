@@ -567,6 +567,41 @@ app.delete('/api/tournaments/:id/teams/:teamId', (req, res) => {
   res.json({ success: true });
 });
 
+// Изменить порядок команд в турнире
+app.post('/api/tournaments/:id/teams/reorder', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const tournamentId = req.params.id;
+  const tournament = tournaments.find(t => t.id === tournamentId);
+  
+  if (!tournament || !tournament.teams) {
+    return res.status(404).json({ error: 'Tournament not found' });
+  }
+  
+  const { teamIds } = req.body;
+  
+  if (!Array.isArray(teamIds)) {
+    return res.status(400).json({ error: 'teamIds must be an array' });
+  }
+  
+  // Проверяем что все ID команд принадлежат этому турниру
+  const tournamentTeamIds = tournament.teams.map(t => t.id);
+  const allValid = teamIds.every(id => tournamentTeamIds.includes(id));
+  
+  if (!allValid || teamIds.length !== tournamentTeamIds.length) {
+    return res.status(400).json({ error: 'Invalid team IDs or count mismatch' });
+  }
+  
+  // Переупорядочиваем команды согласно новому порядку
+  const reorderedTeams = teamIds.map(id => tournament.teams.find(t => t.id === id));
+  tournament.teams = reorderedTeams;
+  
+  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+  
+  console.log('Teams reordered:', tournamentId);
+  res.json({ success: true });
+});
+
 // ====== WebSocket ======
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
