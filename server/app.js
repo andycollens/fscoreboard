@@ -538,13 +538,19 @@ app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
     return res.status(404).json({ error: 'Team not found' });
   }
   
+  // КРИТИЧНО: Сохраняем существующий логотип команды, если новый не предоставлен
+  // Логотип команды НЕ должен изменяться при сохранении пресетов или применении пресетов
+  // Логотип изменяется ТОЛЬКО при редактировании записи команды в турнире
+  const existingLogo = tournament.teams[teamIndex].logo || '';
+  const newLogo = req.body.logo !== undefined && req.body.logo !== null ? req.body.logo : existingLogo;
+  
   tournament.teams[teamIndex] = {
     ...tournament.teams[teamIndex],
     name: req.body.name,
     city: req.body.city || '',
     short: req.body.short || '',
     kitColor: req.body.kitColor || '#2b2b2b',
-    logo: req.body.logo || ''
+    logo: newLogo || existingLogo // Сохраняем существующий логотип, если новый пустой
   };
   
   fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
