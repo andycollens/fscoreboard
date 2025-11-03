@@ -2516,16 +2516,23 @@
       autoShortName('team1Name', 'team1Short', 'ХОЗ');
       autoShortName('team2Name', 'team2Short', 'ГОС');
 
-      // Обработчики изменений
+      // Обработчики изменений для всех полей команд - синхронизация с сервером
       const fields = [
         'team1Name', 'team2Name', 'team1City', 'team2City',
-        'kit1Color', 'kit2Color'
+        'team1Short', 'team2Short', 'kit1Color', 'kit2Color'
       ];
       
       fields.forEach(fieldId => {
-        document.getElementById(fieldId).addEventListener('input', () => {
-          sendState();
-        });
+        const field = document.getElementById(fieldId);
+        if (field) {
+          // Используем 'input' для текстовых полей и 'change' для color
+          const eventType = fieldId.includes('Color') ? 'change' : 'input';
+          field.addEventListener(eventType, () => {
+            if (ready) { // Отправляем только если готовы, чтобы избежать циклов
+              sendState();
+            }
+          });
+        }
       });
 
       // Обработка ввода времени
