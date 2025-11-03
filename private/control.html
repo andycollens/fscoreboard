@@ -2009,8 +2009,30 @@
       // Заполняем команды турнира в этой форме
       fillTeamsFromTournamentForForm(tournament, form);
       
+      // Находим последний созданный пресет из этого турнира для получения времени по умолчанию
+      const tournamentPresets = presets.filter(p => p.tournamentId === tournamentId);
+      let defaultTime = '19:00';
+      
+      if (tournamentPresets.length > 0) {
+        // Сортируем по дате создания (если есть) или берем последний в массиве
+        // Извлекаем время из названия последнего пресета
+        const lastPreset = tournamentPresets[tournamentPresets.length - 1];
+        if (lastPreset && lastPreset.name && lastPreset.name.includes(' / ')) {
+          const timeMatch = lastPreset.name.match(/^(\d{2}:\d{2})\s*\/\s*/);
+          if (timeMatch && timeMatch[1]) {
+            defaultTime = timeMatch[1];
+          }
+        }
+      }
+      
+      // Устанавливаем время по умолчанию из последнего пресета
+      const timeInput = form.querySelector('.addPresetMatchTime');
+      if (timeInput) {
+        timeInput.value = defaultTime;
+      }
+      
       // Обновляем имя пресета
-      updatePresetNameForForm(form.querySelector('.addPresetMatchTime'));
+      updatePresetNameForForm(timeInput || form.querySelector('.addPresetMatchTime'));
       
       // Прокручиваем к форме
       setTimeout(() => {
