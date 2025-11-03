@@ -2727,7 +2727,7 @@
               </div>
               <div class="form-group" style="flex-shrink: 0;">
                 <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Цвет формы</label>
-                <input type="color" class="editPresetKit1ColorInline" value="${preset.kit1Color || '#2b2b2b'}" onchange="this.dataset.manualEdit = 'true'" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                <input type="color" class="editPresetKit1ColorInline" value="${preset.kit1Color || '#2b2b2b'}" onchange="this.dataset.manualEdit = 'true'; this.dataset.userEdited = 'true'" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
               </div>
             </div>
           </div>
@@ -2748,7 +2748,7 @@
               </div>
               <div class="form-group" style="flex-shrink: 0;">
                 <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">Цвет формы</label>
-                <input type="color" class="editPresetKit2ColorInline" value="${preset.kit2Color || '#2b2b2b'}" onchange="this.dataset.manualEdit = 'true'" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                <input type="color" class="editPresetKit2ColorInline" value="${preset.kit2Color || '#2b2b2b'}" onchange="this.dataset.manualEdit = 'true'; this.dataset.userEdited = 'true'" style="width: 70px; height: 38px; padding: 0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
               </div>
             </div>
           </div>
@@ -2804,13 +2804,15 @@
         const presetColor = preset.kit1Color || '#2b2b2b';
         const teamColor = selectedTeam1.kitColor || '#2b2b2b';
         if (presetColor !== teamColor) {
-          // Цвет был изменен вручную, помечаем как manualEdit
+          // Цвет был изменен вручную, помечаем как manualEdit (но не userEdited, так как это из пресета)
           kit1ColorInput.dataset.manualEdit = 'true';
+          kit1ColorInput.dataset.userEdited = undefined;
           // Устанавливаем цвет из пресета
           kit1ColorInput.value = presetColor;
         } else {
           // Цвет совпадает с командой, оставляем возможность автоматического обновления
           kit1ColorInput.dataset.manualEdit = undefined;
+          kit1ColorInput.dataset.userEdited = undefined;
           // Устанавливаем цвет из команды
           kit1ColorInput.value = teamColor;
         }
@@ -2823,13 +2825,15 @@
         const presetColor = preset.kit2Color || '#2b2b2b';
         const teamColor = selectedTeam2.kitColor || '#2b2b2b';
         if (presetColor !== teamColor) {
-          // Цвет был изменен вручную, помечаем как manualEdit
+          // Цвет был изменен вручную, помечаем как manualEdit (но не userEdited, так как это из пресета)
           kit2ColorInput.dataset.manualEdit = 'true';
+          kit2ColorInput.dataset.userEdited = undefined;
           // Устанавливаем цвет из пресета
           kit2ColorInput.value = presetColor;
         } else {
           // Цвет совпадает с командой, оставляем возможность автоматического обновления
           kit2ColorInput.dataset.manualEdit = undefined;
+          kit2ColorInput.dataset.userEdited = undefined;
           // Устанавливаем цвет из команды
           kit2ColorInput.value = teamColor;
         }
@@ -2919,15 +2923,25 @@
         }
       }
       
-      // Обновляем цвет формы из команды (если пользователь не менял цвет вручную в текущей сессии)
+      // Обновляем цвет формы из команды
       const colorInput = editForm?.querySelector('.editPresetKit1ColorInline');
       if (colorInput) {
-        // Проверяем, был ли цвет изменен вручную в текущей сессии редактирования
-        if (!colorInput.dataset.manualEdit) {
-          // Всегда берем цвет из выбранной команды и обновляем
+        // Проверяем, был ли цвет изменен вручную пользователем в текущей сессии редактирования
+        // Если флаг manualEdit установлен, значит пользователь явно менял цвет - не обновляем
+        // Если флага нет, или он был установлен при инициализации (не вручную), обновляем из команды
+        const wasManuallyEdited = colorInput.dataset.manualEdit === 'true' && 
+                                  colorInput.dataset.userEdited === 'true';
+        
+        if (!wasManuallyEdited) {
+          // Берем цвет из выбранной команды и обновляем
           colorInput.value = team.kitColor || '#2b2b2b';
+          // Сбрасываем флаг manualEdit, так как цвет взят из команды
+          colorInput.dataset.manualEdit = undefined;
+          colorInput.dataset.userEdited = undefined;
           // Принудительно обновляем визуальное отображение
-          colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+          setTimeout(() => {
+            colorInput.style.backgroundColor = colorInput.value;
+          }, 0);
         }
       }
       
@@ -2970,15 +2984,25 @@
         }
       }
       
-      // Обновляем цвет формы из команды (если пользователь не менял цвет вручную в текущей сессии)
+      // Обновляем цвет формы из команды
       const colorInput = editForm?.querySelector('.editPresetKit2ColorInline');
       if (colorInput) {
-        // Проверяем, был ли цвет изменен вручную в текущей сессии редактирования
-        if (!colorInput.dataset.manualEdit) {
-          // Всегда берем цвет из выбранной команды и обновляем
+        // Проверяем, был ли цвет изменен вручную пользователем в текущей сессии редактирования
+        // Если флаг manualEdit установлен, значит пользователь явно менял цвет - не обновляем
+        // Если флага нет, или он был установлен при инициализации (не вручную), обновляем из команды
+        const wasManuallyEdited = colorInput.dataset.manualEdit === 'true' && 
+                                  colorInput.dataset.userEdited === 'true';
+        
+        if (!wasManuallyEdited) {
+          // Берем цвет из выбранной команды и обновляем
           colorInput.value = team.kitColor || '#2b2b2b';
+          // Сбрасываем флаг manualEdit, так как цвет взят из команды
+          colorInput.dataset.manualEdit = undefined;
+          colorInput.dataset.userEdited = undefined;
           // Принудительно обновляем визуальное отображение
-          colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+          setTimeout(() => {
+            colorInput.style.backgroundColor = colorInput.value;
+          }, 0);
         }
       }
       
