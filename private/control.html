@@ -465,6 +465,21 @@
       color: #666;
     }
     
+    .day-header {
+      transition: background-color 0.2s;
+    }
+    
+    .day-header:hover {
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+    }
+    
+    .day-toggle-arrow {
+      transition: transform 0.2s;
+    }
+    
     .preset-apply-symbol {
       color: #1976d2;
       cursor: pointer;
@@ -1711,6 +1726,7 @@
     let presets = [];
     let tournaments = [];
     let expandedPresets = new Set(); // Храним ID турниров с раскрытыми пресетами
+    let expandedDays = new Set(); // Храним ключи дней с раскрытыми пресетами (формат: tournamentId-isoDate)
     let ready = false;
     let timerRunning = false;
     let editingPresetId = null;
@@ -3176,6 +3192,33 @@
       }
     }
     
+    // Переключение состояния дня (сворачивание/разворачивание списка пресетов дня)
+    function toggleDayPresets(tournamentId, dayKey) {
+      const dayKeyFull = `${tournamentId}-${dayKey || 'nodate'}`;
+      const listEl = document.getElementById(`presets-list-${tournamentId}-${dayKey || 'nodate'}`);
+      if (!listEl) return;
+      
+      // Проверяем текущее состояние через expandedDays
+      const isCurrentlyExpanded = expandedDays.has(dayKeyFull);
+      
+      if (isCurrentlyExpanded) {
+        listEl.style.display = 'none';
+        expandedDays.delete(dayKeyFull);
+      } else {
+        listEl.style.display = 'flex';
+        expandedDays.add(dayKeyFull);
+      }
+      
+      // Обновляем стрелку
+      const headerEl = listEl.previousElementSibling;
+      if (headerEl) {
+        const arrowEl = headerEl.querySelector('.day-toggle-arrow');
+        if (arrowEl) {
+          arrowEl.textContent = isCurrentlyExpanded ? '▶' : '▼';
+        }
+      }
+    }
+    
     // Отображение пресетов для турниров
     function renderTournamentPresets() {
       if (!tournaments || tournaments.length === 0) return;
@@ -3226,17 +3269,41 @@
         
         // Создаем секции дней
         days.forEach(({ iso, label }) => {
+          const dayKey = iso || 'nodate';
+          const dayKeyFull = `${tournament.id}-${dayKey}`;
+          // По умолчанию все дни развернуты при первой загрузке
+          if (!expandedDays.has(dayKeyFull)) {
+            expandedDays.add(dayKeyFull);
+          }
+          
           const section = document.createElement('div');
           section.className = 'tournament-day-section';
           section.style.cssText = 'width: 100%; box-sizing: border-box; margin-bottom: 12px;';
           section.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0;">
-              <div style="font-weight: 600; color: #333;">${label}</div>
+            <div class="day-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0; cursor: pointer;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="day-toggle-arrow" style="font-size: 12px; color: #666; user-select: none;">▼</span>
+                <div style="font-weight: 600; color: #333;">${label}</div>
+              </div>
               <span class="preset-edit-link" onclick="openAddPresetFromTournament('${tournament.id}', '${iso || ''}'); event.stopPropagation();" title="Добавить пресет">+add</span>
             </div>
-            <div id="presets-list-${tournament.id}-${iso || 'nodate'}" class="presets-list" style="width: 100%; display: flex; flex-direction: column;"></div>
+            <div id="presets-list-${tournament.id}-${dayKey}" class="presets-list" style="width: 100%; display: flex; flex-direction: column;"></div>
           `;
           presetsRoot.appendChild(section);
+          
+          // Устанавливаем состояние сворачивания для этого дня
+          const dayKeyFull = `${tournament.id}-${dayKey}`;
+          const listEl = document.getElementById(`presets-list-${tournament.id}-${dayKey}`);
+          const headerEl = section.querySelector('.day-header');
+          const arrowEl = headerEl ? headerEl.querySelector('.day-toggle-arrow') : null;
+          
+          if (listEl) {
+            const isExpanded = expandedDays.has(dayKeyFull);
+            listEl.style.display = isExpanded ? 'flex' : 'none';
+            if (arrowEl) {
+              arrowEl.textContent = isExpanded ? '▼' : '▶';
+            }
+          }
         });
         
         // Если совсем нет пресетов
