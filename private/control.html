@@ -611,6 +611,210 @@
         padding: 0 !important;
         font-size: 20px !important;
         box-sizing: border-box !important;
+        margin-left: 8px !important;
+      }
+      
+      /* Стили для формы создания пресета в мобильной версии */
+      [id^="presetFormContent_"] {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        padding: 15px !important;
+      }
+      
+      /* Заголовок формы создания пресета */
+      [id^="presetFormContent_"] > div:first-child {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 5px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 15px !important;
+      }
+      
+      [id^="presetFormContent_"] > div:first-child h4 {
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      
+      [id^="presetFormContent_"] > div:first-child small {
+        margin-left: 0 !important;
+        width: 100% !important;
+        text-align: left !important;
+        white-space: normal !important;
+      }
+      
+      /* Строка с временем и именем пресета */
+      [id^="presetFormContent_"] > div:nth-child(2) {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      [id^="presetFormContent_"] .addPresetMatchTime {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      [id^="presetFormContent_"] .addPresetTitle {
+        width: 100% !important;
+        max-width: 100% !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+      }
+      
+      /* Секции с командами */
+      [id^="presetFormContent_"] .form-section {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 15px !important;
+      }
+      
+      [id^="presetFormContent_"] .form-section > div {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      [id^="presetFormContent_"] .form-group {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        flex-shrink: 1 !important;
+      }
+      
+      [id^="presetFormContent_"] .form-group[style*="flex-shrink: 0"] {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      /* Группа с логотипом и селектом команды */
+      [id^="presetFormContent_"] .form-group[style*="flex: 1"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+      }
+      
+      [id^="presetFormContent_"] .addPresetTeam1LogoPreview,
+      [id^="presetFormContent_"] .addPresetTeam2LogoPreview {
+        align-self: flex-start !important;
+        margin-bottom: 5px !important;
+      }
+      
+      [id^="presetFormContent_"] .form-group > div[style*="flex: 1"] {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      [id^="presetFormContent_"] select.addPresetTeam1Select,
+      [id^="presetFormContent_"] select.addPresetTeam2Select {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding-right: 30px !important;
+      }
+      
+      /* Цветовая палитра */
+      [id^="presetFormContent_"] input[type="color"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 45px !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Карточки пресетов */
+      .preset-item-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+      }
+      
+      .preset-item {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 10px !important;
+        overflow-x: hidden !important;
+      }
+      
+      .preset-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        gap: 8px !important;
+      }
+      
+      .preset-left {
+        flex: 1 !important;
+        min-width: 0 !important;
+        max-width: calc(100% - 80px) !important;
+        overflow: hidden !important;
+      }
+      
+      .preset-right {
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        min-width: 70px !important;
+      }
+      
+      .preset-edit-link {
+        white-space: nowrap !important;
+        font-size: 12px !important;
+      }
+      
+      .preset-apply-symbol {
+        font-size: 20px !important;
+        padding: 4px 8px !important;
+        flex-shrink: 0 !important;
+      }
+      
+      /* Элементы команд в карточке пресета */
+      .preset-teams {
+        align-items: center !important;
+        gap: 4px !important;
+        flex-wrap: wrap !important;
+      }
+      
+      .preset-team-logo {
+        display: flex !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .preset-team-logo img {
+        max-width: 24px !important;
+        max-height: 24px !important;
+      }
+      
+      .preset-team-name {
+        display: inline-flex !important;
+        align-items: center !important;
+        vertical-align: middle !important;
+      }
+      
+      .preset-kit-color {
+        display: inline-flex !important;
+        vertical-align: middle !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .preset-separator {
+        display: inline-flex !important;
+        align-items: center !important;
+        vertical-align: middle !important;
+        margin: 0 2px !important;
       }
       
       .camera-content {
