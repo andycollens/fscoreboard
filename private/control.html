@@ -1376,17 +1376,19 @@
         const dates = startDate && endDate ? `${startDate} - ${endDate}` : (startDate || endDate || 'Даты не указаны');
         
         card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
               <div style="font-weight: bold; font-size: 16px; color: #333; margin-bottom: 5px;">${tournament.name}</div>
               <div style="font-size: 12px; color: #666;">${dates}</div>
               <div style="font-size: 12px; color: #999; margin-top: 3px;">Команд: ${teamCount}</div>
             </div>
-            <button class="btn btn-primary" onclick="openAddPresetFromTournament('${tournament.id}')" id="addPresetBtn_${tournament.id}" ${teamCount < 2 ? 'disabled title="Нужно минимум 2 команды в турнире"' : ''}>
-              + Добавить пресет
-            </button>
+            <div style="display: flex; justify-content: flex-end; align-items: center;">
+              <button class="btn btn-primary" onclick="openAddPresetFromTournament('${tournament.id}')" id="addPresetBtn_${tournament.id}" ${teamCount < 2 ? 'disabled title="Нужно минимум 2 команды в турнире"' : ''}>
+                + Добавить пресет
+              </button>
+            </div>
           </div>
-          <div id="presetForm_${tournament.id}" class="tournament-preset-form hidden" style="width: 100%; margin-top: 15px; clear: both;"></div>
+          <div id="presetForm_${tournament.id}" class="tournament-preset-form hidden" style="width: 100%; margin-top: 15px; clear: both; display: block;"></div>
         `;
         
         container.appendChild(card);
@@ -2511,15 +2513,35 @@
 
     // Сохранение предустановки из формы внутри турнира
     async function saveNewPresetFromForm(buttonElement) {
-      const formContainer = buttonElement.closest('[id^="presetFormContent_"]');
-      if (!formContainer) return;
+      // Ищем форму - кнопка находится внутри form-buttons, который внутри формы
+      let formContainer = buttonElement.closest('[id^="presetFormContent_"]');
+      
+      // Если не нашли через closest (кнопка может быть вне формы), ищем через родителя
+      if (!formContainer) {
+        const formButtons = buttonElement.closest('.form-buttons');
+        if (formButtons) {
+          formContainer = formButtons.closest('[id^="presetFormContent_"]');
+        }
+      }
+      
+      // Если все еще не нашли, ищем последнюю открытую форму
+      if (!formContainer) {
+        formContainer = document.querySelector('[id^="presetFormContent_"]:not(.hidden)');
+      }
+      
+      if (!formContainer) {
+        console.error('Form container not found', buttonElement);
+        alert('Ошибка: форма не найдена');
+        return;
+      }
       
       const tournamentId = formContainer.querySelector('.addPresetTournament')?.value;
       const team1Select = formContainer.querySelector('.addPresetTeam1Select');
       const team2Select = formContainer.querySelector('.addPresetTeam2Select');
       
       if (!tournamentId || !team1Select || !team2Select) {
-        alert('Ошибка: форма не найдена');
+        console.error('Missing elements:', { tournamentId, team1Select, team2Select });
+        alert('Ошибка: не удалось найти элементы формы');
         return;
       }
       
