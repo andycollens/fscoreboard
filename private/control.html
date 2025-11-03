@@ -1109,16 +1109,16 @@
         <option value="">-- Выберите турнир --</option>
       </select>
       
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 20px; width: 100%;">
         <h3 class="addPresetTitle" style="margin: 0; color: #1976d2; flex: 1;">19:00 / Команда 1 - Команда 2</h3>
-        <small style="color: #999; font-size: 11px; margin-left: 15px;">Имя пресета будет сформировано автоматически</small>
+        <small style="color: #999; font-size: 11px; white-space: nowrap; margin-left: 15px;">Имя пресета будет сформировано автоматически</small>
       </div>
       
       <!-- Выбор времени матча -->
       <div class="form-section" style="margin-bottom: 20px;">
         <div class="form-group">
           <label><strong>Время матча</strong></label>
-          <input type="time" class="addPresetMatchTime" value="19:00" onchange="updatePresetNameForForm(this)" style="width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 17px; -webkit-appearance: none; appearance: none;">
+          <input type="time" class="addPresetMatchTime" value="19:00" step="60" onchange="updatePresetNameForForm(this)" style="width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 17px; -webkit-appearance: none; appearance: none;">
         </div>
       </div>
       
@@ -1211,8 +1211,8 @@
       </div>
       
       <div class="form-buttons">
-        <button class="btn btn-primary" onclick="saveNewPreset()">Сохранить</button>
-        <button class="btn btn-secondary" onclick="cancelAddPreset()">Отмена</button>
+        <button class="btn btn-primary" onclick="saveNewPresetFromForm(this)">Сохранить</button>
+        <button class="btn btn-secondary" onclick="cancelAddPresetFromForm(this)">Отмена</button>
       </div>
     </div>
 
@@ -1423,6 +1423,11 @@
       form.id = `presetFormContent_${tournamentId}`;
       form.classList.remove('hidden');
       form.style.display = 'block';
+      form.style.marginTop = '15px';
+      form.style.padding = '20px';
+      form.style.background = '#e3f2fd';
+      form.style.border = '2px solid #2196f3';
+      form.style.borderRadius = '8px';
       
       // Очищаем контейнер и добавляем форму
       formContainer.innerHTML = '';
@@ -2489,7 +2494,117 @@
       }
     }
 
-    // Сохранение предустановки
+    // Сохранение предустановки из формы внутри турнира
+    async function saveNewPresetFromForm(buttonElement) {
+      const formContainer = buttonElement.closest('[id^="presetFormContent_"]');
+      if (!formContainer) return;
+      
+      const tournamentId = formContainer.querySelector('.addPresetTournament')?.value;
+      const team1Select = formContainer.querySelector('.addPresetTeam1Select');
+      const team2Select = formContainer.querySelector('.addPresetTeam2Select');
+      
+      if (!tournamentId || !team1Select || !team2Select) {
+        alert('Ошибка: форма не найдена');
+        return;
+      }
+      
+      const team1Id = team1Select.value;
+      const team2Id = team2Select.value;
+      
+      if (!team1Id || !team2Id) {
+        alert('Выберите обе команды из турнира');
+        return;
+      }
+      
+      // Получаем данные команд из турнира
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament || !tournament.teams) {
+        alert('Турнир не найден');
+        return;
+      }
+      
+      const team1 = tournament.teams.find(t => t.id === team1Id);
+      const team2 = tournament.teams.find(t => t.id === team2Id);
+      
+      if (!team1 || !team2) {
+        alert('Команды не найдены');
+        return;
+      }
+      
+      // Формируем имя пресета автоматически
+      const matchTime = formContainer.querySelector('.addPresetMatchTime')?.value || '19:00';
+      const presetName = `${matchTime} / ${team1.name} - ${team2.name}`;
+      
+      // Получаем поля формы (если они заполнены, используем их, иначе данные команды)
+      const team1NameInput = formContainer.querySelector('[id*="Team1Name"]');
+      const team1CityInput = formContainer.querySelector('[id*="Team1City"]');
+      const team1ShortInput = formContainer.querySelector('[id*="Team1Short"]');
+      const team1KitColorInput = formContainer.querySelector('[id*="Kit1Color"]');
+      
+      const team2NameInput = formContainer.querySelector('[id*="Team2Name"]');
+      const team2CityInput = formContainer.querySelector('[id*="Team2City"]');
+      const team2ShortInput = formContainer.querySelector('[id*="Team2Short"]');
+      const team2KitColorInput = formContainer.querySelector('[id*="Kit2Color"]');
+      
+      const preset = {
+        name: presetName,
+        team1Name: (team1NameInput?.value.trim()) || team1.name,
+        team1City: (team1CityInput?.value.trim()) || team1.city || '',
+        team1Short: (team1ShortInput?.value.trim().toUpperCase()) || team1.short || '',
+        team2Name: (team2NameInput?.value.trim()) || team2.name,
+        team2City: (team2CityInput?.value.trim()) || team2.city || '',
+        team2Short: (team2ShortInput?.value.trim().toUpperCase()) || team2.short || '',
+        kit1Color: (team1KitColorInput?.value) || team1.kitColor || '#2b2b2b',
+        kit2Color: (team2KitColorInput?.value) || team2.kitColor || '#2b2b2b',
+        team1Logo: team1.logo || '',
+        team2Logo: team2.logo || ''
+      };
+      
+      // Валидация
+      if (!preset.team1Name || !preset.team2Name) {
+        alert('Названия команд обязательны');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/presets?token=${getToken()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(preset)
+        });
+        
+        if (response.ok) {
+          // Закрываем форму
+          const formWrapper = formContainer.closest('[id^="presetForm_"]');
+          if (formWrapper) {
+            formWrapper.classList.add('hidden');
+            formWrapper.innerHTML = '';
+          }
+          
+          await loadPresets();
+          showNotification('Предустановка создана!', 'success');
+        } else {
+          throw new Error('Ошибка сохранения предустановки');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения предустановки:', error);
+        showNotification('Ошибка сохранения предустановки', 'error');
+      }
+    }
+    
+    // Отмена создания пресета из формы
+    function cancelAddPresetFromForm(buttonElement) {
+      const formContainer = buttonElement.closest('[id^="presetFormContent_"]');
+      if (!formContainer) return;
+      
+      const formWrapper = formContainer.closest('[id^="presetForm_"]');
+      if (formWrapper) {
+        formWrapper.classList.add('hidden');
+        formWrapper.innerHTML = '';
+      }
+    }
+    
+    // Сохранение предустановки (старая версия для совместимости)
     async function saveNewPreset() {
       if (!selectedTeams.team1 || !selectedTeams.team2) {
         alert('Выберите обе команды из турнира');
