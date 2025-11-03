@@ -1,0 +1,21 @@
+# Установка кодировки для всех текстовых файлов
+* text=auto eol=lf
+
+# Явно указываем UTF-8 для всех текстовых файлов
+*.html text charset=utf-8
+*.js text charset=utf-8
+*.json text charset=utf-8
+*.md text charset=utf-8
+*.txt text charset=utf-8
+*.sh text charset=utf-8
+
+# Бинарные файлы
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+

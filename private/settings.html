@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Настройки турниров - FSCOREBOARD</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 1000px; 
+      margin: 20px auto; 
+      background: #f4f4f4; 
+      padding: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #338af3;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border: 1px solid #ddd;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #338af3;
+    }
+    
+    .section-header h2 {
+      margin: 0;
+      color: #333;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: opacity 0.2s;
+    }
+    
+    .btn:hover {
+      opacity: 0.8;
+    }
+    
+    .btn-primary {
+      background: #338af3;
+      color: white;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .tournament-card {
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #f8f9fa;
+    }
+    
+    .tournament-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding: 10px;
+      background: #fff;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    
+    .tournament-header:hover {
+      background: #e9ecef;
+    }
+    
+    .tournament-info {
+      flex: 1;
+    }
+    
+    .tournament-name {
+      font-weight: bold;
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    
+    .tournament-dates {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .tournament-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .tournament-teams {
+      display: none;
+      padding: 15px;
+      background: #fff;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    
+    .tournament-teams.expanded {
+      display: block;
+    }
+    
+    .team-list {
+      margin-bottom: 15px;
+    }
+    
+    .team-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+    
+    .team-item-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .team-logo-mini {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #ddd;
+    }
+    
+    .team-kit-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+    }
+    
+    .team-details {
+      flex: 1;
+    }
+    
+    .team-name {
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .team-city {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .team-short {
+      font-weight: bold;
+      color: #338af3;
+      min-width: 40px;
+    }
+    
+    .team-actions {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .btn-small {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    
+    .add-tournament-form,
+    .add-team-form {
+      background: #e3f2fd;
+      border: 2px solid #2196f3;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .form-group {
+      flex: 1;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .form-group input,
+    .form-group input[type="date"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    .form-group input[type="color"] {
+      width: 60px;
+      height: 40px;
+      padding: 0;
+    }
+    
+    .form-group input[type="file"] {
+      padding: 4px;
+    }
+    
+    .logo-preview {
+      margin-top: 8px;
+      text-align: center;
+    }
+    
+    .logo-preview img {
+      width: 50px;
+      height: 50px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+    
+    .form-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    
+    .expand-icon {
+      font-size: 20px;
+      transition: transform 0.3s;
+    }
+    
+    .expand-icon.expanded {
+      transform: rotate(90deg);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/private/control.html?token=" id="backLink" class="back-link">← Назад к панели управления</a>
+    <h1>⚙️ Настройки турниров</h1>
+  </div>
+
+  <!-- Секция Пресет турниров -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Пресет турниров</h2>
+      <button class="btn btn-primary" onclick="toggleAddTournamentForm()" id="addTournamentBtn">+ Создать турнир</button>
+    </div>
+    
+    <!-- Форма создания турнира -->
+    <div id="addTournamentForm" class="add-tournament-form hidden">
+      <h3>Создать новый турнир</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Название турнира *</label>
+          <input type="text" id="newTournamentName" placeholder="Например: Чемпионат России 2024" maxlength="100">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Дата начала</label>
+          <input type="date" id="newTournamentStartDate">
+        </div>
+        <div class="form-group">
+          <label>Дата окончания</label>
+          <input type="date" id="newTournamentEndDate">
+        </div>
+      </div>
+      <div class="form-buttons">
+        <button class="btn btn-primary" onclick="saveNewTournament()">Создать</button>
+        <button class="btn btn-secondary" onclick="cancelAddTournament()">Отмена</button>
+      </div>
+    </div>
+    
+    <!-- Список турниров -->
+    <div id="tournamentsList">
+      <div class="empty-state">Нет созданных турниров. Создайте первый турнир, чтобы начать добавлять команды.</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let tournaments = [];
+    let editingTeamId = null;
+    
+    function getToken() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('token') || 'MySecret111';
+    }
+    
+    // Устанавливаем ссылку назад
+    document.addEventListener('DOMContentLoaded', function() {
+      const backLink = document.getElementById('backLink');
+      if (backLink) {
+        backLink.href = `/private/control.html?token=${getToken()}`;
+      }
+      loadTournaments();
+    });
+    
+    // Загрузка турниров
+    async function loadTournaments() {
+      try {
+        const response = await fetch(`/api/tournaments?token=${getToken()}`);
+        if (response.ok) {
+          tournaments = await response.json();
+          renderTournaments();
+        } else {
+          console.error('Ошибка загрузки турниров');
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки турниров:', error);
+      }
+    }
+    
+    // Отображение турниров
+    function renderTournaments() {
+      const container = document.getElementById('tournamentsList');
+      
+      if (tournaments.length === 0) {
+        container.innerHTML = '<div class="empty-state">Нет созданных турниров. Создайте первый турнир, чтобы начать добавлять команды.</div>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      tournaments.forEach(tournament => {
+        const card = document.createElement('div');
+        card.className = 'tournament-card';
+        card.setAttribute('data-tournament-id', tournament.id);
+        
+        const teamsHtml = tournament.teams && tournament.teams.length > 0
+          ? tournament.teams.map(team => `
+            <div class="team-item" data-team-id="${team.id}">
+              <div class="team-item-info">
+                ${team.logo ? `<img src="${team.logo}" alt="${team.name}" class="team-logo-mini">` : '<div class="team-logo-mini" style="background: #ddd;"></div>'}
+                <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
+                <div class="team-details">
+                  <div class="team-name">${team.name}</div>
+                  <div class="team-city">${team.city || ''}</div>
+                </div>
+                <div class="team-short">${team.short || ''}</div>
+              </div>
+              <div class="team-actions">
+                <button class="btn btn-secondary btn-small" onclick="editTeam('${tournament.id}', '${team.id}')">✏️</button>
+                <button class="btn btn-danger btn-small" onclick="deleteTeam('${tournament.id}', '${team.id}')">🗑️</button>
+              </div>
+            </div>
+          `).join('')
+          : '<div class="empty-state" style="padding: 20px;">Команд пока нет. Добавьте первую команду.</div>';
+        
+        const startDate = tournament.startDate ? new Date(tournament.startDate).toLocaleDateString('ru-RU') : 'Не указана';
+        const endDate = tournament.endDate ? new Date(tournament.endDate).toLocaleDateString('ru-RU') : 'Не указана';
+        
+        card.innerHTML = `
+          <div class="tournament-header" onclick="toggleTournamentTeams('${tournament.id}')">
+            <div class="tournament-info">
+              <div class="tournament-name">${tournament.name}</div>
+              <div class="tournament-dates">${startDate} - ${endDate}</div>
+            </div>
+            <div class="tournament-actions" onclick="event.stopPropagation()">
+              <button class="btn btn-primary btn-small" onclick="showAddTeamForm('${tournament.id}')">+ Команда</button>
+              <button class="btn btn-secondary btn-small" onclick="editTournament('${tournament.id}')">✏️</button>
+              <button class="btn btn-danger btn-small" onclick="deleteTournament('${tournament.id}')">🗑️</button>
+            </div>
+          </div>
+          <div class="tournament-teams" id="teams-${tournament.id}">
+            <div class="team-list">
+              ${teamsHtml}
+            </div>
+            <div id="addTeamForm-${tournament.id}" class="add-team-form hidden">
+              <h4>Добавить команду в турнир</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Название команды *</label>
+                  <input type="text" id="newTeamName-${tournament.id}" placeholder="Название команды" maxlength="40">
+                </div>
+                <div class="form-group">
+                  <label>Город</label>
+                  <input type="text" id="newTeamCity-${tournament.id}" placeholder="Город" maxlength="30">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Шорткод</label>
+                  <input type="text" id="newTeamShort-${tournament.id}" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                  <label>Цвет формы</label>
+                  <input type="color" id="newTeamKitColor-${tournament.id}" value="#2b2b2b">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Логотип</label>
+                  <input type="file" id="newTeamLogo-${tournament.id}" accept="image/*" onchange="previewTeamLogo('${tournament.id}', this)">
+                  <div id="teamLogoPreview-${tournament.id}" class="logo-preview"></div>
+                </div>
+              </div>
+              <div class="form-buttons">
+                <button class="btn btn-primary" onclick="saveNewTeam('${tournament.id}')">Добавить</button>
+                <button class="btn btn-secondary" onclick="cancelAddTeam('${tournament.id}')">Отмена</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(card);
+      });
+    }
+    
+    // Переключение отображения команд турнира
+    function toggleTournamentTeams(tournamentId) {
+      const teamsDiv = document.getElementById(`teams-${tournamentId}`);
+      if (teamsDiv) {
+        teamsDiv.classList.toggle('expanded');
+      }
+    }
+    
+    // Показать форму добавления команды
+    function showAddTeamForm(tournamentId) {
+      const form = document.getElementById(`addTeamForm-${tournamentId}`);
+      if (form) {
+        form.classList.remove('hidden');
+        // Разворачиваем список команд
+        const teamsDiv = document.getElementById(`teams-${tournamentId}`);
+        if (teamsDiv) {
+          teamsDiv.classList.add('expanded');
+        }
+      }
+    }
+    
+    // Отмена добавления команды
+    function cancelAddTeam(tournamentId) {
+      const form = document.getElementById(`addTeamForm-${tournamentId}`);
+      if (form) {
+        form.classList.add('hidden');
+        // Очищаем поля
+        document.getElementById(`newTeamName-${tournamentId}`).value = '';
+        document.getElementById(`newTeamCity-${tournamentId}`).value = '';
+        document.getElementById(`newTeamShort-${tournamentId}`).value = '';
+        document.getElementById(`newTeamKitColor-${tournamentId}`).value = '#2b2b2b';
+        document.getElementById(`newTeamLogo-${tournamentId}`).value = '';
+        document.getElementById(`teamLogoPreview-${tournamentId}`).innerHTML = '';
+      }
+    }
+    
+    // Превью логотипа команды
+    function previewTeamLogo(tournamentId, fileInput) {
+      if (!fileInput.files[0]) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById(`teamLogoPreview-${tournamentId}`);
+        preview.innerHTML = `<img src="${e.target.result}" alt="Превью">`;
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
+    
+    // Сохранение новой команды
+    async function saveNewTeam(tournamentId) {
+      const name = document.getElementById(`newTeamName-${tournamentId}`).value.trim();
+      const city = document.getElementById(`newTeamCity-${tournamentId}`).value.trim();
+      const short = document.getElementById(`newTeamShort-${tournamentId}`).value.trim().toUpperCase();
+      const kitColor = document.getElementById(`newTeamKitColor-${tournamentId}`).value;
+      const logoFile = document.getElementById(`newTeamLogo-${tournamentId}`).files[0];
+      
+      if (!name) {
+        alert('Введите название команды');
+        return;
+      }
+      
+      let logoUrl = '';
+      
+      // Загружаем логотип если есть
+      if (logoFile) {
+        try {
+          const formData = new FormData();
+          formData.append('logo', logoFile);
+          
+          const uploadResponse = await fetch(`/api/upload-logo?token=${getToken()}`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (uploadResponse.ok) {
+            const result = await uploadResponse.json();
+            logoUrl = result.url;
+          }
+        } catch (error) {
+          console.error('Ошибка загрузки логотипа:', error);
+        }
+      }
+      
+      const team = {
+        name,
+        city,
+        short,
+        kitColor,
+        logo: logoUrl
+      };
+      
+      try {
+        const response = await fetch(`/api/tournaments/${tournamentId}/teams?token=${getToken()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(team)
+        });
+        
+        if (response.ok) {
+          cancelAddTeam(tournamentId);
+          await loadTournaments();
+          showNotification('Команда добавлена!', 'success');
+        } else {
+          throw new Error('Ошибка сохранения команды');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения команды:', error);
+        showNotification('Ошибка сохранения команды', 'error');
+      }
+    }
+    
+    // Удаление команды
+    async function deleteTeam(tournamentId, teamId) {
+      if (!confirm('Удалить эту команду?')) return;
+      
+      try {
+        const response = await fetch(`/api/tournaments/${tournamentId}/teams/${teamId}?token=${getToken()}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          await loadTournaments();
+          showNotification('Команда удалена!', 'success');
+        } else {
+          throw new Error('Ошибка удаления команды');
+        }
+      } catch (error) {
+        console.error('Ошибка удаления команды:', error);
+        showNotification('Ошибка удаления команды', 'error');
+      }
+    }
+    
+    // Редактирование команды (пока простой вариант - удаление и повторное добавление)
+    function editTeam(tournamentId, teamId) {
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament) return;
+      
+      const team = tournament.teams.find(t => t.id === teamId);
+      if (!team) return;
+      
+      // Пока используем простой подход - удаляем и показываем форму добавления с заполненными данными
+      if (confirm('Для редактирования команды она будет удалена и добавлена заново с новыми данными. Продолжить?')) {
+        deleteTeam(tournamentId, teamId).then(() => {
+          showAddTeamForm(tournamentId);
+          // Заполняем форму старыми данными
+          document.getElementById(`newTeamName-${tournamentId}`).value = team.name;
+          document.getElementById(`newTeamCity-${tournamentId}`).value = team.city || '';
+          document.getElementById(`newTeamShort-${tournamentId}`).value = team.short || '';
+          document.getElementById(`newTeamKitColor-${tournamentId}`).value = team.kitColor || '#2b2b2b';
+          if (team.logo) {
+            document.getElementById(`teamLogoPreview-${tournamentId}`).innerHTML = `<img src="${team.logo}" alt="Превью">`;
+          }
+        });
+      }
+    }
+    
+    // Переключение формы создания турнира
+    function toggleAddTournamentForm() {
+      const form = document.getElementById('addTournamentForm');
+      form.classList.toggle('hidden');
+    }
+    
+    // Отмена создания турнира
+    function cancelAddTournament() {
+      document.getElementById('addTournamentForm').classList.add('hidden');
+      document.getElementById('newTournamentName').value = '';
+      document.getElementById('newTournamentStartDate').value = '';
+      document.getElementById('newTournamentEndDate').value = '';
+    }
+    
+    // Сохранение нового турнира
+    async function saveNewTournament() {
+      const name = document.getElementById('newTournamentName').value.trim();
+      const startDate = document.getElementById('newTournamentStartDate').value;
+      const endDate = document.getElementById('newTournamentEndDate').value;
+      
+      if (!name) {
+        alert('Введите название турнира');
+        return;
+      }
+      
+      const tournament = {
+        name,
+        startDate: startDate || null,
+        endDate: endDate || null,
+        teams: []
+      };
+      
+      try {
+        const response = await fetch(`/api/tournaments?token=${getToken()}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tournament)
+        });
+        
+        if (response.ok) {
+          cancelAddTournament();
+          await loadTournaments();
+          showNotification('Турнир создан!', 'success');
+        } else {
+          throw new Error('Ошибка сохранения турнира');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения турнира:', error);
+        showNotification('Ошибка сохранения турнира', 'error');
+      }
+    }
+    
+    // Редактирование турнира
+    function editTournament(tournamentId) {
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament) return;
+      
+      const newName = prompt('Новое название турнира:', tournament.name);
+      if (!newName || newName.trim() === '') return;
+      
+      const startDate = prompt('Дата начала (ГГГГ-ММ-ДД) или оставьте пустым:', tournament.startDate || '');
+      const endDate = prompt('Дата окончания (ГГГГ-ММ-ДД) или оставьте пустым:', tournament.endDate || '');
+      
+      updateTournament(tournamentId, {
+        name: newName.trim(),
+        startDate: startDate || null,
+        endDate: endDate || null
+      });
+    }
+    
+    // Обновление турнира
+    async function updateTournament(tournamentId, data) {
+      try {
+        const response = await fetch(`/api/tournaments/${tournamentId}?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+          await loadTournaments();
+          showNotification('Турнир обновлен!', 'success');
+        } else {
+          throw new Error('Ошибка обновления турнира');
+        }
+      } catch (error) {
+        console.error('Ошибка обновления турнира:', error);
+        showNotification('Ошибка обновления турнира', 'error');
+      }
+    }
+    
+    // Удаление турнира
+    async function deleteTournament(tournamentId) {
+      if (!confirm('Удалить этот турнир и все команды в нем? Это действие нельзя отменить.')) return;
+      
+      try {
+        const response = await fetch(`/api/tournaments/${tournamentId}?token=${getToken()}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          await loadTournaments();
+          showNotification('Турнир удален!', 'success');
+        } else {
+          throw new Error('Ошибка удаления турнира');
+        }
+      } catch (error) {
+        console.error('Ошибка удаления турнира:', error);
+        showNotification('Ошибка удаления турнира', 'error');
+      }
+    }
+    
+    // Показ уведомлений
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        z-index: 10000;
+        font-size: 14px;
+        max-width: 300px;
+      `;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
+

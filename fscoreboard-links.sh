@@ -105,6 +105,9 @@ print_links() {
     echo -e "\n${YELLOW}🎛️  ПАНЕЛЬ УПРАВЛЕНИЯ:${NC}"
     echo -e "  ${GREEN}http://$DOMAIN/private/control.html?token=$TOKEN${NC}"
     
+    echo -e "\n${YELLOW}⚙️  НАСТРОЙКИ ТУРНИРОВ:${NC}"
+    echo -e "  ${GREEN}http://$DOMAIN/private/settings.html?token=$TOKEN${NC}"
+    
     echo -e "\n${YELLOW}📺 ОСНОВНЫЕ СТРАНИЦЫ ТАБЛО:${NC}"
     echo -e "  ${GREEN}http://$DOMAIN/public/scoreboard_vmix.html${NC}  (основное табло)"
     echo -e "  ${GREEN}http://$DOMAIN/public/stadium.html${NC}  (стадион)"

@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 3002;
 const TOKEN = process.env.TOKEN || 'MySecret111';
 const SAVE_PATH = path.join(__dirname, 'state.json');
 const PRESETS_PATH = path.join(__dirname, 'presets.json');
+const TOURNAMENTS_PATH = path.join(__dirname, 'tournaments.json');
 const LOGOS_PATH = path.join(__dirname, '..', 'public', 'logos');
 
 // Настройка multer для загрузки файлов
@@ -72,6 +73,9 @@ let state = {
 // ====== Предварительные настройки матчей ======
 let matchPresets = [];
 
+// ====== Турниры ======
+let tournaments = [];
+
 // ====== Загрузка состояния ======
 if (fs.existsSync(SAVE_PATH)) {
   try {
@@ -89,6 +93,16 @@ if (fs.existsSync(PRESETS_PATH)) {
     matchPresets = savedPresets;
   } catch (e) {
     console.error("Ошибка чтения presets.json", e);
+  }
+}
+
+// ====== Загрузка турниров ======
+if (fs.existsSync(TOURNAMENTS_PATH)) {
+  try {
+    const savedTournaments = JSON.parse(fs.readFileSync(TOURNAMENTS_PATH, 'utf8'));
+    tournaments = savedTournaments;
+  } catch (e) {
+    console.error("Ошибка чтения tournaments.json", e);
   }
 }
 
@@ -161,6 +175,11 @@ app.get('/stadium.html', (_, res) => {
 app.get('/control', (req, res) => {
   if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../private', 'control.html'));
+});
+
+app.get('/settings', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  res.sendFile(path.join(__dirname, '../private', 'settings.html'));
 });
 
 // Защита статических файлов в /private/
@@ -360,6 +379,192 @@ app.post('/api/copy-logo', (req, res) => {
     console.error('Ошибка копирования логотипа:', error);
     res.status(500).json({ error: 'Ошибка копирования файла' });
   }
+});
+
+// ====== API для турниров ======
+// Получить все турниры
+app.get('/api/tournaments', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  res.json(tournaments);
+});
+
+// Создать турнир
+app.post('/api/tournaments', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const newTournament = {
+    id: Date.now().toString(),
+    name: req.body.name,
+    startDate: req.body.startDate || null,
+    endDate: req.body.endDate || null,
+    teams: []
+  };
+  
+  tournaments.push(newTournament);
+  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+  
+  console.log('Tournament created:', newTournament.id);
+  res.json(newTournament);
+});
+
+// Обновить турнир
+app.put('/api/tournaments/:id', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const tournamentId = req.params.id;
+  const tournamentIndex = tournaments.findIndex(t => t.id === tournamentId);
+  
+  if (tournamentIndex === -1) {
+    return res.status(404).json({ error: 'Tournament not found' });
+  }
+  
+  tournaments[tournamentIndex] = {
+    ...tournaments[tournamentIndex],
+    name: req.body.name,
+    startDate: req.body.startDate || null,
+    endDate: req.body.endDate || null
+  };
+  
+  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+  
+  console.log('Tournament updated:', tournamentId);
+  res.json(tournaments[tournamentIndex]);
+});
+
+// Удалить турнир
+app.delete('/api/tournaments/:id', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const tournamentId = req.params.id;
+  const tournament = tournaments.find(t => t.id === tournamentId);
+  
+  if (!tournament) {
+    return res.status(404).json({ error: 'Tournament not found' });
+  }
+  
+  // Удаляем логотипы команд турнира
+  if (tournament.teams) {
+    tournament.teams.forEach(team => {
+      if (team.logo) {
+        const logoPath = path.join(LOGOS_PATH, path.basename(team.logo));
+        if (fs.existsSync(logoPath)) {
+          try {
+            fs.unlinkSync(logoPath);
+            console.log('Deleted team logo:', logoPath);
+          } catch (error) {
+            console.error('Error deleting logo:', error);
+          }
+        }
+      }
+    });
+  }
+  
+  tournaments = tournaments.filter(t => t.id !== tournamentId);
+  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+  
+  console.log('Tournament deleted:', tournamentId);
+  res.json({ success: true });
+});
+
+// ====== API для команд турнира ======
+// Добавить команду в турнир
+app.post('/api/tournaments/:id/teams', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const tournamentId = req.params.id;
+  const tournament = tournaments.find(t => t.id === tournamentId);
+  
+  if (!tournament) {
+    return res.status(404).json({ error: 'Tournament not found' });
+  }
+  
+  if (!tournament.teams) {
+    tournament.teams = [];
+  }
+  
+  const newTeam = {
+    id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
+    name: req.body.name,
+    city: req.body.city || '',
+    short: req.body.short || '',
+    kitColor: req.body.kitColor || '#2b2b2b',
+    logo: req.body.logo || ''
+  };
+  
+  tournament.teams.push(newTeam);
+  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+  
+  console.log('Team added to tournament:', tournamentId, newTeam.id);
+  res.json(newTeam);
+});
+
+// Обновить команду в турнире
+app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const tournamentId = req.params.id;
+  const teamId = req.params.teamId;
+  const tournament = tournaments.find(t => t.id === tournamentId);
+  
+  if (!tournament || !tournament.teams) {
+    return res.status(404).json({ error: 'Tournament or team not found' });
+  }
+  
+  const teamIndex = tournament.teams.findIndex(t => t.id === teamId);
+  if (teamIndex === -1) {
+    return res.status(404).json({ error: 'Team not found' });
+  }
+  
+  tournament.teams[teamIndex] = {
+    ...tournament.teams[teamIndex],
+    name: req.body.name,
+    city: req.body.city || '',
+    short: req.body.short || '',
+    kitColor: req.body.kitColor || '#2b2b2b',
+    logo: req.body.logo || ''
+  };
+  
+  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+  
+  console.log('Team updated:', tournamentId, teamId);
+  res.json(tournament.teams[teamIndex]);
+});
+
+// Удалить команду из турнира
+app.delete('/api/tournaments/:id/teams/:teamId', (req, res) => {
+  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  
+  const tournamentId = req.params.id;
+  const teamId = req.params.teamId;
+  const tournament = tournaments.find(t => t.id === tournamentId);
+  
+  if (!tournament || !tournament.teams) {
+    return res.status(404).json({ error: 'Tournament or team not found' });
+  }
+  
+  const team = tournament.teams.find(t => t.id === teamId);
+  if (!team) {
+    return res.status(404).json({ error: 'Team not found' });
+  }
+  
+  // Удаляем логотип команды если есть
+  if (team.logo) {
+    const logoPath = path.join(LOGOS_PATH, path.basename(team.logo));
+    if (fs.existsSync(logoPath)) {
+      try {
+        fs.unlinkSync(logoPath);
+        console.log('Deleted team logo:', logoPath);
+      } catch (error) {
+        console.error('Error deleting logo:', error);
+      }
+    }
+  }
+  
+  tournament.teams = tournament.teams.filter(t => t.id !== teamId);
+  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+  
+  console.log('Team deleted:', tournamentId, teamId);
+  res.json({ success: true });
 });
 
 // ====== WebSocket ======

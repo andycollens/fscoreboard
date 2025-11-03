@@ -1092,31 +1092,50 @@
       <h3 id="addPresetTitle" class="editable-title" onclick="startEditingTitle()">Новая предустановка</h3>
       <input type="text" id="addPresetNameInput" class="hidden" onblur="finishEditingTitle()" onkeypress="handleTitleKeypress(event)">
       
-      <div class="form-section">
+      <!-- Выбор турнира -->
+      <div class="form-section" style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+        <div class="form-group">
+          <label><strong>Турнир *</strong></label>
+          <select id="addPresetTournament" onchange="onTournamentSelected()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+            <option value="">-- Выберите турнир --</option>
+          </select>
+          <small style="color: #666; display: block; margin-top: 5px;">Команды будут выбраны из выбранного турнира</small>
+        </div>
+      </div>
+      
+      <div class="form-section" id="addPresetTeam1Section">
+        <h4 class="section-title">Команда 1</h4>
         <div class="form-row">
           <div class="form-group">
-            <label>Команда 1</label>
-            <input type="text" id="addPresetTeam1Name" placeholder="Название команды">
-          </div>
-          <div class="form-group">
-            <label>Город 1</label>
-            <input type="text" id="addPresetTeam1City" placeholder="Город">
+            <label>Выберите команду из турнира</label>
+            <select id="addPresetTeam1Select" onchange="onTeam1Selected()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+              <option value="">-- Выберите команду --</option>
+            </select>
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row" style="display: none;" id="addPresetTeam1Details">
           <div class="form-group">
-            <label>Шорткод 1</label>
-            <input type="text" id="addPresetTeam1Short" maxlength="3" placeholder="АБВ">
+            <label>Название команды</label>
+            <input type="text" id="addPresetTeam1Name" readonly style="background: #f5f5f5;">
           </div>
           <div class="form-group">
-            <label>Форма 1</label>
-            <input type="color" id="addPresetKit1Color" value="#2b2b2b">
+            <label>Город</label>
+            <input type="text" id="addPresetTeam1City" readonly style="background: #f5f5f5;">
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row" style="display: none;" id="addPresetTeam1ColorRow">
           <div class="form-group">
-            <label>Логотип 1</label>
-            <input type="file" id="addPresetTeam1Logo" accept="image/*" onchange="uploadLogo('team1', this)">
+            <label>Шорткод</label>
+            <input type="text" id="addPresetTeam1Short" maxlength="3" readonly style="background: #f5f5f5; text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Цвет формы</label>
+            <input type="color" id="addPresetKit1Color" value="#2b2b2b" readonly style="pointer-events: none;">
+          </div>
+        </div>
+        <div class="form-row" style="display: none;" id="addPresetTeam1LogoRow">
+          <div class="form-group">
+            <label>Логотип</label>
             <div id="addPresetTeam1LogoPreview" class="logo-preview"></div>
           </div>
         </div>
@@ -1124,31 +1143,39 @@
       
       <div class="team-divider"></div>
       
-      <div class="form-section">
+      <div class="form-section" id="addPresetTeam2Section">
+        <h4 class="section-title">Команда 2</h4>
         <div class="form-row">
           <div class="form-group">
-            <label>Команда 2</label>
-            <input type="text" id="addPresetTeam2Name" placeholder="Название команды">
-          </div>
-          <div class="form-group">
-            <label>Город 2</label>
-            <input type="text" id="addPresetTeam2City" placeholder="Город">
+            <label>Выберите команду из турнира</label>
+            <select id="addPresetTeam2Select" onchange="onTeam2Selected()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+              <option value="">-- Выберите команду --</option>
+            </select>
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row" style="display: none;" id="addPresetTeam2Details">
           <div class="form-group">
-            <label>Шорткод 2</label>
-            <input type="text" id="addPresetTeam2Short" maxlength="3" placeholder="ГДЕ">
+            <label>Название команды</label>
+            <input type="text" id="addPresetTeam2Name" readonly style="background: #f5f5f5;">
           </div>
           <div class="form-group">
-            <label>Форма 2</label>
-            <input type="color" id="addPresetKit2Color" value="#2b2b2b">
+            <label>Город</label>
+            <input type="text" id="addPresetTeam2City" readonly style="background: #f5f5f5;">
           </div>
         </div>
-        <div class="form-row">
+        <div class="form-row" style="display: none;" id="addPresetTeam2ColorRow">
           <div class="form-group">
-            <label>Логотип 2</label>
-            <input type="file" id="addPresetTeam2Logo" accept="image/*" onchange="uploadLogo('team2', this)">
+            <label>Шорткод</label>
+            <input type="text" id="addPresetTeam2Short" maxlength="3" readonly style="background: #f5f5f5; text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Цвет формы</label>
+            <input type="color" id="addPresetKit2Color" value="#2b2b2b" readonly style="pointer-events: none;">
+          </div>
+        </div>
+        <div class="form-row" style="display: none;" id="addPresetTeam2LogoRow">
+          <div class="form-group">
+            <label>Логотип</label>
             <div id="addPresetTeam2LogoPreview" class="logo-preview"></div>
           </div>
         </div>
@@ -1225,10 +1252,15 @@
   <script>
     const socket = io();
     let presets = [];
+    let tournaments = [];
     let ready = false;
     let timerRunning = false;
     let editingPresetId = null;
     let originalPresetData = null;
+    let selectedTeams = {
+      team1: null,
+      team2: null
+    };
     
     // Переменные для пятикратного нажатия SET
     let setButtonClicks = 0;
@@ -1253,9 +1285,185 @@
     // Инициализация
     document.addEventListener('DOMContentLoaded', function() {
       loadPresets();
+      loadTournaments();
       setupControls();
       setupEditFormHandlers();
     });
+    
+    // Загрузка турниров
+    async function loadTournaments() {
+      try {
+        const response = await fetch(`/api/tournaments?token=${getToken()}`);
+        if (response.ok) {
+          tournaments = await response.json();
+          populateTournamentSelect();
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки турниров:', error);
+      }
+    }
+    
+    // Заполнение селекта турниров
+    function populateTournamentSelect() {
+      const select = document.getElementById('addPresetTournament');
+      if (!select) return;
+      
+      select.innerHTML = '<option value="">-- Выберите турнир --</option>';
+      tournaments.forEach(tournament => {
+        const option = document.createElement('option');
+        option.value = tournament.id;
+        option.textContent = tournament.name;
+        select.appendChild(option);
+      });
+      
+      // Восстанавливаем последний выбранный турнир из localStorage
+      const lastTournamentId = localStorage.getItem('lastSelectedTournament');
+      if (lastTournamentId && tournaments.find(t => t.id === lastTournamentId)) {
+        select.value = lastTournamentId;
+        onTournamentSelected();
+      }
+    }
+    
+    // Обработка выбора турнира
+    function onTournamentSelected() {
+      const tournamentId = document.getElementById('addPresetTournament').value;
+      
+      if (!tournamentId) {
+        // Очищаем селекты команд
+        document.getElementById('addPresetTeam1Select').innerHTML = '<option value="">-- Выберите команду --</option>';
+        document.getElementById('addPresetTeam2Select').innerHTML = '<option value="">-- Выберите команду --</option>';
+        return;
+      }
+      
+      // Сохраняем выбор в localStorage
+      localStorage.setItem('lastSelectedTournament', tournamentId);
+      
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament || !tournament.teams) {
+        return;
+      }
+      
+      // Заполняем селекты команд
+      const team1Select = document.getElementById('addPresetTeam1Select');
+      const team2Select = document.getElementById('addPresetTeam2Select');
+      
+      team1Select.innerHTML = '<option value="">-- Выберите команду --</option>';
+      team2Select.innerHTML = '<option value="">-- Выберите команду --</option>';
+      
+      tournament.teams.forEach(team => {
+        const option1 = document.createElement('option');
+        option1.value = team.id;
+        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        team1Select.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = team.id;
+        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        team2Select.appendChild(option2);
+      });
+    }
+    
+    // Обработка выбора команды 1
+    function onTeam1Selected() {
+      const tournamentId = document.getElementById('addPresetTournament').value;
+      const teamId = document.getElementById('addPresetTeam1Select').value;
+      
+      if (!tournamentId || !teamId) {
+        hideTeam1Details();
+        return;
+      }
+      
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament || !tournament.teams) return;
+      
+      const team = tournament.teams.find(t => t.id === teamId);
+      if (!team) return;
+      
+      selectedTeams.team1 = team;
+      fillTeam1Fields(team);
+      showTeam1Details();
+    }
+    
+    // Обработка выбора команды 2
+    function onTeam2Selected() {
+      const tournamentId = document.getElementById('addPresetTournament').value;
+      const teamId = document.getElementById('addPresetTeam2Select').value;
+      
+      if (!tournamentId || !teamId) {
+        hideTeam2Details();
+        return;
+      }
+      
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament || !tournament.teams) return;
+      
+      const team = tournament.teams.find(t => t.id === teamId);
+      if (!team) return;
+      
+      selectedTeams.team2 = team;
+      fillTeam2Fields(team);
+      showTeam2Details();
+    }
+    
+    // Заполнение полей команды 1
+    function fillTeam1Fields(team) {
+      document.getElementById('addPresetTeam1Name').value = team.name || '';
+      document.getElementById('addPresetTeam1City').value = team.city || '';
+      document.getElementById('addPresetTeam1Short').value = team.short || '';
+      document.getElementById('addPresetKit1Color').value = team.kitColor || '#2b2b2b';
+      
+      if (team.logo) {
+        document.getElementById('addPresetTeam1LogoPreview').innerHTML = `<img src="${team.logo}" alt="${team.name}">`;
+      } else {
+        document.getElementById('addPresetTeam1LogoPreview').innerHTML = '<div class="no-logo">Нет логотипа</div>';
+      }
+      
+      uploadedLogos.team1 = team.logo || null;
+    }
+    
+    // Заполнение полей команды 2
+    function fillTeam2Fields(team) {
+      document.getElementById('addPresetTeam2Name').value = team.name || '';
+      document.getElementById('addPresetTeam2City').value = team.city || '';
+      document.getElementById('addPresetTeam2Short').value = team.short || '';
+      document.getElementById('addPresetKit2Color').value = team.kitColor || '#2b2b2b';
+      
+      if (team.logo) {
+        document.getElementById('addPresetTeam2LogoPreview').innerHTML = `<img src="${team.logo}" alt="${team.name}">`;
+      } else {
+        document.getElementById('addPresetTeam2LogoPreview').innerHTML = '<div class="no-logo">Нет логотипа</div>';
+      }
+      
+      uploadedLogos.team2 = team.logo || null;
+    }
+    
+    // Показать детали команды 1
+    function showTeam1Details() {
+      document.getElementById('addPresetTeam1Details').style.display = 'flex';
+      document.getElementById('addPresetTeam1ColorRow').style.display = 'flex';
+      document.getElementById('addPresetTeam1LogoRow').style.display = 'flex';
+    }
+    
+    // Скрыть детали команды 1
+    function hideTeam1Details() {
+      document.getElementById('addPresetTeam1Details').style.display = 'none';
+      document.getElementById('addPresetTeam1ColorRow').style.display = 'none';
+      document.getElementById('addPresetTeam1LogoRow').style.display = 'none';
+    }
+    
+    // Показать детали команды 2
+    function showTeam2Details() {
+      document.getElementById('addPresetTeam2Details').style.display = 'flex';
+      document.getElementById('addPresetTeam2ColorRow').style.display = 'flex';
+      document.getElementById('addPresetTeam2LogoRow').style.display = 'flex';
+    }
+    
+    // Скрыть детали команды 2
+    function hideTeam2Details() {
+      document.getElementById('addPresetTeam2Details').style.display = 'none';
+      document.getElementById('addPresetTeam2ColorRow').style.display = 'none';
+      document.getElementById('addPresetTeam2LogoRow').style.display = 'none';
+    }
     
     // Настройка обработчиков для формы редактирования
     function setupEditFormHandlers() {
@@ -1914,6 +2122,13 @@
 
     // Сохранение предустановки
     async function saveNewPreset() {
+      const tournamentId = document.getElementById('addPresetTournament').value;
+      
+      if (!tournamentId) {
+        alert('Выберите турнир');
+        return;
+      }
+      
       const preset = {
         name: document.getElementById('addPresetTitle').textContent.trim(),
         team1Name: document.getElementById('addPresetTeam1Name').value.trim(),
@@ -1931,6 +2146,11 @@
       // Валидация
       if (!preset.name || preset.name === 'Новая предустановка') {
         alert('Введите название матча');
+        return;
+      }
+      
+      if (!selectedTeams.team1 || !selectedTeams.team2) {
+        alert('Выберите обе команды из турнира');
         return;
       }
       
@@ -2041,6 +2261,13 @@
     // Переключение формы добавления предустановки
     function toggleAddPresetForm() {
       const form = document.getElementById('addPresetForm');
+      const isHidden = form.classList.contains('hidden');
+      
+      if (isHidden) {
+        // Перезагружаем турниры при открытии формы
+        loadTournaments();
+      }
+      
       form.classList.toggle('hidden');
     }
     
@@ -2054,10 +2281,20 @@
         }
       });
       
+      // Очистка селектов
+      document.getElementById('addPresetTournament').value = '';
+      document.getElementById('addPresetTeam1Select').innerHTML = '<option value="">-- Выберите команду --</option>';
+      document.getElementById('addPresetTeam2Select').innerHTML = '<option value="">-- Выберите команду --</option>';
+      
       // Очистка логотипов
       uploadedLogos = { team1: null, team2: null };
+      selectedTeams = { team1: null, team2: null };
       document.getElementById('addPresetTeam1LogoPreview').innerHTML = '';
       document.getElementById('addPresetTeam2LogoPreview').innerHTML = '';
+      
+      // Скрытие деталей команд
+      hideTeam1Details();
+      hideTeam2Details();
       
       // Скрытие формы
       document.getElementById('addPresetForm').classList.add('hidden');
@@ -2488,6 +2725,23 @@
         }, 300);
       }, 3000);
     }
+  </script>
+  
+  <!-- Ссылка на настройки -->
+  <div style="text-align: center; margin-top: 40px; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <a id="settingsLink" href="#" style="color: #338af3; text-decoration: none; font-size: 16px; font-weight: bold;">
+      ⚙️ Настройки турниров
+    </a>
+  </div>
+  
+  <script>
+    // Устанавливаем ссылку на настройки с токеном
+    document.addEventListener('DOMContentLoaded', function() {
+      const settingsLink = document.getElementById('settingsLink');
+      if (settingsLink) {
+        settingsLink.href = `/private/settings.html?token=${getToken()}`;
+      }
+    });
   </script>
 </body>
 </html>
