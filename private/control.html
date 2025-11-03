@@ -1607,41 +1607,45 @@
     }
     
     // Обновление имени пресета для конкретной формы
-    function updatePresetNameForForm(timeInput) {
-      if (!timeInput) return;
+    function updatePresetNameForForm(timeInputOrSelect) {
+      if (!timeInputOrSelect) return;
       
-      const formContainer = timeInput.closest('[id^="presetFormContent_"]');
+      // Получаем контейнер формы - может быть передан timeInput или select элемент
+      let formContainer = timeInputOrSelect.closest('[id^="presetFormContent_"]');
+      if (!formContainer) {
+        // Если не нашли через closest, попробуем найти через родителя
+        formContainer = document.querySelector('[id^="presetFormContent_"]');
+      }
+      
       if (!formContainer) return;
       
       const titleElement = formContainer.querySelector('.addPresetTitle');
       if (!titleElement) return;
       
-      const matchTime = timeInput.value || '19:00';
+      // Получаем время матча
+      const timeInput = formContainer.querySelector('.addPresetMatchTime');
+      const matchTime = timeInput?.value || '19:00';
+      
       const team1Select = formContainer.querySelector('.addPresetTeam1Select');
       const team2Select = formContainer.querySelector('.addPresetTeam2Select');
+      const tournamentId = formContainer.querySelector('.addPresetTournament')?.value;
       
       let team1Name = 'Команда 1';
       let team2Name = 'Команда 2';
       
-      if (team1Select && team1Select.value) {
-        const tournamentId = formContainer.querySelector('.addPresetTournament')?.value;
-        if (tournamentId) {
-          const tournament = tournaments.find(t => t.id === tournamentId);
-          if (tournament && tournament.teams) {
-            const team = tournament.teams.find(t => t.id === team1Select.value);
-            if (team) team1Name = team.name;
-          }
+      if (team1Select && team1Select.value && tournamentId) {
+        const tournament = tournaments.find(t => t.id === tournamentId);
+        if (tournament && tournament.teams) {
+          const team = tournament.teams.find(t => t.id === team1Select.value);
+          if (team) team1Name = team.name;
         }
       }
       
-      if (team2Select && team2Select.value) {
-        const tournamentId = formContainer.querySelector('.addPresetTournament')?.value;
-        if (tournamentId) {
-          const tournament = tournaments.find(t => t.id === tournamentId);
-          if (tournament && tournament.teams) {
-            const team = tournament.teams.find(t => t.id === team2Select.value);
-            if (team) team2Name = team.name;
-          }
+      if (team2Select && team2Select.value && tournamentId) {
+        const tournament = tournaments.find(t => t.id === tournamentId);
+        if (tournament && tournament.teams) {
+          const team = tournament.teams.find(t => t.id === team2Select.value);
+          if (team) team2Name = team.name;
         }
       }
       
@@ -1665,7 +1669,8 @@
           logoContainer.style.display = 'none';
           if (logoImg) logoImg.style.display = 'none';
         }
-        updatePresetNameForForm(formContainer.querySelector('.addPresetMatchTime'));
+        // Обновляем имя пресета после очистки выбора
+        setTimeout(() => updatePresetNameForForm(selectElement), 0);
         return;
       }
       
@@ -1717,7 +1722,8 @@
         }
       }
       
-      updatePresetNameForForm(formContainer.querySelector('.addPresetMatchTime'));
+      // Обновляем имя пресета после выбора команды
+      setTimeout(() => updatePresetNameForForm(selectElement), 0);
     }
     
     function onTeam2SelectedForForm(selectElement) {
@@ -1736,7 +1742,8 @@
           logoContainer.style.display = 'none';
           if (logoImg) logoImg.style.display = 'none';
         }
-        updatePresetNameForForm(formContainer.querySelector('.addPresetMatchTime'));
+        // Обновляем имя пресета после очистки выбора
+        setTimeout(() => updatePresetNameForForm(selectElement), 0);
         return;
       }
       
@@ -1788,7 +1795,8 @@
         }
       }
       
-      updatePresetNameForForm(formContainer.querySelector('.addPresetMatchTime'));
+      // Обновляем имя пресета после выбора команды
+      setTimeout(() => updatePresetNameForForm(selectElement), 0);
     }
     
     function onTournamentSelectedForForm(selectElement) {
