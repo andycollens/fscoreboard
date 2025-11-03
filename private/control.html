@@ -2541,24 +2541,39 @@
 
     // Отправка состояния
     function sendState() {
-      if (!ready) return;
-      
+      // Не блокируем отправку даже если ready=false, так как это может быть при инициализации
       // Получаем текущие логотипы из состояния
       const team1Logo = state.team1Logo || '';
       const team2Logo = state.team2Logo || '';
       
-      socket.emit('updateScoreboard', {
-        team1Name: document.getElementById('team1Name').value,
-        team1City: document.getElementById('team1City').value,
-        team1Short: document.getElementById('team1Short').value,
-        team2Name: document.getElementById('team2Name').value,
-        team2City: document.getElementById('team2City').value,
-        team2Short: document.getElementById('team2Short').value,
-        kit1Color: document.getElementById('kit1Color').value,
-        kit2Color: document.getElementById('kit2Color').value,
-        team1Logo: team1Logo,
-        team2Logo: team2Logo
-      });
+      // Получаем все значения из формы
+      const team1NameEl = document.getElementById('team1Name');
+      const team1CityEl = document.getElementById('team1City');
+      const team1ShortEl = document.getElementById('team1Short');
+      const team2NameEl = document.getElementById('team2Name');
+      const team2CityEl = document.getElementById('team2City');
+      const team2ShortEl = document.getElementById('team2Short');
+      const kit1ColorEl = document.getElementById('kit1Color');
+      const kit2ColorEl = document.getElementById('kit2Color');
+      
+      // Формируем объект состояния для отправки на сервер
+      const stateUpdate = {};
+      
+      if (team1NameEl) stateUpdate.team1Name = team1NameEl.value || '';
+      if (team1CityEl) stateUpdate.team1City = team1CityEl.value || '';
+      if (team1ShortEl) stateUpdate.team1Short = team1ShortEl.value || '';
+      if (team2NameEl) stateUpdate.team2Name = team2NameEl.value || '';
+      if (team2CityEl) stateUpdate.team2City = team2CityEl.value || '';
+      if (team2ShortEl) stateUpdate.team2Short = team2ShortEl.value || '';
+      if (kit1ColorEl) stateUpdate.kit1Color = kit1ColorEl.value || '#2b2b2b';
+      if (kit2ColorEl) stateUpdate.kit2Color = kit2ColorEl.value || '#2b2b2b';
+      
+      // Логотипы всегда отправляем из состояния
+      stateUpdate.team1Logo = team1Logo;
+      stateUpdate.team2Logo = team2Logo;
+      
+      // Отправляем на сервер для синхронизации со всеми клиентами
+      socket.emit('updateScoreboard', stateUpdate);
     }
 
     // Загрузка предустановок
