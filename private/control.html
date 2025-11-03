@@ -3260,6 +3260,17 @@
         });
         
         if (response.ok) {
+          // Если удаляем из формы редактирования — немедленно закрываем её
+          // и сбрасываем флаг, чтобы следующая перерисовка не была пропущена
+          const editForm = document.getElementById(`preset-edit-form-${tournamentId}-${presetId}`);
+          if (editForm) {
+            editForm.classList.add('hidden');
+            editForm.innerHTML = '';
+          }
+          // Сбрасываем защитный флаг, из‑за которого список мог не перерисоваться
+          editingPresetId = null;
+          originalPresetData = null;
+
           // Сохраняем состояние видимости пресетов
           const presetsDiv = document.getElementById(`presets-${tournamentId}`);
           const wasHidden = presetsDiv ? presetsDiv.classList.contains('hidden') : false;
@@ -3275,7 +3286,7 @@
             } else {
               presetsDiv.classList.remove('hidden');
               expandedPresets.add(tournamentId);
-              renderTournamentPresets(); // Рендерим если видим
+              renderTournamentPresets(); // Рендерим если видим (editingPresetId уже сброшен)
             }
           }
           
