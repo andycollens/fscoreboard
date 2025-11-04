@@ -478,6 +478,7 @@
       flex-wrap: nowrap;
       width: 100%;
       box-sizing: border-box;
+      cursor: pointer;
     }
     
     .day-header > div:first-child {
@@ -493,19 +494,21 @@
       user-select: none;
       padding: 0;
       display: inline-block;
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 6px 0 6px 8px;
-      border-color: transparent transparent transparent #666;
+      font-size: 14px;
+      color: #666;
       vertical-align: middle;
       transition: transform 0.2s;
       flex-shrink: 0;
+      width: 14px;
+      text-align: center;
     }
     
-    .day-toggle-arrow.expanded {
-      border-width: 0 4px 8px 4px;
-      border-color: transparent transparent #666 transparent;
+    .day-toggle-arrow::before {
+      content: '›';
+    }
+    
+    .day-toggle-arrow.expanded::before {
+      content: '▼';
     }
     
     /* Убрали hover эффект для day-toggle-arrow - только клик */
@@ -882,7 +885,7 @@
         box-sizing: border-box !important;
         width: 100% !important;
         max-width: 100% !important;
-        cursor: default !important;
+        cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -901,18 +904,20 @@
         cursor: pointer !important;
         padding: 0 !important;
         display: inline-block !important;
-        width: 0 !important;
-        height: 0 !important;
-        border-style: solid !important;
-        border-width: 6px 0 6px 8px !important;
-        border-color: transparent transparent transparent #666 !important;
+        font-size: 14px !important;
+        color: #666 !important;
         vertical-align: middle !important;
         flex-shrink: 0 !important;
+        width: 14px !important;
+        text-align: center !important;
       }
       
-      .day-toggle-arrow.expanded {
-        border-width: 0 4px 8px 4px !important;
-        border-color: transparent transparent #666 transparent !important;
+      .day-toggle-arrow::before {
+        content: '›' !important;
+      }
+      
+      .day-toggle-arrow.expanded::before {
+        content: '▼' !important;
       }
       
       /* Убрали hover эффект для day-toggle-arrow - только клик */
@@ -3496,17 +3501,14 @@
           
           const isExpanded = expandedDays.has(dayKeyFull);
           const arrowClass = isExpanded ? 'expanded' : '';
-          const arrowStyle = isExpanded 
-            ? 'width: 0; height: 0; border-style: solid; border-width: 0 4px 8px 4px; border-color: transparent transparent #666 transparent;'
-            : 'width: 0; height: 0; border-style: solid; border-width: 6px 0 6px 8px; border-color: transparent transparent transparent #666;';
           
           const section = document.createElement('div');
           section.className = 'tournament-day-section';
           section.style.cssText = 'width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 0 2px;';
           section.innerHTML = `
-            <div class="day-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0; box-sizing: border-box; width: 100%; max-width: 100%; padding: 6px 8px; flex-wrap: nowrap;">
+            <div class="day-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0; box-sizing: border-box; width: 100%; max-width: 100%; padding: 6px 8px; flex-wrap: nowrap; cursor: pointer;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();">
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; flex: 1; min-width: 0;">
-                <span class="day-toggle-arrow ${arrowClass}" style="user-select: none; cursor: pointer; padding: 0; display: inline-block; box-sizing: border-box; flex-shrink: 0; ${arrowStyle} vertical-align: middle;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();"></span>
+                <span class="day-toggle-arrow ${arrowClass}" style="user-select: none; padding: 0; display: inline-block; box-sizing: border-box; flex-shrink: 0; vertical-align: middle;"></span>
                 <div style="font-weight: 600; color: #333; white-space: nowrap; flex-shrink: 0;">${label}</div>
               </div>
               <span class="preset-edit-link" style="flex-shrink: 0;" onclick="openAddPresetFromTournament('${tournament.id}', '${iso || ''}'); event.stopPropagation();" title="Добавить пресет">+add</span>
