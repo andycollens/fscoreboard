@@ -495,9 +495,9 @@
       padding: 0;
       display: inline-block;
       font-size: 14px;
-      color: #666;
+      color: #000;
       vertical-align: middle;
-      transition: transform 0.2s;
+      transition: color 0.2s;
       flex-shrink: 0;
       width: 14px;
       text-align: center;
@@ -505,10 +505,16 @@
     
     .day-toggle-arrow::before {
       content: '›';
+      color: #000;
+    }
+    
+    .day-toggle-arrow.expanded {
+      color: #999;
     }
     
     .day-toggle-arrow.expanded::before {
       content: '▼';
+      color: #999;
     }
     
     /* Убрали hover эффект для day-toggle-arrow - только клик */
@@ -905,7 +911,7 @@
         padding: 0 !important;
         display: inline-block !important;
         font-size: 14px !important;
-        color: #666 !important;
+        color: #000 !important;
         vertical-align: middle !important;
         flex-shrink: 0 !important;
         width: 14px !important;
@@ -914,10 +920,16 @@
       
       .day-toggle-arrow::before {
         content: '›' !important;
+        color: #000 !important;
+      }
+      
+      .day-toggle-arrow.expanded {
+        color: #999 !important;
       }
       
       .day-toggle-arrow.expanded::before {
         content: '▼' !important;
+        color: #999 !important;
       }
       
       /* Убрали hover эффект для day-toggle-arrow - только клик */
