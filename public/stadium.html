@@ -293,13 +293,14 @@
         }
 
         .timer {
+            position: relative;
+            width: 100%;
+            height: 180px; /* Высота для размещения элементов */
+            margin: 0;
+            line-height: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0;
-            margin: 0;
-            line-height: 1;
-            position: relative;
         }
         
         .timer-minutes,
@@ -307,8 +308,11 @@
             font-size: 150px;
             font-weight: bold;
             color: #fff;
+            position: absolute;
+            width: 180px; /* Фиксированная ширина для двух цифр */
             text-align: center;
-            min-width: 120px; /* Минимальная ширина для одной цифры */
+            top: 50%;
+            transform: translateY(-50%);
         }
         
         .timer-separator {
@@ -317,20 +321,23 @@
             color: #fff;
             position: absolute;
             left: 50%;
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translate(-50%, -50%);
             width: 60px;
             text-align: center;
             pointer-events: none;
         }
         
         .timer-minutes {
+            right: 50%; /* Позиционируем справа от центра */
+            margin-right: 50px; /* Отступ от двоеточия */
             text-align: right;
-            padding-right: 40px; /* Отступ для двоеточия */
         }
         
         .timer-seconds {
+            left: 50%; /* Позиционируем слева от центра */
+            margin-left: 50px; /* Отступ от двоеточия */
             text-align: left;
-            padding-left: 40px; /* Отступ для двоеточия */
         }
 
         /* Адаптивные размеры для больших экранов */
@@ -389,13 +396,26 @@
                 font-size: 50px;
             }
 
+            .timer {
+                height: 120px; /* Адаптивная высота */
+            }
+            
             .timer-minutes,
             .timer-seconds {
                 font-size: 100px;
+                width: 120px; /* Фиксированная ширина для двух цифр */
             }
             
             .timer-separator {
                 font-size: 100px;
+            }
+            
+            .timer-minutes {
+                margin-right: 35px; /* Адаптивный отступ */
+            }
+            
+            .timer-seconds {
+                margin-left: 35px; /* Адаптивный отступ */
             }
         }
 
@@ -426,13 +446,26 @@
                 font-size: 35px;
             }
 
+            .timer {
+                height: 100px; /* Адаптивная высота */
+            }
+            
             .timer-minutes,
             .timer-seconds {
                 font-size: 80px;
+                width: 96px; /* Фиксированная ширина для двух цифр */
             }
             
             .timer-separator {
                 font-size: 80px;
+            }
+            
+            .timer-minutes {
+                margin-right: 28px; /* Адаптивный отступ */
+            }
+            
+            .timer-seconds {
+                margin-left: 28px; /* Адаптивный отступ */
             }
         }
     </style>
