@@ -1506,9 +1506,7 @@
             <button type="button" class="score-btn" id="score1Inc">+</button>
           </div>
           <div class="short-label-row">
-            <span id="team1LogoMini" class="logo-mini-main" onclick="document.getElementById('team1LogoUpload').click()">
-              <span class="logo-delete-btn hidden" onclick="clearMainLogo('team1'); event.stopPropagation()" title="Удалить логотип">×</span>
-            </span>
+            <span id="team1LogoMini" class="logo-mini-main" onclick="handleMainLogoClick('team1', event)"></span>
             <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
             <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
@@ -1530,9 +1528,7 @@
             <button type="button" class="score-btn" id="score2Inc">+</button>
           </div>
           <div class="short-label-row">
-            <span id="team2LogoMini" class="logo-mini-main" onclick="document.getElementById('team2LogoUpload').click()">
-              <span class="logo-delete-btn hidden" onclick="clearMainLogo('team2'); event.stopPropagation()" title="Удалить логотип">×</span>
-            </span>
+            <span id="team2LogoMini" class="logo-mini-main" onclick="handleMainLogoClick('team2', event)"></span>
             <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
@@ -2899,11 +2895,9 @@
     // Обновление миниатюры в основной форме
     function updateMainLogoMini(team, logoUrl) {
       const mini = document.getElementById(`${team}LogoMini`);
-      const deleteBtn = mini.querySelector('.logo-delete-btn');
       
       if (logoUrl) {
-        mini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">
-          <span class="logo-delete-btn" onclick="clearMainLogo('${team}'); event.stopPropagation()" title="Удалить логотип">×</span>`;
+        mini.innerHTML = `<img src="${logoUrl}" alt="Логотип ${team}">`;
       } else {
         mini.innerHTML = '';
       }
@@ -2922,6 +2916,66 @@
       const mini = document.getElementById(`${team}LogoMini`);
       const kitColor = document.getElementById(`kit${team === 'team1' ? '1' : '2'}Color`).value;
       mini.innerHTML = `<div style="width: 100%; height: 100%; background-color: ${kitColor}; border-radius: 50%;"></div>`;
+    }
+    
+    // Переменные для отслеживания кликов по логотипам
+    const logoClickTrackers = {
+      team1: { count: 0, lastClickTime: 0, timeoutId: null },
+      team2: { count: 0, lastClickTime: 0, timeoutId: null }
+    };
+    
+    // Обработчик клика по логотипу в основном блоке управления
+    function handleMainLogoClick(team, event) {
+      event.stopPropagation();
+      
+      const tracker = logoClickTrackers[team];
+      const now = Date.now();
+      const DOUBLE_CLICK_DELAY = 300; // мс для двойного клика
+      const QUICK_CLICK_DELAY = 500; // мс между быстрыми кликами для удаления
+      
+      // Проверяем, был ли двойной клик (в течение DOUBLE_CLICK_DELAY)
+      if (tracker.lastClickTime && (now - tracker.lastClickTime) < DOUBLE_CLICK_DELAY) {
+        // Двойной клик - открываем выбор файла для замены
+        clearTimeout(tracker.timeoutId);
+        tracker.count = 0;
+        tracker.lastClickTime = 0;
+        document.getElementById(`${team}LogoUpload`).click();
+        return;
+      }
+      
+      // Проверяем, прошел ли слишком большой интервал с последнего клика (для быстрых кликов)
+      if (tracker.lastClickTime && (now - tracker.lastClickTime) > QUICK_CLICK_DELAY) {
+        // Слишком большой интервал - сбрасываем счетчик
+        tracker.count = 0;
+      }
+      
+      // Увеличиваем счетчик кликов
+      tracker.count++;
+      tracker.lastClickTime = now;
+      
+      // Очищаем предыдущий таймер
+      if (tracker.timeoutId) {
+        clearTimeout(tracker.timeoutId);
+      }
+      
+      // Если это 4-й клик
+      if (tracker.count >= 4) {
+        clearTimeout(tracker.timeoutId);
+        tracker.count = 0;
+        tracker.lastClickTime = 0;
+        
+        // Показываем подтверждение и удаляем
+        if (confirm('Удалить логотип этой команды?')) {
+          clearMainLogo(team);
+        }
+        return;
+      }
+      
+      // Устанавливаем таймер для сброса счетчика, если прошло слишком много времени
+      tracker.timeoutId = setTimeout(() => {
+        tracker.count = 0;
+        tracker.lastClickTime = 0;
+      }, QUICK_CLICK_DELAY);
     }
     
     // Удаление логотипа из основной панели
