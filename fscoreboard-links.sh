@@ -55,8 +55,34 @@ get_config() {
     # Читаем порт
     PORT=$(grep -o 'PORT=[0-9]*' "$env_file" 2>/dev/null | cut -d'=' -f2 || echo "3001")
     
-    # Читаем токен
+    # Читаем токен управления из .env
     TOKEN=$(grep -o 'TOKEN=[^[:space:]]*' "$env_file" 2>/dev/null | cut -d'=' -f2 || echo "MySecret111")
+    
+    # Читаем токены из config.json (если есть)
+    local config_file="/opt/fscoreboard/server/config.json"
+    STADIUM_TOKEN="StadiumSecret222"
+    if [ -f "$config_file" ]; then
+        if command -v jq &> /dev/null; then
+            local json_token=$(jq -r '.token' "$config_file" 2>/dev/null || echo "")
+            local json_stadium_token=$(jq -r '.stadiumToken' "$config_file" 2>/dev/null || echo "")
+            if [ -n "$json_token" ] && [ "$json_token" != "null" ]; then
+                TOKEN="$json_token"
+            fi
+            if [ -n "$json_stadium_token" ] && [ "$json_stadium_token" != "null" ]; then
+                STADIUM_TOKEN="$json_stadium_token"
+            fi
+        else
+            # Fallback: используем grep для простого парсинга JSON
+            local json_token=$(grep -o '"token"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
+            local json_stadium_token=$(grep -o '"stadiumToken"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
+            if [ -n "$json_token" ]; then
+                TOKEN="$json_token"
+            fi
+            if [ -n "$json_stadium_token" ]; then
+                STADIUM_TOKEN="$json_stadium_token"
+            fi
+        fi
+    fi
     
     # Получаем IP адрес
     DOMAIN=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}' | head -1)
@@ -105,12 +131,12 @@ print_links() {
     echo -e "\n${YELLOW}🎛️  ПАНЕЛЬ УПРАВЛЕНИЯ:${NC}"
     echo -e "  ${GREEN}http://$DOMAIN/private/control.html?token=$TOKEN${NC}"
     
-    echo -e "\n${YELLOW}⚙️  НАСТРОЙКИ ТУРНИРОВ:${NC}"
+    echo -e "\n${YELLOW}⚙️  НАСТРОЙКИ:${NC}"
     echo -e "  ${GREEN}http://$DOMAIN/private/settings.html?token=$TOKEN${NC}"
     
     echo -e "\n${YELLOW}📺 ОСНОВНЫЕ СТРАНИЦЫ ТАБЛО:${NC}"
     echo -e "  ${GREEN}http://$DOMAIN/public/scoreboard_vmix.html${NC}  (основное табло)"
-    echo -e "  ${GREEN}http://$DOMAIN/public/stadium.html${NC}  (стадион)"
+    echo -e "  ${GREEN}http://$DOMAIN/stadium.html?token=$STADIUM_TOKEN${NC}  (стадион)"
     echo -e "  ${GREEN}http://$DOMAIN/public/preloader.html${NC}  (загрузочный экран)"
     
     echo -e "\n${YELLOW}🏆 ISKRA CUP СТРАНИЦЫ:${NC}"

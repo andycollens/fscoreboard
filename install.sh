@@ -241,13 +241,22 @@ interactive_setup() {
         print_success "Порт $PORT свободен"
     fi
     
-    # Токен
+    # Токен управления
     read -p "Введите токен для панели управления (или Enter для автогенерации): " custom_token
     if [ -z "$custom_token" ]; then
         TOKEN=$(generate_token)
-        print_info "Сгенерирован токен: $TOKEN"
+        print_info "Сгенерирован токен управления: $TOKEN"
     else
         TOKEN=$custom_token
+    fi
+    
+    # Токен для Stadium
+    read -p "Введите токен для Stadium (или Enter для автогенерации): " custom_stadium_token
+    if [ -z "$custom_stadium_token" ]; then
+        STADIUM_TOKEN=$(generate_token)
+        print_info "Сгенерирован токен для Stadium: $STADIUM_TOKEN"
+    else
+        STADIUM_TOKEN=$custom_stadium_token
     fi
     
     # Домен/IP
@@ -546,7 +555,25 @@ EOF
         print_success "Файл .env создан"
     fi
     
-    chown $SUDO_USER:$SUDO_USER "$INSTALL_DIR/.env"
+        chown $SUDO_USER:$SUDO_USER "$INSTALL_DIR/.env"
+    
+    # Создаем или обновляем config.json для токенов
+    print_step "Создание файла конфигурации токенов..."
+    
+    local config_file="$INSTALL_DIR/server/config.json"
+    if [ "$INSTALLATION_TYPE" = "update" ] && [ -f "$config_file" ]; then
+        print_info "Сохранена существующая конфигурация токенов"
+    else
+        cat > "$config_file" << EOF
+{
+  "token": "$TOKEN",
+  "stadiumToken": "$STADIUM_TOKEN"
+}
+EOF
+        print_success "Файл config.json создан"
+    fi
+    
+    chown $SUDO_USER:$SUDO_USER "$config_file"
 }
 
 # Установка команды для получения ссылок
@@ -711,10 +738,33 @@ print_results() {
     local current_port=$(grep -o 'PORT=[0-9]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$PORT")
     local current_token=$(grep -o 'TOKEN=[^[:space:]]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$TOKEN")
     
+    # Читаем токены из config.json (если есть), иначе из переменных
+    local config_file="$INSTALL_DIR/server/config.json"
+    local current_stadium_token="$STADIUM_TOKEN"
+    if [ -f "$config_file" ]; then
+        if command -v jq &> /dev/null; then
+            local json_token=$(jq -r '.token' "$config_file" 2>/dev/null || echo "")
+            local json_stadium_token=$(jq -r '.stadiumToken' "$config_file" 2>/dev/null || echo "")
+            if [ -n "$json_token" ] && [ "$json_token" != "null" ]; then
+                current_token="$json_token"
+            fi
+            if [ -n "$json_stadium_token" ] && [ "$json_stadium_token" != "null" ]; then
+                current_stadium_token="$json_stadium_token"
+            fi
+        else
+            # Fallback: используем grep для простого парсинга JSON
+            local json_stadium_token=$(grep -o '"stadiumToken"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
+            if [ -n "$json_stadium_token" ]; then
+                current_stadium_token="$json_stadium_token"
+            fi
+        fi
+    fi
+    
     # Отладочная информация
     print_info "Домен: $current_domain"
     print_info "Порт: $current_port"
-    print_info "Токен: $current_token"
+    print_info "Токен управления: $current_token"
+    print_info "Токен Stadium: $current_stadium_token"
     
     echo -e "\n${GREEN}╔══════════════════════════════════════════════════════════════════════════════╗"
     if [ "$INSTALLATION_TYPE" = "update" ]; then
@@ -727,11 +777,11 @@ print_results() {
     echo -e "\n${CYAN}🌐 ГОТОВЫЕ ССЫЛКИ ДЛЯ КОПИРОВАНИЯ:${NC}"
     echo -e "${YELLOW}Панель управления:${NC}"
     echo -e "  ${GREEN}http://$current_domain/private/control.html?token=$current_token${NC}"
-    echo -e "  ${GREEN}http://$current_domain/private/settings.html?token=$current_token${NC}  (настройки турниров)"
+    echo -e "  ${GREEN}http://$current_domain/private/settings.html?token=$current_token${NC}  (настройки)"
     echo ""
     echo -e "${YELLOW}Страницы табло:${NC}"
     echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (основное табло)"
-    echo -e "  ${GREEN}http://$current_domain/public/stadium.html${NC}  (стадион)"
+    echo -e "  ${GREEN}http://$current_domain/stadium.html?token=$current_stadium_token${NC}  (стадион)"
     echo -e "  ${GREEN}http://$current_domain/public/preloader.html${NC}  (загрузочный экран)"
     echo ""
     echo -e "${YELLOW}ISKRA CUP страницы:${NC}"
@@ -785,6 +835,7 @@ main() {
         else
             PORT=$(find_free_port $DEFAULT_PORT)
             TOKEN=$(generate_token)
+            STADIUM_TOKEN=$(generate_token)
             print_info "Автоматически выбраны настройки: порт $PORT"
         fi
         DOMAIN=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')

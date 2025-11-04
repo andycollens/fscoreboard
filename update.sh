@@ -386,6 +386,28 @@ print_results() {
     local current_port=$(grep -o 'PORT=[0-9]*' /opt/fscoreboard/.env 2>/dev/null | cut -d'=' -f2 || echo "3002")
     local current_token=$(grep -o 'TOKEN=[^[:space:]]*' /opt/fscoreboard/.env 2>/dev/null | cut -d'=' -f2 || echo "unknown")
     
+    # Читаем токены из config.json (если есть)
+    local config_file="/opt/fscoreboard/server/config.json"
+    local current_stadium_token="StadiumSecret222"
+    if [ -f "$config_file" ]; then
+        if command -v jq &> /dev/null; then
+            local json_token=$(jq -r '.token' "$config_file" 2>/dev/null || echo "")
+            local json_stadium_token=$(jq -r '.stadiumToken' "$config_file" 2>/dev/null || echo "")
+            if [ -n "$json_token" ] && [ "$json_token" != "null" ]; then
+                current_token="$json_token"
+            fi
+            if [ -n "$json_stadium_token" ] && [ "$json_stadium_token" != "null" ]; then
+                current_stadium_token="$json_stadium_token"
+            fi
+        else
+            # Fallback: используем grep для простого парсинга JSON
+            local json_stadium_token=$(grep -o '"stadiumToken"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
+            if [ -n "$json_stadium_token" ]; then
+                current_stadium_token="$json_stadium_token"
+            fi
+        fi
+    fi
+    
     echo -e "\n${GREEN}╔══════════════════════════════════════════════════════════════════════════════╗"
     echo "║                         ОБНОВЛЕНИЕ ЗАВЕРШЕНО!                              ║"
     echo "╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
@@ -393,11 +415,11 @@ print_results() {
     echo -e "\n${CYAN}🌐 АКТУАЛЬНЫЕ ССЫЛКИ:${NC}"
     echo -e "${YELLOW}Панель управления:${NC}"
     echo -e "  ${GREEN}http://$current_domain/private/control.html?token=$current_token${NC}"
-    echo -e "  ${GREEN}http://$current_domain/private/settings.html?token=$current_token${NC}  (настройки турниров)"
+    echo -e "  ${GREEN}http://$current_domain/private/settings.html?token=$current_token${NC}  (настройки)"
     echo ""
     echo -e "${YELLOW}Страницы табло:${NC}"
     echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (основное табло)"
-    echo -e "  ${GREEN}http://$current_domain/public/stadium.html${NC}  (стадион)"
+    echo -e "  ${GREEN}http://$current_domain/stadium.html?token=$current_stadium_token${NC}  (стадион)"
     echo -e "  ${GREEN}http://$current_domain/public/htbreak.html${NC}  (перерыв)"
     echo -e "  ${GREEN}http://$current_domain/public/preloader.html${NC}  (загрузочный экран)"
     echo ""
