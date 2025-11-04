@@ -12,10 +12,53 @@ const io = socketio(server);
 // ====== Конфигурация ======
 const PORT = process.env.PORT || 3002;
 const TOKEN = process.env.TOKEN || 'MySecret111';
+const STADIUM_TOKEN = process.env.STADIUM_TOKEN || 'StadiumSecret222';
 const SAVE_PATH = path.join(__dirname, 'state.json');
 const PRESETS_PATH = path.join(__dirname, 'presets.json');
 const TOURNAMENTS_PATH = path.join(__dirname, 'tournaments.json');
+const CONFIG_PATH = path.join(__dirname, 'config.json');
 const LOGOS_PATH = path.join(__dirname, '..', 'public', 'logos');
+
+// Загрузка конфигурации (токены)
+let config = { token: TOKEN, stadiumToken: STADIUM_TOKEN };
+if (fs.existsSync(CONFIG_PATH)) {
+  try {
+    const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    config = { ...config, ...savedConfig };
+  } catch (error) {
+    console.error('Ошибка загрузки конфигурации:', error);
+  }
+}
+
+// Функция для получения актуального токена управления
+function getActualToken() {
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      return savedConfig.token || TOKEN;
+    } catch (error) {
+      return TOKEN;
+    }
+  }
+  return TOKEN;
+}
+
+// Функция для получения актуального токена stadium
+function getActualStadiumToken() {
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      return savedConfig.stadiumToken || STADIUM_TOKEN;
+    } catch (error) {
+      return STADIUM_TOKEN;
+    }
+  }
+  return STADIUM_TOKEN;
+}
+
+// Используем токены из конфигурации для инициализации
+const ACTUAL_TOKEN = config.token || TOKEN;
+const ACTUAL_STADIUM_TOKEN = config.stadiumToken || STADIUM_TOKEN;
 
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
@@ -185,29 +228,30 @@ app.get('/iskracup_scoreboard.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'iskracup_scoreboard.html'));
 });
 
-app.get('/stadium.html', (_, res) => {
+app.get('/stadium.html', (req, res) => {
+  if (req.query.token !== getActualStadiumToken()) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../public', 'stadium.html'));
 });
 
 app.get('/control', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../private', 'control.html'));
 });
 
 app.get('/settings', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../private', 'settings.html'));
 });
 
 // Защита статических файлов в /private/
 app.get('/private/*', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '..', req.path));
 });
 
 // ====== API для предустановок ======
 app.get('/api/presets', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   res.json(matchPresets);
 });
 
@@ -254,7 +298,7 @@ function copyTeamLogoToPreset(logoUrl, presetId, teamNum) {
 }
 
 app.post('/api/presets', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   console.log('Creating new preset:', req.body);
   
@@ -292,7 +336,7 @@ app.post('/api/presets', (req, res) => {
 });
 
 app.put('/api/presets/:id', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const presetId = req.params.id;
   const presetIndex = matchPresets.findIndex(p => p.id === presetId);
@@ -409,7 +453,7 @@ app.put('/api/presets/:id', (req, res) => {
 });
 
 app.delete('/api/presets/:id', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   // Находим пресет для удаления логотипов
   const presetToDelete = matchPresets.find(p => p.id === req.params.id);
@@ -479,7 +523,7 @@ app.delete('/api/presets/:id', (req, res) => {
 // ====== API для логотипов ======
 // Загрузка логотипа для команды
 app.post('/api/upload-logo', upload.single('logo'), (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   if (!req.file) {
     return res.status(400).json({ error: 'Файл не загружен' });
@@ -495,7 +539,7 @@ app.post('/api/upload-logo', upload.single('logo'), (req, res) => {
 
 // Удаление логотипа
 app.delete('/api/logo/:filename', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const filePath = path.join(LOGOS_PATH, req.params.filename);
   const logoUrl = `/public/logos/${req.params.filename}`;
@@ -525,7 +569,7 @@ app.delete('/api/logo/:filename', (req, res) => {
 
 // Копирование логотипа
 app.post('/api/copy-logo', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const { sourceUrl, newFilename } = req.body;
   
@@ -565,13 +609,13 @@ app.post('/api/copy-logo', (req, res) => {
 // ====== API для турниров ======
 // Получить все турниры
 app.get('/api/tournaments', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   res.json(tournaments);
 });
 
 // Создать турнир
 app.post('/api/tournaments', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const newTournament = {
     id: Date.now().toString(),
@@ -590,7 +634,7 @@ app.post('/api/tournaments', (req, res) => {
 
 // Обновить турнир
 app.put('/api/tournaments/:id', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const tournamentId = req.params.id;
   const tournamentIndex = tournaments.findIndex(t => t.id === tournamentId);
@@ -614,7 +658,7 @@ app.put('/api/tournaments/:id', (req, res) => {
 
 // Удалить турнир
 app.delete('/api/tournaments/:id', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const tournamentId = req.params.id;
   const tournament = tournaments.find(t => t.id === tournamentId);
@@ -657,7 +701,7 @@ app.delete('/api/tournaments/:id', (req, res) => {
 // ====== API для команд турнира ======
 // Добавить команду в турнир
 app.post('/api/tournaments/:id/teams', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const tournamentId = req.params.id;
   const tournament = tournaments.find(t => t.id === tournamentId);
@@ -688,7 +732,7 @@ app.post('/api/tournaments/:id/teams', (req, res) => {
 
 // Обновить команду в турнире
 app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const tournamentId = req.params.id;
   const teamId = req.params.teamId;
@@ -728,7 +772,7 @@ app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
 
 // Удалить команду из турнира
 app.delete('/api/tournaments/:id/teams/:teamId', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const tournamentId = req.params.id;
   const teamId = req.params.teamId;
@@ -772,7 +816,7 @@ app.delete('/api/tournaments/:id/teams/:teamId', (req, res) => {
 
 // Изменить порядок команд в турнире
 app.post('/api/tournaments/:id/teams/reorder', (req, res) => {
-  if (req.query.token !== TOKEN) return res.status(403).send('Forbidden');
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   const tournamentId = req.params.id;
   const tournament = tournaments.find(t => t.id === tournamentId);
@@ -922,11 +966,48 @@ io.on('connection', (socket) => {
 
 server.listen(PORT, () => {
   console.log(`Сервер запущен на http://localhost:${PORT}`);
-  console.log(`Панель управления: http://localhost:${PORT}/control?token=${TOKEN}`);
+  console.log(`Панель управления: http://localhost:${PORT}/control?token=${getActualToken()}`);
   console.log(`Табло vMix: http://localhost:${PORT}/scoreboard_vmix.html`);
   console.log(`Счет перерыва: http://localhost:${PORT}/htbreak_score.html`);
   console.log(`Заставка: http://localhost:${PORT}/preloader.html`);
   console.log(`Prematch: http://localhost:${PORT}/prematch.html`);
   console.log(`Break: http://localhost:${PORT}/break.html`);
-  console.log(`Stadium: http://localhost:${PORT}/stadium.html`);
+  console.log(`Stadium: http://localhost:${PORT}/stadium.html?token=${getActualStadiumToken()}`);
+});
+
+// ====== API для конфигурации (токены) ======
+app.get('/api/config', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  res.json({
+    token: getActualToken(),
+    stadiumToken: getActualStadiumToken()
+  });
+});
+
+app.put('/api/config', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  // Загружаем текущую конфигурацию
+  let currentConfig = { token: TOKEN, stadiumToken: STADIUM_TOKEN };
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      currentConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    } catch (error) {
+      console.error('Ошибка загрузки конфигурации:', error);
+    }
+  }
+  
+  // Обновляем только переданные значения
+  if (req.body.token !== undefined) {
+    currentConfig.token = req.body.token;
+  }
+  if (req.body.stadiumToken !== undefined) {
+    currentConfig.stadiumToken = req.body.stadiumToken;
+  }
+  
+  // Сохраняем конфигурацию
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(currentConfig, null, 2));
+  
+  console.log('Config updated:', { token: req.body.token !== undefined ? '***changed***' : 'unchanged', stadiumToken: req.body.stadiumToken !== undefined ? '***changed***' : 'unchanged' });
+  res.json({ success: true, token: currentConfig.token, stadiumToken: currentConfig.stadiumToken });
 });
