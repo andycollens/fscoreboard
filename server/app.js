@@ -190,6 +190,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ====== Раздача статики ======
+// Защита stadium.html в публичной папке
+app.use('/public', (req, res, next) => {
+  // Если запрос к stadium.html - проверяем токен
+  if (req.path === '/stadium.html' || req.path === '/stadium.html/') {
+    if (req.query.token !== getActualStadiumToken()) {
+      return res.status(403).send('Forbidden');
+    }
+  }
+  next();
+});
 app.use('/public', express.static(path.join(__dirname, '../public')));
 // app.use('/private', express.static(path.join(__dirname, '../private'))); // Отключено для безопасности
 
