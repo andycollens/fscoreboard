@@ -491,19 +491,19 @@
     .day-toggle-arrow {
       cursor: pointer;
       user-select: none;
-      padding: 2px 3px;
+      padding: 1px 2px;
       display: inline-block;
       width: 0;
       height: 0;
       border-style: solid;
-      border-width: 3px 2.5px 0 2.5px;
+      border-width: 2px 2px 0 2px;
       border-color: #666 transparent transparent transparent;
       vertical-align: middle;
       transition: transform 0.2s;
     }
     
     .day-toggle-arrow.expanded {
-      border-width: 0 2.5px 3px 2.5px;
+      border-width: 0 2px 2px 2px;
       border-color: transparent transparent #666 transparent;
     }
     
@@ -512,12 +512,12 @@
     .preset-apply-symbol {
       cursor: pointer;
       user-select: none;
-      padding: 2px 3px;
+      padding: 1px 2px;
       display: inline-block;
       width: 0;
       height: 0;
       border-style: solid;
-      border-width: 4px 0 4px 6px;
+      border-width: 3px 0 3px 5px;
       border-color: transparent transparent transparent #1976d2;
       vertical-align: middle;
       transition: border-color 0.2s;
@@ -657,8 +657,14 @@
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        padding: 0 2px !important;
+        padding: 0 !important;
         overflow-x: hidden !important;
+      }
+      
+      .tournament-presets > * {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+        box-sizing: border-box !important;
       }
       
       .tournament-presets > div:first-child {
@@ -858,8 +864,15 @@
         max-width: 100% !important;
         box-sizing: border-box !important;
         margin-bottom: 4px !important;
-        padding: 0 2px !important;
+        padding: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         overflow-x: hidden !important;
+      }
+      
+      .tournament-day-section:first-child {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
       }
       
       .day-header {
@@ -885,18 +898,18 @@
       
       .day-toggle-arrow {
         cursor: pointer !important;
-        padding: 2px 3px !important;
+        padding: 1px 2px !important;
         display: inline-block !important;
         width: 0 !important;
         height: 0 !important;
         border-style: solid !important;
-        border-width: 3px 2.5px 0 2.5px !important;
+        border-width: 2px 2px 0 2px !important;
         border-color: #666 transparent transparent transparent !important;
         vertical-align: middle !important;
       }
       
       .day-toggle-arrow.expanded {
-        border-width: 0 2.5px 3px 2.5px !important;
+        border-width: 0 2px 2px 2px !important;
         border-color: transparent transparent #666 transparent !important;
       }
       
@@ -958,10 +971,10 @@
         width: 0 !important;
         height: 0 !important;
         border-style: solid !important;
-        border-width: 4px 0 4px 6px !important;
+        border-width: 3px 0 3px 5px !important;
         border-color: transparent transparent transparent #1976d2 !important;
         vertical-align: middle !important;
-        padding: 2px 3px !important;
+        padding: 1px 2px !important;
         flex-shrink: 0 !important;
         display: inline-block !important;
       }
@@ -1257,10 +1270,10 @@
         width: 0;
         height: 0;
         border-style: solid;
-        border-width: 4px 0 4px 6px;
+        border-width: 3px 0 3px 5px;
         border-color: transparent transparent transparent #1976d2;
         vertical-align: middle;
-        padding: 2px 3px;
+        padding: 1px 2px;
         display: inline-block;
       }
       
@@ -3482,16 +3495,16 @@
           const isExpanded = expandedDays.has(dayKeyFull);
           const arrowClass = isExpanded ? 'expanded' : '';
           const arrowStyle = isExpanded 
-            ? 'width: 0; height: 0; border-style: solid; border-width: 0 2.5px 3px 2.5px; border-color: transparent transparent #666 transparent;'
-            : 'width: 0; height: 0; border-style: solid; border-width: 3px 2.5px 0 2.5px; border-color: #666 transparent transparent transparent;';
+            ? 'width: 0; height: 0; border-style: solid; border-width: 0 2px 2px 2px; border-color: transparent transparent #666 transparent;'
+            : 'width: 0; height: 0; border-style: solid; border-width: 2px 2px 0 2px; border-color: #666 transparent transparent transparent;';
           
           const section = document.createElement('div');
           section.className = 'tournament-day-section';
-          section.style.cssText = 'width: 100%; box-sizing: border-box; margin-bottom: 12px;';
+          section.style.cssText = 'width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 0 2px;';
           section.innerHTML = `
             <div class="day-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0; box-sizing: border-box; width: 100%; max-width: 100%; padding: 6px 8px; flex-wrap: nowrap;">
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; flex: 1; min-width: 0;">
-                <span class="day-toggle-arrow ${arrowClass}" style="user-select: none; cursor: pointer; padding: 2px 3px; display: inline-block; box-sizing: border-box; flex-shrink: 0; ${arrowStyle} vertical-align: middle;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();"></span>
+                <span class="day-toggle-arrow ${arrowClass}" style="user-select: none; cursor: pointer; padding: 1px 2px; display: inline-block; box-sizing: border-box; flex-shrink: 0; ${arrowStyle} vertical-align: middle;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();"></span>
                 <div style="font-weight: 600; color: #333; white-space: nowrap; flex-shrink: 0;">${label}</div>
               </div>
               <span class="preset-edit-link" style="flex-shrink: 0;" onclick="openAddPresetFromTournament('${tournament.id}', '${iso || ''}'); event.stopPropagation();" title="Добавить пресет">+add</span>
