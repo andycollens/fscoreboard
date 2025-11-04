@@ -293,12 +293,44 @@
         }
 
         .timer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin: 0;
+            line-height: 1;
+            position: relative;
+        }
+        
+        .timer-minutes,
+        .timer-seconds {
             font-size: 150px;
             font-weight: bold;
             color: #fff;
             text-align: center;
-            margin: 0;
-            line-height: 1;
+            min-width: 120px; /* Минимальная ширина для одной цифры */
+        }
+        
+        .timer-separator {
+            font-size: 150px;
+            font-weight: bold;
+            color: #fff;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            text-align: center;
+            pointer-events: none;
+        }
+        
+        .timer-minutes {
+            text-align: right;
+            padding-right: 40px; /* Отступ для двоеточия */
+        }
+        
+        .timer-seconds {
+            text-align: left;
+            padding-left: 40px; /* Отступ для двоеточия */
         }
 
         /* Адаптивные размеры для больших экранов */
@@ -357,7 +389,12 @@
                 font-size: 50px;
             }
 
-            .timer {
+            .timer-minutes,
+            .timer-seconds {
+                font-size: 100px;
+            }
+            
+            .timer-separator {
                 font-size: 100px;
             }
         }
@@ -389,7 +426,12 @@
                 font-size: 35px;
             }
 
-            .timer {
+            .timer-minutes,
+            .timer-seconds {
+                font-size: 80px;
+            }
+            
+            .timer-separator {
                 font-size: 80px;
             }
         }
@@ -442,7 +484,11 @@
 
         <!-- Нижняя область -->
         <div class="bottom-section">
-            <div class="timer" id="timer">00:00</div>
+            <div class="timer" id="timer">
+                <span class="timer-minutes" id="timerMinutes">00</span>
+                <span class="timer-separator">:</span>
+                <span class="timer-seconds" id="timerSeconds">00</span>
+            </div>
         </div>
     </div>
 
@@ -464,6 +510,8 @@
         const team2Score = document.getElementById('team2Score');
         
         const timer = document.getElementById('timer');
+        const timerMinutes = document.getElementById('timerMinutes');
+        const timerSeconds = document.getElementById('timerSeconds');
         const tournamentTitle = document.getElementById('tournamentTitle');
         
         // Полоски элементов
@@ -574,7 +622,15 @@
 
             // Таймер
             if (data.time !== undefined) {
-                timer.textContent = data.time || "00:00";
+                const timeStr = data.time || "00:00";
+                const parts = timeStr.split(':');
+                if (parts.length === 2) {
+                    timerMinutes.textContent = parts[0] || "00";
+                    timerSeconds.textContent = parts[1] || "00";
+                } else {
+                    timerMinutes.textContent = "00";
+                    timerSeconds.textContent = "00";
+                }
             }
 
             // Название турнира
