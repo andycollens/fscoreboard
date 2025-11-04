@@ -375,14 +375,9 @@
       border-radius: 8px;
       padding: 12px 16px;
       margin-bottom: 8px;
-      transition: all 0.2s;
       box-sizing: border-box;
       width: 100%;
       max-width: 100%;
-    }
-    
-    .preset-card:hover {
-      background: #f8f9fa;
     }
     
     .preset-content {
@@ -465,45 +460,53 @@
       color: #666;
     }
     
-    .day-header {
-      transition: background-color 0.2s;
-    }
+    /* Убрали transition для day-header чтобы не было движения при наведении */
     
-    .day-header:hover {
-      background-color: #f5f5f5;
-      border-radius: 4px;
-      padding: 2px 4px;
-      margin: -2px -4px;
-    }
+    /* Убрали hover эффект для day-header - только клик меняет состояние */
     
     .day-toggle-arrow {
+      cursor: pointer;
+      user-select: none;
+      padding: 2px 4px;
+      display: inline-block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 5px 4px 0 4px;
+      border-color: #666 transparent transparent transparent;
+      vertical-align: middle;
       transition: transform 0.2s;
     }
     
+    .day-toggle-arrow.expanded {
+      border-width: 0 4px 5px 4px;
+      border-color: transparent transparent #666 transparent;
+    }
+    
+    /* Убрали hover эффект для day-toggle-arrow - только клик */
+    
     .preset-apply-symbol {
-      color: #1976d2;
       cursor: pointer;
-      font-size: 20px;
-      white-space: nowrap;
-      flex-shrink: 0;
-      font-weight: bold;
       user-select: none;
-      transition: all 0.2s;
-      padding: 4px 8px;
-      border-radius: 4px;
-      line-height: 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      padding: 2px 4px;
+      display: inline-block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 6px 0 6px 10px;
+      border-color: transparent transparent transparent #1976d2;
+      vertical-align: middle;
+      transition: border-color 0.2s;
+      flex-shrink: 0;
     }
     
     .preset-apply-symbol:hover {
-      color: #1565c0;
-      background: #e3f2fd;
+      border-color: transparent transparent transparent #1565c0;
     }
     
     .preset-apply-symbol[style*="opacity: 0.5"] {
       pointer-events: none;
+      border-color: transparent transparent transparent #999;
     }
     
     .preset-play-btn {
@@ -586,7 +589,7 @@
     @media (max-width: 768px) {
       body {
         font-size: 16px;
-        padding: 10px;
+        padding: 5px;
       }
       
       /* Стили для карточки турнира в мобильной версии */
@@ -609,9 +612,9 @@
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        padding: 10px 15px !important;
+        padding: 5px 8px !important;
         flex-wrap: nowrap !important;
-        gap: 8px !important;
+        gap: 4px !important;
         margin: 0 !important;
       }
       
@@ -626,13 +629,21 @@
       }
       
       /* Стиль для ссылки +add в блоке пресетов */
+      .tournament-presets {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0 2px !important;
+        overflow-x: hidden !important;
+      }
+      
       .tournament-presets > div:first-child {
         display: flex !important;
         justify-content: flex-end !important;
         align-items: flex-start !important;
         width: 100% !important;
-        margin-bottom: 8px !important;
-        padding: 0 15px !important;
+        margin-bottom: 4px !important;
+        padding: 0 5px !important;
         box-sizing: border-box !important;
       }
       
@@ -648,7 +659,7 @@
         max-width: 100% !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
-        padding: 10px !important;
+        padding: 5px !important;
         -webkit-box-sizing: border-box !important;
       }
       
@@ -817,18 +828,66 @@
       }
       
       /* Карточки пресетов */
+      /* Секции дней в турнире */
+      .tournament-day-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 4px !important;
+        padding: 0 2px !important;
+        overflow-x: hidden !important;
+      }
+      
+      .day-header {
+        margin: 2px 0 !important;
+        padding: 3px 4px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        cursor: default !important;
+      }
+      
+      .day-toggle-arrow {
+        cursor: pointer !important;
+        padding: 2px 4px !important;
+        display: inline-block !important;
+        width: 0 !important;
+        height: 0 !important;
+        border-style: solid !important;
+        border-width: 5px 4px 0 4px !important;
+        border-color: #666 transparent transparent transparent !important;
+        vertical-align: middle !important;
+      }
+      
+      .day-toggle-arrow.expanded {
+        border-width: 0 4px 5px 4px !important;
+        border-color: transparent transparent #666 transparent !important;
+      }
+      
+      /* Убрали hover эффект для day-toggle-arrow - только клик */
+      
+      .presets-list {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        gap: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
       .preset-item-wrapper {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
         overflow-x: hidden !important;
+        margin-bottom: 4px !important;
       }
       
       .preset-item {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        padding: 10px !important;
+        padding: 5px !important;
         overflow-x: hidden !important;
       }
       
@@ -860,9 +919,23 @@
       }
       
       .preset-apply-symbol {
-        font-size: 20px !important;
-        padding: 4px 8px !important;
+        width: 0 !important;
+        height: 0 !important;
+        border-style: solid !important;
+        border-width: 6px 0 6px 10px !important;
+        border-color: transparent transparent transparent #1976d2 !important;
+        vertical-align: middle !important;
+        padding: 2px 4px !important;
         flex-shrink: 0 !important;
+        display: inline-block !important;
+      }
+      
+      .preset-apply-symbol:hover {
+        border-color: transparent transparent transparent #1565c0 !important;
+      }
+      
+      .preset-apply-symbol[style*="opacity: 0.5"] {
+        border-color: transparent transparent transparent #999 !important;
       }
       
       /* Элементы команд в карточке пресета */
@@ -1145,8 +1218,22 @@
       }
       
       .preset-apply-symbol {
-        font-size: 24px;
-        padding: 6px 10px;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 8px 0 8px 12px;
+        border-color: transparent transparent transparent #1976d2;
+        vertical-align: middle;
+        padding: 2px 4px;
+        display: inline-block;
+      }
+      
+      .preset-apply-symbol:hover {
+        border-color: transparent transparent transparent #1565c0;
+      }
+      
+      .preset-apply-symbol[style*="opacity: 0.5"] {
+        border-color: transparent transparent transparent #999;
       }
       
       .form-row {
@@ -1259,11 +1346,12 @@
       display: block;
     }
     
-    .presets-list {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-    }
+      .presets-list {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
     
     .edit-preset-form {
       background: #e3f2fd;
@@ -3289,7 +3377,11 @@
       if (headerEl) {
         const arrowEl = headerEl.querySelector('.day-toggle-arrow');
         if (arrowEl) {
-          arrowEl.textContent = isCurrentlyExpanded ? '▶' : '▼';
+          if (isCurrentlyExpanded) {
+            arrowEl.classList.add('expanded');
+          } else {
+            arrowEl.classList.remove('expanded');
+          }
         }
       }
     }
@@ -3355,9 +3447,9 @@
           section.className = 'tournament-day-section';
           section.style.cssText = 'width: 100%; box-sizing: border-box; margin-bottom: 12px;';
           section.innerHTML = `
-            <div class="day-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0; cursor: pointer;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();">
+            <div class="day-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0; box-sizing: border-box; width: 100%; max-width: 100%; padding: 6px 8px;">
               <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="day-toggle-arrow" style="font-size: 12px; color: #666; user-select: none;">▼</span>
+                <span class="day-toggle-arrow expanded" style="user-select: none; cursor: pointer; padding: 2px 4px; display: inline-block; box-sizing: border-box;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();"></span>
                 <div style="font-weight: 600; color: #333;">${label}</div>
               </div>
               <span class="preset-edit-link" onclick="openAddPresetFromTournament('${tournament.id}', '${iso || ''}'); event.stopPropagation();" title="Добавить пресет">+add</span>
@@ -3369,15 +3461,19 @@
           // Устанавливаем состояние сворачивания для этого дня
           const listEl = document.getElementById(`presets-list-${tournament.id}-${dayKey}`);
           const headerEl = section.querySelector('.day-header');
-          const arrowEl = headerEl ? headerEl.querySelector('.day-toggle-arrow') : null;
-          
-          if (listEl) {
-            const isExpanded = expandedDays.has(dayKeyFull);
-            listEl.style.display = isExpanded ? 'flex' : 'none';
-            if (arrowEl) {
-              arrowEl.textContent = isExpanded ? '▼' : '▶';
+        const arrowEl = headerEl ? headerEl.querySelector('.day-toggle-arrow') : null;
+        
+        if (listEl) {
+          const isExpanded = expandedDays.has(dayKeyFull);
+          listEl.style.display = isExpanded ? 'flex' : 'none';
+          if (arrowEl) {
+            if (isExpanded) {
+              arrowEl.classList.add('expanded');
+            } else {
+              arrowEl.classList.remove('expanded');
             }
           }
+        }
         });
         
         // Если совсем нет пресетов
@@ -3440,7 +3536,7 @@
               </div>
               <div class="preset-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
                 <span class="preset-edit-link" onclick="editPresetInline('${tournament.id}', '${preset.id}')">edit</span>
-                <span class="preset-apply-symbol" onclick="if (!window.timerRunning) applyPreset('${preset.id}')" ${timerRunning ? 'style="opacity: 0.5; cursor: not-allowed; pointer-events: none;"' : ''} title="Применить предустановку">▶</span>
+                <span class="preset-apply-symbol" onclick="if (!window.timerRunning) applyPreset('${preset.id}')" ${timerRunning ? 'style="opacity: 0.5; cursor: not-allowed; pointer-events: none;"' : ''} title="Применить предустановку"></span>
               </div>
             </div>
           `;
@@ -3656,9 +3752,7 @@
           </div>
         `;
       
-      // Заполняем селекты команд
-      const team1Select = editForm.querySelector('.editPresetTeam1SelectInline');
-      const team2Select = editForm.querySelector('.editPresetTeam2SelectInline');
+      // Сохраняем ссылки на элементы для использования в setTimeout
       const team1LogoPreview = editForm.querySelector('.editPresetTeam1LogoPreview');
       const team2LogoPreview = editForm.querySelector('.editPresetTeam2LogoPreview');
       const kit1ColorInput = editForm.querySelector('.editPresetKit1ColorInline');
@@ -3667,33 +3761,20 @@
       let selectedTeam1 = null;
       let selectedTeam2 = null;
       
-      tournament.teams.forEach(team => {
-        const option1 = document.createElement('option');
-        option1.value = team.id;
-        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
-        if (currentTeam1Id && team.id === currentTeam1Id) {
-          option1.selected = true;
-          selectedTeam1 = team;
-          // Обновляем логотип для выбранной команды 1
-          if (team1LogoPreview && team.logo) {
-            team1LogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-          }
+      // Устанавливаем начальные значения для логотипов и цветов
+      if (currentTeam1Id) {
+        selectedTeam1 = tournament.teams.find(t => t.id === currentTeam1Id);
+        if (selectedTeam1 && team1LogoPreview && selectedTeam1.logo) {
+          team1LogoPreview.innerHTML = `<img src="${selectedTeam1.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
         }
-        team1Select.appendChild(option1);
-        
-        const option2 = document.createElement('option');
-        option2.value = team.id;
-        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
-        if (currentTeam2Id && team.id === currentTeam2Id) {
-          option2.selected = true;
-          selectedTeam2 = team;
-          // Обновляем логотип для выбранной команды 2
-          if (team2LogoPreview && team.logo) {
-            team2LogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-          }
+      }
+      
+      if (currentTeam2Id) {
+        selectedTeam2 = tournament.teams.find(t => t.id === currentTeam2Id);
+        if (selectedTeam2 && team2LogoPreview && selectedTeam2.logo) {
+          team2LogoPreview.innerHTML = `<img src="${selectedTeam2.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
         }
-        team2Select.appendChild(option2);
-      });
+      }
       
       // Проверяем, был ли цвет изменен пользователем вручную в пресете
       // Если цвет пресета отличается от цвета команды - значит пользователь менял его
@@ -3759,6 +3840,38 @@
       presetItem.style.display = 'none';
       editForm.classList.remove('hidden');
       presetItem.classList.add('edit-mode');
+      
+      // Заполняем селекты команд
+      const team1Select = editForm.querySelector('.editPresetTeam1SelectInline');
+      const team2Select = editForm.querySelector('.editPresetTeam2SelectInline');
+      
+      tournament.teams.forEach(team => {
+        const option1 = document.createElement('option');
+        option1.value = team.id;
+        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        if (currentTeam1Id && team.id === currentTeam1Id) {
+          option1.selected = true;
+          selectedTeam1 = team;
+          // Обновляем логотип для выбранной команды 1
+          if (team1LogoPreview && team.logo) {
+            team1LogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          }
+        }
+        team1Select.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = team.id;
+        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        if (currentTeam2Id && team.id === currentTeam2Id) {
+          option2.selected = true;
+          selectedTeam2 = team;
+          // Обновляем логотип для выбранной команды 2
+          if (team2LogoPreview && team.logo) {
+            team2LogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          }
+        }
+        team2Select.appendChild(option2);
+      });
     }
     
     // Обновление имени пресета при редактировании
