@@ -147,7 +147,8 @@ print_links() {
     echo -e "\n${YELLOW}⚙️  КОНФИГУРАЦИЯ:${NC}"
     echo -e "  ${CYAN}IP/Домен:${NC}        $DOMAIN"
     echo -e "  ${CYAN}Порт:${NC}            $PORT"
-    echo -e "  ${CYAN}Токен:${NC}           $TOKEN"
+    echo -e "  ${CYAN}Токен управления:${NC} $TOKEN"
+    echo -e "  ${CYAN}Токен стадиона:${NC}   $STADIUM_TOKEN"
     echo -e "  ${CYAN}Директория:${NC}      /opt/fscoreboard"
     
     echo -e "\n${YELLOW}🔧 УПРАВЛЕНИЕ:${NC}"

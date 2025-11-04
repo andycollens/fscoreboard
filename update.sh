@@ -429,7 +429,8 @@ print_results() {
     
     echo -e "\n${CYAN}⚙️  КОНФИГУРАЦИЯ:${NC}"
     echo -e "${YELLOW}Порт:${NC}               $current_port"
-    echo -e "${YELLOW}Токен:${NC}              $current_token"
+    echo -e "${YELLOW}Токен управления:${NC}    $current_token"
+    echo -e "${YELLOW}Токен стадиона:${NC}      $current_stadium_token"
     echo -e "${YELLOW}Директория:${NC}         /opt/fscoreboard"
     
     echo -e "\n${GREEN}🎉 FSCOREBOARD обновлен и готов к использованию!${NC}"

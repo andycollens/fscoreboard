@@ -790,7 +790,8 @@ print_results() {
     
     echo -e "\n${CYAN}⚙️  КОНФИГУРАЦИЯ:${NC}"
     echo -e "${YELLOW}Порт:${NC}               $current_port"
-    echo -e "${YELLOW}Токен:${NC}              $current_token"
+    echo -e "${YELLOW}Токен управления:${NC}    $current_token"
+    echo -e "${YELLOW}Токен стадиона:${NC}      $current_stadium_token"
     echo -e "${YELLOW}Директория:${NC}         $INSTALL_DIR"
     
     echo -e "\n${CYAN}🔧 УПРАВЛЕНИЕ:${NC}"
