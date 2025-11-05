@@ -1190,12 +1190,16 @@
                 // Переключаем режим (это обновит отображение победителей, если режим winners)
                 switchMode(mode);
                 
-                // Если режим - победители, даем больше времени для загрузки данных
-                if (mode === 'winners' && winnersData) {
-                    console.log('Mode is winners, updating display after delay');
-                    setTimeout(() => {
-                        updateWinnersDisplay();
-                    }, 300);
+                // Если режим - победители, обновляем отображение
+                if (mode === 'winners') {
+                    if (winnersData) {
+                        console.log('Mode is winners, updating display after delay');
+                        setTimeout(() => {
+                            updateWinnersDisplay();
+                        }, 500);
+                    } else {
+                        console.warn('Mode is winners but no winnersData available');
+                    }
                 }
             } else {
                 console.error('Failed to load config:', response.status, response.statusText);
