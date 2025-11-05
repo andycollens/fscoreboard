@@ -3920,10 +3920,7 @@
         if (currentTeam1Id && team.id === currentTeam1Id) {
           option1.selected = true;
           selectedTeam1 = team;
-          // Обновляем логотип для выбранной команды 1
-          if (team1LogoPreview && team.logo) {
-            team1LogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-          }
+          // Логотип уже установлен выше (приоритет у preset_ логотипа)
         }
         team1Select.appendChild(option1);
         
@@ -3933,10 +3930,7 @@
         if (currentTeam2Id && team.id === currentTeam2Id) {
           option2.selected = true;
           selectedTeam2 = team;
-          // Обновляем логотип для выбранной команды 2
-          if (team2LogoPreview && team.logo) {
-            team2LogoPreview.innerHTML = `<img src="${team.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-          }
+          // Логотип уже установлен выше (приоритет у preset_ логотипа)
         }
         team2Select.appendChild(option2);
       });
@@ -4144,27 +4138,33 @@
       const matchTime = timeInput.value || '19:00';
       const presetName = `${matchTime} / ${team1.name} - ${team2.name}`;
       
-      // Определяем логотипы: если был загружен новый логотип для пресета, используем его,
-      // иначе проверяем, есть ли уже логотип пресета - если да, сохраняем его,
-      // иначе берем из команды. Это НЕ изменяет логотип команды - только сохраняет в пресет.
+      // Определяем логотипы:
+      // 1. Если был явно загружен новый логотип (uploadedLogos) - используем его
+      // 2. Если команда не изменилась и у пресета уже есть preset_ логотип - сохраняем его
+      // 3. Если команда изменилась или у пресета нет preset_ логотипа - берем логотип команды (сервер создаст новый preset_)
+      // Это НЕ изменяет логотип команды - только сохраняет уникальный логотип в пресет.
+      
+      const team1Changed = currentPreset && currentPreset.team1Id !== team1Id;
+      const team2Changed = currentPreset && currentPreset.team2Id !== team2Id;
+      
       let team1Logo = uploadedLogos.team1;
       if (!team1Logo) {
-        // Если есть существующий логотип пресета (начинается с preset_), сохраняем его
-        if (currentPreset && currentPreset.team1Logo && currentPreset.team1Logo.includes('preset_')) {
+        // Если команда не изменилась и у пресета есть preset_ логотип - сохраняем его
+        if (!team1Changed && currentPreset && currentPreset.team1Logo && currentPreset.team1Logo.includes('preset_')) {
           team1Logo = currentPreset.team1Logo;
         } else {
-          // Иначе берем логотип команды
+          // Команда изменилась или нет preset_ логотипа - берем логотип команды (сервер создаст новый preset_)
           team1Logo = team1.logo || '';
         }
       }
       
       let team2Logo = uploadedLogos.team2;
       if (!team2Logo) {
-        // Если есть существующий логотип пресета (начинается с preset_), сохраняем его
-        if (currentPreset && currentPreset.team2Logo && currentPreset.team2Logo.includes('preset_')) {
+        // Если команда не изменилась и у пресета есть preset_ логотип - сохраняем его
+        if (!team2Changed && currentPreset && currentPreset.team2Logo && currentPreset.team2Logo.includes('preset_')) {
           team2Logo = currentPreset.team2Logo;
         } else {
-          // Иначе берем логотип команды
+          // Команда изменилась или нет preset_ логотипа - берем логотип команды (сервер создаст новый preset_)
           team2Logo = team2.logo || '';
         }
       }

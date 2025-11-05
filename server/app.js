@@ -361,37 +361,40 @@ app.put('/api/presets/:id', (req, res) => {
   const newTeam1Logo = req.body.team1Logo || '';
   const newTeam2Logo = req.body.team2Logo || '';
   
-  // Если логотип изменился, копируем новый (если это логотип команды)
-  // Если новый логотип уже является логотипом пресета (preset_), сохраняем его как есть
+  // Логика работы с логотипами пресетов:
+  // 1. Если новый логотип уже является preset_ логотипом - сохраняем его как есть (не трогаем)
+  // 2. Если новый логотип - это логотип команды (team_) или изменился - создаем новый preset_ логотип
+  // 3. Если логотип не изменился - сохраняем существующий preset_ логотип
+  // 4. Старый preset_ логотип удаляется только если создается новый для того же пресета
+  
   let finalTeam1Logo = newTeam1Logo;
   const newTeam1LogoFilename = newTeam1Logo ? newTeam1Logo.split('/').pop() : '';
   
-  if (newTeam1Logo !== oldPreset.team1Logo && newTeam1Logo) {
-    // Если новый логотип уже является логотипом пресета, сохраняем его без изменений
-    if (newTeam1LogoFilename && newTeam1LogoFilename.startsWith('preset_')) {
-      finalTeam1Logo = newTeam1Logo;
-      console.log('Keeping existing preset logo:', newTeam1Logo);
-    } else {
-      // Удаляем старый логотип пресета (если это был логотип пресета, а не команды)
-      if (oldPreset.team1Logo) {
-        const oldFilename = oldPreset.team1Logo.split('/').pop();
-        if (oldFilename && oldFilename.startsWith('preset_')) {
-          const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
-          if (fs.existsSync(oldLogoPath)) {
-            try {
-              fs.unlinkSync(oldLogoPath);
-              console.log('Deleted old preset logo:', oldLogoPath);
-            } catch (error) {
-              console.error('Error deleting old preset logo:', error);
-            }
+  // Если новый логотип уже является preset_ логотипом - сохраняем его без изменений
+  if (newTeam1LogoFilename && newTeam1LogoFilename.startsWith('preset_')) {
+    finalTeam1Logo = newTeam1Logo;
+    console.log('Keeping existing preset logo:', newTeam1Logo);
+  } else if (newTeam1Logo !== oldPreset.team1Logo && newTeam1Logo) {
+    // Логотип изменился и это не preset_ логотип - создаем новый preset_ логотип
+    // Удаляем старый preset_ логотип только если он был
+    if (oldPreset.team1Logo) {
+      const oldFilename = oldPreset.team1Logo.split('/').pop();
+      if (oldFilename && oldFilename.startsWith('preset_')) {
+        const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
+        if (fs.existsSync(oldLogoPath)) {
+          try {
+            fs.unlinkSync(oldLogoPath);
+            console.log('Deleted old preset logo (replaced with new):', oldLogoPath);
+          } catch (error) {
+            console.error('Error deleting old preset logo:', error);
           }
         }
       }
-      // Копируем новый логотип команды (если это логотип команды)
-      finalTeam1Logo = copyTeamLogoToPreset(newTeam1Logo, presetId, 1);
     }
+    // Создаем новый preset_ логотип из логотипа команды
+    finalTeam1Logo = copyTeamLogoToPreset(newTeam1Logo, presetId, 1);
   } else if (!newTeam1Logo) {
-    // Если новый логотип пустой, удаляем старый логотип пресета
+    // Новый логотип пустой - удаляем старый preset_ логотип
     if (oldPreset.team1Logo) {
       const oldFilename = oldPreset.team1Logo.split('/').pop();
       if (oldFilename && oldFilename.startsWith('preset_')) {
@@ -407,39 +410,38 @@ app.put('/api/presets/:id', (req, res) => {
       }
     }
   } else {
-    // Логотип не изменился - сохраняем существующий
+    // Логотип не изменился - сохраняем существующий preset_ логотип
     finalTeam1Logo = oldPreset.team1Logo;
   }
   
   let finalTeam2Logo = newTeam2Logo;
   const newTeam2LogoFilename = newTeam2Logo ? newTeam2Logo.split('/').pop() : '';
   
-  if (newTeam2Logo !== oldPreset.team2Logo && newTeam2Logo) {
-    // Если новый логотип уже является логотипом пресета, сохраняем его без изменений
-    if (newTeam2LogoFilename && newTeam2LogoFilename.startsWith('preset_')) {
-      finalTeam2Logo = newTeam2Logo;
-      console.log('Keeping existing preset logo:', newTeam2Logo);
-    } else {
-      // Удаляем старый логотип пресета (если это был логотип пресета, а не команды)
-      if (oldPreset.team2Logo) {
-        const oldFilename = oldPreset.team2Logo.split('/').pop();
-        if (oldFilename && oldFilename.startsWith('preset_')) {
-          const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
-          if (fs.existsSync(oldLogoPath)) {
-            try {
-              fs.unlinkSync(oldLogoPath);
-              console.log('Deleted old preset logo:', oldLogoPath);
-            } catch (error) {
-              console.error('Error deleting old preset logo:', error);
-            }
+  // Если новый логотип уже является preset_ логотипом - сохраняем его без изменений
+  if (newTeam2LogoFilename && newTeam2LogoFilename.startsWith('preset_')) {
+    finalTeam2Logo = newTeam2Logo;
+    console.log('Keeping existing preset logo:', newTeam2Logo);
+  } else if (newTeam2Logo !== oldPreset.team2Logo && newTeam2Logo) {
+    // Логотип изменился и это не preset_ логотип - создаем новый preset_ логотип
+    // Удаляем старый preset_ логотип только если он был
+    if (oldPreset.team2Logo) {
+      const oldFilename = oldPreset.team2Logo.split('/').pop();
+      if (oldFilename && oldFilename.startsWith('preset_')) {
+        const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
+        if (fs.existsSync(oldLogoPath)) {
+          try {
+            fs.unlinkSync(oldLogoPath);
+            console.log('Deleted old preset logo (replaced with new):', oldLogoPath);
+          } catch (error) {
+            console.error('Error deleting old preset logo:', error);
           }
         }
       }
-      // Копируем новый логотип команды (если это логотип команды)
-      finalTeam2Logo = copyTeamLogoToPreset(newTeam2Logo, presetId, 2);
     }
+    // Создаем новый preset_ логотип из логотипа команды
+    finalTeam2Logo = copyTeamLogoToPreset(newTeam2Logo, presetId, 2);
   } else if (!newTeam2Logo) {
-    // Если новый логотип пустой, удаляем старый логотип пресета
+    // Новый логотип пустой - удаляем старый preset_ логотип
     if (oldPreset.team2Logo) {
       const oldFilename = oldPreset.team2Logo.split('/').pop();
       if (oldFilename && oldFilename.startsWith('preset_')) {
@@ -455,7 +457,7 @@ app.put('/api/presets/:id', (req, res) => {
       }
     }
   } else {
-    // Логотип не изменился - сохраняем существующий
+    // Логотип не изменился - сохраняем существующий preset_ логотип
     finalTeam2Logo = oldPreset.team2Logo;
   }
   
