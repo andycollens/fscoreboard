@@ -984,6 +984,14 @@
             restoreExpandedState();
           }
           showNotification('Команда обновлена!', 'success');
+          
+          // Обновляем пресеты, если страница control.html открыта
+          // Отправляем событие в localStorage для синхронизации между вкладками
+          window.localStorage.setItem('teamUpdated', JSON.stringify({
+            tournamentId: tournamentId,
+            teamId: teamId,
+            timestamp: Date.now()
+          }));
         } else {
           throw new Error('Ошибка обновления команды');
         }

@@ -2070,6 +2070,7 @@
       loadTournaments();
       setupControls();
       setupEditFormHandlers();
+      setupTeamUpdateListener(); // Слушаем обновления команд из настроек
       
       // Простая проверка - если данные не пришли, запрашиваем через небольшую задержку
       setTimeout(() => {
