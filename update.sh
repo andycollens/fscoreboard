@@ -205,20 +205,17 @@ update_code() {
     
     cd /opt/fscoreboard
     
-    # Создаем резервную копию текущего состояния
-    print_info "Создание резервной копии..."
-    cp -r . ../fscoreboard_backup_$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
-    
     # Сохраняем пользовательские данные
-    print_info "Сохранение пользовательских данных..."
+    print_info "Создание временной резервной копии данных..."
     local backup_dir="/tmp/fscoreboard_data_backup_$(date +%Y%m%d_%H%M%S)"
     mkdir -p "$backup_dir"
     
     # Сохраняем файлы данных
     [ -f "server/state.json" ] && cp "server/state.json" "$backup_dir/"
     [ -f "server/presets.json" ] && cp "server/presets.json" "$backup_dir/"
-    [ -d "public/logos" ] && cp -r "public/logos" "$backup_dir/"
+    [ -d "public/logos" ] && cp -r "public/logos" "$backup_dir/" 2>/dev/null || true
     [ -f ".env" ] && cp ".env" "$backup_dir/"
+    [ -f "server/config.json" ] && cp "server/config.json" "$backup_dir/" 2>/dev/null || true
     
     # Обновляем код
     git fetch origin
@@ -228,13 +225,15 @@ update_code() {
     print_info "Восстановление пользовательских данных..."
     [ -f "$backup_dir/state.json" ] && cp "$backup_dir/state.json" "server/"
     [ -f "$backup_dir/presets.json" ] && cp "$backup_dir/presets.json" "server/"
-    [ -d "$backup_dir/logos" ] && cp -r "$backup_dir/logos" "public/"
+    [ -d "$backup_dir/logos" ] && cp -r "$backup_dir/logos" "public/" 2>/dev/null || true
     [ -f "$backup_dir/.env" ] && cp "$backup_dir/.env" "."
+    [ -f "$backup_dir/config.json" ] && cp "$backup_dir/config.json" "server/" 2>/dev/null || true
     
     # Устанавливаем правильные права
     chown -R root:root server/state.json server/presets.json 2>/dev/null || true
     chown -R root:root public/logos 2>/dev/null || true
     chown root:root .env 2>/dev/null || true
+    chown root:root server/config.json 2>/dev/null || true
     
     # Очищаем временную папку
     rm -rf "$backup_dir"
@@ -380,6 +379,43 @@ verify_update() {
     print_success "Проверка завершена"
 }
 
+# Очистка старых бэкапов
+cleanup_backups() {
+    print_step "Очистка старых бэкапов..."
+    
+    # Удаляем старые резервные копии из /opt/
+    if [ -d "/opt" ]; then
+        local removed_count=0
+        for backup_dir in /opt/fscoreboard_backup_*; do
+            if [ -d "$backup_dir" ]; then
+                rm -rf "$backup_dir"
+                removed_count=$((removed_count + 1))
+            fi
+        done
+        if [ $removed_count -gt 0 ]; then
+            print_success "Удалено $removed_count резервных копий из /opt/"
+        fi
+    fi
+    
+    # Удаляем старые временные бэкапы из /tmp/
+    if [ -d "/tmp" ]; then
+        local removed_count=0
+        for backup_dir in /tmp/fscoreboard_data_backup_*; do
+            if [ -d "$backup_dir" ]; then
+                rm -rf "$backup_dir"
+                removed_count=$((removed_count + 1))
+            fi
+        done
+        if [ $removed_count -gt 0 ]; then
+            print_success "Удалено $removed_count временных бэкапов из /tmp/"
+        fi
+    fi
+    
+    if [ $removed_count -eq 0 ] && [ ${removed_count:-0} -eq 0 ]; then
+        print_info "Старых бэкапов не найдено"
+    fi
+}
+
 # Вывод результатов
 print_results() {
     local current_domain=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
@@ -458,7 +494,15 @@ main() {
     restart_application
     reload_nginx
     full_reinstall
-    verify_update
+    
+    # Проверяем успешность обновления перед очисткой
+    if verify_update; then
+        # Очищаем старые бэкапы только если обновление прошло успешно
+        cleanup_backups
+    else
+        print_warning "Обновление завершилось с ошибками, бэкапы сохранены"
+    fi
+    
     print_results
 }
 
