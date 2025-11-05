@@ -852,14 +852,17 @@
         socket.on('currentState', (data) => {
             console.log('Stadium получил начальное состояние:', data, 'currentMode:', currentMode);
             // Сохраняем данные в переменную для использования при переключении режима
-            if (!window.lastScoreboardData) {
-                window.lastScoreboardData = {};
-            }
             window.lastScoreboardData = data;
             // Обновляем отображение сразу, даже если режим еще не загружен
             // (он будет установлен из config, но данные должны быть готовы)
-            if (currentMode === 'scoreboard' || currentMode === undefined) {
-                updateDisplay(data);
+            // Проверяем, что элементы DOM готовы
+            if (typeof updateDisplay === 'function') {
+                if (currentMode === 'scoreboard' || currentMode === undefined) {
+                    console.log('Updating display with initial state');
+                    updateDisplay(data);
+                }
+            } else {
+                console.warn('updateDisplay function not ready yet');
             }
         });
 
