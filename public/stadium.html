@@ -1059,11 +1059,14 @@
                     return null;
                 }
                 const parts = teamIdStr.split('_');
-                if (parts.length !== 2) {
+                // ID может быть в формате tournamentId_teamId или tournamentId_teamId_random
+                // Берем первые две части как tournamentId и teamId
+                if (parts.length < 2) {
                     console.error('Invalid team ID format:', teamIdStr);
                     return null;
                 }
-                const [tournamentIdStr, actualTeamId] = parts;
+                const tournamentIdStr = parts[0];
+                const actualTeamId = parts[1];
                 
                 // Ищем турнир, сравнивая как строки и как числа
                 const tournament = tournaments.find(t => {
