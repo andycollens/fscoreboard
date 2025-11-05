@@ -94,15 +94,17 @@ const storage = multer.diskStorage({
     
     let filename;
     if (tournamentId && teamId) {
-      // Для редактирования команды: team_tournamentId_teamId_timestamp_random.ext
+      // Для редактирования команды в турнире: team_tournamentId_teamId_timestamp_random.ext
       // Имя полностью уникально и не зависит от оригинального имени файла
+      // Этот логотип привязан к записи команды и удаляется только с удалением команды
       filename = `team_${tournamentId}_${teamId}_${timestamp}_${random}${extension}`;
     } else if (tournamentId) {
-      // Для новой команды: team_tournamentId_timestamp_random.ext
+      // Для новой команды в турнире: team_tournamentId_timestamp_random.ext
       filename = `team_${tournamentId}_${timestamp}_${random}${extension}`;
     } else {
-      // Для основной панели или других случаев: fieldname_timestamp_random.ext
-      filename = `${file.fieldname}_${timestamp}_${random}${extension}`;
+      // Для основной панели управления матчем: main_timestamp_random.ext
+      // Логотип главного окна уникален и не связан с записями команд в турнирах
+      filename = `main_${timestamp}_${random}${extension}`;
     }
     
     cb(null, filename);
@@ -595,10 +597,20 @@ app.post('/api/upload-logo', upload.single('logo'), (req, res) => {
 app.delete('/api/logo/:filename', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
-  const filePath = path.join(LOGOS_PATH, req.params.filename);
-  const logoUrl = `/public/logos/${req.params.filename}`;
+  const filename = req.params.filename;
+  const filePath = path.join(LOGOS_PATH, filename);
+  const logoUrl = `/public/logos/${filename}`;
   
-  // Проверяем, используется ли логотип в активной секции
+  // КРИТИЧНО: Защищаем логотипы команд (team_) от удаления
+  // Логотипы команд удаляются ТОЛЬКО при удалении записи команды из турнира
+  if (filename && filename.startsWith('team_')) {
+    return res.status(403).json({ 
+      error: 'Логотип команды не может быть удален через этот API. Удалите запись команды из турнира.',
+      protected: true 
+    });
+  }
+  
+  // Проверяем, используется ли логотип в активной секции (для main_ и preset_ логотипов)
   const isInUse = (state.team1Logo === logoUrl || state.team2Logo === logoUrl);
   
   if (isInUse) {

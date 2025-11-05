@@ -3240,6 +3240,19 @@
       
       if (!currentLogoUrl) return;
       
+      const filename = currentLogoUrl.split('/').pop();
+      
+      // КРИТИЧНО: Не удаляем логотипы команд (team_) - они принадлежат записям команд в турнирах
+      // Удаляем только логотипы главного окна (main_) и пресетов (preset_)
+      if (filename && filename.startsWith('team_')) {
+        // Это логотип команды из турнира - просто очищаем ссылку, файл не трогаем
+        state[`${team}Logo`] = '';
+        sendState();
+        showKitColorCircle(team);
+        showNotification('Логотип команды удален из панели управления', 'success');
+        return;
+      }
+      
       // Очищаем состояние
       state[`${team}Logo`] = '';
       
@@ -3249,9 +3262,8 @@
       // Показываем цветной круг
       showKitColorCircle(team);
       
-      // Пытаемся удалить файл с сервера
+      // Пытаемся удалить файл с сервера (только для main_ и preset_ логотипов)
       try {
-        const filename = currentLogoUrl.split('/').pop();
         const response = await fetch(`/api/logo/${filename}?token=${getToken()}`, {
           method: 'DELETE'
         });
@@ -3261,7 +3273,7 @@
         } else if (response.status === 403) {
           const result = await response.json();
           if (result.protected) {
-            showNotification('Логотип защищен от удаления (используется в пресете)', 'info');
+            showNotification('Логотип защищен от удаления: ' + (result.error || 'используется в активной секции'), 'info');
           }
         }
       } catch (error) {
