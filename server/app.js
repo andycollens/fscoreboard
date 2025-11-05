@@ -619,7 +619,15 @@ app.post('/api/copy-logo', (req, res) => {
 // ====== API для турниров ======
 // Получить все турниры
 app.get('/api/tournaments', (req, res) => {
-  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  // Разрешаем доступ с токеном управления ИЛИ токеном стадиона
+  const token = req.query.token;
+  const actualToken = getActualToken();
+  const actualStadiumToken = getActualStadiumToken();
+  
+  if (token !== actualToken && token !== actualStadiumToken) {
+    return res.status(403).send('Forbidden');
+  }
+  
   res.json(tournaments);
 });
 
