@@ -98,57 +98,88 @@
             text-align: center;
             flex: 1;
             max-width: 350px;
+            gap: 20px;
         }
 
-        .winner-place {
-            font-size: 80px;
-            font-weight: bold;
-            color: #fff;
+        .winner-team-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
             margin-bottom: 20px;
+        }
+
+        .winner-logo-container {
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
 
         .winner-logo {
-            width: 200px;
-            height: 200px;
+            width: 300px;
+            height: 300px;
             object-fit: contain;
-            margin-bottom: 20px;
-            background: transparent;
-            border-radius: 0;
+            display: none;
+        }
+
+        .winner-logo.show {
+            display: block;
+        }
+
+        .winner-no-logo {
+            width: 300px;
+            height: 300px;
+            background-color: #2b2b2b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .winner-name {
             font-size: 48px;
             font-weight: bold;
             color: #fff;
-            margin-bottom: 10px;
+            margin: 0;
         }
 
         .winner-city {
             font-size: 32px;
-            color: #ccc;
+            color: #fff;
+            margin: 0;
         }
 
         .podium-base {
             width: 100%;
             height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #4a4a4a;
             border-radius: 8px 8px 0 0;
             margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
 
         .winner-item.first .podium-base {
             height: 100px;
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
         }
 
         .winner-item.second .podium-base {
             height: 80px;
-            background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
         }
 
         .winner-item.third .podium-base {
             height: 60px;
-            background: linear-gradient(135deg, #CD7F32 0%, #B8860B 100%);
+        }
+
+        .podium-place-label {
+            font-size: 64px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
         
         @media (max-width: 768px) {
@@ -168,8 +199,19 @@
                 width: 100%;
             }
             
-            .winner-place {
-                font-size: 60px;
+            .winner-logo-container {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .winner-logo {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .winner-no-logo {
+                width: 200px;
+                height: 200px;
             }
             
             .winner-name {
@@ -180,9 +222,24 @@
                 font-size: 24px;
             }
             
-            .winner-logo {
-                width: 150px;
-                height: 150px;
+            .podium-place-label {
+                font-size: 48px;
+            }
+            
+            .podium-base {
+                height: 50px !important;
+            }
+            
+            .winner-item.first .podium-base {
+                height: 80px !important;
+            }
+            
+            .winner-item.second .podium-base {
+                height: 65px !important;
+            }
+            
+            .winner-item.third .podium-base {
+                height: 50px !important;
             }
         }
 
@@ -646,25 +703,43 @@
     <div class="winners-mode" id="winnersMode">
         <div class="winner-podium">
             <div class="winner-item second" id="winner2Item">
-                <div class="winner-place">🥈</div>
-                <img class="winner-logo" id="winner2Logo" src="" alt="" style="display: none;">
-                <div class="winner-name" id="winner2Name">-</div>
-                <div class="winner-city" id="winner2City"></div>
-                <div class="podium-base"></div>
+                <div class="winner-team-info">
+                    <div class="winner-logo-container">
+                        <img class="winner-logo" id="winner2Logo" src="" alt="">
+                        <div class="winner-no-logo" id="winner2NoLogo"></div>
+                    </div>
+                    <div class="winner-name" id="winner2Name">-</div>
+                    <div class="winner-city" id="winner2City"></div>
+                </div>
+                <div class="podium-base">
+                    <div class="podium-place-label">2</div>
+                </div>
             </div>
             <div class="winner-item first" id="winner1Item">
-                <div class="winner-place">🥇</div>
-                <img class="winner-logo" id="winner1Logo" src="" alt="" style="display: none;">
-                <div class="winner-name" id="winner1Name">-</div>
-                <div class="winner-city" id="winner1City"></div>
-                <div class="podium-base"></div>
+                <div class="winner-team-info">
+                    <div class="winner-logo-container">
+                        <img class="winner-logo" id="winner1Logo" src="" alt="">
+                        <div class="winner-no-logo" id="winner1NoLogo"></div>
+                    </div>
+                    <div class="winner-name" id="winner1Name">-</div>
+                    <div class="winner-city" id="winner1City"></div>
+                </div>
+                <div class="podium-base">
+                    <div class="podium-place-label">1</div>
+                </div>
             </div>
             <div class="winner-item third" id="winner3Item">
-                <div class="winner-place">🥉</div>
-                <img class="winner-logo" id="winner3Logo" src="" alt="" style="display: none;">
-                <div class="winner-name" id="winner3Name">-</div>
-                <div class="winner-city" id="winner3City"></div>
-                <div class="podium-base"></div>
+                <div class="winner-team-info">
+                    <div class="winner-logo-container">
+                        <img class="winner-logo" id="winner3Logo" src="" alt="">
+                        <div class="winner-no-logo" id="winner3NoLogo"></div>
+                    </div>
+                    <div class="winner-name" id="winner3Name">-</div>
+                    <div class="winner-city" id="winner3City"></div>
+                </div>
+                <div class="podium-base">
+                    <div class="podium-place-label">3</div>
+                </div>
             </div>
         </div>
     </div>
@@ -937,11 +1012,17 @@
                 document.getElementById('winner1Name').textContent = winner1.name || '-';
                 document.getElementById('winner1City').textContent = winner1.city || '';
                 const logo1 = document.getElementById('winner1Logo');
+                const noLogo1 = document.getElementById('winner1NoLogo');
                 if (winner1.logo) {
                     logo1.src = winner1.logo;
-                    logo1.style.display = 'block';
+                    logo1.classList.add('show');
+                    noLogo1.style.display = 'none';
                 } else {
-                    logo1.style.display = 'none';
+                    logo1.classList.remove('show');
+                    noLogo1.style.display = 'flex';
+                    if (winner1.kitColor) {
+                        noLogo1.style.backgroundColor = winner1.kitColor;
+                    }
                 }
             }
             
@@ -951,11 +1032,17 @@
                 document.getElementById('winner2Name').textContent = winner2.name || '-';
                 document.getElementById('winner2City').textContent = winner2.city || '';
                 const logo2 = document.getElementById('winner2Logo');
+                const noLogo2 = document.getElementById('winner2NoLogo');
                 if (winner2.logo) {
                     logo2.src = winner2.logo;
-                    logo2.style.display = 'block';
+                    logo2.classList.add('show');
+                    noLogo2.style.display = 'none';
                 } else {
-                    logo2.style.display = 'none';
+                    logo2.classList.remove('show');
+                    noLogo2.style.display = 'flex';
+                    if (winner2.kitColor) {
+                        noLogo2.style.backgroundColor = winner2.kitColor;
+                    }
                 }
             }
             
@@ -965,11 +1052,17 @@
                 document.getElementById('winner3Name').textContent = winner3.name || '-';
                 document.getElementById('winner3City').textContent = winner3.city || '';
                 const logo3 = document.getElementById('winner3Logo');
+                const noLogo3 = document.getElementById('winner3NoLogo');
                 if (winner3.logo) {
                     logo3.src = winner3.logo;
-                    logo3.style.display = 'block';
+                    logo3.classList.add('show');
+                    noLogo3.style.display = 'none';
                 } else {
-                    logo3.style.display = 'none';
+                    logo3.classList.remove('show');
+                    noLogo3.style.display = 'flex';
+                    if (winner3.kitColor) {
+                        noLogo3.style.backgroundColor = winner3.kitColor;
+                    }
                 }
             }
         } catch (error) {
