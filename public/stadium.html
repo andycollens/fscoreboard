@@ -1210,10 +1210,11 @@
             }, 100);
         }
     });
-
-        // Загружаем конфигурацию при загрузке страницы
+    
+    // Загружаем конфигурацию при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
         loadStadiumConfig();
-        });
+    });
     </script>
 </body>
 </html>
