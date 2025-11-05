@@ -967,6 +967,7 @@
     // Функция переключения режимов
     function switchMode(mode) {
         currentMode = mode;
+        console.log('Switching mode to:', mode, 'winnersData:', winnersData);
         
         // Скрываем все режимы
         document.getElementById('scoreboardMode').style.display = 'none';
@@ -980,8 +981,15 @@
             document.getElementById('flagMode').classList.add('active');
         } else if (mode === 'winners') {
             document.getElementById('winnersMode').classList.add('active');
+            // Всегда пытаемся обновить отображение, даже если winnersData еще нет
+            // (она может быть загружена позже)
             if (winnersData) {
-                updateWinnersDisplay();
+                console.log('Updating winners display from switchMode');
+                setTimeout(() => {
+                    updateWinnersDisplay();
+                }, 100);
+            } else {
+                console.log('No winnersData yet, will update when loaded');
             }
         }
     }
