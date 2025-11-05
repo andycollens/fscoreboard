@@ -830,11 +830,19 @@
         // Подключение к WebSocket
         socket.on('connect', () => {
             console.log('Stadium подключен к серверу');
+            // Запрашиваем текущее состояние при подключении
+            socket.emit('getCurrentState');
         });
 
         // Обновление данных
         socket.on('scoreboardUpdate', (data) => {
             console.log('Stadium получил данные:', data);
+            updateDisplay(data);
+        });
+
+        // Получение начального состояния при загрузке страницы
+        socket.on('currentState', (data) => {
+            console.log('Stadium получил начальное состояние:', data);
             updateDisplay(data);
         });
 
