@@ -1147,12 +1147,16 @@
     
     // Обработчики Socket.IO для моментального обновления
     socket.on('stadiumModeChange', (data) => {
+        console.log('Received stadiumModeChange event:', data);
         // Сохраняем текущих победителей перед переключением режима
         // (winnersData уже сохранен в переменной, не теряется)
         switchMode(data.mode);
         // Если переключились на режим победителей, обновляем отображение
         if (data.mode === 'winners' && winnersData) {
-            updateWinnersDisplay();
+            console.log('Switched to winners mode, updating display');
+            setTimeout(() => {
+                updateWinnersDisplay();
+            }, 100);
         }
     });
     
