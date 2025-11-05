@@ -4109,6 +4109,9 @@
       // Очистим его только после успешного сохранения, чтобы форма не закрылась во время операции
       const currentEditingPresetId = editingPresetId;
       
+      // Находим текущий пресет для получения сохраненных логотипов
+      const currentPreset = presets.find(p => p.id === presetId);
+      
       const tournament = tournaments.find(t => t.id === tournamentId);
       if (!tournament || !tournament.teams) {
         alert('Турнир не найден');
@@ -4147,8 +4150,8 @@
       let team1Logo = uploadedLogos.team1;
       if (!team1Logo) {
         // Если есть существующий логотип пресета (начинается с preset_), сохраняем его
-        if (preset.team1Logo && preset.team1Logo.includes('preset_')) {
-          team1Logo = preset.team1Logo;
+        if (currentPreset && currentPreset.team1Logo && currentPreset.team1Logo.includes('preset_')) {
+          team1Logo = currentPreset.team1Logo;
         } else {
           // Иначе берем логотип команды
           team1Logo = team1.logo || '';
@@ -4158,8 +4161,8 @@
       let team2Logo = uploadedLogos.team2;
       if (!team2Logo) {
         // Если есть существующий логотип пресета (начинается с preset_), сохраняем его
-        if (preset.team2Logo && preset.team2Logo.includes('preset_')) {
-          team2Logo = preset.team2Logo;
+        if (currentPreset && currentPreset.team2Logo && currentPreset.team2Logo.includes('preset_')) {
+          team2Logo = currentPreset.team2Logo;
         } else {
           // Иначе берем логотип команды
           team2Logo = team2.logo || '';
