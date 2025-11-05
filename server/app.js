@@ -987,10 +987,17 @@ server.listen(PORT, () => {
 
 // ====== API для конфигурации (токены) ======
 app.get('/api/config', (req, res) => {
-  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  // Разрешаем доступ с токеном управления ИЛИ токеном стадиона
+  const token = req.query.token;
+  const actualToken = getActualToken();
+  const actualStadiumToken = getActualStadiumToken();
+  
+  if (token !== actualToken && token !== actualStadiumToken) {
+    return res.status(403).send('Forbidden');
+  }
   
   // Загружаем полную конфигурацию
-  let config = { token: getActualToken(), stadiumToken: getActualStadiumToken() };
+  let config = { token: actualToken, stadiumToken: actualStadiumToken };
   if (fs.existsSync(CONFIG_PATH)) {
     try {
       const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));

@@ -853,17 +853,8 @@
             console.log('Stadium получил начальное состояние:', data, 'currentMode:', currentMode);
             // Сохраняем данные в переменную для использования при переключении режима
             window.lastScoreboardData = data;
-            // Обновляем отображение сразу, даже если режим еще не загружен
-            // (он будет установлен из config, но данные должны быть готовы)
-            // Проверяем, что элементы DOM готовы
-            if (typeof updateDisplay === 'function') {
-                if (currentMode === 'scoreboard' || currentMode === undefined) {
-                    console.log('Updating display with initial state');
-                    updateDisplay(data);
-                }
-            } else {
-                console.warn('updateDisplay function not ready yet');
-            }
+            // НЕ обновляем отображение здесь - дождемся загрузки конфигурации и установки режима
+            // Обновление произойдет в switchMode после загрузки config
         });
 
         // Функция обновления полоски
@@ -1194,7 +1185,7 @@
                 
                 // Затем загружаем сохраненный режим (по умолчанию 'scoreboard')
                 const mode = config.stadiumMode || 'scoreboard';
-                console.log('Setting mode to:', mode, 'winnersData:', winnersData);
+                console.log('Setting mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
                 
                 // Переключаем режим (это обновит отображение победителей, если режим winners)
                 switchMode(mode);
