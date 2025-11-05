@@ -4142,9 +4142,29 @@
       const presetName = `${matchTime} / ${team1.name} - ${team2.name}`;
       
       // Определяем логотипы: если был загружен новый логотип для пресета, используем его,
+      // иначе проверяем, есть ли уже логотип пресета - если да, сохраняем его,
       // иначе берем из команды. Это НЕ изменяет логотип команды - только сохраняет в пресет.
-      const team1Logo = uploadedLogos.team1 || team1.logo || '';
-      const team2Logo = uploadedLogos.team2 || team2.logo || '';
+      let team1Logo = uploadedLogos.team1;
+      if (!team1Logo) {
+        // Если есть существующий логотип пресета (начинается с preset_), сохраняем его
+        if (preset.team1Logo && preset.team1Logo.includes('preset_')) {
+          team1Logo = preset.team1Logo;
+        } else {
+          // Иначе берем логотип команды
+          team1Logo = team1.logo || '';
+        }
+      }
+      
+      let team2Logo = uploadedLogos.team2;
+      if (!team2Logo) {
+        // Если есть существующий логотип пресета (начинается с preset_), сохраняем его
+        if (preset.team2Logo && preset.team2Logo.includes('preset_')) {
+          team2Logo = preset.team2Logo;
+        } else {
+          // Иначе берем логотип команды
+          team2Logo = team2.logo || '';
+        }
+      }
       
       const preset = {
         name: presetName,
