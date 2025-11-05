@@ -429,6 +429,60 @@
     </div>
   </div>
 
+  <!-- Секция Режим работы табло стадиона -->
+  <div class="section">
+    <div class="section-header">
+      <h2>📺 Режим работы табло стадиона</h2>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: bold;">Выберите режим отображения:</label>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 10px; border: 2px solid #ddd; border-radius: 4px; background: #f8f9fa;">
+          <input type="radio" name="stadiumMode" value="scoreboard" id="modeScoreboard" style="cursor: pointer;">
+          <span>Табло</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 10px; border: 2px solid #ddd; border-radius: 4px; background: #f8f9fa;">
+          <input type="radio" name="stadiumMode" value="flag" id="modeFlag" style="cursor: pointer;">
+          <span>Флаг</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 10px; border: 2px solid #ddd; border-radius: 4px; background: #f8f9fa;">
+          <input type="radio" name="stadiumMode" value="winners" id="modeWinners" style="cursor: pointer;">
+          <span>Победители</span>
+        </label>
+      </div>
+      <button class="btn btn-primary" onclick="saveStadiumMode()">Применить режим</button>
+    </div>
+
+    <!-- Настройки победителей (показываются только если выбран режим Победители) -->
+    <div id="winnersSettings" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+      <label style="display: block; margin-bottom: 15px; font-weight: bold;">Выберите команды-победители:</label>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">🥇 1 место:</label>
+        <select id="winner1Select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+          <option value="">-- Выберите команду --</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">🥈 2 место:</label>
+        <select id="winner2Select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+          <option value="">-- Выберите команду --</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 600;">🥉 3 место:</label>
+        <select id="winner3Select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+          <option value="">-- Выберите команду --</option>
+        </select>
+      </div>
+      
+      <button class="btn btn-primary" onclick="saveWinners()">Сохранить победителей</button>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
@@ -456,9 +510,11 @@
       try {
         const response = await fetch(`/api/tournaments?token=${getToken()}`);
         if (response.ok) {
-          tournaments = await response.json();
-          renderTournaments();
-        } else {
+      tournaments = await response.json();
+      renderTournaments();
+      // Обновляем списки команд для выбора победителей
+      fillWinnersSelects();
+      } else {
           console.error('Ошибка загрузки турниров');
         }
       } catch (error) {
@@ -1168,13 +1224,43 @@
             stadiumTokenInput.value = config.stadiumToken || '';
           }
           
-          if (stadiumLink) {
-            const currentUrl = window.location.origin;
-            const stadiumUrl = `${currentUrl}/stadium.html?token=${encodeURIComponent(config.stadiumToken || '')}`;
-            stadiumLink.href = stadiumUrl;
-            stadiumLink.textContent = stadiumUrl;
+        if (stadiumLink) {
+          const currentUrl = window.location.origin;
+          const stadiumUrl = `${currentUrl}/stadium.html?token=${encodeURIComponent(config.stadiumToken || '')}`;
+          stadiumLink.href = stadiumUrl;
+          stadiumLink.textContent = stadiumUrl;
+        }
+        
+        // Загружаем режим работы табло
+        if (config.stadiumMode) {
+          const modeRadio = document.querySelector(`input[name="stadiumMode"][value="${config.stadiumMode}"]`);
+          if (modeRadio) {
+            modeRadio.checked = true;
+            if (config.stadiumMode === 'winners') {
+              document.getElementById('winnersSettings').style.display = 'block';
+            }
+          }
+        } else {
+          // По умолчанию - режим Табло
+          document.getElementById('modeScoreboard').checked = true;
+        }
+        
+        // Загружаем победителей
+        if (config.winners) {
+          if (config.winners.winner1) {
+            document.getElementById('winner1Select').value = config.winners.winner1;
+          }
+          if (config.winners.winner2) {
+            document.getElementById('winner2Select').value = config.winners.winner2;
+          }
+          if (config.winners.winner3) {
+            document.getElementById('winner3Select').value = config.winners.winner3;
           }
         }
+        
+        // Заполняем списки команд для выбора победителей
+        fillWinnersSelects();
+      }
       } catch (error) {
         console.error('Ошибка загрузки конфигурации:', error);
       }
@@ -1208,6 +1294,145 @@
       } catch (error) {
         console.error('Ошибка сохранения секрета:', error);
         showNotification('Ошибка сохранения секрета', 'error');
+      }
+    }
+    
+    // Заполнение списков команд для выбора победителей
+    function fillWinnersSelects() {
+      const winner1Select = document.getElementById('winner1Select');
+      const winner2Select = document.getElementById('winner2Select');
+      const winner3Select = document.getElementById('winner3Select');
+      
+      if (!winner1Select || !winner2Select || !winner3Select) return;
+      
+      // Очищаем списки, оставляя первую опцию
+      [winner1Select, winner2Select, winner3Select].forEach(select => {
+        while (select.options.length > 1) {
+          select.remove(1);
+        }
+      });
+      
+      // Собираем все команды из всех турниров
+      const allTeams = [];
+      tournaments.forEach(tournament => {
+        if (tournament.teams && tournament.teams.length > 0) {
+          tournament.teams.forEach(team => {
+            allTeams.push({
+              id: `${tournament.id}_${team.id}`,
+              name: team.name,
+              city: team.city,
+              tournamentName: tournament.name
+            });
+          });
+        }
+      });
+      
+      // Добавляем команды в каждый список
+      allTeams.forEach(team => {
+        const option1 = new Option(`${team.name}${team.city ? ' (' + team.city + ')' : ''} - ${team.tournamentName}`, team.id);
+        const option2 = new Option(`${team.name}${team.city ? ' (' + team.city + ')' : ''} - ${team.tournamentName}`, team.id);
+        const option3 = new Option(`${team.name}${team.city ? ' (' + team.city + ')' : ''} - ${team.tournamentName}`, team.id);
+        
+        winner1Select.add(option1);
+        winner2Select.add(option2);
+        winner3Select.add(option3);
+      });
+    }
+    
+    // Обработка изменения режима
+    function initModeRadios() {
+      const modeRadios = document.querySelectorAll('input[name="stadiumMode"]');
+      modeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          const winnersSettings = document.getElementById('winnersSettings');
+          if (radio.value === 'winners') {
+            winnersSettings.style.display = 'block';
+          } else {
+            winnersSettings.style.display = 'none';
+          }
+        });
+      });
+    }
+    
+    // Инициализация при загрузке
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initModeRadios);
+    } else {
+      initModeRadios();
+    }
+    
+    // Сохранение режима работы табло
+    async function saveStadiumMode() {
+      const selectedMode = document.querySelector('input[name="stadiumMode"]:checked');
+      if (!selectedMode) {
+        showNotification('Выберите режим отображения', 'error');
+        return;
+      }
+      
+      if (!confirm('Применить этот режим? Табло стадиона обновится моментально.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stadiumMode: selectedMode.value })
+        });
+        
+        if (response.ok) {
+          showNotification('Режим работы табло сохранен!', 'success');
+          // Отправляем событие через Socket.IO для моментального обновления
+          socket.emit('stadiumModeChange', { mode: selectedMode.value });
+        } else {
+          throw new Error('Ошибка сохранения режима');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения режима:', error);
+        showNotification('Ошибка сохранения режима', 'error');
+      }
+    }
+    
+    // Сохранение победителей
+    async function saveWinners() {
+      const winner1 = document.getElementById('winner1Select').value;
+      const winner2 = document.getElementById('winner2Select').value;
+      const winner3 = document.getElementById('winner3Select').value;
+      
+      if (!winner1 || !winner2 || !winner3) {
+        showNotification('Выберите всех трех победителей', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            winners: {
+              winner1,
+              winner2,
+              winner3
+            }
+          })
+        });
+        
+        if (response.ok) {
+          showNotification('Победители сохранены!', 'success');
+          // Отправляем событие через Socket.IO для моментального обновления
+          socket.emit('stadiumWinnersChange', { 
+            winners: {
+              winner1,
+              winner2,
+              winner3
+            }
+          });
+        } else {
+          throw new Error('Ошибка сохранения победителей');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения победителей:', error);
+        showNotification('Ошибка сохранения победителей', 'error');
       }
     }
     

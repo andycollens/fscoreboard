@@ -988,10 +988,19 @@ server.listen(PORT, () => {
 // ====== API для конфигурации (токены) ======
 app.get('/api/config', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
-  res.json({
-    token: getActualToken(),
-    stadiumToken: getActualStadiumToken()
-  });
+  
+  // Загружаем полную конфигурацию
+  let config = { token: getActualToken(), stadiumToken: getActualStadiumToken() };
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      config = { ...config, ...savedConfig };
+    } catch (error) {
+      console.error('Ошибка загрузки конфигурации:', error);
+    }
+  }
+  
+  res.json(config);
 });
 
 app.put('/api/config', (req, res) => {
@@ -1014,10 +1023,25 @@ app.put('/api/config', (req, res) => {
   if (req.body.stadiumToken !== undefined) {
     currentConfig.stadiumToken = req.body.stadiumToken;
   }
+  if (req.body.stadiumMode !== undefined) {
+    currentConfig.stadiumMode = req.body.stadiumMode;
+    // Отправляем событие всем подключенным клиентам stadium.html
+    io.emit('stadiumModeChange', { mode: req.body.stadiumMode });
+  }
+  if (req.body.winners !== undefined) {
+    currentConfig.winners = req.body.winners;
+    // Отправляем событие всем подключенным клиентам stadium.html
+    io.emit('stadiumWinnersChange', { winners: req.body.winners });
+  }
   
   // Сохраняем конфигурацию
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(currentConfig, null, 2));
   
-  console.log('Config updated:', { token: req.body.token !== undefined ? '***changed***' : 'unchanged', stadiumToken: req.body.stadiumToken !== undefined ? '***changed***' : 'unchanged' });
-  res.json({ success: true, token: currentConfig.token, stadiumToken: currentConfig.stadiumToken });
+  console.log('Config updated:', { 
+    token: req.body.token !== undefined ? '***changed***' : 'unchanged', 
+    stadiumToken: req.body.stadiumToken !== undefined ? '***changed***' : 'unchanged',
+    stadiumMode: req.body.stadiumMode !== undefined ? req.body.stadiumMode : 'unchanged',
+    winners: req.body.winners !== undefined ? '***changed***' : 'unchanged'
+  });
+  res.json({ success: true, ...currentConfig });
 });

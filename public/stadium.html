@@ -20,6 +20,137 @@
             overflow: hidden;
         }
 
+        /* Режим Флаг */
+        .flag-mode {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flag-mode.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .russian-flag {
+            width: 80vw;
+            height: 60vh;
+            position: relative;
+            background: linear-gradient(to bottom, 
+                #ffffff 0%, 
+                #ffffff 33.33%, 
+                #0039a6 33.33%, 
+                #0039a6 66.66%, 
+                #d52b1e 66.66%, 
+                #d52b1e 100%);
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            animation: wave 3s ease-in-out infinite;
+            transform-origin: left center;
+        }
+
+        @keyframes wave {
+            0%, 100% {
+                transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+            }
+            25% {
+                transform: perspective(1000px) rotateY(5deg) rotateX(2deg);
+            }
+            50% {
+                transform: perspective(1000px) rotateY(0deg) rotateX(-2deg);
+            }
+            75% {
+                transform: perspective(1000px) rotateY(-5deg) rotateX(2deg);
+            }
+        }
+
+        /* Режим Победители */
+        .winners-mode {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .winners-mode.active {
+            display: flex;
+        }
+
+        .winner-podium {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .winner-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            max-width: 350px;
+        }
+
+        .winner-place {
+            font-size: 80px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .winner-logo {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            background: transparent;
+            border-radius: 0;
+        }
+
+        .winner-name {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .winner-city {
+            font-size: 32px;
+            color: #ccc;
+        }
+
+        .podium-base {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px 8px 0 0;
+            margin-top: 20px;
+        }
+
+        .winner-item.first .podium-base {
+            height: 100px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .winner-item.second .podium-base {
+            height: 80px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .winner-item.third .podium-base {
+            height: 60px;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
         .stadium-container {
             display: flex;
             flex-direction: column;
@@ -471,7 +602,40 @@
     </style>
 </head>
 <body>
-    <div class="stadium-container">
+    <!-- Режим Флаг -->
+    <div class="flag-mode" id="flagMode">
+        <div class="russian-flag"></div>
+    </div>
+
+    <!-- Режим Победители -->
+    <div class="winners-mode" id="winnersMode">
+        <div class="winner-podium">
+            <div class="winner-item second" id="winner2Item">
+                <div class="winner-place">🥈</div>
+                <img class="winner-logo" id="winner2Logo" src="" alt="" style="display: none;">
+                <div class="winner-name" id="winner2Name">-</div>
+                <div class="winner-city" id="winner2City"></div>
+                <div class="podium-base"></div>
+            </div>
+            <div class="winner-item first" id="winner1Item">
+                <div class="winner-place">🥇</div>
+                <img class="winner-logo" id="winner1Logo" src="" alt="" style="display: none;">
+                <div class="winner-name" id="winner1Name">-</div>
+                <div class="winner-city" id="winner1City"></div>
+                <div class="podium-base"></div>
+            </div>
+            <div class="winner-item third" id="winner3Item">
+                <div class="winner-place">🥉</div>
+                <img class="winner-logo" id="winner3Logo" src="" alt="" style="display: none;">
+                <div class="winner-name" id="winner3Name">-</div>
+                <div class="winner-city" id="winner3City"></div>
+                <div class="podium-base"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Режим Табло (по умолчанию) -->
+    <div class="stadium-container" id="scoreboardMode">
         <!-- Верхняя область -->
         <div class="top-section">
             <div class="tournament-title" id="tournamentTitle">ISKRA CUP 2025</div>
@@ -528,6 +692,8 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let currentMode = 'scoreboard'; // По умолчанию режим Табло
+        let winnersData = null;
         
         // Получение элементов
         const team1Logo = document.getElementById('team1Logo');
@@ -677,16 +843,141 @@
             console.log('Stadium страница загружена');
             
     // Тестовая активация полосок для проверки
-    setTimeout(() => {
-        team1Stripe.classList.add('active');
-        team2Stripe.classList.add('active');
-        console.log('Полоски активированы для тестирования');
+        setTimeout(() => {
+            team1Stripe.classList.add('active');
+            team2Stripe.classList.add('active');
+            console.log('Полоски активированы для тестирования');
+            
+            // Применяем адаптивный шрифт к счетам при загрузке
+            adjustScoreFontSize(team1Score);
+            adjustScoreFontSize(team2Score);
+            console.log('Адаптивный шрифт применен к счетам');
+        }, 1000);
+    
+    // Функция переключения режимов
+    function switchMode(mode) {
+        currentMode = mode;
         
-        // Применяем адаптивный шрифт к счетам при загрузке
-        adjustScoreFontSize(team1Score);
-        adjustScoreFontSize(team2Score);
-        console.log('Адаптивный шрифт применен к счетам');
-    }, 1000);
+        // Скрываем все режимы
+        document.getElementById('scoreboardMode').style.display = 'none';
+        document.getElementById('flagMode').classList.remove('active');
+        document.getElementById('winnersMode').classList.remove('active');
+        
+        // Показываем выбранный режим
+        if (mode === 'scoreboard') {
+            document.getElementById('scoreboardMode').style.display = 'flex';
+        } else if (mode === 'flag') {
+            document.getElementById('flagMode').classList.add('active');
+        } else if (mode === 'winners') {
+            document.getElementById('winnersMode').classList.add('active');
+            if (winnersData) {
+                updateWinnersDisplay();
+            }
+        }
+    }
+    
+    // Функция обновления отображения победителей
+    async function updateWinnersDisplay() {
+        if (!winnersData) return;
+        
+        try {
+            // Загружаем данные о турнирах для получения информации о командах
+            const token = new URLSearchParams(window.location.search).get('token');
+            const response = await fetch('/api/tournaments?token=' + token);
+            if (!response.ok) return;
+            
+            const tournaments = await response.json();
+            
+            // Функция для поиска команды по ID
+            function findTeam(teamIdStr) {
+                const [tournamentId, teamId] = teamIdStr.split('_');
+                const tournament = tournaments.find(t => t.id === tournamentId);
+                if (!tournament || !tournament.teams) return null;
+                return tournament.teams.find(t => t.id === teamId);
+            }
+            
+            // Обновляем первое место
+            const winner1 = findTeam(winnersData.winner1);
+            if (winner1) {
+                document.getElementById('winner1Name').textContent = winner1.name || '-';
+                document.getElementById('winner1City').textContent = winner1.city || '';
+                const logo1 = document.getElementById('winner1Logo');
+                if (winner1.logo) {
+                    logo1.src = winner1.logo;
+                    logo1.style.display = 'block';
+                } else {
+                    logo1.style.display = 'none';
+                }
+            }
+            
+            // Обновляем второе место
+            const winner2 = findTeam(winnersData.winner2);
+            if (winner2) {
+                document.getElementById('winner2Name').textContent = winner2.name || '-';
+                document.getElementById('winner2City').textContent = winner2.city || '';
+                const logo2 = document.getElementById('winner2Logo');
+                if (winner2.logo) {
+                    logo2.src = winner2.logo;
+                    logo2.style.display = 'block';
+                } else {
+                    logo2.style.display = 'none';
+                }
+            }
+            
+            // Обновляем третье место
+            const winner3 = findTeam(winnersData.winner3);
+            if (winner3) {
+                document.getElementById('winner3Name').textContent = winner3.name || '-';
+                document.getElementById('winner3City').textContent = winner3.city || '';
+                const logo3 = document.getElementById('winner3Logo');
+                if (winner3.logo) {
+                    logo3.src = winner3.logo;
+                    logo3.style.display = 'block';
+                } else {
+                    logo3.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки данных о победителях:', error);
+        }
+    }
+    
+    // Загрузка конфигурации при старте
+    async function loadStadiumConfig() {
+        try {
+            const token = new URLSearchParams(window.location.search).get('token');
+            const response = await fetch(`/api/config?token=${token}`);
+            if (response.ok) {
+                const config = await response.json();
+                if (config.stadiumMode) {
+                    switchMode(config.stadiumMode);
+                }
+                if (config.winners) {
+                    winnersData = config.winners;
+                    if (currentMode === 'winners') {
+                        updateWinnersDisplay();
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки конфигурации:', error);
+        }
+    }
+    
+    // Обработчики Socket.IO для моментального обновления
+    socket.on('stadiumModeChange', (data) => {
+        switchMode(data.mode);
+    });
+    
+    socket.on('stadiumWinnersChange', (data) => {
+        winnersData = data.winners;
+        if (currentMode === 'winners') {
+            updateWinnersDisplay();
+        }
+    });
+    
+    // Загружаем конфигурацию при загрузке страницы
+    loadStadiumConfig();
         });
     </script>
 </body>
