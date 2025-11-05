@@ -836,7 +836,12 @@
 
         // Обновление данных
         socket.on('scoreboardUpdate', (data) => {
-            console.log('Stadium получил данные:', data);
+            console.log('Stadium получил данные:', data, 'currentMode:', currentMode);
+            // Сохраняем данные в переменную для использования при переключении режима
+            if (!window.lastScoreboardData) {
+                window.lastScoreboardData = {};
+            }
+            window.lastScoreboardData = data;
             // Обновляем отображение только если режим табло активен
             if (currentMode === 'scoreboard') {
                 updateDisplay(data);
@@ -845,9 +850,15 @@
 
         // Получение начального состояния при загрузке страницы
         socket.on('currentState', (data) => {
-            console.log('Stadium получил начальное состояние:', data);
-            // Обновляем отображение только если режим табло активен
-            if (currentMode === 'scoreboard') {
+            console.log('Stadium получил начальное состояние:', data, 'currentMode:', currentMode);
+            // Сохраняем данные в переменную для использования при переключении режима
+            if (!window.lastScoreboardData) {
+                window.lastScoreboardData = {};
+            }
+            window.lastScoreboardData = data;
+            // Обновляем отображение сразу, даже если режим еще не загружен
+            // (он будет установлен из config, но данные должны быть готовы)
+            if (currentMode === 'scoreboard' || currentMode === undefined) {
                 updateDisplay(data);
             }
         });
@@ -965,7 +976,7 @@
     // Функция переключения режимов
     function switchMode(mode) {
         currentMode = mode;
-        console.log('Switching mode to:', mode, 'winnersData:', winnersData);
+        console.log('Switching mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
         
         // Скрываем все режимы
         const scoreboardMode = document.getElementById('scoreboardMode');
@@ -984,6 +995,14 @@
         // Показываем выбранный режим
         if (mode === 'scoreboard') {
             scoreboardMode.style.display = 'flex';
+            // Если есть сохраненные данные, обновляем отображение
+            if (window.lastScoreboardData) {
+                console.log('Updating display with saved data when switching to scoreboard');
+                updateDisplay(window.lastScoreboardData);
+            } else {
+                console.log('No saved data, requesting current state');
+                socket.emit('getCurrentState');
+            }
         } else if (mode === 'flag') {
             flagMode.classList.add('active');
         } else if (mode === 'winners') {
