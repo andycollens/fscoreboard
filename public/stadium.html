@@ -1026,22 +1026,36 @@
                     console.error('Invalid team ID format:', teamIdStr);
                     return null;
                 }
-                const [tournamentId, teamId] = parts;
-                const tournament = tournaments.find(t => t.id === tournamentId);
+                const [tournamentIdStr, teamIdStr] = parts;
+                
+                // Ищем турнир, сравнивая как строки и как числа
+                const tournament = tournaments.find(t => {
+                    const tId = String(t.id);
+                    const searchId = String(tournamentIdStr);
+                    return tId === searchId || tId === tournamentIdStr || String(t.id) === tournamentIdStr;
+                });
+                
                 if (!tournament) {
-                    console.error('Tournament not found:', tournamentId);
+                    console.error('Tournament not found:', tournamentIdStr, 'Available tournaments:', tournaments.map(t => t.id));
                     return null;
                 }
-                if (!tournament.teams) {
-                    console.error('Tournament has no teams:', tournamentId);
+                if (!tournament.teams || tournament.teams.length === 0) {
+                    console.error('Tournament has no teams:', tournamentIdStr);
                     return null;
                 }
-                const team = tournament.teams.find(t => t.id === teamId);
+                
+                // Ищем команду, сравнивая как строки и как числа
+                const team = tournament.teams.find(t => {
+                    const tId = String(t.id);
+                    const searchId = String(teamIdStr);
+                    return tId === searchId || tId === teamIdStr || String(t.id) === teamIdStr;
+                });
+                
                 if (!team) {
-                    console.error('Team not found:', teamId, 'in tournament:', tournamentId);
+                    console.error('Team not found:', teamIdStr, 'in tournament:', tournamentIdStr, 'Available teams:', tournament.teams.map(t => t.id));
                     return null;
                 }
-                console.log('Found team:', team.name, 'from tournament:', tournament.name);
+                console.log('Found team:', team.name, 'from tournament:', tournament.name, 'logo:', team.logo);
                 return team;
             }
             
@@ -1123,28 +1137,33 @@
             if (response.ok) {
                 const config = await response.json();
                 console.log('Loaded config:', config);
-                // Всегда загружаем сохраненный режим (по умолчанию 'scoreboard')
-                const mode = config.stadiumMode || 'scoreboard';
-                console.log('Setting mode to:', mode);
-                switchMode(mode);
                 
-                // Всегда загружаем сохраненных победителей, если они есть
+                // Всегда загружаем сохраненных победителей СНАЧАЛА, если они есть
                 if (config.winners) {
                     console.log('Loading winners data:', config.winners);
                     winnersData = config.winners;
-                    // Обновляем отображение только если текущий режим - победители
-                    if (mode === 'winners') {
-                        console.log('Mode is winners, updating display');
-                        // Даем небольшую задержку, чтобы DOM был готов
-                        setTimeout(() => {
-                            updateWinnersDisplay();
-                        }, 100);
-                    }
                 } else {
                     console.log('No winners data in config');
                 }
+                
+                // Затем загружаем сохраненный режим (по умолчанию 'scoreboard')
+                const mode = config.stadiumMode || 'scoreboard';
+                console.log('Setting mode to:', mode, 'winnersData:', winnersData);
+                
+                // Переключаем режим (это обновит отображение победителей, если режим winners)
+                switchMode(mode);
+                
+                // Если режим - победители, даем больше времени для загрузки данных
+                if (mode === 'winners' && winnersData) {
+                    console.log('Mode is winners, updating display after delay');
+                    setTimeout(() => {
+                        updateWinnersDisplay();
+                    }, 300);
+                }
             } else {
                 console.error('Failed to load config:', response.status, response.statusText);
+                // При ошибке используем режим по умолчанию
+                switchMode('scoreboard');
             }
         } catch (error) {
             console.error('Ошибка загрузки конфигурации:', error);

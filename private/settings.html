@@ -1245,21 +1245,23 @@
           document.getElementById('modeScoreboard').checked = true;
         }
         
-        // Загружаем победителей
-        if (config.winners) {
-          if (config.winners.winner1) {
-            document.getElementById('winner1Select').value = config.winners.winner1;
-          }
-          if (config.winners.winner2) {
-            document.getElementById('winner2Select').value = config.winners.winner2;
-          }
-          if (config.winners.winner3) {
-            document.getElementById('winner3Select').value = config.winners.winner3;
-          }
-        }
-        
-        // Заполняем списки команд для выбора победителей
+        // Сначала заполняем списки команд для выбора победителей
         fillWinnersSelects();
+        
+        // Затем загружаем сохраненных победителей (после заполнения списков)
+        setTimeout(() => {
+          if (config.winners) {
+            if (config.winners.winner1) {
+              document.getElementById('winner1Select').value = config.winners.winner1;
+            }
+            if (config.winners.winner2) {
+              document.getElementById('winner2Select').value = config.winners.winner2;
+            }
+            if (config.winners.winner3) {
+              document.getElementById('winner3Select').value = config.winners.winner3;
+            }
+          }
+        }, 100);
       }
       } catch (error) {
         console.error('Ошибка загрузки конфигурации:', error);
