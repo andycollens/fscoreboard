@@ -1072,7 +1072,7 @@
                     console.error('Invalid team ID format:', teamIdStr);
                     return null;
                 }
-                const [tournamentIdStr, teamIdStr] = parts;
+                const [tournamentIdStr, actualTeamId] = parts;
                 
                 // Ищем турнир, сравнивая как строки и как числа
                 const tournament = tournaments.find(t => {
@@ -1093,12 +1093,12 @@
                 // Ищем команду, сравнивая как строки и как числа
                 const team = tournament.teams.find(t => {
                     const tId = String(t.id);
-                    const searchId = String(teamIdStr);
-                    return tId === searchId || tId === teamIdStr || String(t.id) === teamIdStr;
+                    const searchId = String(actualTeamId);
+                    return tId === searchId || tId === actualTeamId || String(t.id) === actualTeamId;
                 });
                 
                 if (!team) {
-                    console.error('Team not found:', teamIdStr, 'in tournament:', tournamentIdStr, 'Available teams:', tournament.teams.map(t => t.id));
+                    console.error('Team not found:', actualTeamId, 'in tournament:', tournamentIdStr, 'Available teams:', tournament.teams.map(t => t.id));
                     return null;
                 }
                 console.log('Found team:', team.name, 'from tournament:', tournament.name, 'logo:', team.logo);
