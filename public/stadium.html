@@ -1060,13 +1060,14 @@
                 }
                 const parts = teamIdStr.split('_');
                 // ID может быть в формате tournamentId_teamId или tournamentId_teamId_random
-                // Берем первые две части как tournamentId и teamId
+                // В базе данных ID команды имеет формат teamId_random (2 части)
                 if (parts.length < 2) {
                     console.error('Invalid team ID format:', teamIdStr);
                     return null;
                 }
                 const tournamentIdStr = parts[0];
-                const actualTeamId = parts[1];
+                // Берем все части после tournamentId как ID команды (teamId_random или teamId)
+                const actualTeamId = parts.slice(1).join('_');
                 
                 // Ищем турнир, сравнивая как строки и как числа
                 const tournament = tournaments.find(t => {
@@ -1084,11 +1085,11 @@
                     return null;
                 }
                 
-                // Ищем команду, сравнивая как строки и как числа
+                // Ищем команду по полному ID (teamId_random) или по началу ID
                 const team = tournament.teams.find(t => {
                     const tId = String(t.id);
-                    const searchId = String(actualTeamId);
-                    return tId === searchId || tId === actualTeamId || String(t.id) === actualTeamId;
+                    // Сравниваем полный ID или ищем по началу (startsWith)
+                    return tId === actualTeamId || tId.startsWith(actualTeamId + '_') || actualTeamId.startsWith(tId + '_');
                 });
                 
                 if (!team) {
