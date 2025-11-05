@@ -1016,7 +1016,7 @@ app.put('/api/config', (req, res) => {
     }
   }
   
-  // Обновляем только переданные значения
+  // Обновляем только переданные значения, сохраняя остальные
   if (req.body.token !== undefined) {
     currentConfig.token = req.body.token;
   }
@@ -1029,10 +1029,12 @@ app.put('/api/config', (req, res) => {
     io.emit('stadiumModeChange', { mode: req.body.stadiumMode });
   }
   if (req.body.winners !== undefined) {
+    // Сохраняем победителей независимо от режима
     currentConfig.winners = req.body.winners;
     // Отправляем событие всем подключенным клиентам stadium.html
     io.emit('stadiumWinnersChange', { winners: req.body.winners });
   }
+  // Важно: не перезаписываем winners и stadiumMode, если они не переданы
   
   // Сохраняем конфигурацию
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(currentConfig, null, 2));
@@ -1040,8 +1042,8 @@ app.put('/api/config', (req, res) => {
   console.log('Config updated:', { 
     token: req.body.token !== undefined ? '***changed***' : 'unchanged', 
     stadiumToken: req.body.stadiumToken !== undefined ? '***changed***' : 'unchanged',
-    stadiumMode: req.body.stadiumMode !== undefined ? req.body.stadiumMode : 'unchanged',
-    winners: req.body.winners !== undefined ? '***changed***' : 'unchanged'
+    stadiumMode: req.body.stadiumMode !== undefined ? req.body.stadiumMode : (currentConfig.stadiumMode || 'scoreboard'),
+    winners: req.body.winners !== undefined ? '***changed***' : (currentConfig.winners ? 'preserved' : 'none')
   });
   res.json({ success: true, ...currentConfig });
 });

@@ -1077,28 +1077,41 @@
             const response = await fetch(`/api/config?token=${token}`);
             if (response.ok) {
                 const config = await response.json();
-                if (config.stadiumMode) {
-                    switchMode(config.stadiumMode);
-                }
+                // Всегда загружаем сохраненный режим (по умолчанию 'scoreboard')
+                const mode = config.stadiumMode || 'scoreboard';
+                switchMode(mode);
+                
+                // Всегда загружаем сохраненных победителей, если они есть
                 if (config.winners) {
                     winnersData = config.winners;
-                    if (currentMode === 'winners') {
+                    // Обновляем отображение только если текущий режим - победители
+                    if (mode === 'winners') {
                         updateWinnersDisplay();
                     }
                 }
             }
         } catch (error) {
             console.error('Ошибка загрузки конфигурации:', error);
+            // При ошибке используем режим по умолчанию
+            switchMode('scoreboard');
         }
     }
     
     // Обработчики Socket.IO для моментального обновления
     socket.on('stadiumModeChange', (data) => {
+        // Сохраняем текущих победителей перед переключением режима
+        // (winnersData уже сохранен в переменной, не теряется)
         switchMode(data.mode);
+        // Если переключились на режим победителей, обновляем отображение
+        if (data.mode === 'winners' && winnersData) {
+            updateWinnersDisplay();
+        }
     });
     
     socket.on('stadiumWinnersChange', (data) => {
+        // Обновляем данные о победителях, сохраняя их независимо от режима
         winnersData = data.winners;
+        // Обновляем отображение только если текущий режим - победители
         if (currentMode === 'winners') {
             updateWinnersDisplay();
         }
