@@ -3830,17 +3830,28 @@
       let selectedTeam2 = null;
       
       // Устанавливаем начальные значения для логотипов и цветов
+      // Показываем логотип пресета, если он есть, иначе логотип команды
       if (currentTeam1Id) {
         selectedTeam1 = tournament.teams.find(t => t.id === currentTeam1Id);
-        if (selectedTeam1 && team1LogoPreview && selectedTeam1.logo) {
-          team1LogoPreview.innerHTML = `<img src="${selectedTeam1.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+        if (team1LogoPreview) {
+          // Сначала проверяем, есть ли у пресета свой preset_ логотип
+          if (preset.team1Logo && preset.team1Logo.includes('preset_')) {
+            team1LogoPreview.innerHTML = `<img src="${preset.team1Logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          } else if (selectedTeam1 && selectedTeam1.logo) {
+            team1LogoPreview.innerHTML = `<img src="${selectedTeam1.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          }
         }
       }
       
       if (currentTeam2Id) {
         selectedTeam2 = tournament.teams.find(t => t.id === currentTeam2Id);
-        if (selectedTeam2 && team2LogoPreview && selectedTeam2.logo) {
-          team2LogoPreview.innerHTML = `<img src="${selectedTeam2.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+        if (team2LogoPreview) {
+          // Сначала проверяем, есть ли у пресета свой preset_ логотип
+          if (preset.team2Logo && preset.team2Logo.includes('preset_')) {
+            team2LogoPreview.innerHTML = `<img src="${preset.team2Logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          } else if (selectedTeam2 && selectedTeam2.logo) {
+            team2LogoPreview.innerHTML = `<img src="${selectedTeam2.logo}" alt="Логотип" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+          }
         }
       }
       
