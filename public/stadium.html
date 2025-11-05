@@ -138,17 +138,52 @@
 
         .winner-item.first .podium-base {
             height: 100px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
         }
 
         .winner-item.second .podium-base {
             height: 80px;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
         }
 
         .winner-item.third .podium-base {
             height: 60px;
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            background: linear-gradient(135deg, #CD7F32 0%, #B8860B 100%);
+        }
+        
+        @media (max-width: 768px) {
+            .winners-mode {
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .winner-podium {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+            
+            .winner-item {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .winner-place {
+                font-size: 60px;
+            }
+            
+            .winner-name {
+                font-size: 36px;
+            }
+            
+            .winner-city {
+                font-size: 24px;
+            }
+            
+            .winner-logo {
+                width: 150px;
+                height: 150px;
+            }
         }
 
         .stadium-container {
