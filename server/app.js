@@ -68,7 +68,25 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 9);
-    const extension = path.extname(file.originalname);
+    
+    // Определяем расширение из MIME-типа, а не из имени файла
+    // Это гарантирует, что имя файла полностью не зависит от оригинального имени
+    let extension = '.png'; // По умолчанию
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+      extension = '.jpg';
+    } else if (file.mimetype === 'image/png') {
+      extension = '.png';
+    } else if (file.mimetype === 'image/gif') {
+      extension = '.gif';
+    } else if (file.mimetype === 'image/webp') {
+      extension = '.webp';
+    } else {
+      // Если MIME-тип не распознан, пытаемся взять из оригинального имени как fallback
+      const originalExt = path.extname(file.originalname).toLowerCase();
+      if (originalExt && /\.(jpg|jpeg|png|gif|webp)$/i.test(originalExt)) {
+        extension = originalExt;
+      }
+    }
     
     // Если передан tournamentId и teamId, используем их для уникальности
     const tournamentId = req.body.tournamentId || req.query.tournamentId || '';
@@ -76,10 +94,11 @@ const storage = multer.diskStorage({
     
     let filename;
     if (tournamentId && teamId) {
-      // Для редактирования команды: tournamentId_teamId_timestamp_random.ext
+      // Для редактирования команды: team_tournamentId_teamId_timestamp_random.ext
+      // Имя полностью уникально и не зависит от оригинального имени файла
       filename = `team_${tournamentId}_${teamId}_${timestamp}_${random}${extension}`;
     } else if (tournamentId) {
-      // Для новой команды: tournamentId_timestamp_random.ext
+      // Для новой команды: team_tournamentId_timestamp_random.ext
       filename = `team_${tournamentId}_${timestamp}_${random}${extension}`;
     } else {
       // Для основной панели или других случаев: fieldname_timestamp_random.ext
@@ -790,13 +809,12 @@ app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
     return res.status(404).json({ error: 'Team not found' });
   }
   
-  // КРИТИЧНО: Сохраняем существующий логотип команды, если новый не предоставлен или пустой
-  // Логотип команды НЕ должен изменяться при сохранении пресетов или применении пресетов
+  // КРИТИЧНО: Логотип команды НЕ должен изменяться при сохранении пресетов или применении пресетов
   // Логотип изменяется ТОЛЬКО при редактировании записи команды в турнире (когда передается новый файл)
+  // Если logo передан явно (даже если это тот же URL) - используем его (это означает редактирование команды)
+  // Если logo не передан (undefined) - сохраняем существующий (это защита от случайного изменения)
   const existingLogo = tournament.teams[teamIndex].logo || '';
-  // Если logo передан явно и не пустой - используем его (это означает редактирование команды)
-  // Если logo пустой или не передан - сохраняем существующий
-  const newLogo = (req.body.logo && req.body.logo.trim() !== '') ? req.body.logo : existingLogo;
+  const newLogo = (req.body.logo !== undefined && req.body.logo !== null) ? req.body.logo : existingLogo;
   
   tournament.teams[teamIndex] = {
     ...tournament.teams[teamIndex],
