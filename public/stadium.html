@@ -837,13 +837,19 @@
         // Обновление данных
         socket.on('scoreboardUpdate', (data) => {
             console.log('Stadium получил данные:', data);
-            updateDisplay(data);
+            // Обновляем отображение только если режим табло активен
+            if (currentMode === 'scoreboard') {
+                updateDisplay(data);
+            }
         });
 
         // Получение начального состояния при загрузке страницы
         socket.on('currentState', (data) => {
             console.log('Stadium получил начальное состояние:', data);
-            updateDisplay(data);
+            // Обновляем отображение только если режим табло активен
+            if (currentMode === 'scoreboard') {
+                updateDisplay(data);
+            }
         });
 
         // Функция обновления полоски
