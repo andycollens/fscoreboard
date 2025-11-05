@@ -1211,6 +1211,16 @@
         // Обновляем данные о победителях, сохраняя их независимо от режима
         winnersData = data.winners;
         console.log('Updated winnersData:', winnersData);
+        
+        // Обновляем название победителей
+        if (data.winnersTitle !== undefined) {
+            winnersTitle = data.winnersTitle || '';
+            const winnersTitleEl = document.getElementById('winnersTitle');
+            if (winnersTitleEl) {
+                winnersTitleEl.textContent = winnersTitle;
+            }
+        }
+        
         // Обновляем отображение только если текущий режим - победители
         if (currentMode === 'winners') {
             console.log('Current mode is winners, updating display');

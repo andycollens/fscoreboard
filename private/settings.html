@@ -1255,6 +1255,14 @@
         
         // Затем загружаем сохраненных победителей (после заполнения списков)
         setTimeout(() => {
+          // Загружаем название для режима победителей
+          if (config.winnersTitle) {
+            const winnersTitleInput = document.getElementById('winnersTitleInput');
+            if (winnersTitleInput) {
+              winnersTitleInput.value = config.winnersTitle;
+            }
+          }
+          
           if (config.winners) {
             if (config.winners.winner1) {
               document.getElementById('winner1Select').value = config.winners.winner1;
