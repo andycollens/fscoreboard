@@ -1110,21 +1110,33 @@
     async function loadStadiumConfig() {
         try {
             const token = new URLSearchParams(window.location.search).get('token');
+            console.log('Loading stadium config with token:', token ? 'present' : 'missing');
             const response = await fetch(`/api/config?token=${token}`);
             if (response.ok) {
                 const config = await response.json();
+                console.log('Loaded config:', config);
                 // Всегда загружаем сохраненный режим (по умолчанию 'scoreboard')
                 const mode = config.stadiumMode || 'scoreboard';
+                console.log('Setting mode to:', mode);
                 switchMode(mode);
                 
                 // Всегда загружаем сохраненных победителей, если они есть
                 if (config.winners) {
+                    console.log('Loading winners data:', config.winners);
                     winnersData = config.winners;
                     // Обновляем отображение только если текущий режим - победители
                     if (mode === 'winners') {
-                        updateWinnersDisplay();
+                        console.log('Mode is winners, updating display');
+                        // Даем небольшую задержку, чтобы DOM был готов
+                        setTimeout(() => {
+                            updateWinnersDisplay();
+                        }, 100);
                     }
+                } else {
+                    console.log('No winners data in config');
                 }
+            } else {
+                console.error('Failed to load config:', response.status, response.statusText);
             }
         } catch (error) {
             console.error('Ошибка загрузки конфигурации:', error);
@@ -1145,11 +1157,16 @@
     });
     
     socket.on('stadiumWinnersChange', (data) => {
+        console.log('Received stadiumWinnersChange event:', data);
         // Обновляем данные о победителях, сохраняя их независимо от режима
         winnersData = data.winners;
+        console.log('Updated winnersData:', winnersData);
         // Обновляем отображение только если текущий режим - победители
         if (currentMode === 'winners') {
-            updateWinnersDisplay();
+            console.log('Current mode is winners, updating display');
+            setTimeout(() => {
+                updateWinnersDisplay();
+            }, 100);
         }
     });
     
