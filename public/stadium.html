@@ -948,6 +948,45 @@
             }
         }
 
+    // Функция переключения режимов
+    function switchMode(mode) {
+        currentMode = mode;
+        console.log('Switching mode to:', mode, 'winnersData:', winnersData);
+        
+        // Скрываем все режимы
+        const scoreboardMode = document.getElementById('scoreboardMode');
+        const flagMode = document.getElementById('flagMode');
+        const winnersMode = document.getElementById('winnersMode');
+        
+        if (!scoreboardMode || !flagMode || !winnersMode) {
+            console.error('Mode elements not found');
+            return;
+        }
+        
+        scoreboardMode.style.display = 'none';
+        flagMode.classList.remove('active');
+        winnersMode.classList.remove('active');
+        
+        // Показываем выбранный режим
+        if (mode === 'scoreboard') {
+            scoreboardMode.style.display = 'flex';
+        } else if (mode === 'flag') {
+            flagMode.classList.add('active');
+        } else if (mode === 'winners') {
+            winnersMode.classList.add('active');
+            // Всегда пытаемся обновить отображение, даже если winnersData еще нет
+            // (она может быть загружена позже)
+            if (winnersData) {
+                console.log('Updating winners display from switchMode');
+                setTimeout(() => {
+                    updateWinnersDisplay();
+                }, 100);
+            } else {
+                console.log('No winnersData yet, will update when loaded');
+            }
+        }
+    }
+
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Stadium страница загружена');
@@ -963,36 +1002,6 @@
             adjustScoreFontSize(team2Score);
             console.log('Адаптивный шрифт применен к счетам');
         }, 1000);
-    
-    // Функция переключения режимов
-    function switchMode(mode) {
-        currentMode = mode;
-        console.log('Switching mode to:', mode, 'winnersData:', winnersData);
-        
-        // Скрываем все режимы
-        document.getElementById('scoreboardMode').style.display = 'none';
-        document.getElementById('flagMode').classList.remove('active');
-        document.getElementById('winnersMode').classList.remove('active');
-        
-        // Показываем выбранный режим
-        if (mode === 'scoreboard') {
-            document.getElementById('scoreboardMode').style.display = 'flex';
-        } else if (mode === 'flag') {
-            document.getElementById('flagMode').classList.add('active');
-        } else if (mode === 'winners') {
-            document.getElementById('winnersMode').classList.add('active');
-            // Всегда пытаемся обновить отображение, даже если winnersData еще нет
-            // (она может быть загружена позже)
-            if (winnersData) {
-                console.log('Updating winners display from switchMode');
-                setTimeout(() => {
-                    updateWinnersDisplay();
-                }, 100);
-            } else {
-                console.log('No winnersData yet, will update when loaded');
-            }
-        }
-    }
     
     // Функция обновления отображения победителей
     async function updateWinnersDisplay() {
@@ -1200,9 +1209,9 @@
             }, 100);
         }
     });
-    
-    // Загружаем конфигурацию при загрузке страницы
-    loadStadiumConfig();
+
+        // Загружаем конфигурацию при загрузке страницы
+        loadStadiumConfig();
         });
     </script>
 </body>
