@@ -48,9 +48,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            gap: 40px;
-            padding: 40px;
+            padding: 0;
             padding-top: 60px;
+            position: relative;
         }
 
         .winners-mode.active {
@@ -63,7 +63,8 @@
             color: #fff;
             text-align: center;
             margin: 0;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
+            width: 100%;
         }
 
         .winner-podium {
@@ -73,6 +74,10 @@
             gap: 30px;
             width: 100%;
             max-width: 1200px;
+            position: absolute;
+            bottom: 300px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .winner-item {
@@ -82,7 +87,7 @@
             text-align: center;
             flex: 1;
             max-width: 390px;
-            gap: 20px;
+            position: relative;
         }
 
         .winner-team-info {
@@ -90,7 +95,9 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
-            margin-bottom: 20px;
+            position: absolute;
+            bottom: 100%;
+            width: 100%;
         }
 
         .winner-logo-container {
@@ -140,23 +147,37 @@
             height: 60px;
             background: transparent;
             border-radius: 8px 8px 0 0;
-            margin-top: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            position: absolute;
+            bottom: 0;
+            left: 0;
         }
 
         .winner-item.first .podium-base {
-            height: 180px;
+            height: 60px;
         }
 
         .winner-item.second .podium-base {
-            height: 120px;
+            height: 60px;
         }
 
         .winner-item.third .podium-base {
-            height: 80px;
+            height: 60px;
+        }
+        
+        /* Отступы команд от надписей мест */
+        .winner-item.first .winner-team-info {
+            margin-bottom: 200px; /* Самый большой отступ для первого места */
+        }
+
+        .winner-item.second .winner-team-info {
+            margin-bottom: 140px; /* Средний отступ для второго места */
+        }
+
+        .winner-item.third .winner-team-info {
+            margin-bottom: 100px; /* Меньший отступ для третьего места */
         }
 
         .podium-place-label {
@@ -660,6 +681,22 @@
             
             .winners-title {
                 font-size: 35px;
+            }
+            
+            .winner-podium {
+                bottom: 150px !important;
+            }
+            
+            .winner-item.first .winner-team-info {
+                margin-bottom: 100px !important;
+            }
+
+            .winner-item.second .winner-team-info {
+                margin-bottom: 70px !important;
+            }
+
+            .winner-item.third .winner-team-info {
+                margin-bottom: 50px !important;
             }
 
             .timer {
