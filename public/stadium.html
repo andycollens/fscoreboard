@@ -1132,6 +1132,7 @@
     // Функция инициализации анимации лого (копия из preloader.html)
     let logoAnimationInterval = null;
     let logoResizeTimeout = null;
+    let logoResizeHandler = null;
 
     function initLogoAnimation() {
         const svg = document.getElementById('logo-background-svg');
@@ -1144,6 +1145,12 @@
         if (logoAnimationInterval) {
             clearInterval(logoAnimationInterval);
             logoAnimationInterval = null;
+        }
+
+        // Удаляем предыдущий обработчик resize, если он был
+        if (logoResizeHandler) {
+            window.removeEventListener('resize', logoResizeHandler);
+            logoResizeHandler = null;
         }
 
         const namespace = "http://www.w3.org/2000/svg";
@@ -1227,12 +1234,17 @@
         logoAnimationInterval = setInterval(animateMosaic, 100);
 
         // Перерисовываем сетку при изменении размера окна
-        window.addEventListener('resize', () => {
+        logoResizeHandler = () => {
             clearTimeout(logoResizeTimeout);
             logoResizeTimeout = setTimeout(() => {
-                createGrid();
+                // Проверяем, что режим лого все еще активен
+                const logoMode = document.getElementById('logoMode');
+                if (logoMode && logoMode.classList.contains('active')) {
+                    createGrid();
+                }
             }, 250);
-        });
+        };
+        window.addEventListener('resize', logoResizeHandler);
     }
 
         // Инициализация
