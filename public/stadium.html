@@ -57,6 +57,62 @@
             display: flex;
         }
 
+        /* Режим Лого */
+        .logo-mode {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            background-color: #0a0a0a;
+        }
+
+        .logo-mode.active {
+            display: block;
+        }
+
+        /* Контейнер SVG для режима Лого */
+        #logo-background-svg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Ключевой стиль для анимации: плавный переход цвета для каждого треугольника */
+        .logo-triangle {
+            transition: fill 1s ease-in-out;
+        }
+
+        /* Стили для контейнера логотипа */
+        #logo-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Стили для самого изображения логотипа */
+        #logo-image {
+            max-width: 80%;
+            max-height: 80%;
+            width: auto;
+            height: auto;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+        }
+
         .winners-title {
             font-size: 70px;
             font-weight: bold;
@@ -740,6 +796,17 @@
     <!-- Режим Флаг -->
     <div class="flag-mode" id="flagMode"></div>
 
+    <!-- Режим Лого -->
+    <div class="logo-mode" id="logoMode">
+        <!-- SVG-элемент, который будет заполнен треугольниками с помощью JavaScript -->
+        <svg id="logo-background-svg"></svg>
+
+        <!-- Контейнер для логотипа, размещенный поверх SVG -->
+        <div id="logo-container">
+            <img id="logo-image" src="/public/img/ISKRA-hor_logo.png" alt="ISKRA Logo">
+        </div>
+    </div>
+
     <!-- Режим Победители -->
     <div class="winners-mode" id="winnersMode">
         <div class="winners-title" id="winnersTitle"></div>
@@ -1018,8 +1085,9 @@
         const scoreboardMode = document.getElementById('scoreboardMode');
         const flagMode = document.getElementById('flagMode');
         const winnersMode = document.getElementById('winnersMode');
+        const logoMode = document.getElementById('logoMode');
         
-        if (!scoreboardMode || !flagMode || !winnersMode) {
+        if (!scoreboardMode || !flagMode || !winnersMode || !logoMode) {
             console.error('Mode elements not found');
             return;
         }
@@ -1027,6 +1095,7 @@
         scoreboardMode.style.display = 'none';
         flagMode.classList.remove('active');
         winnersMode.classList.remove('active');
+        logoMode.classList.remove('active');
         
         // Показываем выбранный режим
         if (mode === 'scoreboard') {
@@ -1053,7 +1122,117 @@
             } else {
                 console.log('No winnersData yet, will update when loaded');
             }
+        } else if (mode === 'logo') {
+            logoMode.classList.add('active');
+            // Инициализируем анимацию лого при переключении на режим
+            initLogoAnimation();
         }
+    }
+
+    // Функция инициализации анимации лого (копия из preloader.html)
+    let logoAnimationInterval = null;
+    let logoResizeTimeout = null;
+
+    function initLogoAnimation() {
+        const svg = document.getElementById('logo-background-svg');
+        if (!svg) {
+            console.error('SVG element not found for logo animation');
+            return;
+        }
+
+        // Останавливаем предыдущую анимацию, если она была запущена
+        if (logoAnimationInterval) {
+            clearInterval(logoAnimationInterval);
+            logoAnimationInterval = null;
+        }
+
+        const namespace = "http://www.w3.org/2000/svg";
+
+        // Палитра темных цветов
+        const colors = ['#080808', '#101010', '#181818', '#202020', '#282828'];
+
+        // Параметры сетки
+        const triangleSize = 20;
+        const triangleHeight = triangleSize * Math.sqrt(3) / 2;
+
+        let screenWidth = window.innerWidth;
+        let screenHeight = window.innerHeight;
+
+        function createGrid() {
+            screenWidth = window.innerWidth;
+            screenHeight = window.innerHeight;
+
+            svg.setAttribute('width', screenWidth);
+            svg.setAttribute('height', screenHeight);
+            svg.setAttribute('viewBox', `0 0 ${screenWidth} ${screenHeight}`);
+
+            // Очищаем SVG перед перерисовкой
+            while (svg.firstChild) {
+                svg.removeChild(svg.firstChild);
+            }
+            
+            const numCols = Math.ceil(screenWidth / triangleSize) + 1;
+            const numRows = Math.ceil(screenHeight / triangleHeight) + 1;
+
+            for (let row = 0; row < numRows; row++) {
+                for (let col = 0; col < numCols; col++) {
+                    const x = col * triangleSize;
+                    const y = row * triangleHeight;
+                    const offsetX = (row % 2 === 0) ? 0 : triangleSize / 2;
+                    const randomColor1 = colors[Math.floor(Math.random() * colors.length)];
+                    const randomColor2 = colors[Math.floor(Math.random() * colors.length)];
+
+                    createTriangle(x - offsetX, y, 'down', randomColor1);
+                    createTriangle(x - offsetX + (triangleSize / 2), y, 'up', randomColor2);
+                }
+            }
+        }
+
+        function createTriangle(x, y, direction, color) {
+            const polygon = document.createElementNS(namespace, 'polygon');
+            polygon.classList.add('logo-triangle');
+
+            let points;
+            if (direction === 'up') {
+                points = `${x},${y + triangleHeight} ${x + triangleSize / 2},${y} ${x + triangleSize},${y + triangleHeight}`;
+            } else {
+                points = `${x},${y} ${x + triangleSize},${y} ${x + triangleSize / 2},${y + triangleHeight}`;
+            }
+
+            polygon.setAttribute('points', points);
+            polygon.setAttribute('fill', color);
+            svg.appendChild(polygon);
+        }
+
+        function animateMosaic() {
+            const allTriangles = document.querySelectorAll('.logo-triangle');
+            if (allTriangles.length === 0) return;
+
+            const randomIndex = Math.floor(Math.random() * allTriangles.length);
+            const triangleToAnimate = allTriangles[randomIndex];
+
+            const currentColor = triangleToAnimate.getAttribute('fill');
+            let newColor;
+            do {
+                newColor = colors[Math.floor(Math.random() * colors.length)];
+            } while (newColor === currentColor);
+
+            triangleToAnimate.setAttribute('fill', newColor);
+        }
+
+        // Запускаем создание сетки и анимацию
+        createGrid();
+
+        // Запускаем анимацию
+        logoAnimationInterval = setInterval(animateMosaic, 100);
+
+        // Перерисовываем сетку при изменении размера окна
+        window.addEventListener('resize', () => {
+            clearTimeout(logoResizeTimeout);
+            logoResizeTimeout = setTimeout(() => {
+                createGrid();
+            }, 250);
+        });
     }
 
         // Инициализация
@@ -1257,6 +1436,14 @@
                         console.warn('Mode is winners but no winnersData available');
                     }
                 }
+                
+                // Если режим - лого, инициализируем анимацию
+                if (mode === 'logo') {
+                    console.log('Mode is logo, initializing animation after delay');
+                    setTimeout(() => {
+                        initLogoAnimation();
+                    }, 500);
+                }
             } else {
                 console.error('Failed to load config:', response.status, response.statusText);
                 // При ошибке используем режим по умолчанию
@@ -1280,6 +1467,13 @@
             console.log('Switched to winners mode, updating display');
             setTimeout(() => {
                 updateWinnersDisplay();
+            }, 100);
+        }
+        // Если переключились на режим лого, инициализируем анимацию
+        if (data.mode === 'logo') {
+            console.log('Switched to logo mode, initializing animation');
+            setTimeout(() => {
+                initLogoAnimation();
             }, 100);
         }
     });
