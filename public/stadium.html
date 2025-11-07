@@ -943,6 +943,33 @@
             socket.emit('getCurrentState');
         });
 
+        // Обработка переподключения
+        socket.on('reconnect', () => {
+            console.log('Stadium переподключен к серверу');
+            // Запрашиваем текущее состояние при переподключении
+            socket.emit('getCurrentState');
+        });
+
+        // Обработка отключения
+        socket.on('disconnect', () => {
+            console.warn('Stadium отключен от сервера');
+        });
+
+        // Функция обновления только таймера (всегда обновляется независимо от режима)
+        function updateTimerOnly(data) {
+            if (data.time !== undefined && timerMinutes && timerSeconds) {
+                const timeStr = data.time || "00:00";
+                const parts = timeStr.split(':');
+                if (parts.length === 2) {
+                    timerMinutes.textContent = parts[0] || "00";
+                    timerSeconds.textContent = parts[1] || "00";
+                } else {
+                    timerMinutes.textContent = "00";
+                    timerSeconds.textContent = "00";
+                }
+            }
+        }
+
         // Обновление данных
         socket.on('scoreboardUpdate', (data) => {
             console.log('Stadium получил данные:', data, 'currentMode:', currentMode);
@@ -951,7 +978,12 @@
                 window.lastScoreboardData = {};
             }
             window.lastScoreboardData = data;
-            // Обновляем отображение только если режим табло активен
+            
+            // ВАЖНО: Таймер всегда обновляется, независимо от режима
+            // Это предотвращает остановку времени при проблемах с режимом
+            updateTimerOnly(data);
+            
+            // Обновляем остальное отображение только если режим табло активен
             if (currentMode === 'scoreboard') {
                 updateDisplay(data);
             }
@@ -962,7 +994,12 @@
             console.log('Stadium получил начальное состояние:', data, 'currentMode:', currentMode);
             // Сохраняем данные в переменную для использования при переключении режима
             window.lastScoreboardData = data;
-            // НЕ обновляем отображение здесь - дождемся загрузки конфигурации и установки режима
+            
+            // ВАЖНО: Таймер всегда обновляется, даже если режим еще не установлен
+            // Это предотвращает остановку времени при загрузке страницы
+            updateTimerOnly(data);
+            
+            // НЕ обновляем остальное отображение здесь - дождемся загрузки конфигурации и установки режима
             // Обновление произойдет в switchMode после загрузки config
         });
 
