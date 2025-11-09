@@ -5247,24 +5247,18 @@
     }
 
     function setupMainTeamPresetSelects() {
-      const team1Select = document.getElementById('team1TournamentTeamSelect');
-      const team2Select = document.getElementById('team2TournamentTeamSelect');
-
-      team1Select.innerHTML = '<option value="">-- Выберите команду --</option>';
-      team2Select.innerHTML = '<option value="">-- Выберите команду --</option>';
-
-      tournaments.forEach(tournament => {
-        tournament.teams.forEach(team => {
-          const option1 = document.createElement('option');
-          option1.value = team.id;
-          option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
-          team1Select.appendChild(option1);
-
-          const option2 = document.createElement('option');
-          option2.value = team.id;
-          option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
-          team2Select.appendChild(option2);
+      const configs = [
+        { id: 'team1TournamentTeamSelect', key: 'team1' },
+        { id: 'team2TournamentTeamSelect', key: 'team2' }
+      ];
+ 
+      configs.forEach(({ id, key }) => {
+        const select = document.getElementById(id);
+        if (!select || select.dataset.listenerAttached === 'true') return;
+        select.addEventListener('change', () => {
+          handleMainTeamPresetSelection(key, select.value);
         });
+        select.dataset.listenerAttached = 'true';
       });
     }
 
@@ -5289,7 +5283,7 @@
     function handleMainTeamPresetSelection(teamKey, value) {
       if (!value) {
         mainTeamSelection[teamKey] = null;
-        selectedTeams[teamKey] = null;
+        syncMainTeamPresetSelectsFromState();
         return;
       }
 
