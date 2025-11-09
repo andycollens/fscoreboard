@@ -5485,6 +5485,19 @@
       if (!tournamentId || !teamId) return null;
       return { tournamentId: String(tournamentId), teamId: String(teamId) };
     }
+
+    function toggleMainTeamPresetSelects(enabled) {
+      ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+        select.disabled = !enabled || select.options.length === 0;
+        if (!enabled) {
+          select.classList.add('disabled-field');
+        } else {
+          select.classList.remove('disabled-field');
+        }
+      });
+    }
   </script>
   
   <!-- Ссылка на настройки -->
