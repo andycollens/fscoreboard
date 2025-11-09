@@ -1648,6 +1648,35 @@
       margin: 20px 0;
       border-radius: 1px;
     }
+    
+    .city-input-row.team-input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .team-preset-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    
+    .team-preset-row select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      background-color: #fff;
+      color: #333;
+    }
+    
+    .team-input-row .label-caption {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
@@ -1696,6 +1725,12 @@
             <span class="label-caption">Город</span>
             <input type="text" id="team1City" maxlength="30" placeholder="Не введено" />
           </div>
+          <div class="team-preset-row">
+            <span class="label-caption">Команда из турниров</span>
+            <select id="team1TournamentTeamSelect">
+              <option value="">-- Выберите команду --</option>
+            </select>
+          </div>
         </div>
         <div class="divider"></div>
         <div class="score-block">
@@ -1724,6 +1759,12 @@
           <div class="city-input-row team-input-row">
             <span class="label-caption">Город</span>
             <input type="text" id="team2City" maxlength="30" placeholder="Не введено" />
+          </div>
+          <div class="team-preset-row">
+            <span class="label-caption">Команда из турниров</span>
+            <select id="team2TournamentTeamSelect">
+              <option value="">-- Выберите команду --</option>
+            </select>
           </div>
         </div>
       </div>
@@ -1915,6 +1956,10 @@
       team1: null,
       team2: null
     };
+    let mainTeamSelection = {
+      team1: null,
+      team2: null
+    };
     
     // Переменные для пятикратного нажатия SET
     let setButtonClicks = 0;
@@ -2044,6 +2089,8 @@
         renderTournamentPresets();
       }
       
+      syncMainTeamPresetSelectsFromState();
+      
       ready = true;
     }
     
@@ -2089,12 +2136,14 @@
         if (response.ok) {
           tournaments = await response.json();
           renderTournamentsForPresets();
+          populateMainTeamPresetSelects();
           // Загружаем пресеты после загрузки турниров
           if (presets.length === 0) {
             await loadPresets();
           } else {
             renderTournamentPresets();
           }
+          syncMainTeamPresetSelectsFromState();
         }
       } catch (error) {
         console.error('Ошибка загрузки турниров:', error);
@@ -3442,6 +3491,8 @@
         if (!/^\d{0,2}:?\d{0,2}$/.test(v)) v = v.slice(0,-1);
         this.value = v;
       });
+
+      setupMainTeamPresetSelects();
     }
 
     // Отправка состояния на сервер для сохранения (железобетонное сохранение)
@@ -5194,6 +5245,211 @@
         }, 300);
       }, 3000);
     }
+
+    function setupMainTeamPresetSelects() {
+      const team1Select = document.getElementById('team1TournamentTeamSelect');
+      const team2Select = document.getElementById('team2TournamentTeamSelect');
+
+      team1Select.innerHTML = '<option value="">-- Выберите команду --</option>';
+      team2Select.innerHTML = '<option value="">-- Выберите команду --</option>';
+
+      tournaments.forEach(tournament => {
+        tournament.teams.forEach(team => {
+          const option1 = document.createElement('option');
+          option1.value = team.id;
+          option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+          team1Select.appendChild(option1);
+
+          const option2 = document.createElement('option');
+          option2.value = team.id;
+          option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+          team2Select.appendChild(option2);
+        });
+      });
+    }
+
+    function populateMainTeamPresetSelects() {
+      const configs = [
+        { id: 'team1TournamentTeamSelect', key: 'team1' },
+        { id: 'team2TournamentTeamSelect', key: 'team2' }
+      ];
+
+      configs.forEach(({ id, key }) => {
+        const select = document.getElementById(id);
+        if (!select || select.dataset.listenerAttached === 'true') return;
+        select.addEventListener('change', () => {
+          handleMainTeamPresetSelection(key, select.value);
+        });
+        select.dataset.listenerAttached = 'true';
+      });
+
+      populateMainTeamPresetSelects();
+    }
+
+    function handleMainTeamPresetSelection(teamKey, value) {
+      if (!value) {
+        mainTeamSelection[teamKey] = null;
+        selectedTeams[teamKey] = null;
+        return;
+      }
+
+      const parsed = parseTournamentTeamOptionValue(value);
+      if (!parsed) {
+        console.warn('Не удалось разобрать значение выбора команды:', value);
+        return;
+      }
+
+      const tournament = (tournaments || []).find(t => String(t.id) === parsed.tournamentId);
+      if (!tournament || !Array.isArray(tournament.teams)) {
+        console.warn('Турнир не найден для выбора команды:', parsed.tournamentId);
+        return;
+      }
+
+      const team = tournament.teams.find(t => String(t.id) === parsed.teamId);
+      if (!team) {
+        console.warn('Команда не найдена в выбранном турнире:', parsed.teamId);
+        return;
+      }
+
+      mainTeamSelection[teamKey] = {
+        tournamentId: String(tournament.id),
+        teamId: String(team.id)
+      };
+      selectedTeams[teamKey] = team;
+
+      applyMainTeamData(teamKey, team);
+      syncMainTeamPresetSelectsFromState();
+    }
+
+    function applyMainTeamData(teamKey, team) {
+      const wasReady = ready;
+      ready = false;
+
+      const nameInput = document.getElementById(`${teamKey}Name`);
+      const cityInput = document.getElementById(`${teamKey}City`);
+      const shortInput = document.getElementById(`${teamKey}Short`);
+      const kitInput = document.getElementById(teamKey === 'team1' ? 'kit1Color' : 'kit2Color');
+
+      if (nameInput) nameInput.value = team.name || '';
+      if (cityInput) cityInput.value = team.city || '';
+      if (shortInput) {
+        const fallbackShort = team.short || (team.name ? team.name.replace(/[^A-Za-zА-Яа-я0-9]/g, '').slice(0, 3).toUpperCase() : '');
+        shortInput.value = fallbackShort;
+      }
+
+      const kitColor = team.kitColor || '#2b2b2b';
+      if (kitInput) {
+        kitInput.value = kitColor;
+        kitInput.style.backgroundColor = kitColor;
+      }
+
+      const logoKey = `${teamKey}Logo`;
+      state[logoKey] = team.logo || '';
+      if (team.logo && team.logo.trim()) {
+        updateMainLogoMini(teamKey, team.logo);
+      } else {
+        updateMainLogoMini(teamKey, '');
+        showKitColorCircle(teamKey);
+      }
+
+      ready = wasReady;
+
+      if (kitInput) {
+        kitInput.dispatchEvent(new Event('input', { bubbles: true }));
+        kitInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+
+      sendState();
+    }
+
+    function syncMainTeamPresetSelectsFromState() {
+      const configs = [
+        { id: 'team1TournamentTeamSelect', key: 'team1' },
+        { id: 'team2TournamentTeamSelect', key: 'team2' }
+      ];
+
+      configs.forEach(({ id, key }) => {
+        const select = document.getElementById(id);
+        if (!select) return;
+
+        if (mainTeamSelection[key]) {
+          const value = buildTournamentTeamOptionValue(mainTeamSelection[key].tournamentId, mainTeamSelection[key].teamId);
+          const exists = Array.from(select.options).some(opt => opt.value === value);
+          select.value = exists ? value : '';
+          if (!exists) {
+            mainTeamSelection[key] = null;
+          }
+          return;
+        }
+
+        const nameInput = document.getElementById(`${key}Name`);
+        const cityInput = document.getElementById(`${key}City`);
+        const name = nameInput ? nameInput.value.trim() : '';
+        const city = cityInput ? cityInput.value.trim() : '';
+
+        if (!name) {
+          select.value = '';
+          return;
+        }
+
+        const found = findTournamentTeamByNameCity(name, city);
+        if (found) {
+          const value = buildTournamentTeamOptionValue(found.tournamentId, found.team.id);
+          const exists = Array.from(select.options).some(opt => opt.value === value);
+          if (exists) {
+            select.value = value;
+            mainTeamSelection[key] = {
+              tournamentId: String(found.tournamentId),
+              teamId: String(found.team.id)
+            };
+          } else {
+            select.value = '';
+            mainTeamSelection[key] = null;
+          }
+        } else {
+          select.value = '';
+          mainTeamSelection[key] = null;
+        }
+      });
+    }
+
+    function findTournamentTeamByNameCity(name, city) {
+      if (!name || !Array.isArray(tournaments)) return null;
+      const normalizedName = name.trim().toLowerCase();
+      const normalizedCity = city ? city.trim().toLowerCase() : '';
+
+      for (const tournament of tournaments) {
+        if (!tournament || !Array.isArray(tournament.teams)) continue;
+        const team = tournament.teams.find(t => {
+          if (!t || !t.name) return false;
+          const teamName = t.name.trim().toLowerCase();
+          if (teamName !== normalizedName) return false;
+          if (!normalizedCity) return true;
+          const teamCity = t.city ? t.city.trim().toLowerCase() : '';
+          return teamCity === normalizedCity;
+        });
+
+        if (team) {
+          return { tournamentId: String(tournament.id), team };
+        }
+      }
+
+      return null;
+    }
+
+    function buildTournamentTeamOptionValue(tournamentId, teamId) {
+      return `${String(tournamentId)}__${String(teamId)}`;
+    }
+
+    function parseTournamentTeamOptionValue(value) {
+      if (!value) return null;
+      const parts = value.split('__');
+      if (parts.length < 2) return null;
+      const tournamentId = parts.shift();
+      const teamId = parts.join('__');
+      if (!tournamentId || !teamId) return null;
+      return { tournamentId: String(tournamentId), teamId: String(teamId) };
+    }
   </script>
   
   <!-- Ссылка на настройки -->
@@ -5213,5 +5469,4 @@
     });
   </script>
 </body>
-</html>
 </html>
