@@ -5335,6 +5335,12 @@
     }
 
     function handleMainTeamPresetSelection(teamKey, value) {
+      if (timerRunning) {
+        console.warn('Выбор команды заблокирован во время работы таймера');
+        syncMainTeamPresetSelectsFromState();
+        return;
+      }
+
       if (!value) {
         mainTeamSelection[teamKey] = null;
         syncMainTeamPresetSelectsFromState();
@@ -5504,17 +5510,9 @@
         const select = document.getElementById(id);
         if (!select) return;
 
-        if (enabled) {
-          select.disabled = select.options.length === 0;
-          if (select.disabled) {
-            select.classList.add('disabled-field');
-          } else {
-            select.classList.remove('disabled-field');
-          }
-        } else {
-          select.disabled = true;
-          select.classList.add('disabled-field');
-        }
+        const shouldDisable = !enabled || select.options.length === 0;
+        select.toggleAttribute('disabled', shouldDisable);
+        select.classList.toggle('disabled-field', shouldDisable);
       });
     }
   </script>
