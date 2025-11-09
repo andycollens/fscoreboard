@@ -1973,6 +1973,39 @@
       team1Logo: '',
       team2Logo: ''
     };
+
+    const BREAK_WARNING_MESSAGE = 'На табло уже выставлены счёт или время. Похоже, сейчас идёт перерыв — переключение команд в основном меню может привести к ошибкам трансляции. Продолжить?';
+    let scoreboardState = {
+      score1: 0,
+      score2: 0,
+      timerSeconds: 0
+    };
+
+    function getCurrentScoreboardSnapshot() {
+      const score1ValueEl = document.getElementById('score1Value');
+      const score2ValueEl = document.getElementById('score2Value');
+      const currentScore1 = score1ValueEl ? parseInt(score1ValueEl.textContent, 10) || 0 : 0;
+      const currentScore2 = score2ValueEl ? parseInt(score2ValueEl.textContent, 10) || 0 : 0;
+      const currentTimerSeconds = getSecondsFromTimeInput('timeInput');
+
+      scoreboardState.score1 = currentScore1;
+      scoreboardState.score2 = currentScore2;
+      scoreboardState.timerSeconds = currentTimerSeconds;
+
+      return {
+        score1: currentScore1,
+        score2: currentScore2,
+        timerSeconds: currentTimerSeconds
+      };
+    }
+
+    function confirmBreakWarningIfNeeded() {
+      const snapshot = getCurrentScoreboardSnapshot();
+      if (snapshot.score1 === 0 && snapshot.score2 === 0 && snapshot.timerSeconds === 0) {
+        return true;
+      }
+      return confirm(BREAK_WARNING_MESSAGE);
+    }
     
     // Защита от случайного изменения счета
     let lastScoreChange = {
@@ -2048,6 +2081,7 @@
       if (score2ValueEl) {
         score2ValueEl.textContent = typeof data.score2 === 'number' ? data.score2 : "0";
       }
+      getCurrentScoreboardSnapshot();
       
       // Обновление команд - точно как в stadium.html (прямое обновление без проверок)
       const team1NameEl = document.getElementById('team1Name');
@@ -3368,6 +3402,10 @@
             document.getElementById('timeInput').value = '00:00';
             document.getElementById('score1Value').textContent = '0';
             document.getElementById('score2Value').textContent = '0';
+
+            scoreboardState.score1 = 0;
+            scoreboardState.score2 = 0;
+            scoreboardState.timerSeconds = 0;
             
             console.log('Таймер и счет сброшены после пятикратного нажатия SET');
           }
@@ -3377,6 +3415,7 @@
           socket.emit('updateScoreboard', { 
             timerSeconds: seconds 
           });
+          scoreboardState.timerSeconds = seconds;
           
           // Устанавливаем таймаут для сброса счетчика
           setButtonClickTimeout = setTimeout(() => {
@@ -3402,6 +3441,7 @@
         lastScoreChange = { team: 'score1', timestamp: Date.now(), value: newValue };
         // Обновляем визуально сразу, до получения ответа от сервера
         score1ValueEl.textContent = newValue;
+        scoreboardState.score1 = newValue;
         // Отправляем на сервер для синхронизации
         socket.emit('updateScoreboard', { score1: newValue });
       };
@@ -3418,6 +3458,7 @@
           const newValue = current - 1;
           // Обновляем визуально сразу, до получения ответа от сервера
           score1ValueEl.textContent = newValue;
+          scoreboardState.score1 = newValue;
           // Отправляем на сервер для синхронизации
           socket.emit('updateScoreboard', { score1: newValue });
         }
@@ -3438,6 +3479,7 @@
         lastScoreChange = { team: 'score2', timestamp: Date.now(), value: newValue };
         // Обновляем визуально сразу, до получения ответа от сервера
         score2ValueEl.textContent = newValue;
+        scoreboardState.score2 = newValue;
         // Отправляем на сервер для синхронизации
         socket.emit('updateScoreboard', { score2: newValue });
       };
@@ -3454,6 +3496,7 @@
           const newValue = current - 1;
           // Обновляем визуально сразу, до получения ответа от сервера
           score2ValueEl.textContent = newValue;
+          scoreboardState.score2 = newValue;
           // Отправляем на сервер для синхронизации
           socket.emit('updateScoreboard', { score2: newValue });
         }
@@ -4468,19 +4511,8 @@
       const preset = presets.find(p => p.id === presetId);
       if (!preset) return;
 
-      const score1ValueEl = document.getElementById('score1Value');
-      const score2ValueEl = document.getElementById('score2Value');
-      const currentScore1 = score1ValueEl ? parseInt(score1ValueEl.textContent, 10) || 0 : 0;
-      const currentScore2 = score2ValueEl ? parseInt(score2ValueEl.textContent, 10) || 0 : 0;
-      let currentTimerSeconds = 0;
-      if (document.getElementById('timeInput')) {
-        currentTimerSeconds = getSecondsFromTimeInput('timeInput');
-      }
-      if (currentScore1 !== 0 || currentScore2 !== 0 || currentTimerSeconds !== 0) {
-        const confirmed = confirm('На табло уже выставлены счёт или время. Похоже, сейчас идёт перерыв — переключение команд может привести к ошибкам трансляции. Всё равно применить пресет?');
-        if (!confirmed) {
-          return;
-        }
+      if (!confirmBreakWarningIfNeeded()) {
+        return;
       }
       
       // Находим турнир и команды для получения актуальных логотипов
@@ -5362,6 +5394,11 @@
 
       if (!value) {
         mainTeamSelection[teamKey] = null;
+        syncMainTeamPresetSelectsFromState();
+        return;
+      }
+
+      if (!confirmBreakWarningIfNeeded()) {
         syncMainTeamPresetSelectsFromState();
         return;
       }
