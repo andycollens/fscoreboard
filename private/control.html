@@ -3775,7 +3775,7 @@
               </div>
               <div class="preset-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
                 <span class="preset-edit-link" onclick="editPresetInline('${tournament.id}', '${preset.id}')">edit</span>
-                <span class="preset-apply-symbol" onclick="if (!window.timerRunning) applyPreset('${preset.id}')" ${timerRunning ? 'style="opacity: 0.5; cursor: not-allowed; pointer-events: none;"' : ''} title="Применить предустановку"></span>
+                <span class="preset-apply-symbol" onclick="if (!window.timerRunning) confirmApplyPreset('${preset.id}')" ${timerRunning ? 'style="opacity: 0.5; cursor: not-allowed; pointer-events: none;"' : ''} title="Применить предустановку"></span>
               </div>
             </div>
           `;
@@ -4447,6 +4447,9 @@
       const preset = presets.find(p => p.id === presetId);
       if (!preset) return;
       
+      const snapshot = getCurrentScoreboardSnapshot();
+      const hasActiveScoreboard = snapshot.score1 !== 0 || snapshot.score2 !== 0 || snapshot.timerSeconds !== 0;
+
       // Создание модального окна подтверждения
       const modal = document.createElement('div');
       modal.className = 'confirmation-modal';
@@ -4455,6 +4458,9 @@
           <h3>Применить предустановку?</h3>
           <p>Вы уверены, что хотите применить предустановку "<strong>${preset.name}</strong>"?</p>
           <p><small>Это заменит текущие данные команд.</small></p>
+          ${hasActiveScoreboard ? `<p style="margin-top: 10px; padding: 10px; background: #fff8e1; border: 1px solid #f0c36d; border-radius: 6px; color: #8a5a0a; font-size: 13px;">
+            На табло уже выставлены счёт или время. Похоже, сейчас идёт перерыв — переключение команд в основном меню может привести к ошибкам трансляции.
+          </p>` : ''}
           <div class="confirmation-buttons">
             <button class="confirmation-btn confirm" onclick="applyPreset('${presetId}'); closeConfirmation()">Да, применить</button>
             <button class="confirmation-btn cancel" onclick="closeConfirmation()">Отмена</button>
