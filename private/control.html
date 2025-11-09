@@ -5270,14 +5270,55 @@
 
       configs.forEach(({ id, key }) => {
         const select = document.getElementById(id);
-        if (!select || select.dataset.listenerAttached === 'true') return;
-        select.addEventListener('change', () => {
-          handleMainTeamPresetSelection(key, select.value);
-        });
-        select.dataset.listenerAttached = 'true';
+        if (!select) return;
+
+        const previousValue = select.value;
+
+        select.innerHTML = '<option value="">-- Выберите команду --</option>';
+
+        if (!Array.isArray(tournaments) || tournaments.length === 0) {
+          select.disabled = true;
+          return;
+        }
+
+        select.disabled = false;
+
+        tournaments
+          .filter(tournament => tournament && Array.isArray(tournament.teams) && tournament.teams.length > 0)
+          .forEach(tournament => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = tournament.name || `Турнир ${tournament.id}`;
+
+            tournament.teams.forEach(team => {
+              if (!team) return;
+              const value = buildTournamentTeamOptionValue(tournament.id, team.id);
+              const option = document.createElement('option');
+              option.value = value;
+              option.textContent = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}`;
+              option.dataset.tournamentId = String(tournament.id);
+              option.dataset.teamId = String(team.id);
+              optgroup.appendChild(option);
+            });
+
+            select.appendChild(optgroup);
+          });
+
+        if (previousValue) {
+          const exists = Array.from(select.options).some(opt => opt.value === previousValue);
+          select.value = exists ? previousValue : '';
+        } else {
+          select.value = '';
+        }
+
+        if (select.dataset.listenerAttached !== 'true') {
+          select.addEventListener('change', () => {
+            handleMainTeamPresetSelection(key, select.value);
+          });
+          select.dataset.listenerAttached = 'true';
+        }
       });
 
-      populateMainTeamPresetSelects();
+      syncMainTeamPresetSelectsFromState();
     }
 
     function handleMainTeamPresetSelection(teamKey, value) {
