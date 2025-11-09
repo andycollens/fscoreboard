@@ -5502,12 +5502,17 @@
       ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
         const select = document.getElementById(id);
         if (!select) return;
-        const shouldDisable = !enabled || select.options.length === 0;
-        select.disabled = shouldDisable;
-        if (shouldDisable) {
-          select.classList.add('disabled-field');
+
+        if (enabled) {
+          select.disabled = select.options.length === 0;
+          if (select.disabled) {
+            select.classList.add('disabled-field');
+          } else {
+            select.classList.remove('disabled-field');
+          }
         } else {
-          select.classList.remove('disabled-field');
+          select.disabled = true;
+          select.classList.add('disabled-field');
         }
       });
     }
