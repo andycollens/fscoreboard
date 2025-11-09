@@ -4467,6 +4467,21 @@
     async function applyPreset(presetId) {
       const preset = presets.find(p => p.id === presetId);
       if (!preset) return;
+
+      const score1ValueEl = document.getElementById('score1Value');
+      const score2ValueEl = document.getElementById('score2Value');
+      const currentScore1 = score1ValueEl ? parseInt(score1ValueEl.textContent, 10) || 0 : 0;
+      const currentScore2 = score2ValueEl ? parseInt(score2ValueEl.textContent, 10) || 0 : 0;
+      let currentTimerSeconds = 0;
+      if (document.getElementById('timeInput')) {
+        currentTimerSeconds = getSecondsFromTimeInput('timeInput');
+      }
+      if (currentScore1 !== 0 || currentScore2 !== 0 || currentTimerSeconds !== 0) {
+        const confirmed = confirm('На табло уже выставлены счёт или время. Похоже, сейчас идёт перерыв — переключение команд может привести к ошибкам трансляции. Всё равно применить пресет?');
+        if (!confirmed) {
+          return;
+        }
+      }
       
       // Находим турнир и команды для получения актуальных логотипов
       let team1Logo = '';
@@ -5183,7 +5198,11 @@
     }
 
     function getSecondsFromTimeInput(inputId) {
-      const val = document.getElementById(inputId).value;
+      const input = document.getElementById(inputId);
+      if (!input) {
+        return 0;
+      }
+      const val = input.value || '';
       if (/^\d{2}:\d{2}$/.test(val)) {
         const [mm, ss] = val.split(':').map(Number);
         return mm*60 + ss;
