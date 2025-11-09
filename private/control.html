@@ -5278,10 +5278,12 @@
 
         if (!Array.isArray(tournaments) || tournaments.length === 0) {
           select.disabled = true;
+          select.classList.add('disabled-field');
           return;
         }
 
         select.disabled = false;
+        select.classList.remove('disabled-field');
 
         tournaments
           .filter(tournament => tournament && Array.isArray(tournament.teams) && tournament.teams.length > 0)
@@ -5308,6 +5310,16 @@
           select.value = exists ? previousValue : '';
         } else {
           select.value = '';
+        }
+
+        const timerActive = !!timerRunning || !!window.timerRunning;
+        if (timerActive) {
+          select.disabled = true;
+          select.classList.add('disabled-field');
+        }
+
+        if (select.disabled && select.options.length === 1) {
+          select.classList.add('disabled-field');
         }
 
         if (select.dataset.listenerAttached !== 'true') {
@@ -5490,8 +5502,9 @@
       ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
         const select = document.getElementById(id);
         if (!select) return;
-        select.disabled = !enabled || select.options.length === 0;
-        if (!enabled) {
+        const shouldDisable = !enabled || select.options.length === 0;
+        select.disabled = shouldDisable;
+        if (shouldDisable) {
           select.classList.add('disabled-field');
         } else {
           select.classList.remove('disabled-field');
