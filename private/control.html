@@ -351,11 +351,12 @@
       gap: 16px;
     }
 
-    .penalty-team-header-left {
+    .penalty-team-info-wrapper {
       display: flex;
       align-items: center;
       gap: 14px;
       flex: 1;
+      min-width: 0;
     }
 
     .penalty-team-logo {
@@ -408,7 +409,24 @@
       font-size: 28px;
       font-weight: 700;
       color: #163d74;
-      min-width: 28px;
+      min-width: 32px;
+    }
+
+    .penalty-team-block.team-left .penalty-team-score {
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .penalty-team-block.team-right .penalty-team-score {
+      text-align: left;
+      margin-right: auto;
+    }
+
+    .penalty-team-block.team-right .penalty-team-info-wrapper {
+      justify-content: flex-end;
+    }
+
+    .penalty-team-block.team-right .penalty-team-info {
       text-align: right;
     }
 
@@ -2761,22 +2779,20 @@
         const isActiveTeam = currentTeam === teamKey && !finished;
         const isSelectable = Array.isArray(series.history) && series.history.length === 0;
         const slots = new Array(visibleSlots).fill(null);
-
-        teamAttempts.forEach((result, idx) => {
-          slots[idx % visibleSlots] = { status: result, index: idx };
+        const attemptsForDisplay = teamAttempts.slice(-visibleSlots);
+        const displayStartIndex = teamAttempts.length - attemptsForDisplay.length;
+        attemptsForDisplay.forEach((result, idx) => {
+          slots[idx] = { status: result, index: displayStartIndex + idx };
         });
 
         const nextSlotIndex = teamAttempts.length % visibleSlots;
 
         const block = document.createElement('div');
-        block.className = `penalty-team-block${isActiveTeam ? ' active' : ''}`;
+        block.className = `penalty-team-block ${teamKey === 'team1' ? 'team-left' : 'team-right'}${isActiveTeam ? ' active' : ''}`;
         block.dataset.team = teamKey;
 
         const header = document.createElement('div');
         header.className = 'penalty-team-header';
-
-        const headerLeft = document.createElement('div');
-        headerLeft.className = 'penalty-team-header-left';
 
         const logoEl = document.createElement('div');
         logoEl.className = 'penalty-team-logo';
@@ -2798,26 +2814,41 @@
         nameEl.textContent = label;
         info.appendChild(nameEl);
 
-        headerLeft.appendChild(logoEl);
-        headerLeft.appendChild(info);
+        const infoWrapper = document.createElement('div');
+        infoWrapper.className = 'penalty-team-info-wrapper';
 
         const scoreEl = document.createElement('div');
         scoreEl.className = 'penalty-team-score';
         scoreEl.textContent = teamKey === 'team1' ? goalsTeam1 : goalsTeam2;
 
-        header.appendChild(headerLeft);
-        header.appendChild(scoreEl);
+        if (teamKey === 'team1') {
+          infoWrapper.appendChild(logoEl);
+          infoWrapper.appendChild(info);
+          header.appendChild(infoWrapper);
+          header.appendChild(scoreEl);
+        } else {
+          infoWrapper.appendChild(info);
+          infoWrapper.appendChild(logoEl);
+          header.appendChild(scoreEl);
+          header.appendChild(infoWrapper);
+        }
+
         block.appendChild(header);
 
         const attemptsCell = document.createElement('div');
         attemptsCell.className = 'penalty-attempts-track';
 
         for (let slotIndex = 0; slotIndex < visibleSlots; slotIndex++) {
-          const slotData = slots[slotIndex];
+          let slotData = slots[slotIndex];
           const attemptWrapper = document.createElement('div');
           attemptWrapper.className = 'penalty-attempt-wrapper';
           const attemptEl = document.createElement('div');
           let statusClass = 'pending';
+
+          const cycleBoundary = teamAttempts.length - visibleSlots;
+          if (slotData && series.currentTeam === teamKey && slotIndex === nextSlotIndex && cycleBoundary >= 0 && slotData.index <= cycleBoundary && !finished) {
+            slotData = null;
+          }
 
           if (slotData?.status === 'goal') {
             statusClass = 'goal';
@@ -3121,15 +3152,25 @@
         }
       });
       
-      // Кнопки счета всегда доступны
+      const penaltyModeActiveInUpdate = typeof data.penaltyActive === 'boolean'
+        ? data.penaltyActive
+        : !!scoreboardState.penaltyActive;
       ['score1Inc', 'score1Dec', 'score2Inc', 'score2Dec'].forEach(btnId => {
         const btn = document.getElementById(btnId);
         if (btn) {
-          btn.classList.remove('disabled-field');
-          btn.disabled = false;
-          btn.style.pointerEvents = 'auto';
-          btn.style.cursor = 'pointer';
-          btn.style.opacity = '1';
+          if (penaltyModeActiveInUpdate) {
+            btn.classList.add('disabled-field');
+            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            btn.style.cursor = 'not-allowed';
+            btn.style.opacity = '0.5';
+          } else {
+            btn.classList.remove('disabled-field');
+            btn.disabled = false;
+            btn.style.pointerEvents = 'auto';
+            btn.style.cursor = 'pointer';
+            btn.style.opacity = '1';
+          }
         }
       });
       
@@ -4479,11 +4520,21 @@
           // Показываем подтверждение
           if (confirm('Вы уверены, что хотите сбросить таймер и счет? Это действие нельзя отменить.')) {
             // Сбрасываем таймер и счет
-            socket.emit('updateScoreboard', { 
+            const resetPayload = {
               timerSeconds: 0,
               score1: 0,
               score2: 0
-            });
+            };
+            let penaltyWasReset = false;
+            if (scoreboardState.penaltyActive || (scoreboardState.penaltySeries && Array.isArray(scoreboardState.penaltySeries.history))) {
+              penaltyWasReset = true;
+              cancelPenaltyHold();
+              scoreboardState.penaltyActive = false;
+              scoreboardState.penaltySeries = null;
+              resetPayload.penaltyActive = false;
+              resetPayload.penaltySeries = null;
+            }
+            socket.emit('updateScoreboard', resetPayload);
             
             // Обновляем отображение
             document.getElementById('timeInput').value = '00:00';
@@ -4493,6 +4544,10 @@
             scoreboardState.score1 = 0;
             scoreboardState.score2 = 0;
             scoreboardState.timerSeconds = 0;
+            if (penaltyWasReset) {
+              updatePenaltyControlsUI();
+              showNotification('Режим пенальти отключён и серия сброшена', 'info');
+            }
             
             console.log('Таймер и счет сброшены после пятикратного нажатия SET');
           }
@@ -4513,7 +4568,14 @@
       };
 
       // Счет с защитой от случайных изменений
+      const isPenaltyLocked = () => !!scoreboardState.penaltyActive;
+      const notifyPenaltyLock = () => showNotification('Изменение основного счёта недоступно во время серии пенальти', 'info');
+
       document.getElementById('score1Inc').onclick = () => {
+        if (isPenaltyLocked()) {
+          notifyPenaltyLock();
+          return;
+        }
         const score1ValueEl = document.getElementById('score1Value');
         const current = parseInt(score1ValueEl.textContent) || 0;
         const newValue = current + 1;
@@ -4534,6 +4596,10 @@
       };
       
       document.getElementById('score1Dec').onclick = () => {
+        if (isPenaltyLocked()) {
+          notifyPenaltyLock();
+          return;
+        }
         const score1ValueEl = document.getElementById('score1Value');
         const current = parseInt(score1ValueEl.textContent) || 0;
         if (current > 0) {
@@ -4552,6 +4618,10 @@
       };
       
       document.getElementById('score2Inc').onclick = () => {
+        if (isPenaltyLocked()) {
+          notifyPenaltyLock();
+          return;
+        }
         const score2ValueEl = document.getElementById('score2Value');
         const current = parseInt(score2ValueEl.textContent) || 0;
         const newValue = current + 1;
@@ -4572,6 +4642,10 @@
       };
       
       document.getElementById('score2Dec').onclick = () => {
+        if (isPenaltyLocked()) {
+          notifyPenaltyLock();
+          return;
+        }
         const score2ValueEl = document.getElementById('score2Value');
         const current = parseInt(score2ValueEl.textContent) || 0;
         if (current > 0) {
