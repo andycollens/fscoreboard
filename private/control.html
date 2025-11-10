@@ -2785,10 +2785,15 @@
         const isSelectable = Array.isArray(series.history) && series.history.length === 0;
         const slots = new Array(visibleSlots).fill(null);
         const attemptsForDisplay = teamAttempts.slice(-visibleSlots);
-        const displayStartIndex = teamAttempts.length - attemptsForDisplay.length;
-        attemptsForDisplay.forEach((result, idx) => {
-          slots[idx] = { status: result, index: displayStartIndex + idx };
-        });
+        if (teamAttempts.length >= visibleSlots) {
+          attemptsForDisplay.forEach((result, idx) => {
+            slots[idx] = { status: result, index: teamAttempts.length - visibleSlots + idx };
+          });
+        } else {
+          attemptsForDisplay.forEach((result, idx) => {
+            slots[idx] = { status: result, index: idx };
+          });
+        }
 
         const nextSlotIndex = teamAttempts.length % visibleSlots;
 
@@ -2850,9 +2855,12 @@
           const attemptEl = document.createElement('div');
           let statusClass = 'pending';
 
-          const cycleBoundary = teamAttempts.length - visibleSlots;
-          if (slotData && series.currentTeam === teamKey && slotIndex === nextSlotIndex && cycleBoundary >= 0 && slotData.index <= cycleBoundary && !finished) {
-            slotData = null;
+          const totalCyclesCompleted = Math.floor(teamAttempts.length / visibleSlots);
+          if (slotData && series.currentTeam === teamKey && slotIndex === nextSlotIndex && !finished) {
+            const slotCycleIndex = Math.floor(slotData.index / visibleSlots);
+            if (slotCycleIndex < totalCyclesCompleted) {
+              slotData = null;
+            }
           }
 
           if (slotData?.status === 'goal') {
