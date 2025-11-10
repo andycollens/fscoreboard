@@ -2783,7 +2783,7 @@
 
       const visibleSlots = Math.max(series.maxAttempts || scoreboardState.penaltyMaxAttempts || 1, 1);
 
-      const penaltyLocked = !!timerRunning || !!scoreboardState.penaltyActive;
+      const penaltyLocked = !!timerRunning || (!!scoreboardState.penaltyActive && Array.isArray(series.history) && series.history.length > 0);
 
       const createTeamRow = (teamKey) => {
         const teamAttempts = attempts[teamKey];
@@ -2925,12 +2925,12 @@
         if (isSelectable) {
           block.style.cursor = 'pointer';
         } else {
-          block.style.cursor = 'not-allowed';
+          block.style.cursor = Array.isArray(series.history) && series.history.length > 0 ? 'not-allowed' : 'pointer';
         }
 
         if (isSelectable) {
           block.addEventListener('click', () => {
-            if (penaltyLocked) {
+            if (!isSelectable) {
               showNotification('Нельзя менять порядок команд во время активного таймера или серии пенальти', 'info');
               return;
             }
