@@ -414,8 +414,9 @@
 
     .penalty-attempts-track {
       display: flex;
-      flex-wrap: wrap;
+      justify-content: center;
       gap: 14px;
+      flex-wrap: wrap;
     }
 
     .penalty-attempt-wrapper {
@@ -540,6 +541,26 @@
     @media (max-width: 880px) {
       .penalty-teams-container {
         flex-direction: column;
+      }
+
+      .penalty-attempts-track {
+        gap: 9px;
+      }
+
+      .penalty-attempt-wrapper {
+        min-width: 42px;
+        grid-template-rows: 28px 36px 28px;
+        gap: 4px;
+      }
+
+      .penalty-attempt {
+        width: 30px;
+        height: 30px;
+      }
+
+      .penalty-attempt.pending {
+        width: 16px;
+        height: 16px;
       }
 
       .penalty-team-block {
