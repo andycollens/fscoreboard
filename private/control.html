@@ -2857,15 +2857,18 @@
           const attemptEl = document.createElement('div');
           let statusClass = 'pending';
 
+          const isActiveAttempt = isActiveTeam &&
+            !finished &&
+            series.currentTeam === teamKey &&
+            slotIndex === nextSlotIndex;
+
           const totalCyclesCompleted = Math.floor(teamAttempts.length / visibleSlots);
-          if (slotData && series.currentTeam === teamKey && slotIndex === nextSlotIndex && !finished) {
+          if (slotData && isActiveAttempt) {
             const slotCycleIndex = Math.floor(slotData.index / visibleSlots);
             if (slotCycleIndex < totalCyclesCompleted) {
               slotData = null;
             }
           }
-
-          const isHistorySlot = !!slotData && (!isActiveAttempt);
 
           if (slotData?.status === 'goal') {
             statusClass = 'goal';
@@ -2873,10 +2876,7 @@
             statusClass = 'miss';
           }
 
-          const isActiveAttempt = isActiveTeam &&
-            !finished &&
-            series.currentTeam === teamKey &&
-            slotIndex === nextSlotIndex;
+          const isHistorySlot = !!slotData && !isActiveAttempt;
 
           const isLastRecordedAttempt = !!slotData &&
             slotData.index === teamAttempts.length - 1 &&
@@ -3157,10 +3157,14 @@
         'team1Name', 'team1City', 'team1Short', 'kit1Color',
         'team2Name', 'team2City', 'team2Short', 'kit2Color'
       ];
+      const penaltyModeActiveInUpdate = typeof data.penaltyActive === 'boolean'
+        ? data.penaltyActive
+        : !!scoreboardState.penaltyActive;
+      const disableInputs = isRunning || penaltyModeActiveInUpdate;
       fieldsToDisable.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field && !field.closest('.edit-preset-form')) {
-          if (isRunning) {
+          if (disableInputs) {
             field.classList.add('disabled-field');
             field.disabled = true;
           } else {
@@ -3169,10 +3173,8 @@
           }
         }
       });
-      
-      const penaltyModeActiveInUpdate = typeof data.penaltyActive === 'boolean'
-        ? data.penaltyActive
-        : !!scoreboardState.penaltyActive;
+
+      toggleMainTeamPresetSelects(!disableInputs);
       ['score1Inc', 'score1Dec', 'score2Inc', 'score2Dec'].forEach(btnId => {
         const btn = document.getElementById(btnId);
         if (btn) {
