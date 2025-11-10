@@ -865,6 +865,32 @@
 
         <!-- Средняя область -->
         <div class="middle-section">
+            <div class="scoreboard-row" id="scoreboardPenaltyRow">
+                <div class="score-section kit" id="stadiumKit1"></div>
+                <div class="score-section team left">
+                    <div id="stadiumTeam1" class="team-short">ABC</div>
+                    <div class="penalty-track">
+                        <div class="penalty-dots" id="stadiumPenaltyDotsTeam1"></div>
+                        <div class="penalty-count" id="stadiumPenaltyCountTeam1"></div>
+                    </div>
+                </div>
+                <div class="score-section center">
+                    <div class="main-score">
+                        <span id="stadiumScore1">0</span>
+                        <span class="main-score-divider">:</span>
+                        <span id="stadiumScore2">0</span>
+                    </div>
+                </div>
+                <div class="score-section team right">
+                    <div id="stadiumTeam2" class="team-short">XYZ</div>
+                    <div class="penalty-track">
+                        <div class="penalty-dots right" id="stadiumPenaltyDotsTeam2"></div>
+                        <div class="penalty-count" id="stadiumPenaltyCountTeam2"></div>
+                    </div>
+                </div>
+                <div class="score-section kit" id="stadiumKit2"></div>
+            </div>
+
             <div class="middle-content">
                 <!-- Команда 1 -->
                 <div class="team1-section">
@@ -975,20 +1001,23 @@
 
         // Обновление данных
         socket.on('scoreboardUpdate', (data) => {
-            console.log('Stadium получил данные:', data, 'currentMode:', currentMode);
-            // Сохраняем данные в переменную для использования при переключении режима
-            if (!window.lastScoreboardData) {
-                window.lastScoreboardData = {};
-            }
-            window.lastScoreboardData = data;
-            
-            // ВАЖНО: Таймер всегда обновляется, независимо от режима
-            // Это предотвращает остановку времени при проблемах с режимом
-            updateTimerOnly(data);
-            
-            // Обновляем остальное отображение только если режим табло активен
+            console.log('Received scoreboardUpdate in stadium:', data);
+            latestData = data;
+ 
             if (currentMode === 'scoreboard') {
-                updateDisplay(data);
+                updateScoreboard(data);
+                const penaltyActive = !!data.penaltyActive;
+                document.body.classList.toggle('penalty-mode', penaltyActive);
+                if (penaltyActive && data.penaltySeries) {
+                    renderStadiumPenalty('team1', data);
+                    renderStadiumPenalty('team2', data);
+                } else {
+                    clearStadiumPenalty();
+                }
+            }
+
+            if (currentMode === 'winners') {
+                updateWinners(data);
             }
         });
 
