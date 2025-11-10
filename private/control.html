@@ -167,6 +167,139 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       border: 1px solid #ddd;
     }
+
+    .penalty-toggle-row {
+      margin-top: 24px;
+      padding: 16px;
+      border-top: 1px dashed #d8e3f6;
+      background: #f8fbff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .penalty-toggle-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      color: #2f3a4c;
+    }
+
+    .penalty-toggle-info h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2d3d;
+    }
+
+    .penalty-toggle-info span {
+      font-size: 13px;
+      color: #61708a;
+      line-height: 1.4;
+    }
+
+    .penalty-switch {
+      position: relative;
+      display: inline-block;
+      width: 58px;
+      height: 30px;
+      flex-shrink: 0;
+    }
+
+    .penalty-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .penalty-switch-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: 0.3s;
+      border-radius: 30px;
+    }
+
+    .penalty-switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 24px;
+      width: 24px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .penalty-switch input:checked + .penalty-switch-slider {
+      background-color: #338af3;
+    }
+
+    .penalty-switch input:checked + .penalty-switch-slider:before {
+      transform: translateX(28px);
+    }
+
+    .penalty-controls {
+      margin-top: 16px;
+      padding: 18px 20px;
+      border: 1px solid #c5d9ff;
+      border-radius: 12px;
+      background: #eef4ff;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .penalty-controls-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      color: #163d74;
+      font-weight: 600;
+    }
+
+    .penalty-controls-note {
+      font-size: 13px;
+      color: #4c5d7a;
+      line-height: 1.5;
+    }
+
+    .penalty-mode-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .penalty-mode-button {
+      border: 1px solid #338af3;
+      background: #fff;
+      color: #1d4f91;
+      padding: 8px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+
+    .penalty-mode-button:hover {
+      background: #e6f0ff;
+    }
+
+    .penalty-mode-button.active {
+      background: #338af3;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(51, 138, 243, 0.3);
+    }
     
     .timer-row { 
       display: flex; 
@@ -1769,6 +1902,31 @@
         </div>
       </div>
     </form>
+
+    <div class="penalty-toggle-row">
+      <div class="penalty-toggle-info">
+        <h3>Режим серии пенальти</h3>
+        <span>Активируйте, чтобы управлять серией пенальти прямо из панели. Для безопасности потребуется подтверждение.</span>
+      </div>
+      <label class="penalty-switch">
+        <input type="checkbox" id="penaltyModeToggle">
+        <span class="penalty-switch-slider"></span>
+      </label>
+    </div>
+
+    <div id="penaltyControls" class="penalty-controls hidden">
+      <div class="penalty-controls-header">
+        <span>Пенальти активированы</span>
+        <small id="penaltyModeSummary">Выберите длину серии</small>
+      </div>
+      <div class="penalty-controls-note">
+        Детский формат — до 3 ударов, взрослый формат — до 5 ударов. Победа определяется по стандартным правилам серии пенальти.
+      </div>
+      <div class="penalty-mode-options">
+        <button type="button" class="penalty-mode-button" data-mode="child">Детский режим (3 удара)</button>
+        <button type="button" class="penalty-mode-button" data-mode="adult">Взрослый режим (5 ударов)</button>
+      </div>
+    </div>
   </div>
 
   <!-- Секция предустановок -->
@@ -1978,8 +2136,12 @@
     let scoreboardState = {
       score1: 0,
       score2: 0,
-      timerSeconds: 0
+      timerSeconds: 0,
+      penaltyActive: false,
+      penaltyMode: 'adult',
+      penaltyMaxAttempts: 5
     };
+    let syncingPenaltyControls = false;
 
     function getCurrentScoreboardSnapshot() {
       const score1ValueEl = document.getElementById('score1Value');
@@ -2005,6 +2167,97 @@
         return true;
       }
       return confirm(BREAK_WARNING_MESSAGE);
+    }
+
+    function getPenaltyMaxAttempts(mode) {
+      return mode === 'child' ? 3 : 5;
+    }
+
+    function updatePenaltyControlsUI() {
+      const toggle = document.getElementById('penaltyModeToggle');
+      const controls = document.getElementById('penaltyControls');
+      const summary = document.getElementById('penaltyModeSummary');
+
+      if (!toggle || !controls) return;
+
+      syncingPenaltyControls = true;
+      toggle.checked = !!scoreboardState.penaltyActive;
+      controls.classList.toggle('hidden', !scoreboardState.penaltyActive);
+
+      const currentMode = scoreboardState.penaltyMode || 'adult';
+      document.querySelectorAll('.penalty-mode-button').forEach(button => {
+        const buttonMode = button.dataset.mode;
+        button.classList.toggle('active', buttonMode === currentMode);
+      });
+
+      if (summary) {
+        summary.textContent = currentMode === 'child'
+          ? 'Детский формат — до 3 ударов'
+          : 'Взрослый формат — до 5 ударов';
+      }
+
+      syncingPenaltyControls = false;
+    }
+
+    function setPenaltyMode(mode, emitUpdate = true) {
+      const normalizedMode = mode === 'child' ? 'child' : 'adult';
+      const maxAttempts = getPenaltyMaxAttempts(normalizedMode);
+
+      scoreboardState.penaltyMode = normalizedMode;
+      scoreboardState.penaltyMaxAttempts = maxAttempts;
+
+      updatePenaltyControlsUI();
+
+      if (emitUpdate && scoreboardState.penaltyActive) {
+        socket.emit('updateScoreboard', {
+          penaltyMode: normalizedMode,
+          penaltyMaxAttempts: maxAttempts
+        });
+      }
+    }
+
+    function setupPenaltyControls() {
+      const toggle = document.getElementById('penaltyModeToggle');
+
+      if (toggle) {
+        toggle.addEventListener('change', () => {
+          if (syncingPenaltyControls) return;
+
+          if (toggle.checked) {
+            const confirmed = confirm('Активировать режим серии пенальти? Этот режим используется во время подготовки к серии ударов.');
+            if (!confirmed) {
+              syncingPenaltyControls = true;
+              toggle.checked = false;
+              syncingPenaltyControls = false;
+              return;
+            }
+
+            scoreboardState.penaltyActive = true;
+            updatePenaltyControlsUI();
+            socket.emit('updateScoreboard', {
+              penaltyActive: true,
+              penaltyMode: scoreboardState.penaltyMode,
+              penaltyMaxAttempts: scoreboardState.penaltyMaxAttempts
+            });
+            showNotification('Режим серии пенальти активирован', 'info');
+          } else {
+            scoreboardState.penaltyActive = false;
+            updatePenaltyControlsUI();
+            socket.emit('updateScoreboard', { penaltyActive: false });
+            showNotification('Режим серии пенальти отключён', 'info');
+          }
+        });
+      }
+
+      document.querySelectorAll('.penalty-mode-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const mode = button.dataset.mode === 'child' ? 'child' : 'adult';
+          if (mode === scoreboardState.penaltyMode) return;
+          setPenaltyMode(mode, true);
+        });
+      });
+
+      updatePenaltyControlsUI();
     }
     
     // Защита от случайного изменения счета
@@ -2081,6 +2334,20 @@
       if (score2ValueEl) {
         score2ValueEl.textContent = typeof data.score2 === 'number' ? data.score2 : "0";
       }
+      if ('penaltyActive' in data || 'penaltyMode' in data || 'penaltyMaxAttempts' in data) {
+        if (typeof data.penaltyActive === 'boolean') {
+          scoreboardState.penaltyActive = data.penaltyActive;
+        }
+        if (typeof data.penaltyMode === 'string') {
+          scoreboardState.penaltyMode = data.penaltyMode === 'child' ? 'child' : 'adult';
+        }
+        if (typeof data.penaltyMaxAttempts === 'number') {
+          scoreboardState.penaltyMaxAttempts = data.penaltyMaxAttempts;
+        } else {
+          scoreboardState.penaltyMaxAttempts = getPenaltyMaxAttempts(scoreboardState.penaltyMode);
+        }
+        updatePenaltyControlsUI();
+      }
       getCurrentScoreboardSnapshot();
       
       // Обновление команд - точно как в stadium.html (прямое обновление без проверок)
@@ -2150,6 +2417,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       loadTournaments();
       setupControls();
+      setupPenaltyControls();
       setupEditFormHandlers();
       setupTeamUpdateListener(); // Слушаем обновления команд из настроек
       

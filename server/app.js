@@ -148,7 +148,10 @@ let state = {
   team1City: "",
   team2City: "",
   team1Logo: "",
-  team2Logo: ""
+  team2Logo: "",
+  penaltyActive: false,
+  penaltyMode: "adult",
+  penaltyMaxAttempts: 5
 };
 
 // ====== Предварительные настройки матчей ======
@@ -961,7 +964,8 @@ io.on('connection', (socket) => {
       'score1', 'score2', 'team1', 'team2',
       'team1Short', 'team2Short', 'kit1Color', 'kit2Color',
       'team1Name', 'team2Name', 'team1City', 'team2City',
-      'team1Logo', 'team2Logo'
+      'team1Logo', 'team2Logo',
+      'penaltyActive', 'penaltyMode', 'penaltyMaxAttempts'
     ];
     keys.forEach(k => {
       if (k in newState) state[k] = newState[k];
@@ -1002,6 +1006,9 @@ io.on('connection', (socket) => {
     state.timerRunning = false;
     state.timerStartTS = null;
     state.time = "00:00";
+    state.penaltyActive = false;
+    state.penaltyMode = "adult";
+    state.penaltyMaxAttempts = 5;
 
     io.emit('scoreboardUpdate', state);
     fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
@@ -1025,7 +1032,10 @@ io.on('connection', (socket) => {
       team1Name: "",
       team2Name: "",
       team1City: "",
-      team2City: ""
+      team2City: "",
+      penaltyActive: false,
+      penaltyMode: "adult",
+      penaltyMaxAttempts: 5
     };
 
     io.emit('scoreboardUpdate', state);
