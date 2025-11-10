@@ -2790,7 +2790,7 @@
         const logoUrl = getPenaltyTeamLogo(teamKey);
         const label = getPenaltyTeamLabel(teamKey);
         const isActiveTeam = currentTeam === teamKey && !finished;
-        const isSelectable = Array.isArray(series.history) && series.history.length === 0;
+      const isSelectable = Array.isArray(series.history) && series.history.length === 0 && !penaltyModeActiveInUpdate;
         const slots = new Array(visibleSlots).fill(null);
         teamAttempts.forEach((result, idx) => {
           const slotPosition = idx % visibleSlots;
@@ -2923,8 +2923,12 @@
         block.appendChild(attemptsCell);
 
         if (isSelectable) {
-          block.style.cursor = 'pointer';
+          block.style.cursor = penaltyModeActiveInUpdate ? 'not-allowed' : 'pointer';
           block.addEventListener('click', () => {
+            if (penaltyModeActiveInUpdate) {
+              showNotification('Нельзя менять первую бьющую команду во время активного таймера или серии пенальти', 'info');
+              return;
+            }
             const localSeries = ensurePenaltySeriesInitialized();
             resetSeriesStateFromHistory(localSeries);
             if (Array.isArray(localSeries.history) && localSeries.history.length > 0) return;
