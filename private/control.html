@@ -2792,16 +2792,10 @@
         const isActiveTeam = currentTeam === teamKey && !finished;
         const isSelectable = Array.isArray(series.history) && series.history.length === 0;
         const slots = new Array(visibleSlots).fill(null);
-        const attemptsForDisplay = teamAttempts.slice(-visibleSlots);
-        if (teamAttempts.length >= visibleSlots) {
-          attemptsForDisplay.forEach((result, idx) => {
-            slots[idx] = { status: result, index: teamAttempts.length - visibleSlots + idx };
-          });
-        } else {
-          attemptsForDisplay.forEach((result, idx) => {
-            slots[idx] = { status: result, index: idx };
-          });
-        }
+        teamAttempts.forEach((result, idx) => {
+          const slotPosition = idx % visibleSlots;
+          slots[slotPosition] = { status: result, index: idx };
+        });
 
         const nextSlotIndex = teamAttempts.length % visibleSlots;
 
