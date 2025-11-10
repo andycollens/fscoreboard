@@ -304,7 +304,7 @@
     .penalty-series-board {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 24px;
       border-top: 1px dashed #c5d9ff;
       padding-top: 16px;
     }
@@ -317,12 +317,16 @@
       padding: 12px 16px;
       background: #ffffff;
       border-radius: 10px;
-      box-shadow: 0 1px 4px rgba(22, 61, 116, 0.08);
       position: relative;
+      margin-bottom: 26px;
+    }
+
+    .penalty-series-board .penalty-team-row:last-child {
+      margin-bottom: 0;
     }
 
     .penalty-team-row.active {
-      box-shadow: 0 0 0 2px rgba(51, 138, 243, 0.2);
+      box-shadow: inset 0 0 0 2px rgba(51, 138, 243, 0.35);
     }
 
     .penalty-team-logo {
@@ -333,8 +337,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #eef4ff;
-      border: 1px solid #d2ddf7;
+      background: none;
+      border: none;
     }
 
     .penalty-team-logo img {
@@ -354,6 +358,27 @@
       gap: 10px;
       position: relative;
       flex-wrap: wrap;
+    }
+
+    .penalty-attempt-wrapper {
+      display: grid;
+      grid-template-rows: 32px 40px 32px;
+      justify-items: center;
+      align-items: center;
+      gap: 6px;
+      min-width: 48px;
+    }
+
+    .penalty-attempt-wrapper .penalty-action-button.goal-btn {
+      grid-row: 1;
+    }
+
+    .penalty-attempt-wrapper .penalty-attempt {
+      grid-row: 2;
+    }
+
+    .penalty-attempt-wrapper .penalty-action-button.miss-btn {
+      grid-row: 3;
     }
 
     .penalty-attempt {
@@ -392,44 +417,62 @@
       transform: translateY(-4px);
     }
 
-    .penalty-attempt.active::after {
-      content: '';
-      width: 14px;
-      height: 4px;
-      background: #338af3;
-      border-radius: 10px;
-      position: absolute;
-      top: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .penalty-action-buttons {
-      position: absolute;
-      top: -46px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 6px;
-    }
-
-    .penalty-action-buttons button {
+    .penalty-action-button {
       border: none;
-      border-radius: 8px;
-      padding: 6px 10px;
+      border-radius: 10px;
+      padding: 6px 12px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       color: #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+      transition: transform 0.2s, filter 0.2s;
+      min-width: 48px;
     }
 
-    .penalty-action-buttons button.goal-btn {
+    .penalty-action-button.goal-btn {
       background: #1fb368;
     }
 
-    .penalty-action-buttons button.miss-btn {
+    .penalty-action-button.miss-btn {
       background: #d82727;
+    }
+
+    .penalty-action-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .penalty-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .penalty-undo-btn {
+      border: none;
+      border-radius: 999px;
+      background: #ffe7c2;
+      color: #8a4106;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 6px 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(255, 157, 43, 0.25);
+      transition: transform 0.15s, filter 0.15s;
+    }
+
+    .penalty-undo-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .penalty-undo-btn:disabled {
+      background: #e6e9f0;
+      color: #8791a5;
+      box-shadow: none;
+      cursor: default;
+      transform: none;
     }
 
     .penalty-series-summary {
@@ -2068,7 +2111,10 @@
     <div id="penaltyControls" class="penalty-controls hidden">
       <div class="penalty-controls-header">
         <span>Пенальти активированы</span>
-        <small id="penaltyModeSummary">Выберите длину серии</small>
+        <div class="penalty-header-actions">
+          <button type="button" id="penaltyUndoBtn" class="penalty-undo-btn" disabled>Отменить удар</button>
+          <small id="penaltyModeSummary">Выберите длину серии</small>
+        </div>
       </div>
       <div class="penalty-controls-note">
         Детский формат — до 3 ударов, взрослый формат — до 5 ударов. Победа определяется по стандартным правилам серии пенальти.
@@ -2300,6 +2346,7 @@
       penaltyMaxAttempts: 5,
       penaltySeries: null
     };
+    let penaltyHoldTimeout = null;
     let syncingPenaltyControls = false;
 
     function getCurrentScoreboardSnapshot() {
@@ -2334,6 +2381,7 @@
 
     function createEmptyPenaltySeries() {
       return {
+        firstTeam: 'team1',
         currentTeam: 'team1',
         attempts: {
           team1: [],
@@ -2346,7 +2394,8 @@
         totalGoals: {
           team1: 0,
           team2: 0
-        }
+        },
+        history: []
       };
     }
 
@@ -2364,6 +2413,27 @@
             team2: series.attempts.team2.filter(result => result === 'goal').length
           };
         }
+        if (!series.firstTeam) {
+          series.firstTeam = 'team1';
+        }
+        if (!series.currentTeam) {
+          series.currentTeam = series.firstTeam;
+        }
+        if (!Array.isArray(series.history)) {
+          series.history = [];
+          const maxLen = Math.max(series.attempts.team1.length, series.attempts.team2.length);
+          let turn = series.firstTeam;
+          for (let i = 0; i < maxLen; i++) {
+            if (series.attempts[turn][i] !== undefined) {
+              series.history.push({ team: turn, result: series.attempts[turn][i] });
+            }
+            const other = turn === 'team1' ? 'team2' : 'team1';
+            if (series.attempts[other][i] !== undefined) {
+              series.history.push({ team: other, result: series.attempts[other][i] });
+            }
+            turn = series.firstTeam;
+          }
+        }
         series.maxAttempts = scoreboardState.penaltyMaxAttempts;
       }
       return scoreboardState.penaltySeries;
@@ -2374,6 +2444,7 @@
       const controls = document.getElementById('penaltyControls');
       const summary = document.getElementById('penaltyModeSummary');
       const board = document.getElementById('penaltySeriesBoard');
+      const undoBtn = document.getElementById('penaltyUndoBtn');
 
       if (!toggle || !controls) return;
 
@@ -2382,6 +2453,13 @@
       controls.classList.toggle('hidden', !scoreboardState.penaltyActive);
       if (board) {
         board.classList.toggle('hidden', !scoreboardState.penaltyActive);
+      }
+      if (undoBtn) {
+        const canUndo = scoreboardState.penaltyActive &&
+          scoreboardState.penaltySeries &&
+          Array.isArray(scoreboardState.penaltySeries.history) &&
+          scoreboardState.penaltySeries.history.length > 0;
+        undoBtn.disabled = !canUndo;
       }
 
       const currentMode = scoreboardState.penaltyMode || 'adult';
@@ -2406,22 +2484,51 @@
 
     function setPenaltyMode(mode, emitUpdate = true) {
       const normalizedMode = mode === 'child' ? 'child' : 'adult';
-      const maxAttempts = getPenaltyMaxAttempts(normalizedMode);
+      if (normalizedMode === scoreboardState.penaltyMode) {
+        return;
+      }
+
+      const series = scoreboardState.penaltySeries;
+      const hasShots = series && Array.isArray(series.history) && series.history.length > 0;
+      if (hasShots) {
+        showNotification('Нельзя менять формат после начала серии пенальти', 'info');
+        updatePenaltyControlsUI();
+        return;
+      }
+
+      if (emitUpdate) {
+        const confirmationMessage = normalizedMode === 'child'
+          ? 'Переключить серию на формат 3 удара на команду?'
+          : 'Переключить серию на формат 5 ударов на команду?';
+        if (!confirm(confirmationMessage)) {
+          updatePenaltyControlsUI();
+          return;
+        }
+      }
 
       scoreboardState.penaltyMode = normalizedMode;
+      const maxAttempts = getPenaltyMaxAttempts(normalizedMode);
       scoreboardState.penaltyMaxAttempts = maxAttempts;
       if (scoreboardState.penaltySeries) {
         scoreboardState.penaltySeries.maxAttempts = maxAttempts;
+        resetSeriesStateFromHistory(scoreboardState.penaltySeries);
       }
 
       updatePenaltyControlsUI();
 
-      if (emitUpdate && scoreboardState.penaltyActive) {
-        socket.emit('updateScoreboard', {
+      if (emitUpdate) {
+        const payload = {
           penaltyMode: normalizedMode,
-          penaltyMaxAttempts: maxAttempts,
-          penaltySeries: scoreboardState.penaltySeries ? JSON.parse(JSON.stringify(scoreboardState.penaltySeries)) : null
-        });
+          penaltyMaxAttempts: maxAttempts
+        };
+        if (scoreboardState.penaltyActive) {
+          if (!scoreboardState.penaltySeries) {
+            scoreboardState.penaltySeries = createEmptyPenaltySeries();
+          }
+          resetSeriesStateFromHistory(scoreboardState.penaltySeries);
+          payload.penaltySeries = JSON.parse(JSON.stringify(scoreboardState.penaltySeries));
+        }
+        socket.emit('updateScoreboard', payload);
       }
     }
 
@@ -2469,6 +2576,12 @@
         });
       });
 
+      const undoBtn = document.getElementById('penaltyUndoBtn');
+      if (undoBtn && undoBtn.dataset.listenerAttached !== 'true') {
+        undoBtn.addEventListener('click', () => undoLastPenaltyShot());
+        undoBtn.dataset.listenerAttached = 'true';
+      }
+
       updatePenaltyControlsUI();
     }
 
@@ -2505,6 +2618,7 @@
       if (!board || !rowsContainer) return;
 
       const series = ensurePenaltySeriesInitialized();
+      resetSeriesStateFromHistory(series);
       const { attempts, currentTeam, finished, winner, suddenDeath } = series;
 
       const goalsTeam1 = calculatePenaltyGoals(attempts.team1);
@@ -2527,15 +2641,21 @@
         scoreEl.innerHTML = `<strong>${goalsTeam1}</strong> : <strong>${goalsTeam2}</strong>`;
       }
 
-      const maxAttempts = series.maxAttempts || scoreboardState.penaltyMaxAttempts;
-      const extraAttempts = Math.max(0, attempts.team1.length - maxAttempts, attempts.team2.length - maxAttempts);
-      const maxVisible = Math.max(maxAttempts + extraAttempts, attempts.team1.length + 1, attempts.team2.length + 1);
+      const visibleSlots = Math.max(series.maxAttempts || scoreboardState.penaltyMaxAttempts || 1, 1);
 
       const createTeamRow = (teamKey) => {
         const teamAttempts = attempts[teamKey];
         const logoUrl = getPenaltyTeamLogo(teamKey);
         const label = getPenaltyTeamLabel(teamKey);
         const isActiveTeam = currentTeam === teamKey && !finished;
+        const isSelectable = Array.isArray(series.history) && series.history.length === 0;
+        const slots = new Array(visibleSlots).fill(null);
+
+        teamAttempts.forEach((result, idx) => {
+          slots[idx % visibleSlots] = { status: result, index: idx };
+        });
+
+        const nextSlotIndex = teamAttempts.length % visibleSlots;
 
         const row = document.createElement('div');
         row.className = `penalty-team-row${isActiveTeam ? ' active' : ''}`;
@@ -2558,47 +2678,63 @@
         const attemptsCell = document.createElement('div');
         attemptsCell.className = 'penalty-attempts-track';
 
-        for (let i = 0; i < maxVisible; i++) {
-          const attemptStatus = teamAttempts[i];
+        for (let slotIndex = 0; slotIndex < visibleSlots; slotIndex++) {
+          const slotData = slots[slotIndex];
+          const attemptWrapper = document.createElement('div');
+          attemptWrapper.className = 'penalty-attempt-wrapper';
           const attemptEl = document.createElement('div');
           let statusClass = 'pending';
-          let display = i + 1;
 
-          if (attemptStatus === 'goal') {
+          if (slotData?.status === 'goal') {
             statusClass = 'goal';
-            display = '•';
-          } else if (attemptStatus === 'miss') {
+          } else if (slotData?.status === 'miss') {
             statusClass = 'miss';
-            display = '×';
           }
 
-          const isActiveAttempt = isActiveTeam && i === teamAttempts.length;
+          const isActiveAttempt = isActiveTeam &&
+            !finished &&
+            series.currentTeam === teamKey &&
+            slotIndex === nextSlotIndex;
+
+          const isLastRecordedAttempt = !!slotData &&
+            slotData.index === teamAttempts.length - 1 &&
+            !finished;
 
           attemptEl.className = `penalty-attempt ${statusClass}${isActiveAttempt ? ' active' : ''}`;
-          attemptEl.textContent = display;
+          attemptEl.textContent = '';
+
+          if (isLastRecordedAttempt && !finished) {
+            const holdStart = (event) => startPenaltyHold(teamKey, slotData.index, event);
+            const holdCancel = () => cancelPenaltyHold();
+            attemptEl.addEventListener('mousedown', holdStart);
+            attemptEl.addEventListener('touchstart', holdStart, { passive: false });
+            ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(evt => {
+              attemptEl.addEventListener(evt, holdCancel);
+            });
+            attemptEl.addEventListener('contextmenu', (evt) => evt.preventDefault());
+          }
 
           if (isActiveAttempt) {
-            const buttonsWrap = document.createElement('div');
-            buttonsWrap.className = 'penalty-action-buttons';
-
             const goalButton = document.createElement('button');
-            goalButton.className = 'goal-btn';
+            goalButton.className = 'penalty-action-button goal-btn';
             goalButton.type = 'button';
             goalButton.textContent = 'Гол';
             goalButton.onclick = () => handlePenaltyShot(teamKey, 'goal');
+            attemptWrapper.appendChild(goalButton);
+          }
 
+          attemptWrapper.appendChild(attemptEl);
+
+          if (isActiveAttempt) {
             const missButton = document.createElement('button');
-            missButton.className = 'miss-btn';
+            missButton.className = 'penalty-action-button miss-btn';
             missButton.type = 'button';
             missButton.textContent = 'Мимо';
             missButton.onclick = () => handlePenaltyShot(teamKey, 'miss');
-
-            buttonsWrap.appendChild(goalButton);
-            buttonsWrap.appendChild(missButton);
-            attemptEl.appendChild(buttonsWrap);
+            attemptWrapper.appendChild(missButton);
           }
 
-          attemptsCell.appendChild(attemptEl);
+          attemptsCell.appendChild(attemptWrapper);
         }
 
         row.appendChild(attemptsCell);
@@ -2611,6 +2747,41 @@
         const goalsValue = teamKey === 'team1' ? goalsTeam1 : goalsTeam2;
         goalsCell.textContent = goalsValue;
         row.appendChild(goalsCell);
+
+        if (isSelectable) {
+          row.style.cursor = 'pointer';
+          row.addEventListener('click', () => {
+            const localSeries = ensurePenaltySeriesInitialized();
+            resetSeriesStateFromHistory(localSeries);
+            if (Array.isArray(localSeries.history) && localSeries.history.length > 0) return;
+            const newFirst = teamKey;
+            if (localSeries.firstTeam === newFirst) return;
+
+            const remappedHistory = [];
+            if (Array.isArray(localSeries.history)) {
+              const otherTeam = newFirst === 'team1' ? 'team2' : 'team1';
+              localSeries.history.forEach(entry => {
+                if (entry.team === newFirst) {
+                  remappedHistory.push({ ...entry, team: 'team1' });
+                } else if (entry.team === otherTeam) {
+                  remappedHistory.push({ ...entry, team: 'team2' });
+                } else {
+                  remappedHistory.push(entry);
+                }
+              });
+            }
+
+            localSeries.firstTeam = newFirst;
+            localSeries.currentTeam = newFirst;
+            localSeries.history = remappedHistory;
+            resetSeriesStateFromHistory(localSeries);
+            updatePenaltyControlsUI();
+            socket.emit('updateScoreboard', {
+              penaltySeries: JSON.parse(JSON.stringify(localSeries))
+            });
+            showNotification(`Первыми бьют: ${getPenaltyTeamLabel(newFirst)}`, 'info');
+          });
+        }
 
         return { row, goalsCell };
       };
@@ -2668,28 +2839,105 @@
       if (!scoreboardState.penaltyActive) return;
 
       const series = ensurePenaltySeriesInitialized();
+      resetSeriesStateFromHistory(series);
       if (series.finished) return;
       if (series.currentTeam !== teamKey) return;
 
-      series.attempts[teamKey].push(result);
-      series.totalGoals.team1 = calculatePenaltyGoals(series.attempts.team1);
-      series.totalGoals.team2 = calculatePenaltyGoals(series.attempts.team2);
+      cancelPenaltyHold();
 
-      const evaluation = shouldFinishPenaltySeries(series);
-      if (evaluation.suddenDeath && !series.suddenDeath) {
-        series.suddenDeath = true;
+      if (!Array.isArray(series.history)) {
+        series.history = [];
       }
-      if (evaluation.finished) {
-        series.finished = true;
-        series.winner = evaluation.winner;
-      } else {
-        series.currentTeam = teamKey === 'team1' ? 'team2' : 'team1';
-      }
+      series.history.push({ team: teamKey, result });
+      resetSeriesStateFromHistory(series);
 
       updatePenaltyControlsUI();
       socket.emit('updateScoreboard', {
         penaltySeries: JSON.parse(JSON.stringify(series))
       });
+    }
+
+    function resetSeriesStateFromHistory(series) {
+      const maxAttempts = series.maxAttempts || getPenaltyMaxAttempts(scoreboardState.penaltyMode);
+      series.maxAttempts = maxAttempts;
+      series.attempts = {
+        team1: [],
+        team2: []
+      };
+      series.totalGoals = { team1: 0, team2: 0 };
+      series.suddenDeath = false;
+      series.finished = false;
+      series.winner = null;
+      const firstTeam = series.firstTeam || 'team1';
+      series.currentTeam = firstTeam;
+
+      const history = Array.isArray(series.history) ? series.history : [];
+      history.forEach(({ team, result }) => {
+        series.attempts[team].push(result);
+        if (result === 'goal') {
+          series.totalGoals[team] += 1;
+        }
+        const evaluation = shouldFinishPenaltySeries(series);
+        if (evaluation.suddenDeath) {
+          series.suddenDeath = true;
+        }
+        if (evaluation.finished) {
+          series.finished = true;
+          series.winner = evaluation.winner;
+          series.currentTeam = null;
+        } else {
+          series.currentTeam = team === 'team1' ? 'team2' : 'team1';
+        }
+      });
+
+      if (!series.finished && history.length === 0) {
+        series.currentTeam = firstTeam;
+      }
+      if (series.finished && !series.winner) {
+        series.currentTeam = null;
+      }
+    }
+
+    function undoLastPenaltyShot(triggerNotification = true) {
+      const series = ensurePenaltySeriesInitialized();
+      if (!Array.isArray(series.history) || series.history.length === 0) {
+        if (triggerNotification) showNotification('Нет ударов для отмены', 'info');
+        return;
+      }
+      series.history.pop();
+      resetSeriesStateFromHistory(series);
+      cancelPenaltyHold();
+      updatePenaltyControlsUI();
+      socket.emit('updateScoreboard', {
+        penaltySeries: JSON.parse(JSON.stringify(series))
+      });
+      if (triggerNotification) showNotification('Удар отменён', 'info');
+    }
+
+    function startPenaltyHold(teamKey, attemptIndex, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      cancelPenaltyHold();
+      const series = ensurePenaltySeriesInitialized();
+      resetSeriesStateFromHistory(series);
+      if (!Array.isArray(series.history) || series.history.length === 0) return;
+      const lastEntry = series.history[series.history.length - 1];
+      if (!lastEntry || lastEntry.team !== teamKey) return;
+      if (attemptIndex !== series.attempts[teamKey].length - 1) return;
+
+      penaltyHoldTimeout = setTimeout(() => {
+        penaltyHoldTimeout = null;
+        undoLastPenaltyShot();
+      }, 4000);
+    }
+
+    function cancelPenaltyHold() {
+      if (penaltyHoldTimeout) {
+        clearTimeout(penaltyHoldTimeout);
+        penaltyHoldTimeout = null;
+      }
     }
     
     // Защита от случайного изменения счета
@@ -2704,6 +2952,7 @@
     function updateUIFromServerData(data) {
       console.log('Updating UI from server data:', data);
       ready = false;
+      const previousPenaltySignature = scoreboardState.penaltySeries ? JSON.stringify(scoreboardState.penaltySeries) : null;
       
       // Обновление таймера
       const isRunning = !!data.timerRunning;
@@ -2782,6 +3031,12 @@
           scoreboardState.penaltySeries = data.penaltySeries;
         } else if (data.penaltySeries === null) {
           scoreboardState.penaltySeries = null;
+        }
+        const newPenaltySignature = scoreboardState.penaltyActive
+          ? JSON.stringify(scoreboardState.penaltySeries || null)
+          : null;
+        if (previousPenaltySignature !== newPenaltySignature) {
+          cancelPenaltyHold();
         }
         updatePenaltyControlsUI();
       }
