@@ -309,36 +309,66 @@
       padding-top: 16px;
     }
 
-    .penalty-team-row {
-      display: grid;
-      grid-template-columns: 52px 1fr 50px;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
+    .penalty-teams-container {
+      display: flex;
+      align-items: stretch;
+      gap: 24px;
+      width: 100%;
+    }
+
+    .penalty-team-block {
+      flex: 1;
       background: #ffffff;
-      border-radius: 10px;
+      border-radius: 14px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: 0 2px 8px rgba(22, 61, 116, 0.08);
       position: relative;
-      margin-bottom: 26px;
+      transition: box-shadow 0.2s, transform 0.2s;
     }
 
-    .penalty-series-board .penalty-team-row:last-child {
-      margin-bottom: 0;
+    .penalty-team-block.active {
+      box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.24);
+      transform: translateY(-2px);
     }
 
-    .penalty-team-row.active {
-      box-shadow: inset 0 0 0 2px rgba(51, 138, 243, 0.35);
+    .penalty-team-block:not(:first-child)::before {
+      content: "";
+      position: absolute;
+      left: -12px;
+      top: 24px;
+      bottom: 24px;
+      width: 1px;
+      background: linear-gradient(to bottom, rgba(103, 132, 189, 0), rgba(103, 132, 189, 0.35), rgba(103, 132, 189, 0));
+    }
+
+    .penalty-team-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .penalty-team-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
     }
 
     .penalty-team-logo {
       width: 52px;
       height: 52px;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
       background: none;
       border: none;
+      flex-shrink: 0;
     }
 
     .penalty-team-logo img {
@@ -353,11 +383,39 @@
       color: #2f3a4c;
     }
 
+    .penalty-team-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .penalty-team-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2d3d;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .penalty-team-meta {
+      font-size: 12px;
+      color: #61708a;
+    }
+
+    .penalty-team-score {
+      font-size: 28px;
+      font-weight: 700;
+      color: #163d74;
+      min-width: 28px;
+      text-align: right;
+    }
+
     .penalty-attempts-track {
       display: flex;
-      gap: 10px;
-      position: relative;
       flex-wrap: wrap;
+      gap: 14px;
     }
 
     .penalty-attempt-wrapper {
@@ -385,7 +443,6 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: #e0e9ff;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -395,26 +452,31 @@
 
     .penalty-attempt.goal {
       background: #1fb368;
-      color: #fff;
     }
 
     .penalty-attempt.miss {
-      background: #fce4e4;
-      color: #d82727;
-      font-weight: 700;
-      font-size: 18px;
+      background: #d82727;
     }
 
     .penalty-attempt.pending {
-      background: #e0e9ff;
-      color: #7a8aa8;
-      font-weight: 600;
-      font-size: 14px;
+      width: 20px;
+      height: 20px;
+      background: #dce2f0;
+      opacity: 0.8;
     }
 
     .penalty-attempt.active {
       border: 2px solid #338af3;
       transform: translateY(-4px);
+    }
+
+    .penalty-attempt.goal::after,
+    .penalty-attempt.miss::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
     }
 
     .penalty-action-button {
@@ -473,6 +535,34 @@
       box-shadow: none;
       cursor: default;
       transform: none;
+    }
+
+    @media (max-width: 880px) {
+      .penalty-teams-container {
+        flex-direction: column;
+      }
+
+      .penalty-team-block {
+        padding: 16px;
+      }
+
+      .penalty-team-block:not(:first-child)::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 16px;
+        right: 16px;
+        height: 1px;
+        background: rgba(103, 132, 189, 0.3);
+      }
+
+      .penalty-team-block:not(:first-child) {
+        margin-top: 12px;
+      }
+
+      .penalty-team-header {
+        align-items: flex-start;
+      }
     }
 
     .penalty-series-summary {
@@ -2657,23 +2747,46 @@
 
         const nextSlotIndex = teamAttempts.length % visibleSlots;
 
-        const row = document.createElement('div');
-        row.className = `penalty-team-row${isActiveTeam ? ' active' : ''}`;
-        row.dataset.team = teamKey;
+        const block = document.createElement('div');
+        block.className = `penalty-team-block${isActiveTeam ? ' active' : ''}`;
+        block.dataset.team = teamKey;
 
-        const logoCell = document.createElement('div');
-        logoCell.className = 'penalty-team-logo';
+        const header = document.createElement('div');
+        header.className = 'penalty-team-header';
+
+        const headerLeft = document.createElement('div');
+        headerLeft.className = 'penalty-team-header-left';
+
+        const logoEl = document.createElement('div');
+        logoEl.className = 'penalty-team-logo';
         if (logoUrl) {
           const img = document.createElement('img');
           img.src = logoUrl;
           img.alt = label;
-          logoCell.appendChild(img);
+          logoEl.appendChild(img);
         } else {
           const span = document.createElement('span');
           span.textContent = label.slice(0, 1).toUpperCase();
-          logoCell.appendChild(span);
+          logoEl.appendChild(span);
         }
-        row.appendChild(logoCell);
+
+        const info = document.createElement('div');
+        info.className = 'penalty-team-info';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'penalty-team-name';
+        nameEl.textContent = label;
+        info.appendChild(nameEl);
+
+        headerLeft.appendChild(logoEl);
+        headerLeft.appendChild(info);
+
+        const scoreEl = document.createElement('div');
+        scoreEl.className = 'penalty-team-score';
+        scoreEl.textContent = teamKey === 'team1' ? goalsTeam1 : goalsTeam2;
+
+        header.appendChild(headerLeft);
+        header.appendChild(scoreEl);
+        block.appendChild(header);
 
         const attemptsCell = document.createElement('div');
         attemptsCell.className = 'penalty-attempts-track';
@@ -2737,20 +2850,11 @@
           attemptsCell.appendChild(attemptWrapper);
         }
 
-        row.appendChild(attemptsCell);
-
-        const goalsCell = document.createElement('div');
-        goalsCell.style.textAlign = 'center';
-        goalsCell.style.fontSize = '22px';
-        goalsCell.style.fontWeight = '700';
-        goalsCell.style.color = '#163d74';
-        const goalsValue = teamKey === 'team1' ? goalsTeam1 : goalsTeam2;
-        goalsCell.textContent = goalsValue;
-        row.appendChild(goalsCell);
+        block.appendChild(attemptsCell);
 
         if (isSelectable) {
-          row.style.cursor = 'pointer';
-          row.addEventListener('click', () => {
+          block.style.cursor = 'pointer';
+          block.addEventListener('click', () => {
             const localSeries = ensurePenaltySeriesInitialized();
             resetSeriesStateFromHistory(localSeries);
             if (Array.isArray(localSeries.history) && localSeries.history.length > 0) return;
@@ -2783,15 +2887,17 @@
           });
         }
 
-        return { row, goalsCell };
+        return { block };
       };
 
       rowsContainer.innerHTML = '';
-      const team1Row = createTeamRow('team1');
-      const team2Row = createTeamRow('team2');
-
-      rowsContainer.appendChild(team1Row.row);
-      rowsContainer.appendChild(team2Row.row);
+      const teamsWrapper = document.createElement('div');
+      teamsWrapper.className = 'penalty-teams-container';
+      const team1Block = createTeamRow('team1');
+      const team2Block = createTeamRow('team2');
+      teamsWrapper.appendChild(team1Block.block);
+      teamsWrapper.appendChild(team2Block.block);
+      rowsContainer.appendChild(teamsWrapper);
     }
 
     function shouldFinishPenaltySeries(series) {
