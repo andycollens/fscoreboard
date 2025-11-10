@@ -653,7 +653,7 @@
       border-radius: 8px;
       display: flex; 
       align-items: center; 
-      justify-content: center;
+      justify-content: center; 
       font-size: 2em; 
       cursor: pointer; 
       transition: background 0.2s;
@@ -789,7 +789,6 @@
       gap: 4px; 
       margin-top: 6px; 
     }
-    
     .team-input-row input[type="text"] {
       width: 100%;
       text-align: center; 
@@ -1092,7 +1091,6 @@
     .confirmation-btn.cancel:hover {
       background: #5a6268;
     }
-    
     /* Мобильная адаптивность */
     @media (max-width: 768px) {
       body {
@@ -1893,7 +1891,6 @@
       margin-bottom: 10px;
       display: block;
     }
-    
       .presets-list {
         width: 100%;
         display: flex;
@@ -2435,7 +2432,6 @@
           </div>
         </div>
   </div>
-
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
@@ -2470,6 +2466,8 @@
     };
 
     const BREAK_WARNING_MESSAGE = 'На табло уже выставлены счёт или время. Похоже, сейчас идёт перерыв — переключение команд в основном меню может привести к ошибкам трансляции. Продолжить?';
+    window.penaltyModeActive = false;
+
     let scoreboardState = {
       score1: 0,
       score2: 0,
@@ -2785,12 +2783,14 @@
 
       const visibleSlots = Math.max(series.maxAttempts || scoreboardState.penaltyMaxAttempts || 1, 1);
 
+      const penaltyLocked = !!timerRunning || !!scoreboardState.penaltyActive;
+
       const createTeamRow = (teamKey) => {
         const teamAttempts = attempts[teamKey];
         const logoUrl = getPenaltyTeamLogo(teamKey);
         const label = getPenaltyTeamLabel(teamKey);
         const isActiveTeam = currentTeam === teamKey && !finished;
-      const isSelectable = Array.isArray(series.history) && series.history.length === 0 && !penaltyModeActiveInUpdate;
+        const isSelectable = !penaltyLocked && Array.isArray(series.history) && series.history.length === 0;
         const slots = new Array(visibleSlots).fill(null);
         teamAttempts.forEach((result, idx) => {
           const slotPosition = idx % visibleSlots;
@@ -2923,10 +2923,15 @@
         block.appendChild(attemptsCell);
 
         if (isSelectable) {
-          block.style.cursor = penaltyModeActiveInUpdate ? 'not-allowed' : 'pointer';
+          block.style.cursor = 'pointer';
+        } else {
+          block.style.cursor = 'not-allowed';
+        }
+
+        if (isSelectable) {
           block.addEventListener('click', () => {
-            if (penaltyModeActiveInUpdate) {
-              showNotification('Нельзя менять первую бьющую команду во время активного таймера или серии пенальти', 'info');
+            if (penaltyLocked) {
+              showNotification('Нельзя менять порядок команд во время активного таймера или серии пенальти', 'info');
               return;
             }
             const localSeries = ensurePenaltySeriesInitialized();
@@ -2965,10 +2970,14 @@
       };
 
       rowsContainer.innerHTML = '';
-      const teamsWrapper = document.createElement('div');
-      teamsWrapper.className = 'penalty-teams-container';
       const team1Block = createTeamRow('team1');
       const team2Block = createTeamRow('team2');
+      if (!team1Block || !team1Block.block || !team2Block || !team2Block.block) {
+        console.error('Не удалось сформировать карточки пенальти', { team1Block, team2Block });
+        return;
+      }
+      const teamsWrapper = document.createElement('div');
+      teamsWrapper.className = 'penalty-teams-container';
       teamsWrapper.appendChild(team1Block.block);
       teamsWrapper.appendChild(team2Block.block);
       rowsContainer.appendChild(teamsWrapper);
@@ -3126,7 +3135,6 @@
       timestamp: 0,
       value: 0
     };
-
     // Простая функция обновления UI - точно как в stadium.html
     // Без сложных проверок, просто обновляем элементы напрямую
     function updateUIFromServerData(data) {
@@ -3230,6 +3238,7 @@
         if (previousPenaltySignature !== newPenaltySignature) {
           cancelPenaltyHold();
         }
+        window.penaltyModeActive = !!scoreboardState.penaltyActive;
         updatePenaltyControlsUI();
       }
       getCurrentScoreboardSnapshot();
@@ -3897,7 +3906,6 @@
       // Обновляем имя пресета после выбора команды
       updatePresetNameForForm(selectElement);
     }
-    
     function onTeam2SelectedForForm(selectElement) {
       // Находим форму - она клонируется и имеет ID presetFormContent_*
       // Используем closest для поиска формы по ID, как в редактировании по классу
@@ -4514,7 +4522,6 @@
         showNotification('Ошибка удаления логотипа', 'error');
       }
     }
-
     // Настройка контролов
     function setupControls() {
       // Таймер
@@ -4958,7 +4965,7 @@
               </div>
               <div class="preset-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
                 <span class="preset-edit-link" onclick="editPresetInline('${tournament.id}', '${preset.id}')">edit</span>
-                <span class="preset-apply-symbol" onclick="if (!window.timerRunning) confirmApplyPreset('${preset.id}')" ${timerRunning ? 'style="opacity: 0.5; cursor: not-allowed; pointer-events: none;"' : ''} title="Применить предустановку"></span>
+                <span class="preset-apply-symbol" onclick="if (!window.timerRunning && !window.penaltyModeActive) confirmApplyPreset('${preset.id}'); else showNotification('Применение пресета заблокировано во время активного таймера или серии пенальти', 'info');" ${(timerRunning || scoreboardState.penaltyActive) ? 'style="opacity: 0.5; cursor: not-allowed; pointer-events: none;"' : ''} title="Применить предустановку"></span>
               </div>
             </div>
           `;
@@ -5299,7 +5306,6 @@
         team2Select.appendChild(option2);
       });
     }
-    
     // Обновление имени пресета при редактировании
     function updateEditPresetNameInline(tournamentId, presetId) {
       const editForm = document.getElementById(`preset-edit-form-${tournamentId}-${presetId}`);
@@ -5626,6 +5632,10 @@
 
     // Подтверждение применения предустановки
     function confirmApplyPreset(presetId) {
+      if (timerRunning || scoreboardState.penaltyActive) {
+        showNotification('Применение пресета заблокировано во время активного таймера или серии пенальти', 'info');
+        return;
+      }
       const preset = presets.find(p => p.id === presetId);
       if (!preset) return;
       
@@ -5696,6 +5706,10 @@
     }
 
     async function applyPreset(presetId) {
+      if (timerRunning || scoreboardState.penaltyActive) {
+        showNotification('Применение пресета заблокировано во время активного таймера или серии пенальти', 'info');
+        return;
+      }
       const preset = presets.find(p => p.id === presetId);
       if (!preset) return;
 
@@ -6070,7 +6084,6 @@
         showNotification('Ошибка сохранения предустановки', 'error');
       }
     }
-
     async function savePreset() {
       const preset = {
         name: document.getElementById('presetName').value.trim(),
