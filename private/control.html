@@ -330,7 +330,7 @@
     }
 
     .penalty-team-block.active {
-      box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.24);
+      box-shadow: 0 0 0 3px rgba(142, 153, 174, 0.32);
       transform: translateY(-2px);
     }
 
@@ -485,8 +485,9 @@
     }
 
     .penalty-attempt.active {
-      border: 2px solid #338af3;
-      transform: translateY(-4px);
+      border: 2px solid #adb5c7;
+      background: #d9deea;
+      transform: translateY(-3px);
     }
 
     .penalty-attempt.goal::after,
@@ -533,13 +534,13 @@
     .penalty-undo-btn {
       border: none;
       border-radius: 999px;
-      background: #ffe7c2;
-      color: #8a4106;
+      background: #e4e7ef;
+      color: #1f2d3d;
       font-weight: 600;
       font-size: 12px;
       padding: 6px 16px;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(255, 157, 43, 0.25);
+      box-shadow: 0 2px 6px rgba(130, 141, 162, 0.25);
       transition: transform 0.15s, filter 0.15s;
     }
 
@@ -549,8 +550,8 @@
     }
 
     .penalty-undo-btn:disabled {
-      background: #e6e9f0;
-      color: #8791a5;
+      background: #ebedf3;
+      color: #a3a9b8;
       box-shadow: none;
       cursor: default;
       transform: none;
@@ -2567,11 +2568,15 @@
       const controls = document.getElementById('penaltyControls');
       const board = document.getElementById('penaltySeriesBoard');
       const undoBtn = document.getElementById('penaltyUndoBtn');
+      const penaltyModeButtons = document.querySelectorAll('.penalty-mode-button');
+      const timerActive = !!timerRunning;
 
       if (!toggle || !controls) return;
 
       syncingPenaltyControls = true;
       toggle.checked = !!scoreboardState.penaltyActive;
+      toggle.disabled = timerActive;
+      toggle.classList.toggle('disabled-field', timerActive);
       controls.classList.toggle('hidden', !scoreboardState.penaltyActive);
       if (board) {
         board.classList.toggle('hidden', !scoreboardState.penaltyActive);
@@ -2585,9 +2590,11 @@
       }
 
       const currentMode = scoreboardState.penaltyMode || 'adult';
-      document.querySelectorAll('.penalty-mode-button').forEach(button => {
+      penaltyModeButtons.forEach(button => {
         const buttonMode = button.dataset.mode;
         button.classList.toggle('active', buttonMode === currentMode);
+        button.disabled = timerActive && scoreboardState.penaltyActive;
+        button.classList.toggle('disabled-field', button.disabled);
       });
 
       syncingPenaltyControls = false;
@@ -2656,6 +2663,13 @@
           if (syncingPenaltyControls) return;
 
           if (toggle.checked) {
+            if (timerRunning) {
+              showNotification('Нельзя активировать серию пенальти, пока таймер запущен', 'info');
+              syncingPenaltyControls = true;
+              toggle.checked = false;
+              syncingPenaltyControls = false;
+              return;
+            }
             const confirmed = confirm('Активировать режим серии пенальти? Этот режим используется во время подготовки к серии ударов.');
             if (!confirmed) {
               syncingPenaltyControls = true;
@@ -2686,6 +2700,10 @@
 
       document.querySelectorAll('.penalty-mode-button').forEach(button => {
         button.addEventListener('click', () => {
+          if (timerRunning && scoreboardState.penaltyActive) {
+            showNotification('Изменение формата серии заблокировано во время активного таймера', 'info');
+            return;
+          }
           const mode = button.dataset.mode === 'child' ? 'child' : 'adult';
           if (mode === scoreboardState.penaltyMode) return;
           setPenaltyMode(mode, true);
