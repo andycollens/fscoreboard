@@ -2240,13 +2240,7 @@
     <div id="penaltyControls" class="penalty-controls hidden">
       <div class="penalty-controls-header">
         <span>Пенальти активированы</span>
-        <div class="penalty-header-actions">
-          <button type="button" id="penaltyUndoBtn" class="penalty-undo-btn" disabled>Отменить удар</button>
-          <small id="penaltyModeSummary">Выберите длину серии</small>
-        </div>
-      </div>
-      <div class="penalty-controls-note">
-        Детский формат — до 3 ударов, взрослый формат — до 5 ударов. Победа определяется по стандартным правилам серии пенальти.
+        <button type="button" id="penaltyUndoBtn" class="penalty-undo-btn" disabled>Отменить удар</button>
       </div>
       <div class="penalty-mode-options">
         <button type="button" class="penalty-mode-button" data-mode="child">Детский режим (3 удара)</button>
@@ -2571,7 +2565,6 @@
     function updatePenaltyControlsUI() {
       const toggle = document.getElementById('penaltyModeToggle');
       const controls = document.getElementById('penaltyControls');
-      const summary = document.getElementById('penaltyModeSummary');
       const board = document.getElementById('penaltySeriesBoard');
       const undoBtn = document.getElementById('penaltyUndoBtn');
 
@@ -2596,12 +2589,6 @@
         const buttonMode = button.dataset.mode;
         button.classList.toggle('active', buttonMode === currentMode);
       });
-
-      if (summary) {
-        summary.textContent = currentMode === 'child'
-          ? 'Детский формат — до 3 ударов'
-          : 'Взрослый формат — до 5 ударов';
-      }
 
       syncingPenaltyControls = false;
 
