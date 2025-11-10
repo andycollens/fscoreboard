@@ -444,6 +444,7 @@
       align-items: center;
       gap: 6px;
       min-width: 48px;
+      transition: transform 0.2s, opacity 0.2s, width 0.2s;
     }
 
     .penalty-attempt-wrapper .penalty-action-button.goal-btn {
@@ -456,6 +457,10 @@
 
     .penalty-attempt-wrapper .penalty-action-button.miss-btn {
       grid-row: 3;
+    }
+
+    .penalty-attempt-wrapper-history {
+      opacity: 0.85;
     }
 
     .penalty-attempt {
@@ -482,6 +487,12 @@
       height: 20px;
       background: #dce2f0;
       opacity: 0.8;
+    }
+
+    .penalty-attempt-wrapper-history .penalty-attempt.pending {
+      width: 16px;
+      height: 16px;
+      opacity: 0.6;
     }
 
     .penalty-attempt.active {
@@ -790,7 +801,6 @@
       color: #338af3; 
       font-weight: bold; 
     }
-    
     .city-input-row input[type="text"] {
       width: 100%;
       text-align: center; 
@@ -1591,7 +1601,6 @@
         max-width: 100% !important;
         height: 45px !important;
       }
-      
       .camera-content {
         padding: 15px;
         margin-bottom: 15px;
@@ -2742,7 +2751,6 @@
     function calculatePenaltyGoals(attempts) {
       return attempts.filter(result => result === 'goal').length;
     }
-
     function renderPenaltySeries() {
       const board = document.getElementById('penaltySeriesBoard');
       const rowsContainer = document.getElementById('penaltySeriesRows');
@@ -2863,6 +2871,8 @@
             }
           }
 
+          const isHistorySlot = !!slotData && (!isActiveAttempt);
+
           if (slotData?.status === 'goal') {
             statusClass = 'goal';
           } else if (slotData?.status === 'miss') {
@@ -2912,6 +2922,7 @@
             attemptWrapper.appendChild(missButton);
           }
 
+          attemptWrapper.classList.toggle('penalty-attempt-wrapper-history', isHistorySlot);
           attemptsCell.appendChild(attemptWrapper);
         }
 
@@ -3540,7 +3551,6 @@
         team2Select.appendChild(option2);
       });
     }
-    
     // Заполнение команд из турнира для конкретной формы
     function fillTeamsFromTournamentForForm(tournament, formContainer) {
       if (!tournament || !tournament.teams || !formContainer) return;
@@ -4315,7 +4325,6 @@
       
       showNotification('Логотип удален', 'success');
     }
-    
     // Загрузка логотипа в основную форму
     async function uploadMainLogo(team, fileInput) {
       if (!fileInput || !fileInput.files || !fileInput.files[0]) {
@@ -5016,7 +5025,6 @@
         showNotification('Ошибка удаления пресета', 'error');
       }
     }
-    
     // Inline редактирование пресета
     function editPresetInline(tournamentId, presetId) {
       const preset = presets.find(p => p.id === presetId);
@@ -5083,7 +5091,7 @@
       let currentTeam1Id = preset.team1Id;
       let currentTeam2Id = preset.team2Id;
       
-      // Если ID не сохранены, пытаемся найти по имени
+      // Если ID не сохранены, пытаемся найти по именам
       if (!currentTeam1Id && preset.team1Name) {
         const team = tournament.teams.find(t => t.name === preset.team1Name);
         if (team) currentTeam1Id = team.id;
@@ -5788,7 +5796,6 @@
         console.error('Ошибка удаления предустановки:', error);
       }
     }
-
     // Сохранение предустановки из формы внутри турнира
     async function saveNewPresetFromForm(buttonElement) {
       // Ищем форму - кнопка находится внутри form-buttons, который внутри формы
