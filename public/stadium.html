@@ -793,6 +793,14 @@
                 margin-left: 16px; /* Адаптивный отступ */
             }
         }
+
+        body.penalty-mode .penalty-track {
+            display: flex;
+        }
+
+        body.penalty-mode .bottom-section {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -1004,11 +1012,12 @@
             console.log('Received scoreboardUpdate in stadium:', data);
             latestData = data;
  
-            if (currentMode === 'scoreboard') {
+            if (currentMode === 'scoreboard' || currentMode === 'penalty') {
                 updateScoreboard(data);
                 const penaltyActive = !!data.penaltyActive;
-                document.body.classList.toggle('penalty-mode', penaltyActive);
-                if (penaltyActive && data.penaltySeries) {
+                const shouldRenderPenalty = penaltyActive || currentMode === 'penalty';
+                document.body.classList.toggle('penalty-mode', shouldRenderPenalty);
+                if (shouldRenderPenalty && data.penaltySeries) {
                     renderStadiumPenalty('team1', data);
                     renderStadiumPenalty('team2', data);
                 } else {
@@ -1083,7 +1092,7 @@
         // Функция обновления отображения
         function updateDisplay(data) {
             console.log('Stadium обновляет отображение:', data);
-            
+ 
             // Команда 1
             if (data.team1Logo && data.team1Logo !== '') {
                 team1Logo.src = data.team1Logo;
@@ -1102,8 +1111,18 @@
             team1Score.textContent = data.score1 || 0;
             adjustScoreFontSize(team1Score);
 
-            // Обновляем полоску для команды 1
-            updateStripe('team1', data.kit1Color);
+            const stadiumTeam1Short = document.getElementById('stadiumTeam1');
+            const stadiumTeam2Short = document.getElementById('stadiumTeam2');
+            const stadiumScore1 = document.getElementById('stadiumScore1');
+            const stadiumScore2 = document.getElementById('stadiumScore2');
+            const stadiumKit1 = document.getElementById('stadiumKit1');
+            const stadiumKit2 = document.getElementById('stadiumKit2');
+            if (stadiumTeam1Short) stadiumTeam1Short.textContent = data.team1Short || (data.team1Name || '').slice(0,3).toUpperCase() || 'ABC';
+            if (stadiumTeam2Short) stadiumTeam2Short.textContent = data.team2Short || (data.team2Name || '').slice(0,3).toUpperCase() || 'XYZ';
+            if (stadiumScore1) stadiumScore1.textContent = typeof data.score1 === 'number' ? data.score1 : 0;
+            if (stadiumScore2) stadiumScore2.textContent = typeof data.score2 === 'number' ? data.score2 : 0;
+            if (stadiumKit1) stadiumKit1.style.background = data.kit1Color || '#2b2b2b';
+            if (stadiumKit2) stadiumKit2.style.background = data.kit2Color || '#2b2b2b';
 
             // Команда 2
             if (data.team2Logo && data.team2Logo !== '') {
@@ -1167,20 +1186,37 @@
         logoMode.classList.remove('active');
         
         // Показываем выбранный режим
-        if (mode === 'scoreboard') {
+        if (mode === 'scoreboard' || mode === 'penalty') {
             scoreboardMode.style.display = 'flex';
+            document.body.classList.toggle('penalty-mode', mode === 'penalty');
             // Если есть сохраненные данные, обновляем отображение
             if (window.lastScoreboardData) {
                 console.log('Updating display with saved data when switching to scoreboard');
                 updateDisplay(window.lastScoreboardData);
+                if (mode === 'penalty') {
+                    if (window.lastScoreboardData.penaltySeries) {
+                        renderStadiumPenalty('team1', window.lastScoreboardData);
+                        renderStadiumPenalty('team2', window.lastScoreboardData);
+                    } else {
+                        renderStadiumPenalty('team1', { penaltySeries: { attempts: { team1: [], team2: [] }, maxAttempts: 5 } });
+                        renderStadiumPenalty('team2', { penaltySeries: { attempts: { team1: [], team2: [] }, maxAttempts: 5 } });
+                    }
+                }
             } else {
                 console.log('No saved data, requesting current state');
                 socket.emit('getCurrentState');
             }
+            if (mode !== 'penalty') {
+                clearStadiumPenalty();
+            }
         } else if (mode === 'flag') {
             flagMode.classList.add('active');
+            document.body.classList.remove('penalty-mode');
+            clearStadiumPenalty();
         } else if (mode === 'winners') {
             winnersMode.classList.add('active');
+            document.body.classList.remove('penalty-mode');
+            clearStadiumPenalty();
             // Всегда пытаемся обновить отображение, даже если winnersData еще нет
             // (она может быть загружена позже)
             if (winnersData) {
@@ -1193,6 +1229,8 @@
             }
         } else if (mode === 'logo') {
             logoMode.classList.add('active');
+            document.body.classList.remove('penalty-mode');
+            clearStadiumPenalty();
             // Инициализируем анимацию лого при переключении на режим
             initLogoAnimation();
         }
