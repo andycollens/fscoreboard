@@ -1078,12 +1078,38 @@ body.penalty-mode .penalty-label {
 }
 
 body.penalty-mode .middle-content {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
     max-width: 100vw;
     padding: 0 2vw;
+}
+
+body.penalty-mode .score1-section,
+body.penalty-mode .score2-section,
+body.penalty-mode .divider-section {
+    position: absolute;
+    top: auto;
+    bottom: clamp(140px, 14vh, 180px);
+    transform: none;
+}
+
+body.penalty-mode .score1-section {
+    left: auto;
+    right: calc(50% + 150px);
+}
+
+body.penalty-mode .score2-section {
+    left: calc(50% + 150px);
+    right: auto;
+}
+
+body.penalty-mode .divider-section {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
 }
 
 body.penalty-mode .team1-section,
