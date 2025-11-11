@@ -613,31 +613,11 @@
         }
 
         .colon {
-            position: relative;
-            width: 0;
-            height: 0;
+            width: 8px;
+            height: 270px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 50%, rgba(255, 255, 255, 0) 100%);
+            border-radius: 8px;
             margin-top: 110px;
-        }
-
-        .colon::before,
-        .colon::after {
-            content: '';
-            position: absolute;
-            width: 70px;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.85);
-            top: 50%;
-            left: 50%;
-            transform-origin: center;
-            border-radius: 2px;
-        }
-
-        .colon::before {
-            transform: translate(-50%, -50%) rotate(45deg);
-        }
-
-        .colon::after {
-            transform: translate(-50%, -50%) rotate(-45deg);
         }
 
         /* Счет 2 */
@@ -1029,6 +1009,34 @@
         body.penalty-mode .score2-section {
             margin-left: 90px;
         }
+
+body.penalty-mode .colon {
+    position: relative;
+    width: 0;
+    height: 0;
+    margin-top: 110px;
+}
+
+body.penalty-mode .colon::before,
+body.penalty-mode .colon::after {
+    content: '';
+    position: absolute;
+    width: 70px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.85);
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+    border-radius: 2px;
+}
+
+body.penalty-mode .colon::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+body.penalty-mode .colon::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
 
         body.penalty-mode .colon {
             width: 6px;
