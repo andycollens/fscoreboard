@@ -1352,47 +1352,29 @@ body.penalty-mode .team-penalty-track {
             const currentTeam = series && !series.finished ? series.currentTeam : null;
             const firstTeam = series && series.firstTeam ? series.firstTeam : 'team1';
  
-            const shouldMarkCurrent =
-                !finished &&
-                series &&
-                currentTeam === teamKey;
+            const shouldMarkCurrent = !finished && series && currentTeam === teamKey;
+            const activeSlotIndex = shouldMarkCurrent ? (attempts.length % maxAttempts) : null;
  
-            const slots = new Array(Math.max(1, maxAttempts)).fill(null);
+            const slotStates = new Array(Math.max(1, maxAttempts)).fill(null);
             attempts.forEach((result, idx) => {
-                const slotPosition = idx % maxAttempts;
-                slots[slotPosition] = {
-                    status: result,
-                    index: idx
-                };
+                const slotIndex = idx % maxAttempts;
+                slotStates[slotIndex] = result;
             });
- 
-            const totalCyclesCompleted = Math.floor(attempts.length / maxAttempts);
-            const nextSlotIndex = attempts.length % maxAttempts;
  
             dotsContainer.innerHTML = '';
  
-            slots.forEach((slotData, slotIndex) => {
+            slotStates.forEach((slotResult, slotIndex) => {
                 const dot = document.createElement('div');
                 dot.className = 'penalty-dot';
  
-                if (slotData && slotData.status === 'goal') {
+                if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
+                    dot.classList.add('active');
+                } else if (slotResult === 'goal') {
                     dot.classList.add('goal');
-                } else if (slotData && slotData.status === 'miss') {
+                } else if (slotResult === 'miss') {
                     dot.classList.add('miss');
                 } else {
                     dot.classList.add('pending');
-                }
- 
-                const slotCycle = slotData ? Math.floor(slotData.index / maxAttempts) : totalCyclesCompleted;
-                const needsReset = slotCycle < totalCyclesCompleted;
-                if (needsReset) {
-                    dot.classList.remove('goal', 'miss');
-                    dot.classList.add('pending');
-                }
- 
-                const isNextSlot = shouldMarkCurrent && slotIndex === nextSlotIndex;
-                if (isNextSlot) {
-                    dot.classList.add('active');
                 }
  
                 dotsContainer.appendChild(dot);
@@ -1403,13 +1385,6 @@ body.penalty-mode .team-penalty-track {
                     const dot = document.createElement('div');
                     dot.className = 'penalty-dot pending';
                     dotsContainer.appendChild(dot);
-                }
-            }
- 
-            if (shouldMarkCurrent && attempts.length === slots.length && maxAttempts > 0 && attempts.length % maxAttempts === 0) {
-                const dot = dotsContainer.children[0];
-                if (dot) {
-                    dot.classList.add('active');
                 }
             }
         }
