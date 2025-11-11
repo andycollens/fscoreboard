@@ -435,42 +435,40 @@
             position: absolute;
             top: auto;
             bottom: clamp(10px, 8vh, 40px);
-            display: grid;
-            grid-template-columns: auto 8px auto;
-            column-gap: 60px;
-            align-items: center;
-            justify-items: center;
+            display: block;
+            width: 100%;
             font-weight: 700;
             font-size: clamp(320px, 21vw, 400px);
             letter-spacing: 0.08em;
             color: #fff;
             pointer-events: none;
-            width: auto;
         }
 
         .penalty-score span {
-            display: inline-block;
-            transform: translateY(-50px);
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         #stadiumPenaltyCountTeam1 {
-            justify-self: end;
+            right: calc(50% + 40px);
             text-align: right;
         }
 
         #stadiumPenaltyCountTeam2 {
-            justify-self: start;
+            left: calc(50% + 40px);
             text-align: left;
         }
 
         .penalty-score .penalty-divider {
-            position: relative;
-            justify-self: center;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -80px);
             width: 8px;
             height: clamp(220px, 12vw, 320px);
             border-radius: 8px;
             background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 50%, rgba(255, 255, 255, 0) 100%);
-            transform: translateY(-80px);
         }
 
         .middle-content {
