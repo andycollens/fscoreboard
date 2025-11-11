@@ -415,7 +415,11 @@
         }
 
         .penalty-dot.miss {
-            background: #ff3b30;
+            background: #000;
+            color: #ff3b30;
+            font-size: clamp(32px, 3.4vw, 50px);
+            font-weight: 800;
+            letter-spacing: -0.02em;
         }
 
         .penalty-dot.pending {
@@ -1393,12 +1397,16 @@ body.penalty-mode .penalty-score {
  
                 if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
                     dot.classList.add('active');
+                    dot.textContent = '';
                 } else if (slotResult === 'goal') {
                     dot.classList.add('goal');
+                    dot.textContent = '';
                 } else if (slotResult === 'miss') {
                     dot.classList.add('miss');
+                    dot.textContent = 'X';
                 } else {
                     dot.classList.add('pending');
+                    dot.textContent = '';
                 }
  
                 dotsContainer.appendChild(dot);
@@ -1408,6 +1416,7 @@ body.penalty-mode .penalty-score {
                 for (let i = 0; i < maxAttempts; i++) {
                     const dot = document.createElement('div');
                     dot.className = 'penalty-dot pending';
+                    dot.textContent = '';
                     dotsContainer.appendChild(dot);
                 }
             }
