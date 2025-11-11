@@ -391,9 +391,10 @@
 
         .penalty-dots {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: clamp(16px, 2.4vw, 32px);
+            gap: clamp(12px, 1.6vw, 20px);
             flex-wrap: nowrap;
         }
 
@@ -1048,6 +1049,13 @@ body.penalty-mode .penalty-label {
     align-items: center;
     justify-content: center;
 }
+
+.penalty-dots-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 2.4vw, 32px);
+}
     </style>
 </head>
 <body>
@@ -1219,83 +1227,82 @@ body.penalty-mode .penalty-label {
         function renderStadiumPenalty(teamKey, data) {
             const dotsContainer = document.getElementById(teamKey === 'team1' ? 'stadiumPenaltyDotsTeam1' : 'stadiumPenaltyDotsTeam2');
             const countEl = document.getElementById(teamKey === 'team1' ? 'stadiumPenaltyCountTeam1' : 'stadiumPenaltyCountTeam2');
-
+ 
             if (!dotsContainer || !countEl) {
                 return;
             }
-
+ 
             const series = data && data.penaltySeries ? data.penaltySeries : null;
             const maxAttempts = (series && typeof series.maxAttempts === 'number')
                 ? series.maxAttempts
                 : getPenaltyMaxAttemptsFromData(data);
-
+ 
             const attempts = series && series.attempts && Array.isArray(series.attempts[teamKey])
                 ? series.attempts[teamKey]
                 : [];
-
-        const totalGoals = series && series.totalGoals && typeof series.totalGoals[teamKey] === 'number'
-            ? series.totalGoals[teamKey]
-            : attempts.filter(result => result === 'goal').length;
-
-        countEl.textContent = totalGoals.toString();
-        countEl.dataset.team = teamKey;
-
+ 
+            const totalGoals = series && series.totalGoals && typeof series.totalGoals[teamKey] === 'number'
+                ? series.totalGoals[teamKey]
+                : attempts.filter(result => result === 'goal').length;
+ 
+            countEl.textContent = totalGoals.toString();
+ 
             const finished = !!(series && series.finished);
             const currentTeam = series && !series.finished ? series.currentTeam : null;
             const firstTeam = series && series.firstTeam ? series.firstTeam : 'team1';
-            const currentCycleTeam = series && !series.finished ? series.currentTeam : null;
-
-            let totalSlots = Math.max(maxAttempts || 0, attempts.length);
-
-            if (!finished && currentTeam === teamKey) {
+ 
+            const shouldMarkCurrent =
+                !finished &&
+                series &&
+                currentTeam === teamKey;
+ 
+            let totalSlots = Math.max(maxAttempts, attempts.length);
+            if (shouldMarkCurrent) {
                 totalSlots = Math.max(totalSlots, attempts.length + 1);
             }
-
-            if (!series && teamKey === firstTeam) {
-                totalSlots = Math.max(totalSlots, 1);
-            }
-
-            if (totalSlots === 0) {
-                totalSlots = maxAttempts || 5;
-            }
-
+            if (totalSlots === 0) totalSlots = maxAttempts;
+ 
+            const rowsCount = Math.max(1, Math.ceil(totalSlots / maxAttempts));
             dotsContainer.innerHTML = '';
-
-            for (let slotIndex = 0; slotIndex < totalSlots; slotIndex++) {
-                const dot = document.createElement('div');
-                dot.className = 'penalty-dot';
-
-                const attemptResult = attempts[slotIndex];
-                if (attemptResult === 'goal') {
-                    dot.classList.add('goal');
-                } else if (attemptResult === 'miss') {
-                    dot.classList.add('miss');
-                } else {
-                    dot.classList.add('pending');
+ 
+            for (let row = 0; row < rowsCount; row++) {
+                const rowEl = document.createElement('div');
+                rowEl.className = 'penalty-dots-row';
+ 
+                for (let slot = 0; slot < maxAttempts; slot++) {
+                    const globalIndex = row * maxAttempts + slot;
+                    if (globalIndex >= totalSlots) break;
+ 
+                    const dot = document.createElement('div');
+                    dot.className = 'penalty-dot';
+ 
+                    const attemptResult = attempts[globalIndex];
+                    if (attemptResult === 'goal') {
+                        dot.classList.add('goal');
+                    } else if (attemptResult === 'miss') {
+                        dot.classList.add('miss');
+                    } else {
+                        dot.classList.add('pending');
+                        if (shouldMarkCurrent && globalIndex === attempts.length) {
+                            dot.classList.add('active');
+                        }
+                    }
+ 
+                    rowEl.appendChild(dot);
                 }
-
-                if (slotIndex >= (maxAttempts || 0)) {
-                    dot.classList.add('sudden-death');
+ 
+                dotsContainer.appendChild(rowEl);
+            }
+ 
+            if (!series && teamKey === firstTeam && dotsContainer.children.length === 0) {
+                const initialRow = document.createElement('div');
+                initialRow.className = 'penalty-dots-row';
+                for (let i = 0; i < maxAttempts; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'penalty-dot pending';
+                    initialRow.appendChild(dot);
                 }
-
-                const isUpcoming =
-                    !series &&
-                    slotIndex === 0 &&
-                    teamKey === firstTeam;
-
-                const nextIndex = attempts.length;
-                const shouldMarkCurrent =
-                    !finished &&
-                    currentCycleTeam === teamKey &&
-                    slotIndex === nextIndex &&
-                    attemptResult === undefined;
-
-                if (isUpcoming || shouldMarkCurrent) {
-                    dot.classList.remove('pending');
-                    dot.classList.add('active');
-                }
-
-                dotsContainer.appendChild(dot);
+                dotsContainer.appendChild(initialRow);
             }
         }
 
