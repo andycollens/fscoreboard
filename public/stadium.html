@@ -434,7 +434,7 @@
         .penalty-score {
             position: absolute;
             top: auto;
-            bottom: clamp(-130px, 6.5vw, -70px);
+            bottom: clamp(10px, 8vh, 40px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -468,8 +468,9 @@
         .penalty-score .penalty-divider {
             position: absolute;
             left: 50%;
-            top: 35%;
-            transform: translate(-50%, -80px);
+            top: auto;
+            bottom: clamp(70px, 9vh, 110px);
+            transform: translateX(-50%);
             width: 8px;
             height: clamp(220px, 12vw, 320px);
             border-radius: 8px;
@@ -1106,7 +1107,7 @@ body.penalty-mode .score2-section,
 body.penalty-mode .divider-section {
     position: absolute;
     top: auto;
-    bottom: 120px;
+    bottom: clamp(70px, 9vh, 110px);
     transform: none;
 }
 
