@@ -418,26 +418,6 @@
             background: #ff3b30;
         }
 
-        .penalty-dot.miss::before,
-        .penalty-dot.miss::after {
-            content: '';
-            position: absolute;
-            width: 60%;
-            height: 2px;
-            background: #fff;
-            top: 50%;
-            left: 50%;
-            transform-origin: center;
-        }
-
-        .penalty-dot.miss::before {
-            transform: translate(-50%, -50%) rotate(45deg);
-        }
-
-        .penalty-dot.miss::after {
-            transform: translate(-50%, -50%) rotate(-45deg);
-        }
-
         .penalty-dot.pending {
             background: rgba(115, 115, 115, 0.8);
             transform: scale(0.95);
@@ -462,7 +442,7 @@
             justify-content: center;
             gap: clamp(24px, 3vw, 48px);
             font-weight: 700;
-            font-size: clamp(260px, 18vw, 400px);
+            font-size: clamp(320px, 21vw, 400px);
             letter-spacing: 0.08em;
             color: #fff;
             pointer-events: none;
@@ -470,7 +450,7 @@
 
         .penalty-score .penalty-divider {
             display: block;
-            width: clamp(10px, 0.8vw, 16px);
+            width: 10px;
             height: clamp(220px, 12vw, 320px);
             border-radius: 8px;
             background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 50%, rgba(255, 255, 255, 0) 100%);
@@ -989,11 +969,11 @@
         }
 
         body.penalty-mode .score1-section {
-            transform: translate(-50%, -50%) translateX(-40px);
+            transform: translate(-50%, -50%) translateX(-15px);
         }
 
         body.penalty-mode .score2-section {
-            transform: translate(-50%, -50%) translateX(40px);
+            transform: translate(-50%, -50%) translateX(15px);
         }
 
         .penalty-dot {
