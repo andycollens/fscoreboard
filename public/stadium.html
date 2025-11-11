@@ -381,23 +381,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(12px, 1.6vw, 24px);
+            gap: clamp(16px, 2.4vw, 32px);
             width: 100%;
-        }
-
-        .penalty-overlay .penalty-row.team-left {
-            justify-content: center;
-        }
-
-        .penalty-overlay .penalty-row.team-right {
-            justify-content: center;
         }
 
         .penalty-dots {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(12px, 1.6vw, 24px);
+            gap: clamp(16px, 2.4vw, 32px);
             flex-wrap: nowrap;
         }
 
@@ -407,8 +399,8 @@
 
         .penalty-dot {
             position: relative;
-            width: clamp(20px, 2vw, 30px);
-            height: clamp(20px, 2vw, 30px);
+            width: clamp(40px, 4vw, 60px);
+            height: clamp(40px, 4vw, 60px);
             border-radius: 50%;
             border: 2px solid rgba(255, 255, 255, 0.4);
             background: transparent;
@@ -474,9 +466,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(22px, 2.8vw, 40px);
+            gap: clamp(24px, 3vw, 48px);
             font-weight: 700;
-            font-size: clamp(180px, 12.5vw, 300px);
+            font-size: clamp(220px, 16vw, 400px);
             letter-spacing: 0.08em;
             color: #fff;
             pointer-events: none;
@@ -993,12 +985,12 @@
             top: 34%;
         }
 
-        body.penalty-mode .score1-section {
-            margin-left: -90px;
+        body.penalty-mode .team1-section {
+            margin-left: calc(-50% + 90px);
         }
 
-        body.penalty-mode .score2-section {
-            margin-left: 90px;
+        body.penalty-mode .team2-section {
+            margin-left: calc(50% - 90px);
         }
 
 body.penalty-mode .colon {
@@ -1012,7 +1004,7 @@ body.penalty-mode .colon::before,
 body.penalty-mode .colon::after {
     content: '';
     position: absolute;
-    width: clamp(40px, 6vw, 80px);
+    width: clamp(40px, 4vw, 80px);
     height: clamp(1px, 0.3vw, 2px);
     background: rgba(255, 255, 255, 0.85);
     top: 50%;
