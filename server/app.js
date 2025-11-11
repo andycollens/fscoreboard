@@ -191,6 +191,41 @@ if (fs.existsSync(TOURNAMENTS_PATH)) {
   }
 }
 
+function resolveWinnerTeamById(compositeId) {
+  if (!compositeId) return null;
+  const parts = String(compositeId).split('_');
+  if (parts.length < 2) return null;
+
+  const tournamentIdStr = parts[0];
+  const teamIdRest = parts.slice(1).join('_');
+
+  const tournament = tournaments.find(t => String(t.id) === tournamentIdStr);
+  if (!tournament || !Array.isArray(tournament.teams)) return null;
+
+  const team = tournament.teams.find(team => {
+    const id = String(team.id);
+    return (
+      id === teamIdRest ||
+      id.startsWith(teamIdRest + '_') ||
+      teamIdRest.startsWith(id + '_')
+    );
+  });
+
+  if (!team) return null;
+
+  return {
+    id: compositeId,
+    tournamentId: tournament.id,
+    tournamentName: tournament.name,
+    teamId: team.id,
+    name: team.name,
+    city: team.city || '',
+    logo: team.logo || '',
+    kitColor: team.kitColor || '',
+    shortName: team.shortName || ''
+  };
+}
+
 // ====== Таймер — тикает каждую секунду ======
 setInterval(() => {
   if (state.timerRunning) {
@@ -1080,6 +1115,18 @@ app.get('/api/config', (req, res) => {
       config = { ...config, ...savedConfig };
     } catch (error) {
       console.error('Ошибка загрузки конфигурации:', error);
+    }
+  }
+
+  if (config.winners && !config.winnersResolved) {
+    const resolved = {
+      winner1: resolveWinnerTeamById(config.winners.winner1),
+      winner2: resolveWinnerTeamById(config.winners.winner2),
+      winner3: resolveWinnerTeamById(config.winners.winner3)
+    };
+
+    if (resolved.winner1 || resolved.winner2 || resolved.winner3) {
+      config.winnersResolved = resolved;
     }
   }
   
