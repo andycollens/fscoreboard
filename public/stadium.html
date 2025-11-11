@@ -424,7 +424,7 @@
         }
 
         .penalty-dot.active {
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
         }
 
         .penalty-dot.sudden-death {
@@ -433,9 +433,8 @@
 
         .penalty-score {
             position: absolute;
-            bottom: clamp(120px, 12vh, 160px);
-            left: 50%;
-            transform: translateX(-50%);
+            top: auto;
+            bottom: clamp(10px, 8vh, 40px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -451,26 +450,24 @@
         .penalty-score span {
             display: inline-block;
             transform: translateY(-50px);
-            min-width: clamp(150px, 12vw, 220px);
         }
 
         .penalty-score span:first-of-type {
             margin-right: 30px;
             padding-right: 40px;
-            text-align: right;
         }
 
         .penalty-score span:last-of-type {
             margin-left: 30px;
             padding-left: 40px;
-            text-align: left;
         }
 
         .penalty-score .penalty-divider {
             position: absolute;
             left: 50%;
-            top: 50%;
-            transform: translate(-50%, -80px);
+            top: auto;
+            bottom: clamp(70px, 9vh, 110px);
+            transform: translateX(-50%);
             width: 8px;
             height: clamp(220px, 12vw, 320px);
             border-radius: 8px;
@@ -1018,7 +1015,7 @@
         }
 
         .penalty-dot.active {
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
         }
 
 body.penalty-mode .colon {
@@ -1188,6 +1185,19 @@ body.penalty-mode .score1-section .team1-score {
 body.penalty-mode .score2-section .team2-score {
     width: 100%;
     text-align: left;
+}
+
+body.penalty-mode .penalty-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.penalty-mode .penalty-score {
+    position: absolute;
+    bottom: clamp(70px, 9vh, 110px);
+    left: 50%;
+    transform: translateX(-50%);
 }
     </style>
 </head>
