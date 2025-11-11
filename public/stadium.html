@@ -1077,10 +1077,16 @@
             // Обновление произойдет в switchMode после загрузки config
             if (currentMode === 'scoreboard' || currentMode === 'penalty') {
                 updateDisplay(data);
-                if (currentMode === 'penalty') {
+                const penaltyActive = !!data.penaltyActive;
+                document.body.classList.toggle('penalty-mode', penaltyActive);
+                if (penaltyActive || currentMode === 'penalty') {
                     renderStadiumPenalty('team1', data);
                     renderStadiumPenalty('team2', data);
+                } else {
+                    clearStadiumPenalty();
                 }
+            } else if (currentMode === 'winners') {
+                updateWinners(data);
             }
         });
 
@@ -1312,11 +1318,14 @@
     }
 
     function applyPendingModeIfNeeded() {
-        if (pendingMode && pendingMode !== currentMode) {
-            const modeToApply = pendingMode;
+        if (!pendingMode) return;
+        if (pendingMode === currentMode) {
             pendingMode = null;
-            switchMode(modeToApply);
+            return;
         }
+        const modeToApply = pendingMode;
+        pendingMode = null;
+        switchMode(modeToApply);
     }
 
     // Функция инициализации анимации лого (копия из preloader.html)
@@ -1610,26 +1619,6 @@
                 console.log('Setting mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
                 pendingMode = mode;
                 applyPendingModeIfNeeded();
-                
-                // Если режим - победители, обновляем отображение
-                if (mode === 'winners') {
-                    if (winnersData) {
-                        console.log('Mode is winners, updating display after delay');
-                        setTimeout(() => {
-                            updateWinnersDisplay();
-                        }, 500);
-                    } else {
-                        console.warn('Mode is winners but no winnersData available');
-                    }
-                }
-                
-                // Если режим - лого, инициализируем анимацию
-                if (mode === 'logo') {
-                    console.log('Mode is logo, initializing animation after delay');
-                    setTimeout(() => {
-                        initLogoAnimation();
-                    }, 500);
-                }
             } else {
                 console.error('Failed to load config:', response.status, response.statusText);
                 // При ошибке используем режим по умолчанию
