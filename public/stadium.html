@@ -10,6 +10,10 @@
             src: url('/public/fonts/RPL.ttf') format('truetype');
         }
 
+        .score-section.center {
+            width: 100%;
+        }
+
         body, html {
             margin: 0;
             padding: 0;
@@ -357,10 +361,12 @@
             position: absolute;
             inset: 0;
             display: none;
-            grid-template-columns: minmax(80px, 10vw) minmax(200px, 1fr) minmax(320px, 0.7fr) minmax(200px, 1fr) minmax(80px, 10vw);
+            grid-template-columns: minmax(80px, 10vw) minmax(200px, 1fr) minmax(320px, 0.75fr) minmax(200px, 1fr) minmax(80px, 10vw);
             align-items: center;
-            gap: 2vw;
-            padding: 0 2vw;
+            justify-items: center;
+            align-content: center;
+            gap: clamp(15px, 2vw, 48px);
+            padding: 0 clamp(24px, 3vw, 64px);
             box-sizing: border-box;
         }
 
@@ -384,6 +390,7 @@
 
         .score-section.team {
             flex-direction: column;
+            width: 100%;
             align-items: flex-start;
             gap: 18px;
             text-transform: uppercase;
@@ -410,15 +417,16 @@
         .score-section.center .main-score {
             display: flex;
             align-items: center;
-            gap: clamp(12px, 1.8vw, 32px);
-            font-size: clamp(120px, 11vw, 190px);
+            gap: clamp(12px, 1.6vw, 28px);
+            font-size: clamp(96px, 8.2vw, 150px);
             font-weight: 700;
             line-height: 1;
+            letter-spacing: 0.05em;
         }
 
         .score-section.center .main-score span {
             display: inline-block;
-            min-width: clamp(60px, 6vw, 130px);
+            min-width: clamp(48px, 5vw, 110px);
             text-align: center;
         }
 
@@ -515,16 +523,16 @@
 
         @media (max-width: 1024px) {
             .scoreboard-row {
-                grid-template-columns: minmax(60px, 12vw) minmax(150px, 1fr) minmax(240px, 0.8fr) minmax(150px, 1fr) minmax(60px, 12vw);
-                gap: 3vw;
+                grid-template-columns: minmax(60px, 12vw) minmax(150px, 1fr) minmax(220px, 0.9fr) minmax(150px, 1fr) minmax(60px, 12vw);
+                gap: clamp(15px, 3vw, 36px);
             }
         }
 
         @media (max-width: 768px) {
             .scoreboard-row {
-                grid-template-columns: repeat(5, minmax(50px, 1fr));
-                gap: 2vw;
-                padding: 0 4vw;
+                grid-template-columns: minmax(50px, 0.9fr) minmax(120px, 1fr) minmax(200px, 1.2fr) minmax(120px, 1fr) minmax(50px, 0.9fr);
+                gap: clamp(12px, 2.5vw, 28px);
+                padding: 0 clamp(20px, 5vw, 40px);
             }
 
             .score-section.team {
