@@ -1533,10 +1533,9 @@
         if (mode === 'scoreboard' || mode === 'penalty') {
             if (data && Object.keys(data).length) {
                 updateDisplay(data);
-                const penaltyActive = !!data.penaltyActive;
-                const shouldRenderPenalty = penaltyActive || mode === 'penalty';
-                document.body.classList.toggle('penalty-mode', shouldRenderPenalty);
-                if (shouldRenderPenalty) {
+                const isPenaltyView = mode === 'penalty';
+                document.body.classList.toggle('penalty-mode', isPenaltyView);
+                if (isPenaltyView) {
                     renderStadiumPenalty('team1', data);
                     renderStadiumPenalty('team2', data);
                 } else {
