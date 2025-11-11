@@ -415,11 +415,9 @@
         }
 
         .penalty-dot.miss {
-            background: #000;
-            color: #ff3b30;
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
+            background: #ff3b30;
+            color: transparent;
+            font-size: 0;
         }
 
         .penalty-dot.pending {
@@ -1404,7 +1402,7 @@ body.penalty-mode .penalty-score {
                     dot.textContent = '';
                 } else if (slotResult === 'miss') {
                     dot.classList.add('miss');
-                    dot.textContent = '-';
+                    dot.textContent = '';
                 } else {
                     dot.classList.add('pending');
                     dot.textContent = '';
