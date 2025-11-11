@@ -437,11 +437,6 @@
             bottom: clamp(10px, 8vh, 40px);
             left: 50%;
             transform: translateX(-50%);
-            display: grid;
-            grid-template-columns: auto 8px auto;
-            column-gap: 60px;
-            align-items: center;
-            justify-items: center;
             font-weight: 700;
             font-size: clamp(320px, 21vw, 400px);
             letter-spacing: 0.08em;
@@ -450,22 +445,27 @@
         }
 
         .penalty-score span {
-            display: block;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
             line-height: 1;
         }
 
         #stadiumPenaltyCountTeam1 {
-            justify-self: end;
-            text-align: right;
+            right: calc(50% + 30px);
+            transform: translate(50%, -50%);
         }
 
         #stadiumPenaltyCountTeam2 {
-            justify-self: start;
-            text-align: left;
+            left: calc(50% + 30px);
+            transform: translate(-50%, -50%);
         }
 
         .penalty-score .penalty-divider {
-            position: relative;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             width: 8px;
             height: clamp(220px, 12vw, 320px);
             border-radius: 8px;
