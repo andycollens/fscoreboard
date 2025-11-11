@@ -954,6 +954,8 @@
         const socket = io();
         let currentMode = 'scoreboard'; // По умолчанию режим Табло
         let winnersData = null;
+        let winnersTitle = '';
+        let lastWinnersSignature = null;
         
         // Получение элементов
         const team1Logo = document.getElementById('team1Logo');
@@ -1015,13 +1017,14 @@
         socket.on('scoreboardUpdate', (data) => {
             console.log('Received scoreboardUpdate in stadium:', data);
             latestData = data;
+            window.lastScoreboardData = data;
  
             if (currentMode === 'scoreboard' || currentMode === 'penalty') {
                 updateScoreboard(data);
                 const penaltyActive = !!data.penaltyActive;
                 const shouldRenderPenalty = penaltyActive || currentMode === 'penalty';
                 document.body.classList.toggle('penalty-mode', shouldRenderPenalty);
-                if (shouldRenderPenalty && data.penaltySeries) {
+                if (shouldRenderPenalty) {
                     renderStadiumPenalty('team1', data);
                     renderStadiumPenalty('team2', data);
                 } else {
@@ -1046,6 +1049,13 @@
             
             // НЕ обновляем остальное отображение здесь - дождемся загрузки конфигурации и установки режима
             // Обновление произойдет в switchMode после загрузки config
+            if (currentMode === 'scoreboard' || currentMode === 'penalty') {
+                updateDisplay(data);
+                if (currentMode === 'penalty') {
+                    renderStadiumPenalty('team1', data);
+                    renderStadiumPenalty('team2', data);
+                }
+            }
         });
 
         // Функция обновления полоски
@@ -1167,6 +1177,33 @@
                 tournamentTitle.textContent = data.tournamentTitle;
             }
         }
+
+    function updateWinners(data) {
+        if (!data) return;
+        let shouldRefresh = false;
+
+        if (data.winners) {
+            const signature = JSON.stringify(data.winners);
+            if (signature !== lastWinnersSignature) {
+                winnersData = data.winners;
+                lastWinnersSignature = signature;
+                shouldRefresh = true;
+            }
+        }
+
+        if (data.winnersTitle !== undefined) {
+            winnersTitle = data.winnersTitle || '';
+            const winnersTitleEl = document.getElementById('winnersTitle');
+            if (winnersTitleEl) {
+                winnersTitleEl.textContent = winnersTitle;
+            }
+            shouldRefresh = shouldRefresh || currentMode === 'winners';
+        }
+
+        if (shouldRefresh && currentMode === 'winners' && winnersData) {
+            updateWinnersDisplay();
+        }
+    }
 
     // Функция переключения режимов
     function switchMode(mode) {
@@ -1527,6 +1564,7 @@
                 if (config.winners) {
                     console.log('Loading winners data:', config.winners);
                     winnersData = config.winners;
+                    lastWinnersSignature = JSON.stringify(config.winners);
                 } else {
                     console.log('No winners data in config');
                 }
@@ -1605,6 +1643,7 @@
         console.log('Received stadiumWinnersChange event:', data);
         // Обновляем данные о победителях, сохраняя их независимо от режима
         winnersData = data.winners;
+        lastWinnersSignature = JSON.stringify(data.winners || null);
         console.log('Updated winnersData:', winnersData);
         
         // Обновляем название победителей
