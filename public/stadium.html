@@ -1283,7 +1283,13 @@ body.penalty-mode .penalty-label {
                 }
  
                 const slotCycle = slotData ? slotData.cycle : totalCyclesCompleted;
-                const isNextSlot = shouldMarkCurrent && slotIndex === nextSlotIndex && (!slotData || slotCycle === totalCyclesCompleted);
+                const needsReset = slotData && slotData.cycle < totalCyclesCompleted;
+                if (needsReset) {
+                    dot.classList.remove('goal', 'miss');
+                    dot.classList.add('pending');
+                }
+
+                const isNextSlot = shouldMarkCurrent && slotIndex === nextSlotIndex && slotCycle === totalCyclesCompleted;
                 if (isNextSlot) {
                     dot.classList.add('active');
                 }
