@@ -1078,7 +1078,6 @@ body.penalty-mode .penalty-label {
 }
 
 body.penalty-mode .middle-content {
-    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1092,37 +1091,39 @@ body.penalty-mode .score2-section,
 body.penalty-mode .divider-section {
     position: absolute;
     top: auto;
-    bottom: clamp(140px, 14vh, 180px);
+    bottom: clamp(120px, 12vh, 180px);
     transform: none;
 }
 
 body.penalty-mode .score1-section {
-    left: auto;
-    right: calc(50% + 150px);
+    left: calc(50% - 150px - 120px);
+    transform: translateY(0);
 }
 
 body.penalty-mode .score2-section {
     left: calc(50% + 150px);
-    right: auto;
+    transform: translateY(0);
 }
 
 body.penalty-mode .divider-section {
     left: 50%;
-    right: auto;
-    transform: translateX(-50%);
+    transform: translate(-50%, 0);
 }
 
 body.penalty-mode .team1-section,
 body.penalty-mode .team2-section {
-    top: 34%;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
 body.penalty-mode .team1-section {
-    margin-left: -607.5px;
+    margin-left: -697.5px;
 }
 
 body.penalty-mode .team2-section {
-    margin-left: 607.5px;
+    margin-left: 697.5px;
 }
 
 body.penalty-mode .score1-section,
