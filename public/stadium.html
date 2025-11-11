@@ -1319,10 +1319,6 @@
 
     function applyPendingModeIfNeeded() {
         if (!pendingMode) return;
-        if (pendingMode === currentMode) {
-            pendingMode = null;
-            return;
-        }
         const modeToApply = pendingMode;
         pendingMode = null;
         switchMode(modeToApply);
