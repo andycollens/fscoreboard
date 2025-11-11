@@ -1078,23 +1078,25 @@ body.penalty-mode .penalty-label {
 }
 
 body.penalty-mode .middle-content {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    display: flex;
     align-items: center;
-    justify-items: center;
+    justify-content: space-between;
     width: 100%;
     max-width: 100vw;
-    padding: 0 clamp(40px, 5vw, 96px);
-    box-sizing: border-box;
+    padding: 0 2vw;
 }
 
 body.penalty-mode .team1-section,
 body.penalty-mode .team2-section {
-    position: relative;
-    left: auto;
-    margin-left: 0;
-    top: auto;
-    transform: none;
+    top: 34%;
+}
+
+body.penalty-mode .team1-section {
+    margin-left: -607.5px;
+}
+
+body.penalty-mode .team2-section {
+    margin-left: 607.5px;
 }
 
 body.penalty-mode .score1-section,
@@ -1211,8 +1213,6 @@ body.penalty-mode .team-penalty-track {
             <div class="penalty-label" id="penaltyLabel">СЕРИЯ ПЕНАЛЬТИ</div>
 
             <div class="middle-content">
-                <div></div>
-
                 <!-- Команда 1 -->
                 <div class="team1-section">
                     <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
@@ -1251,8 +1251,6 @@ body.penalty-mode .team-penalty-track {
                         <div class="penalty-dots" id="stadiumPenaltyDotsTeam2"></div>
                     </div>
                 </div>
-
-                <div></div>
             </div>
         </div>
 
@@ -1332,51 +1330,59 @@ body.penalty-mode .team-penalty-track {
                 series &&
                 currentTeam === teamKey;
  
-            const cycles = Math.max(1, Math.ceil(attempts.length / maxAttempts));
-            const totalSlots = Math.max(maxAttempts, attempts.length % maxAttempts === 0 ? attempts.length : (Math.floor(attempts.length / maxAttempts) + 1) * maxAttempts);
+            const slots = new Array(Math.max(1, maxAttempts)).fill(null);
+            attempts.forEach((result, idx) => {
+                const slotPosition = idx % maxAttempts;
+                slots[slotPosition] = {
+                    status: result,
+                    index: idx
+                };
+            });
+ 
+            const totalCyclesCompleted = Math.floor(attempts.length / maxAttempts);
+            const nextSlotIndex = attempts.length % maxAttempts;
  
             dotsContainer.innerHTML = '';
  
-            for (let slotIndex = 0; slotIndex < totalSlots; slotIndex++) {
+            slots.forEach((slotData, slotIndex) => {
                 const dot = document.createElement('div');
                 dot.className = 'penalty-dot';
  
-                const attemptResult = attempts[slotIndex];
-                if (attemptResult === 'goal') {
+                if (slotData && slotData.status === 'goal') {
                     dot.classList.add('goal');
-                } else if (attemptResult === 'miss') {
+                } else if (slotData && slotData.status === 'miss') {
                     dot.classList.add('miss');
                 } else {
                     dot.classList.add('pending');
                 }
  
-                const isNextSlot = shouldMarkCurrent && slotIndex === attempts.length;
+                const slotCycle = slotData ? Math.floor(slotData.index / maxAttempts) : totalCyclesCompleted;
+                const needsReset = slotCycle < totalCyclesCompleted;
+                if (needsReset) {
+                    dot.classList.remove('goal', 'miss');
+                    dot.classList.add('pending');
+                }
+ 
+                const isNextSlot = shouldMarkCurrent && slotIndex === nextSlotIndex;
                 if (isNextSlot) {
                     dot.classList.add('active');
                 }
  
                 dotsContainer.appendChild(dot);
-            }
- 
-            if (!series && maxAttempts > 0 && dotsContainer.children.length === 0) {
-                for (let i = 0; i < maxAttempts; i++) {
-                    const dot = document.createElement('div');
-                    dot.className = 'penalty-dot pending';
-                    dotsContainer.appendChild(dot);
-                }
-            }
- 
-            if (attempts.length > 0 && attempts.length % maxAttempts === 0 && (shouldMarkCurrent || finished)) {
-                const previewDot = document.createElement('div');
-                previewDot.className = shouldMarkCurrent ? 'penalty-dot active' : 'penalty-dot pending';
-                dotsContainer.appendChild(previewDot);
-            }
+            });
  
             if (!series && teamKey === firstTeam && dotsContainer.children.length === 0) {
                 for (let i = 0; i < maxAttempts; i++) {
                     const dot = document.createElement('div');
                     dot.className = 'penalty-dot pending';
                     dotsContainer.appendChild(dot);
+                }
+            }
+ 
+            if (shouldMarkCurrent && attempts.length === slots.length && maxAttempts > 0 && attempts.length % maxAttempts === 0) {
+                const dot = dotsContainer.children[0];
+                if (dot) {
+                    dot.classList.add('active');
                 }
             }
         }
