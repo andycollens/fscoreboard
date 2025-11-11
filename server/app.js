@@ -1114,10 +1114,14 @@ app.put('/api/config', (req, res) => {
   if (req.body.winners !== undefined) {
     // Сохраняем победителей независимо от режима
     currentConfig.winners = req.body.winners;
+    if (req.body.winnersResolved !== undefined) {
+      currentConfig.winnersResolved = req.body.winnersResolved;
+    }
     // Отправляем событие всем подключенным клиентам stadium.html
     io.emit('stadiumWinnersChange', { 
       winners: req.body.winners,
-      winnersTitle: req.body.winnersTitle !== undefined ? req.body.winnersTitle : currentConfig.winnersTitle
+      winnersTitle: req.body.winnersTitle !== undefined ? req.body.winnersTitle : currentConfig.winnersTitle,
+      winnersResolved: currentConfig.winnersResolved || null
     });
   }
   if (req.body.winnersTitle !== undefined) {
@@ -1126,7 +1130,8 @@ app.put('/api/config', (req, res) => {
     // Отправляем событие всем подключенным клиентам stadium.html
     io.emit('stadiumWinnersChange', { 
       winners: currentConfig.winners || {},
-      winnersTitle: req.body.winnersTitle
+      winnersTitle: req.body.winnersTitle,
+      winnersResolved: currentConfig.winnersResolved || null
     });
   }
   // Важно: не перезаписываем winners и stadiumMode, если они не переданы

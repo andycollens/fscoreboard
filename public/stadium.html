@@ -954,8 +954,30 @@
         const socket = io();
         let currentMode = 'scoreboard'; // По умолчанию режим Табло
         let winnersData = null;
+        let winnersResolved = null;
         let winnersTitle = '';
         let lastWinnersSignature = null;
+        let accessTokenCache = null;
+
+        function getAccessToken() {
+            if (accessTokenCache) return accessTokenCache;
+            const urlToken = new URLSearchParams(window.location.search).get('token');
+            if (urlToken && urlToken !== 'null' && urlToken !== 'undefined' && urlToken.trim() !== '') {
+                accessTokenCache = urlToken.trim();
+                try { localStorage.setItem('stadiumAccessToken', accessTokenCache); } catch (e) { /* ignore */ }
+                return accessTokenCache;
+            }
+            try {
+                const stored = localStorage.getItem('stadiumAccessToken');
+                if (stored && stored.trim() !== '') {
+                    accessTokenCache = stored.trim();
+                    return accessTokenCache;
+                }
+            } catch (e) {
+                console.warn('Не удалось получить токен из localStorage', e);
+            }
+            return '';
+        }
         
         // Получение элементов
         const team1Logo = document.getElementById('team1Logo');
@@ -1191,6 +1213,11 @@
             }
         }
 
+        if (data.winnersResolved) {
+            winnersResolved = data.winnersResolved;
+            shouldRefresh = true;
+        }
+
         if (data.winnersTitle !== undefined) {
             winnersTitle = data.winnersTitle || '';
             const winnersTitleEl = document.getElementById('winnersTitle');
@@ -1418,144 +1445,117 @@
             console.log('winnersData is null or undefined');
             return;
         }
-        
-        console.log('Updating winners display with data:', winnersData);
-        
-        try {
-            // Загружаем данные о турнирах для получения информации о командах
-            const token = new URLSearchParams(window.location.search).get('token');
-            const response = await fetch('/api/tournaments?token=' + token);
-            if (!response.ok) {
-                console.error('Failed to fetch tournaments:', response.status);
+
+        const winnersTitleEl = document.getElementById('winnersTitle');
+        if (winnersTitleEl) {
+            winnersTitleEl.textContent = winnersTitle || '';
+        }
+
+        const applyWinnerDisplay = (place, info) => {
+            const nameEl = document.getElementById(`winner${place}Name`);
+            const cityEl = document.getElementById(`winner${place}City`);
+            const logoEl = document.getElementById(`winner${place}Logo`);
+            const noLogoEl = document.getElementById(`winner${place}NoLogo`);
+            if (!nameEl || !cityEl || !logoEl || !noLogoEl) {
+                console.error(`Elements not found for winner ${place}`);
                 return;
             }
-            
+
+            if (!info) {
+                nameEl.textContent = '-';
+                cityEl.textContent = '';
+                logoEl.classList.remove('show');
+                logoEl.src = '';
+                noLogoEl.style.display = 'flex';
+                noLogoEl.style.backgroundColor = '#2b2b2b';
+                return;
+            }
+
+            nameEl.textContent = info.name || '-';
+            cityEl.textContent = info.city || '';
+            if (info.logo && info.logo.trim()) {
+                logoEl.src = info.logo;
+                logoEl.classList.add('show');
+                noLogoEl.style.display = 'none';
+            } else {
+                logoEl.classList.remove('show');
+                logoEl.src = '';
+                noLogoEl.style.display = 'flex';
+                noLogoEl.style.backgroundColor = info.kitColor || '#2b2b2b';
+            }
+        };
+
+        const ensureResolvedFromApi = async () => {
+            const token = getAccessToken();
+            if (!token) {
+                console.warn('Отсутствует токен доступа для загрузки турниров');
+                return null;
+            }
+            const response = await fetch('/api/tournaments?token=' + encodeURIComponent(token));
+            if (!response.ok) {
+                console.error('Failed to fetch tournaments:', response.status, response.statusText);
+                return null;
+            }
             const tournaments = await response.json();
-            console.log('Loaded tournaments:', tournaments.length);
-            
-            // Функция для поиска команды по ID
-            function findTeam(teamIdStr) {
-                if (!teamIdStr) {
-                    console.log('teamIdStr is empty');
-                    return null;
-                }
-                const parts = teamIdStr.split('_');
-                // ID может быть в формате tournamentId_teamId или tournamentId_teamId_random
-                // В базе данных ID команды имеет формат teamId_random (2 части)
-                if (parts.length < 2) {
-                    console.error('Invalid team ID format:', teamIdStr);
-                    return null;
-                }
+
+            const resolveTeam = (teamIdStr) => {
+                if (!teamIdStr) return null;
+                const parts = String(teamIdStr).split('_');
+                if (parts.length < 2) return null;
                 const tournamentIdStr = parts[0];
-                // Берем все части после tournamentId как ID команды (teamId_random или teamId)
                 const actualTeamId = parts.slice(1).join('_');
-                
-                // Ищем турнир, сравнивая как строки и как числа
-                const tournament = tournaments.find(t => {
-                    const tId = String(t.id);
-                    const searchId = String(tournamentIdStr);
-                    return tId === searchId || tId === tournamentIdStr || String(t.id) === tournamentIdStr;
-                });
-                
-                if (!tournament) {
-                    console.error('Tournament not found:', tournamentIdStr, 'Available tournaments:', tournaments.map(t => t.id));
-                    return null;
-                }
-                if (!tournament.teams || tournament.teams.length === 0) {
-                    console.error('Tournament has no teams:', tournamentIdStr);
-                    return null;
-                }
-                
-                // Ищем команду по полному ID (teamId_random) или по началу ID
+
+                const tournament = tournaments.find(t => String(t.id) === tournamentIdStr);
+                if (!tournament || !Array.isArray(tournament.teams)) return null;
+
                 const team = tournament.teams.find(t => {
                     const tId = String(t.id);
-                    // Сравниваем полный ID или ищем по началу (startsWith)
                     return tId === actualTeamId || tId.startsWith(actualTeamId + '_') || actualTeamId.startsWith(tId + '_');
                 });
-                
-                if (!team) {
-                    console.error('Team not found:', actualTeamId, 'in tournament:', tournamentIdStr, 'Available teams:', tournament.teams.map(t => t.id));
-                    return null;
-                }
-                console.log('Found team:', team.name, 'from tournament:', tournament.name, 'logo:', team.logo);
-                return team;
+                if (!team) return null;
+
+                return {
+                    id: teamIdStr,
+                    tournamentId: tournament.id,
+                    tournamentName: tournament.name,
+                    teamId: team.id,
+                    name: team.name,
+                    city: team.city || '',
+                    logo: team.logo || '',
+                    kitColor: team.kitColor || '',
+                    shortName: team.shortName || ''
+                };
+            };
+
+            return {
+                winner1: resolveTeam(winnersData.winner1),
+                winner2: resolveTeam(winnersData.winner2),
+                winner3: resolveTeam(winnersData.winner3)
+            };
+        };
+
+        if (!winnersResolved) {
+            try {
+                winnersResolved = await ensureResolvedFromApi();
+            } catch (error) {
+                console.error('Ошибка загрузки данных о победителях:', error);
             }
-            
-            // Функция для обновления отображения победителя
-            function updateWinnerDisplay(place, winner) {
-                if (!winner) {
-                    console.log(`Winner ${place} not found`);
-                    // Сбрасываем отображение на дефолтные значения
-                    const nameEl = document.getElementById(`winner${place}Name`);
-                    const cityEl = document.getElementById(`winner${place}City`);
-                    const logoEl = document.getElementById(`winner${place}Logo`);
-                    const noLogoEl = document.getElementById(`winner${place}NoLogo`);
-                    
-                    if (nameEl) nameEl.textContent = '-';
-                    if (cityEl) cityEl.textContent = '';
-                    if (logoEl) {
-                        logoEl.classList.remove('show');
-                        logoEl.src = '';
-                    }
-                    if (noLogoEl) {
-                        noLogoEl.style.display = 'flex';
-                        noLogoEl.style.backgroundColor = '#2b2b2b';
-                    }
-                    return;
-                }
-                
-                const nameEl = document.getElementById(`winner${place}Name`);
-                const cityEl = document.getElementById(`winner${place}City`);
-                const logoEl = document.getElementById(`winner${place}Logo`);
-                const noLogoEl = document.getElementById(`winner${place}NoLogo`);
-                
-                if (!nameEl || !cityEl || !logoEl || !noLogoEl) {
-                    console.error(`Elements not found for winner ${place}`);
-                    return;
-                }
-                
-                nameEl.textContent = winner.name || '-';
-                cityEl.textContent = winner.city || '';
-                
-                if (winner.logo && winner.logo.trim()) {
-                    logoEl.src = winner.logo;
-                    logoEl.classList.add('show');
-                    noLogoEl.style.display = 'none';
-                    console.log(`Winner ${place} logo set:`, winner.logo);
-                } else {
-                    logoEl.classList.remove('show');
-                    logoEl.src = '';
-                    noLogoEl.style.display = 'flex';
-                    if (winner.kitColor) {
-                        noLogoEl.style.backgroundColor = winner.kitColor;
-                    } else {
-                        noLogoEl.style.backgroundColor = '#2b2b2b';
-                    }
-                    console.log(`Winner ${place} no logo, using color:`, winner.kitColor || '#2b2b2b');
-                }
-            }
-            
-            // Обновляем все три места
-            const winner1 = findTeam(winnersData.winner1);
-            updateWinnerDisplay(1, winner1);
-            
-            const winner2 = findTeam(winnersData.winner2);
-            updateWinnerDisplay(2, winner2);
-            
-            const winner3 = findTeam(winnersData.winner3);
-            updateWinnerDisplay(3, winner3);
-            
-        } catch (error) {
-            console.error('Ошибка загрузки данных о победителях:', error);
         }
+
+        applyWinnerDisplay(1, winnersResolved && winnersResolved.winner1);
+        applyWinnerDisplay(2, winnersResolved && winnersResolved.winner2);
+        applyWinnerDisplay(3, winnersResolved && winnersResolved.winner3);
     }
     
     // Загрузка конфигурации при старте
     async function loadStadiumConfig() {
         try {
-            const token = new URLSearchParams(window.location.search).get('token');
+            const token = getAccessToken();
             console.log('Loading stadium config with token:', token ? 'present' : 'missing');
-            const response = await fetch(`/api/config?token=${token}`);
+            if (!token) {
+                console.warn('Стадионный токен отсутствует, конфигурация может не загрузиться');
+            }
+            const response = await fetch(`/api/config?token=${encodeURIComponent(token)}`);
             if (response.ok) {
                 const config = await response.json();
                 console.log('Loaded config:', config);
@@ -1567,6 +1567,10 @@
                     lastWinnersSignature = JSON.stringify(config.winners);
                 } else {
                     console.log('No winners data in config');
+                }
+
+                if (config.winnersResolved) {
+                    winnersResolved = config.winnersResolved;
                 }
                 
                 // Загружаем название победителей
@@ -1643,6 +1647,9 @@
         console.log('Received stadiumWinnersChange event:', data);
         // Обновляем данные о победителях, сохраняя их независимо от режима
         winnersData = data.winners;
+        if (data.winnersResolved) {
+            winnersResolved = data.winnersResolved;
+        }
         lastWinnersSignature = JSON.stringify(data.winners || null);
         console.log('Updated winnersData:', winnersData);
         

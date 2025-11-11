@@ -1369,6 +1369,36 @@
         winner3Select.add(option3);
       });
     }
+
+    function resolveWinnerTeamById(compositeId) {
+      if (!compositeId) return null;
+      const parts = String(compositeId).split('_');
+      if (parts.length < 2) return null;
+      const tournamentId = parts[0];
+      const teamIdPart = parts.slice(1).join('_');
+
+      const tournament = tournaments.find(t => String(t.id) === tournamentId);
+      if (!tournament || !Array.isArray(tournament.teams)) return null;
+
+      const team = tournament.teams.find(team => {
+        const tid = String(team.id);
+        return tid === teamIdPart || tid.startsWith(teamIdPart + '_') || teamIdPart.startsWith(tid + '_');
+      });
+
+      if (!team) return null;
+
+      return {
+        id: compositeId,
+        tournamentId: tournament.id,
+        tournamentName: tournament.name,
+        teamId: team.id,
+        name: team.name,
+        city: team.city || '',
+        logo: team.logo || '',
+        kitColor: team.kitColor || '',
+        shortName: team.shortName || ''
+      };
+    }
     
     // Обработка изменения режима
     function initModeRadios() {
@@ -1443,6 +1473,15 @@
         return;
       }
       
+      const winner1Info = resolveWinnerTeamById(winner1);
+      const winner2Info = resolveWinnerTeamById(winner2);
+      const winner3Info = resolveWinnerTeamById(winner3);
+
+      if (!winner1Info || !winner2Info || !winner3Info) {
+        showNotification('Не удалось определить данные по выбранным победителям', 'error');
+        return;
+      }
+
       try {
         const response = await fetch(`/api/config?token=${getToken()}`, {
           method: 'PUT',
@@ -1453,7 +1492,12 @@
               winner2,
               winner3
             },
-            winnersTitle: winnersTitle
+            winnersTitle: winnersTitle,
+            winnersResolved: {
+              winner1: winner1Info,
+              winner2: winner2Info,
+              winner3: winner3Info
+            }
           })
         });
         
@@ -1466,7 +1510,12 @@
               winner2,
               winner3
             },
-            winnersTitle: winnersTitle
+            winnersTitle: winnersTitle,
+            winnersResolved: {
+              winner1: winner1Info,
+              winner2: winner2Info,
+              winner3: winner3Info
+            }
           });
         } else {
           throw new Error('Ошибка сохранения победителей');
