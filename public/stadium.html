@@ -360,6 +360,7 @@
             width: 100%;
             max-width: 100vw;
             padding: 0 2vw;
+            position: relative;
         }
 
         /* Команда 1 */
@@ -591,6 +592,7 @@
             justify-content: center;
             background: #000;
             padding-top: 20px;
+            position: relative;
         }
 
         .timer {
@@ -720,6 +722,44 @@
             .timer-seconds {
                 margin-left: 20px; /* Адаптивный отступ */
             }
+
+            .penalty-center {
+                gap: 40px;
+            }
+
+            .penalty-team {
+                min-width: 140px;
+                gap: 12px;
+            }
+
+            .penalty-team-label {
+                font-size: 36px;
+                letter-spacing: 4px;
+            }
+
+            .penalty-dots {
+                gap: 12px;
+            }
+
+            .penalty-dot {
+                width: 20px;
+                height: 20px;
+            }
+
+            .penalty-count {
+                font-size: 24px;
+                letter-spacing: 6px;
+            }
+
+            .penalty-center-divider {
+                height: 90px;
+            }
+
+            .penalty-bottom-value,
+            .penalty-bottom-divider {
+                font-size: 110px;
+                width: 120px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -792,18 +832,154 @@
             .timer-seconds {
                 margin-left: 16px; /* Адаптивный отступ */
             }
+
+            .penalty-center {
+                gap: 28px;
+            }
+
+            .penalty-team {
+                min-width: 110px;
+            }
+
+            .penalty-team-label {
+                font-size: 28px;
+                letter-spacing: 3px;
+            }
+
+            .penalty-dots {
+                gap: 10px;
+            }
+
+            .penalty-dot {
+                width: 16px;
+                height: 16px;
+            }
+
+            .penalty-count {
+                font-size: 20px;
+                letter-spacing: 4px;
+            }
+
+            .penalty-center-divider {
+                height: 70px;
+            }
+
+            .penalty-bottom-value,
+            .penalty-bottom-divider {
+                font-size: 80px;
+                width: 96px;
+            }
         }
 
-        body.penalty-mode .penalty-track {
+        .penalty-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            align-items: center;
+            gap: 80px;
+            pointer-events: none;
+        }
+
+        body.penalty-mode .penalty-center {
             display: flex;
         }
 
-        body.penalty-mode .bottom-section {
+        .penalty-team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            min-width: 200px;
+        }
+
+        .penalty-team.penalty-right .penalty-dots {
+            flex-direction: row-reverse;
+        }
+
+        .penalty-team-label {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: #fff;
+        }
+
+        .penalty-dots {
+            display: flex;
+            gap: 18px;
+        }
+
+        .penalty-dot {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .penalty-dot.goal {
+            background: #1fb368;
+        }
+
+        .penalty-dot.miss {
+            background: #d82727;
+        }
+
+        .penalty-count {
+            font-size: 30px;
+            font-weight: 600;
+            letter-spacing: 8px;
+            color: #fff;
+        }
+
+        .penalty-center-divider {
+            width: 2px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        body.penalty-mode .score1-section,
+        body.penalty-mode .score2-section {
+            visibility: hidden;
+        }
+
+        body.penalty-mode .divider-section .colon {
+            opacity: 0.1;
+        }
+
+        #penaltyBottomScore {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+        }
+
+        .penalty-bottom-value {
+            font-size: 150px;
+            font-weight: bold;
+            color: #fff;
+            width: 180px;
+            text-align: center;
+        }
+
+        .penalty-bottom-divider {
+            font-size: 150px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        body.penalty-mode #timer {
             display: none;
         }
 
-        body.penalty-mode .middle-content {
-            display: none;
+        body.penalty-mode #penaltyBottomScore {
+            display: flex;
         }
     </style>
 </head>
@@ -877,32 +1053,6 @@
 
         <!-- Средняя область -->
         <div class="middle-section">
-            <div class="scoreboard-row" id="scoreboardPenaltyRow">
-                <div class="score-section kit" id="stadiumKit1"></div>
-                <div class="score-section team left">
-                    <div id="stadiumTeam1" class="team-short">ABC</div>
-                    <div class="penalty-track">
-                        <div class="penalty-dots" id="stadiumPenaltyDotsTeam1"></div>
-                        <div class="penalty-count" id="stadiumPenaltyCountTeam1"></div>
-                    </div>
-                </div>
-                <div class="score-section center">
-                    <div class="main-score">
-                        <span id="stadiumScore1">0</span>
-                        <span class="main-score-divider">:</span>
-                        <span id="stadiumScore2">0</span>
-                    </div>
-                </div>
-                <div class="score-section team right">
-                    <div id="stadiumTeam2" class="team-short">XYZ</div>
-                    <div class="penalty-track">
-                        <div class="penalty-dots right" id="stadiumPenaltyDotsTeam2"></div>
-                        <div class="penalty-count" id="stadiumPenaltyCountTeam2"></div>
-                    </div>
-                </div>
-                <div class="score-section kit" id="stadiumKit2"></div>
-            </div>
-
             <div class="middle-content">
                 <!-- Команда 1 -->
                 <div class="team1-section">
@@ -921,6 +1071,19 @@
                 <!-- Разделитель -->
                 <div class="divider-section">
                     <div class="colon"></div>
+                    <div class="penalty-center" id="stadiumPenaltyCenter">
+                        <div class="penalty-team penalty-left">
+                            <div class="penalty-team-label" id="stadiumTeam1">ABC</div>
+                            <div class="penalty-dots" id="stadiumPenaltyDotsTeam1"></div>
+                            <div class="penalty-count" id="stadiumPenaltyCountTeam1">0</div>
+                        </div>
+                        <div class="penalty-center-divider"></div>
+                        <div class="penalty-team penalty-right">
+                            <div class="penalty-team-label" id="stadiumTeam2">XYZ</div>
+                            <div class="penalty-dots" id="stadiumPenaltyDotsTeam2"></div>
+                            <div class="penalty-count" id="stadiumPenaltyCountTeam2">0</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Счет 2 -->
@@ -945,6 +1108,11 @@
                 <span class="timer-minutes" id="timerMinutes">00</span>
                 <span class="timer-separator">:</span>
                 <span class="timer-seconds" id="timerSeconds">00</span>
+            </div>
+            <div class="penalty-bottom-score" id="penaltyBottomScore">
+                <span class="penalty-bottom-value" id="penaltyBottomScore1">0</span>
+                <span class="penalty-bottom-divider">:</span>
+                <span class="penalty-bottom-value" id="penaltyBottomScore2">0</span>
             </div>
         </div>
     </div>
@@ -1042,7 +1210,7 @@
             window.lastScoreboardData = data;
  
             if (currentMode === 'scoreboard' || currentMode === 'penalty') {
-                updateScoreboard(data);
+                updateDisplay(data);
                 const penaltyActive = !!data.penaltyActive;
                 const shouldRenderPenalty = penaltyActive || currentMode === 'penalty';
                 document.body.classList.toggle('penalty-mode', shouldRenderPenalty);
@@ -1153,10 +1321,14 @@
             const stadiumScore2 = document.getElementById('stadiumScore2');
             const stadiumKit1 = document.getElementById('stadiumKit1');
             const stadiumKit2 = document.getElementById('stadiumKit2');
+            const penaltyBottomScore1 = document.getElementById('penaltyBottomScore1');
+            const penaltyBottomScore2 = document.getElementById('penaltyBottomScore2');
             if (stadiumTeam1Short) stadiumTeam1Short.textContent = data.team1Short || (data.team1Name || '').slice(0,3).toUpperCase() || 'ABC';
             if (stadiumTeam2Short) stadiumTeam2Short.textContent = data.team2Short || (data.team2Name || '').slice(0,3).toUpperCase() || 'XYZ';
             if (stadiumScore1) stadiumScore1.textContent = typeof data.score1 === 'number' ? data.score1 : 0;
             if (stadiumScore2) stadiumScore2.textContent = typeof data.score2 === 'number' ? data.score2 : 0;
+            if (penaltyBottomScore1) penaltyBottomScore1.textContent = typeof data.score1 === 'number' ? data.score1 : 0;
+            if (penaltyBottomScore2) penaltyBottomScore2.textContent = typeof data.score2 === 'number' ? data.score2 : 0;
             if (stadiumKit1) stadiumKit1.style.background = data.kit1Color || '#2b2b2b';
             if (stadiumKit2) stadiumKit2.style.background = data.kit2Color || '#2b2b2b';
 
