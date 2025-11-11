@@ -959,6 +959,7 @@
         let lastWinnersSignature = null;
         let accessTokenCache = null;
         let pendingMode = null;
+        let lastAppliedMode = null;
 
         function getAccessToken() {
             if (accessTokenCache) return accessTokenCache;
@@ -1310,7 +1311,7 @@
     }
 
     function applyPendingModeIfNeeded() {
-        if (pendingMode) {
+        if (pendingMode && pendingMode !== currentMode) {
             const modeToApply = pendingMode;
             pendingMode = null;
             switchMode(modeToApply);
