@@ -359,7 +359,7 @@
 
         .penalty-overlay {
             position: absolute;
-            top: 50%;
+            top: 46%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: min(60vw, 980px);
@@ -468,6 +468,9 @@
         }
 
         .penalty-score {
+            position: absolute;
+            top: auto;
+            bottom: clamp(60px, 6vw, 120px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -476,6 +479,7 @@
             font-size: clamp(180px, 12.5vw, 300px);
             letter-spacing: 0.08em;
             color: #fff;
+            pointer-events: none;
         }
 
         .penalty-score .penalty-divider {
@@ -979,14 +983,22 @@
 
         body.penalty-mode .team1-score,
         body.penalty-mode .team2-score {
-    font-size: 150px;
-    height: 200px;
+            font-size: 150px;
+            height: 200px;
         }
 
         body.penalty-mode .score1-section,
-        body.penalty-mode .score2-section,
+        body.penalty-mode .score2-section {
+            top: 84%;
+        }
+
         body.penalty-mode .divider-section {
-            top: 82%;
+            top: 84%;
+        }
+
+        body.penalty-mode .team1-section,
+        body.penalty-mode .team2-section {
+            top: 38%;
         }
 
         body.penalty-mode .colon {
@@ -1072,7 +1084,7 @@
                 </div>
                 <div class="penalty-score">
                     <span id="stadiumPenaltyCountTeam1">0</span>
-                    <span class="penalty-divider">:</span>
+                    <span class="penalty-divider"></span>
                     <span id="stadiumPenaltyCountTeam2">0</span>
                 </div>
                 <div class="penalty-row team-right">
@@ -1177,18 +1189,17 @@
                 ? series.attempts[teamKey]
                 : [];
 
-            const totalGoals = series && series.totalGoals && typeof series.totalGoals[teamKey] === 'number'
-                ? series.totalGoals[teamKey]
-                : attempts.filter(result => result === 'goal').length;
+        const totalGoals = series && series.totalGoals && typeof series.totalGoals[teamKey] === 'number'
+            ? series.totalGoals[teamKey]
+            : attempts.filter(result => result === 'goal').length;
 
-            countEl.textContent = totalGoals.toString();
+        countEl.textContent = totalGoals.toString();
+        countEl.dataset.team = teamKey;
 
             const finished = !!(series && series.finished);
             const currentTeam = series && !series.finished ? series.currentTeam : null;
             const firstTeam = series && series.firstTeam ? series.firstTeam : 'team1';
-            const activeIndex = (!finished && currentTeam === teamKey)
-                ? attempts.length
-                : (series ? null : null);
+            const currentCycleTeam = series && !series.finished ? series.currentTeam : null;
 
             let totalSlots = Math.max(maxAttempts || 0, attempts.length);
 
@@ -1223,10 +1234,19 @@
                     dot.classList.add('sudden-death');
                 }
 
-                if (!series && slotIndex === 0 && teamKey === firstTeam) {
-                    dot.classList.remove('pending');
-                    dot.classList.add('active');
-                } else if (activeIndex !== null && slotIndex === activeIndex && teamKey === currentTeam) {
+                const isUpcoming =
+                    !series &&
+                    slotIndex === 0 &&
+                    teamKey === firstTeam;
+
+                const nextIndex = attempts.length;
+                const shouldMarkCurrent =
+                    !finished &&
+                    currentCycleTeam === teamKey &&
+                    slotIndex === nextIndex &&
+                    attemptResult === undefined;
+
+                if (isUpcoming || shouldMarkCurrent) {
                     dot.classList.remove('pending');
                     dot.classList.add('active');
                 }
