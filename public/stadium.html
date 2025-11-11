@@ -1262,18 +1262,13 @@ body.penalty-mode .penalty-label {
                 series &&
                 currentTeam === teamKey;
  
-            const slots = new Array(Math.max(1, maxAttempts)).fill(null);
-            attempts.forEach((result, idx) => {
-                const slotIndex = idx % maxAttempts;
-                slots[slotIndex] = {
-                    status: result,
-                    index: idx,
-                    cycle: Math.floor(idx / maxAttempts)
+            const slots = new Array(Math.max(1, maxAttempts)).fill(null).map((_, slotIndex) => {
+                const attempt = attempts[slotIndex] ?? null;
+                return {
+                    status: attempt,
+                    index: slotIndex
                 };
             });
- 
-            const totalCyclesCompleted = Math.floor(attempts.length / maxAttempts);
-            const nextSlotIndex = attempts.length % maxAttempts;
  
             dotsContainer.innerHTML = '';
  
@@ -1281,22 +1276,15 @@ body.penalty-mode .penalty-label {
                 const dot = document.createElement('div');
                 dot.className = 'penalty-dot';
  
-                if (slotData && slotData.status === 'goal') {
+                if (slotData.status === 'goal') {
                     dot.classList.add('goal');
-                } else if (slotData && slotData.status === 'miss') {
+                } else if (slotData.status === 'miss') {
                     dot.classList.add('miss');
                 } else {
                     dot.classList.add('pending');
                 }
  
-                const slotCycle = slotData ? slotData.cycle : totalCyclesCompleted;
-                const needsReset = slotData && slotData.cycle < totalCyclesCompleted;
-                if (needsReset) {
-                    dot.classList.remove('goal', 'miss');
-                    dot.classList.add('pending');
-                }
-
-                const isNextSlot = shouldMarkCurrent && slotIndex === nextSlotIndex && slotCycle === totalCyclesCompleted;
+                const isNextSlot = shouldMarkCurrent && slotIndex === attempts.length;
                 if (isNextSlot) {
                     dot.classList.add('active');
                 }
