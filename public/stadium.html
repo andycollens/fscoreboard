@@ -958,6 +958,16 @@
         let winnersTitle = '';
         let lastWinnersSignature = null;
         let accessTokenCache = null;
+        let initialPreferredMode = null;
+        try {
+            const storedMode = localStorage.getItem('stadiumLastMode');
+            if (storedMode && ['scoreboard', 'flag', 'winners', 'logo', 'penalty'].includes(storedMode)) {
+                initialPreferredMode = storedMode;
+                currentMode = storedMode;
+            }
+        } catch (e) {
+            console.warn('Не удалось прочитать сохраненный режим табло', e);
+        }
 
         function getAccessToken() {
             if (accessTokenCache) return accessTokenCache;
@@ -1040,6 +1050,7 @@
             console.log('Received scoreboardUpdate in stadium:', data);
             latestData = data;
             window.lastScoreboardData = data;
+            applyInitialModeIfNeeded();
  
             if (currentMode === 'scoreboard' || currentMode === 'penalty') {
                 updateDisplay(data);
@@ -1064,6 +1075,7 @@
             console.log('Stadium получил начальное состояние:', data, 'currentMode:', currentMode);
             // Сохраняем данные в переменную для использования при переключении режима
             window.lastScoreboardData = data;
+            applyInitialModeIfNeeded();
             
             // ВАЖНО: Таймер всегда обновляется, даже если режим еще не установлен
             // Это предотвращает остановку времени при загрузке страницы
@@ -1236,6 +1248,12 @@
     // Функция переключения режимов
     function switchMode(mode) {
         currentMode = mode;
+        initialPreferredMode = null;
+        try {
+            localStorage.setItem('stadiumLastMode', mode);
+        } catch (e) {
+            console.warn('Не удалось сохранить режим табло', e);
+        }
         console.log('Switching mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
         
         // Скрываем все режимы
@@ -1302,6 +1320,14 @@
             clearStadiumPenalty();
             // Инициализируем анимацию лого при переключении на режим
             initLogoAnimation();
+        }
+    }
+
+    function applyInitialModeIfNeeded() {
+        if (initialPreferredMode) {
+            const modeToApply = initialPreferredMode;
+            initialPreferredMode = null;
+            switchMode(modeToApply);
         }
     }
 
@@ -1426,6 +1452,7 @@
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Stadium страница загружена');
+            applyInitialModeIfNeeded();
             
     // Тестовая активация полосок для проверки
         setTimeout(() => {
