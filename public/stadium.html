@@ -1146,6 +1146,7 @@
             team1City.textContent = data.team1City || 'Город 1';
             team1Score.textContent = data.score1 || 0;
             adjustScoreFontSize(team1Score);
+            updateStripe('team1', data.kit1Color);
 
             const stadiumTeam1Short = document.getElementById('stadiumTeam1');
             const stadiumTeam2Short = document.getElementById('stadiumTeam2');
