@@ -382,7 +382,7 @@
             flex-direction: column;
             align-items: center;
             gap: clamp(10px, 1.2vw, 18px);
-            margin-top: clamp(18px, 1.8vw, 28px);
+            margin-top: clamp(16px, 1.5vw, 24px);
         }
 
         body.penalty-mode .team-penalty-track {
@@ -466,7 +466,7 @@
             justify-content: center;
             gap: clamp(24px, 3vw, 48px);
             font-weight: 700;
-            font-size: clamp(220px, 16vw, 400px);
+            font-size: clamp(260px, 18vw, 450px);
             letter-spacing: 0.08em;
             color: #fff;
             pointer-events: none;
@@ -967,7 +967,7 @@
         body.penalty-mode .score1-section,
         body.penalty-mode .score2-section {
             top: 84%;
-            width: 260px;
+            width: 220px;
         }
 
         body.penalty-mode .divider-section {
@@ -976,15 +976,50 @@
 
         body.penalty-mode .team1-section,
         body.penalty-mode .team2-section {
-            top: 34%;
+            top: 32%;
         }
 
         body.penalty-mode .team1-section {
-            margin-left: -607.5px;
+            transform: translate(-50%, -50%) translateX(100px);
         }
 
         body.penalty-mode .team2-section {
-            margin-left: 607.5px;
+            transform: translate(-50%, -50%) translateX(-100px);
+        }
+
+        body.penalty-mode .team1-section .team-penalty-track,
+        body.penalty-mode .team2-section .team-penalty-track {
+            transform: translateX(0);
+        }
+
+        body.penalty-mode .score1-section {
+            transform: translate(-50%, -50%) translateX(-40px);
+        }
+
+        body.penalty-mode .score2-section {
+            transform: translate(-50%, -50%) translateX(40px);
+        }
+
+        .penalty-dot {
+            position: relative;
+            width: clamp(40px, 4vw, 60px);
+            height: clamp(40px, 4vw, 60px);
+            border-radius: 50%;
+            border: 2px solid rgba(200, 200, 200, 0.45);
+            background: rgba(140, 140, 140, 0.35);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.25s ease, opacity 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .penalty-dot.pending {
+            transform: scale(0.9);
+        }
+
+        .penalty-dot.active {
+            transform: scale(0.65);
+            box-shadow: 0 0 0 4px rgba(180, 180, 180, 0.25);
         }
 
 body.penalty-mode .colon {
@@ -1013,6 +1048,29 @@ body.penalty-mode .colon::before {
 
 body.penalty-mode .colon::after {
     transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.penalty-label {
+    position: absolute;
+    bottom: clamp(210px, 18vh, 260px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 46px;
+    border-radius: 18px;
+    background: rgba(200, 200, 200, 0.2);
+    color: #fff;
+    font-size: clamp(30px, 2.5vw, 46px);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: none;
+    pointer-events: none;
+}
+
+body.penalty-mode .penalty-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
     </style>
 </head>
@@ -1094,6 +1152,8 @@ body.penalty-mode .colon::after {
                 </div>
             </div>
 
+            <div class="penalty-label" id="penaltyLabel">СЕРИЯ ПЕНАЛЬТИ</div>
+ 
             <div class="middle-content">
                 <!-- Команда 1 -->
                 <div class="team1-section">
