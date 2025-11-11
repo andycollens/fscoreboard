@@ -353,6 +353,201 @@
             background: #000;
         }
 
+        .scoreboard-row {
+            position: absolute;
+            inset: 0;
+            display: none;
+            grid-template-columns: minmax(80px, 10vw) minmax(200px, 1fr) minmax(320px, 0.7fr) minmax(200px, 1fr) minmax(80px, 10vw);
+            align-items: center;
+            gap: 2vw;
+            padding: 0 2vw;
+            box-sizing: border-box;
+        }
+
+        body.penalty-mode .scoreboard-row {
+            display: grid;
+        }
+
+        .score-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .score-section.kit {
+            width: min(9vw, 120px);
+            height: min(9vw, 120px);
+            border-radius: 28px;
+            background: #2b2b2b;
+        }
+
+        .score-section.team {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 18px;
+            text-transform: uppercase;
+        }
+
+        .score-section.team.right {
+            align-items: flex-end;
+        }
+
+        .score-section.team.left .penalty-track {
+            align-items: flex-start;
+        }
+
+        .score-section.team.right .penalty-track {
+            align-items: flex-end;
+        }
+
+        .score-section.team .team-short {
+            font-size: clamp(48px, 4vw, 72px);
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .score-section.center .main-score {
+            display: flex;
+            align-items: center;
+            gap: clamp(12px, 1.8vw, 32px);
+            font-size: clamp(120px, 11vw, 190px);
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .score-section.center .main-score span {
+            display: inline-block;
+            min-width: clamp(60px, 6vw, 130px);
+            text-align: center;
+        }
+
+        .penalty-track {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(10px, 1vw, 16px);
+        }
+
+        body.penalty-mode .penalty-track {
+            display: flex;
+        }
+
+        .penalty-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(10px, 1.1vw, 18px);
+            flex-wrap: nowrap;
+        }
+
+        .penalty-dots.right {
+            flex-direction: row-reverse;
+        }
+
+        .penalty-dot {
+            position: relative;
+            width: clamp(26px, 2.7vw, 38px);
+            height: clamp(26px, 2.7vw, 38px);
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            background: transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: transform 0.25s ease, opacity 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+        }
+
+        .penalty-dot.goal {
+            background: #fff;
+            border-color: #fff;
+            opacity: 1;
+        }
+
+        .penalty-dot.miss {
+            border-color: #fff;
+            opacity: 1;
+        }
+
+        .penalty-dot.miss::before,
+        .penalty-dot.miss::after {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 3px;
+            background: #fff;
+            top: 50%;
+            left: 50%;
+            transform-origin: center;
+        }
+
+        .penalty-dot.miss::before {
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .penalty-dot.miss::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .penalty-dot.pending {
+            opacity: 0.35;
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(0.55);
+        }
+
+        .penalty-dot.active {
+            opacity: 0.7;
+            border-color: #bcbcbc;
+            background: #bcbcbc;
+            transform: scale(0.7);
+        }
+
+        .penalty-dot.sudden-death {
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
+        }
+
+        .penalty-count {
+            font-size: clamp(48px, 4vw, 72px);
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        @media (max-width: 1024px) {
+            .scoreboard-row {
+                grid-template-columns: minmax(60px, 12vw) minmax(150px, 1fr) minmax(240px, 0.8fr) minmax(150px, 1fr) minmax(60px, 12vw);
+                gap: 3vw;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .scoreboard-row {
+                grid-template-columns: repeat(5, minmax(50px, 1fr));
+                gap: 2vw;
+                padding: 0 4vw;
+            }
+
+            .score-section.team {
+                gap: 12px;
+            }
+
+            .penalty-dots {
+                gap: clamp(6px, 1.2vw, 12px);
+            }
+        }
+
+        @media (max-width: 540px) {
+            .scoreboard-row {
+                grid-template-columns: repeat(5, minmax(40px, 1fr));
+                gap: 12px;
+            }
+
+            .penalty-dots {
+                gap: 6px;
+                flex-wrap: nowrap;
+            }
+        }
+
         .middle-content {
             display: flex;
             align-items: center;
@@ -794,10 +989,6 @@
             }
         }
 
-        body.penalty-mode .penalty-track {
-            display: flex;
-        }
-
         body.penalty-mode .bottom-section {
             display: none;
         }
@@ -961,6 +1152,106 @@
         let pendingMode = null;
         let lastAppliedMode = null;
         let latestData = null;
+
+        function getPenaltyMaxAttemptsFromData(data) {
+            if (data && typeof data.penaltyMaxAttempts === 'number' && data.penaltyMaxAttempts > 0) {
+                return data.penaltyMaxAttempts;
+            }
+            if (data && typeof data.penaltyMode === 'string' && data.penaltyMode === 'child') {
+                return 3;
+            }
+            return 5;
+        }
+
+        function clearStadiumPenalty() {
+            const dotsTeam1 = document.getElementById('stadiumPenaltyDotsTeam1');
+            const dotsTeam2 = document.getElementById('stadiumPenaltyDotsTeam2');
+            const count1 = document.getElementById('stadiumPenaltyCountTeam1');
+            const count2 = document.getElementById('stadiumPenaltyCountTeam2');
+            if (dotsTeam1) dotsTeam1.innerHTML = '';
+            if (dotsTeam2) dotsTeam2.innerHTML = '';
+            if (count1) count1.textContent = '0';
+            if (count2) count2.textContent = '0';
+        }
+
+        function renderStadiumPenalty(teamKey, data) {
+            const dotsContainer = document.getElementById(teamKey === 'team1' ? 'stadiumPenaltyDotsTeam1' : 'stadiumPenaltyDotsTeam2');
+            const countEl = document.getElementById(teamKey === 'team1' ? 'stadiumPenaltyCountTeam1' : 'stadiumPenaltyCountTeam2');
+
+            if (!dotsContainer || !countEl) {
+                return;
+            }
+
+            const series = data && data.penaltySeries ? data.penaltySeries : null;
+            const maxAttempts = (series && typeof series.maxAttempts === 'number')
+                ? series.maxAttempts
+                : getPenaltyMaxAttemptsFromData(data);
+
+            const attempts = series && series.attempts && Array.isArray(series.attempts[teamKey])
+                ? series.attempts[teamKey]
+                : [];
+
+            const totalGoals = series && series.totalGoals && typeof series.totalGoals[teamKey] === 'number'
+                ? series.totalGoals[teamKey]
+                : attempts.filter(result => result === 'goal').length;
+
+            countEl.textContent = totalGoals.toString();
+
+            const finished = !!(series && series.finished);
+            const currentTeam = series && !series.finished ? series.currentTeam : null;
+            const firstTeam = series && series.firstTeam ? series.firstTeam : 'team1';
+            const activeIndex = (!finished && currentTeam === teamKey)
+                ? attempts.length
+                : (series ? null : null);
+
+            let totalSlots = Math.max(maxAttempts || 0, attempts.length);
+
+            if (!finished && currentTeam === teamKey) {
+                totalSlots = Math.max(totalSlots, attempts.length + 1);
+            }
+
+            if (!series && teamKey === firstTeam) {
+                totalSlots = Math.max(totalSlots, 1);
+            }
+
+            if (totalSlots === 0) {
+                totalSlots = maxAttempts || 5;
+            }
+
+            dotsContainer.innerHTML = '';
+
+            for (let slotIndex = 0; slotIndex < totalSlots; slotIndex++) {
+                const dot = document.createElement('div');
+                dot.className = 'penalty-dot';
+
+                const attemptResult = attempts[slotIndex];
+                if (attemptResult === 'goal') {
+                    dot.classList.add('goal');
+                } else if (attemptResult === 'miss') {
+                    dot.classList.add('miss');
+                } else {
+                    dot.classList.add('pending');
+                }
+
+                if (slotIndex >= (maxAttempts || 0)) {
+                    dot.classList.add('sudden-death');
+                }
+
+                if (!series && slotIndex === 0 && teamKey === firstTeam) {
+                    dot.classList.remove('pending');
+                    dot.classList.add('active');
+                } else if (activeIndex !== null && slotIndex === activeIndex && teamKey === currentTeam) {
+                    dot.classList.remove('pending');
+                    dot.classList.add('active');
+                }
+
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        window.getPenaltyMaxAttemptsFromData = getPenaltyMaxAttemptsFromData;
+        window.clearStadiumPenalty = clearStadiumPenalty;
+        window.renderStadiumPenalty = renderStadiumPenalty;
 
         function getAccessToken() {
             if (accessTokenCache) return accessTokenCache;
