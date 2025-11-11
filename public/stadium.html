@@ -399,8 +399,8 @@
 
         .penalty-dot {
             position: relative;
-            width: clamp(45px, 4.2vw, 60px);
-            height: clamp(45px, 4.2vw, 60px);
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             background: rgba(115, 115, 115, 0.8);
             display: inline-flex;
@@ -417,18 +417,17 @@
         .penalty-dot.miss {
             background: #000;
             color: #ff3b30;
-            font-size: clamp(32px, 3.4vw, 50px);
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: -0.02em;
         }
 
         .penalty-dot.pending {
             background: rgba(115, 115, 115, 0.8);
-            transform: scale(0.95);
         }
 
         .penalty-dot.active {
-            transform: translateY(-3px);
+            transform: none;
         }
 
         .penalty-dot.sudden-death {
@@ -1043,13 +1042,14 @@
 
         .penalty-dot {
             position: relative;
-            width: clamp(45px, 4.2vw, 60px);
-            height: clamp(45px, 4.2vw, 60px);
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             background: rgba(115, 115, 115, 0.8);
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            opacity: 1;
             transition: opacity 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
         }
 
@@ -1058,7 +1058,7 @@
         }
 
         .penalty-dot.active {
-            transform: translateY(-3px);
+            transform: none;
         }
 
 body.penalty-mode .colon {
@@ -1184,6 +1184,10 @@ body.penalty-mode .penalty-score {
 #stadiumPenaltyCountTeam2 {
     text-align: left;
     padding-left: 40px;
+}
+
+.penalty-dot.pending.active {
+    box-shadow: 0 0 0 12.5px rgba(115, 115, 115, 0.35);
 }
     </style>
 </head>
@@ -1395,18 +1399,22 @@ body.penalty-mode .penalty-score {
                 const dot = document.createElement('div');
                 dot.className = 'penalty-dot';
  
-                if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
-                    dot.classList.add('active');
-                    dot.textContent = '';
-                } else if (slotResult === 'goal') {
+                if (slotResult === 'goal') {
                     dot.classList.add('goal');
                     dot.textContent = '';
                 } else if (slotResult === 'miss') {
                     dot.classList.add('miss');
-                    dot.textContent = 'X';
+                    dot.textContent = '-';
                 } else {
                     dot.classList.add('pending');
                     dot.textContent = '';
+                }
+ 
+                if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
+                    dot.classList.add('active');
+                    if (slotResult !== 'goal' && slotResult !== 'miss') {
+                        dot.classList.add('pending');
+                    }
                 }
  
                 dotsContainer.appendChild(dot);
