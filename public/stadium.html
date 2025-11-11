@@ -483,6 +483,14 @@
             padding: 0 2vw;
         }
 
+        body.penalty-mode .middle-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            height: 100%;
+        }
+
         /* Команда 1 */
         .team1-section {
             position: absolute;
@@ -952,20 +960,42 @@
             flex: 3;
         }
 
+        body.penalty-mode .score1-section,
+        body.penalty-mode .score2-section {
+            display: flex !important;
+            align-items: center !important;
+            width: clamp(140px, 12vw, 200px) !important;
+            height: auto !important;
+        }
+ 
+        body.penalty-mode .score1-section {
+            justify-content: flex-end !important;
+            padding-right: 15px !important;
+        }
+ 
+        body.penalty-mode .score2-section {
+            justify-content: flex-start !important;
+            padding-left: 15px !important;
+        }
+ 
+        body.penalty-mode .divider-section {
+            justify-self: center;
+        }
+ 
         body.penalty-mode .team1-score,
         body.penalty-mode .team2-score {
             font-size: 150px !important;
             height: 200px;
         }
-
-        body.penalty-mode .score1-section,
-        body.penalty-mode .score2-section {
-            top: 84%;
-            width: 220px;
+ 
+        body.penalty-mode .score1-section .team1-score {
+            width: 100%;
+            text-align: right;
         }
-
-        body.penalty-mode .divider-section {
-            top: 84%;
+ 
+        body.penalty-mode .score2-section .team2-score {
+            width: 100%;
+            text-align: left;
         }
 
         body.penalty-mode .team1-section,
@@ -987,15 +1017,15 @@
         }
 
         body.penalty-mode .score1-section {
-            right: calc(50% + 115px);
+            right: calc(50% + 55px) !important;
             left: auto !important;
-            transform: translateY(-50%);
+            transform: none !important;
         }
 
         body.penalty-mode .score2-section {
-            left: calc(50% + 115px);
+            left: calc(50% + 55px) !important;
             right: auto !important;
-            transform: translateY(-50%);
+            transform: none !important;
         }
 
         .penalty-dot {
@@ -1102,96 +1132,26 @@ body.penalty-mode .middle-content {
 body.penalty-mode .score1-section,
 body.penalty-mode .score2-section,
 body.penalty-mode .divider-section {
-    position: absolute;
-    top: calc(100% + 40px);
-    transform: none;
+    position: absolute !important;
+    top: auto !important;
+    bottom: clamp(18px, 7vh, 42px) !important;
+    margin: 0 !important;
 }
 
 body.penalty-mode .score1-section {
-    left: calc(50% - 150px - 120px);
-    transform: translateY(0);
+    right: calc(50% + 55px) !important;
+    left: auto !important;
 }
 
 body.penalty-mode .score2-section {
-    left: calc(50% + 150px);
-    transform: translateY(0);
-}
-
-body.penalty-mode .divider-section {
-    left: 50%;
+    left: calc(50% + 55px) !important;
     right: auto !important;
-    transform: translateX(-50%);
-}
-
-body.penalty-mode .team1-section,
-body.penalty-mode .team2-section {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
-
-body.penalty-mode .team1-section {
-    top: 40%;
-    margin-left: -600px;
-}
-
-body.penalty-mode .team2-section {
-    top: 40%;
-    margin-left: 600px;
-}
-
-body.penalty-mode .score1-section,
-body.penalty-mode .score2-section,
-body.penalty-mode .divider-section {
-    position: relative;
-    left: auto;
-    right: auto;
-    transform: none;
-}
-
-body.penalty-mode .score1-section,
-body.penalty-mode .score2-section {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-body.penalty-mode .score1-section {
-    justify-self: end;
-}
-
-body.penalty-mode .score2-section {
-    justify-self: start;
 }
 
 body.penalty-mode .divider-section {
-    justify-self: center;
-}
-
-body.penalty-mode .team-penalty-track {
-    margin-top: clamp(14px, 1.4vw, 24px);
-}
-
-.penalty-score span {
-    display: inline-block;
-    transform: translateY(-50px);
-}
-
-body.penalty-mode .score1-section .team1-score {
-    width: 100%;
-    text-align: right;
-}
-
-body.penalty-mode .score2-section .team2-score {
-    width: 100%;
-    text-align: left;
-}
-
-body.penalty-mode .penalty-label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
 }
 
 body.penalty-mode .penalty-score {
