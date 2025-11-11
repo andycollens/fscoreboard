@@ -391,10 +391,9 @@
 
         .penalty-dots {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: clamp(12px, 1.6vw, 20px);
+            gap: clamp(16px, 2.4vw, 32px);
             flex-wrap: nowrap;
         }
 
@@ -1256,53 +1255,48 @@ body.penalty-mode .penalty-label {
                 series &&
                 currentTeam === teamKey;
  
-            let totalSlots = Math.max(maxAttempts, attempts.length);
-            if (shouldMarkCurrent) {
-                totalSlots = Math.max(totalSlots, attempts.length + 1);
-            }
-            if (totalSlots === 0) totalSlots = maxAttempts;
+            const slots = new Array(Math.max(1, maxAttempts)).fill(null);
+            attempts.forEach((result, idx) => {
+                const slotIndex = idx % maxAttempts;
+                slots[slotIndex] = {
+                    status: result,
+                    index: idx,
+                    cycle: Math.floor(idx / maxAttempts)
+                };
+            });
  
-            const rowsCount = Math.max(1, Math.ceil(totalSlots / maxAttempts));
+            const totalCyclesCompleted = Math.floor(attempts.length / maxAttempts);
+            const nextSlotIndex = attempts.length % maxAttempts;
+ 
             dotsContainer.innerHTML = '';
  
-            for (let row = 0; row < rowsCount; row++) {
-                const rowEl = document.createElement('div');
-                rowEl.className = 'penalty-dots-row';
+            slots.forEach((slotData, slotIndex) => {
+                const dot = document.createElement('div');
+                dot.className = 'penalty-dot';
  
-                for (let slot = 0; slot < maxAttempts; slot++) {
-                    const globalIndex = row * maxAttempts + slot;
-                    if (globalIndex >= totalSlots) break;
- 
-                    const dot = document.createElement('div');
-                    dot.className = 'penalty-dot';
- 
-                    const attemptResult = attempts[globalIndex];
-                    if (attemptResult === 'goal') {
-                        dot.classList.add('goal');
-                    } else if (attemptResult === 'miss') {
-                        dot.classList.add('miss');
-                    } else {
-                        dot.classList.add('pending');
-                        if (shouldMarkCurrent && globalIndex === attempts.length) {
-                            dot.classList.add('active');
-                        }
-                    }
- 
-                    rowEl.appendChild(dot);
+                if (slotData && slotData.status === 'goal') {
+                    dot.classList.add('goal');
+                } else if (slotData && slotData.status === 'miss') {
+                    dot.classList.add('miss');
+                } else {
+                    dot.classList.add('pending');
                 }
  
-                dotsContainer.appendChild(rowEl);
-            }
+                const slotCycle = slotData ? slotData.cycle : totalCyclesCompleted;
+                const isNextSlot = shouldMarkCurrent && slotIndex === nextSlotIndex && (!slotData || slotCycle === totalCyclesCompleted);
+                if (isNextSlot) {
+                    dot.classList.add('active');
+                }
+ 
+                dotsContainer.appendChild(dot);
+            });
  
             if (!series && teamKey === firstTeam && dotsContainer.children.length === 0) {
-                const initialRow = document.createElement('div');
-                initialRow.className = 'penalty-dots-row';
                 for (let i = 0; i < maxAttempts; i++) {
                     const dot = document.createElement('div');
                     dot.className = 'penalty-dot pending';
-                    initialRow.appendChild(dot);
+                    dotsContainer.appendChild(dot);
                 }
-                dotsContainer.appendChild(initialRow);
             }
         }
 
