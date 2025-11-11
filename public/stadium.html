@@ -1019,19 +1019,19 @@
         body.penalty-mode .score1-section {
             right: calc(50% + 13px) !important;
             left: auto !important;
-            transform: translateY(calc(-50% + 290px)) !important;
+            transform: none !important;
         }
 
         body.penalty-mode .score2-section {
             left: calc(50% - 63px) !important;
             right: auto !important;
-            transform: translateY(calc(-50% + 290px)) !important;
+            transform: none !important;
         }
 
         body.penalty-mode .divider-section {
             left: calc(50% - 38px) !important;
             right: auto !important;
-            transform: translate(-50%, calc(-50% + 290px)) !important;
+            transform: translateX(-50%) !important;
         }
 
         .penalty-dot {
@@ -1139,26 +1139,27 @@ body.penalty-mode .score1-section,
 body.penalty-mode .score2-section,
 body.penalty-mode .divider-section {
     position: absolute !important;
-    top: 50% !important;
+    top: auto !important;
+    bottom: clamp(120px, 9vh, 170px) !important;
     margin: 0 !important;
 }
 
 body.penalty-mode .score1-section {
     right: calc(50% + 13px) !important;
     left: auto !important;
-    transform: translateY(calc(-50% + 290px)) !important;
+    transform: none !important;
 }
 
 body.penalty-mode .score2-section {
     left: calc(50% - 63px) !important;
     right: auto !important;
-    transform: translateY(calc(-50% + 290px)) !important;
+    transform: none !important;
 }
 
 body.penalty-mode .divider-section {
     left: calc(50% - 38px) !important;
     right: auto !important;
-    transform: translate(-50%, calc(-50% + 290px)) !important;
+    transform: translateX(-50%) !important;
 }
 
 body.penalty-mode .penalty-score {
