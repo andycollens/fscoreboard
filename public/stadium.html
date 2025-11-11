@@ -960,6 +960,7 @@
         let accessTokenCache = null;
         let pendingMode = null;
         let lastAppliedMode = null;
+        let latestData = null;
 
         function getAccessToken() {
             if (accessTokenCache) return accessTokenCache;
@@ -1313,6 +1314,31 @@
             document.body.classList.remove('penalty-mode');
             clearStadiumPenalty();
             // Инициализируем анимацию лого при переключении на режим
+            initLogoAnimation();
+        }
+
+        refreshDisplayForMode(mode, window.lastScoreboardData || latestData || {});
+    }
+    
+    function refreshDisplayForMode(mode, data) {
+        if (mode === 'scoreboard' || mode === 'penalty') {
+            if (data && Object.keys(data).length) {
+                updateDisplay(data);
+                const penaltyActive = !!data.penaltyActive;
+                const shouldRenderPenalty = penaltyActive || mode === 'penalty';
+                document.body.classList.toggle('penalty-mode', shouldRenderPenalty);
+                if (shouldRenderPenalty) {
+                    renderStadiumPenalty('team1', data);
+                    renderStadiumPenalty('team2', data);
+                } else {
+                    clearStadiumPenalty();
+                }
+            }
+        } else if (mode === 'winners') {
+            if (winnersData) {
+                updateWinnersDisplay();
+            }
+        } else if (mode === 'logo') {
             initLogoAnimation();
         }
     }
