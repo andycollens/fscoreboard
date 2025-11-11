@@ -399,8 +399,8 @@
 
         .penalty-dot {
             position: relative;
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: rgba(115, 115, 115, 0.8);
             display: inline-flex;
@@ -412,14 +412,10 @@
 
         .penalty-dot.goal {
             background: #34c759;
-            width: 45px;
-            height: 45px;
         }
 
         .penalty-dot.miss {
             background: #ff3b30;
-            width: 35px;
-            height: 35px;
             color: transparent;
             font-size: 0;
         }
@@ -1044,8 +1040,8 @@
 
         .penalty-dot {
             position: relative;
-            width: 35px;
-            height: 35px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: rgba(115, 115, 115, 0.8);
             display: inline-flex;
@@ -1056,11 +1052,16 @@
         }
 
         .penalty-dot.pending {
-            transform: scale(0.95);
+            transform: none;
         }
 
         .penalty-dot.active {
             transform: none;
+        }
+
+        .penalty-dot.pending.active {
+            background: rgba(200, 200, 200, 0.8);
+            box-shadow: none;
         }
 
 body.penalty-mode .colon {
@@ -1186,10 +1187,6 @@ body.penalty-mode .penalty-score {
 #stadiumPenaltyCountTeam2 {
     text-align: left;
     padding-left: 40px;
-}
-
-.penalty-dot.pending.active {
-    box-shadow: 0 0 0 12.5px rgba(115, 115, 115, 0.35);
 }
     </style>
 </head>
