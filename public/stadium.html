@@ -436,7 +436,8 @@
             top: auto;
             bottom: clamp(10px, 8vh, 40px);
             display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            grid-template-columns: auto 8px auto;
+            column-gap: 60px;
             align-items: center;
             justify-items: center;
             font-weight: 700;
@@ -444,7 +445,7 @@
             letter-spacing: 0.08em;
             color: #fff;
             pointer-events: none;
-            width: clamp(520px, 40vw, 640px);
+            width: auto;
         }
 
         .penalty-score span {
@@ -454,21 +455,21 @@
 
         #stadiumPenaltyCountTeam1 {
             justify-self: end;
-            margin-right: 30px;
+            text-align: right;
         }
 
         #stadiumPenaltyCountTeam2 {
             justify-self: start;
-            margin-left: 30px;
+            text-align: left;
         }
 
         .penalty-score .penalty-divider {
             position: relative;
+            justify-self: center;
             width: 8px;
             height: clamp(220px, 12vw, 320px);
             border-radius: 8px;
             background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 50%, rgba(255, 255, 255, 0) 100%);
-            justify-self: center;
             transform: translateY(-80px);
         }
 
