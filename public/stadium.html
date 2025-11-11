@@ -433,8 +433,9 @@
 
         .penalty-score {
             position: absolute;
-            top: auto;
-            bottom: clamp(10px, 8vh, 40px);
+            bottom: clamp(120px, 12vh, 160px);
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -468,9 +469,8 @@
         .penalty-score .penalty-divider {
             position: absolute;
             left: 50%;
-            top: auto;
-            bottom: clamp(70px, 9vh, 110px);
-            transform: translateX(-50%);
+            top: 50%;
+            transform: translate(-50%, -80px);
             width: 8px;
             height: clamp(220px, 12vw, 320px);
             border-radius: 8px;
@@ -1051,7 +1051,7 @@ body.penalty-mode .colon::after {
 
 .penalty-label {
     position: absolute;
-    bottom: clamp(210px, 18vh, 260px);
+    bottom: clamp(200px, 16vh, 240px);
     left: 50%;
     transform: translateX(-50%);
     padding: 12px 46px;
@@ -1106,8 +1106,7 @@ body.penalty-mode .score1-section,
 body.penalty-mode .score2-section,
 body.penalty-mode .divider-section {
     position: absolute;
-    top: auto;
-    bottom: clamp(70px, 9vh, 110px);
+    top: calc(100% + 40px);
     transform: none;
 }
 
@@ -1270,8 +1269,6 @@ body.penalty-mode .score2-section .team2-score {
                 </div>
             </div>
 
-            <div class="penalty-label" id="penaltyLabel">СЕРИЯ ПЕНАЛЬТИ</div>
-
             <div class="middle-content">
                 <!-- Команда 1 -->
                 <div class="team1-section">
@@ -1312,6 +1309,8 @@ body.penalty-mode .score2-section .team2-score {
                     </div>
                 </div>
             </div>
+
+            <div class="penalty-label" id="penaltyLabel">СЕРИЯ ПЕНАЛЬТИ</div>
         </div>
 
         <!-- Нижняя область -->
