@@ -1535,12 +1535,13 @@
             };
         };
 
-        if (!winnersResolved) {
-            try {
-                winnersResolved = await ensureResolvedFromApi();
-            } catch (error) {
-                console.error('Ошибка загрузки данных о победителях:', error);
+        try {
+            const resolved = await ensureResolvedFromApi();
+            if (resolved) {
+                winnersResolved = resolved;
             }
+        } catch (error) {
+            console.error('Ошибка загрузки данных о победителях:', error);
         }
 
         applyWinnerDisplay(1, winnersResolved && winnersResolved.winner1);
