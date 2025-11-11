@@ -30,6 +30,8 @@ if (fs.existsSync(CONFIG_PATH)) {
   }
 }
 
+let stadiumModeState = config.stadiumMode || 'scoreboard';
+
 // Функция для получения актуального токена управления
 function getActualToken() {
   if (fs.existsSync(CONFIG_PATH)) {
@@ -967,6 +969,7 @@ io.on('connection', (socket) => {
   
   // Отправляем текущее состояние при подключении
   socket.emit('scoreboardUpdate', state);
+  socket.emit('stadiumModeChange', { mode: stadiumModeState });
   
   // Обработчик запроса текущего состояния
   socket.on('getCurrentState', () => {
@@ -1155,6 +1158,7 @@ app.put('/api/config', (req, res) => {
   }
   if (req.body.stadiumMode !== undefined) {
     currentConfig.stadiumMode = req.body.stadiumMode;
+    stadiumModeState = currentConfig.stadiumMode || 'scoreboard';
     // Отправляем событие всем подключенным клиентам stadium.html
     io.emit('stadiumModeChange', { mode: req.body.stadiumMode });
   }

@@ -1241,6 +1241,7 @@
     function switchMode(mode) {
         currentMode = mode;
         pendingMode = null;
+        lastAppliedMode = mode;
         console.log('Switching mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
         
         // Скрываем все режимы
@@ -1644,9 +1645,8 @@
     // Обработчики Socket.IO для моментального обновления
     socket.on('stadiumModeChange', (data) => {
         console.log('Received stadiumModeChange event:', data);
-        // Сохраняем текущих победителей перед переключением режима
-        // (winnersData уже сохранен в переменной, не теряется)
-        switchMode(data.mode);
+        pendingMode = data.mode || 'scoreboard';
+        applyPendingModeIfNeeded();
         // Если переключились на режим победителей, обновляем отображение
         if (data.mode === 'winners' && winnersData) {
             console.log('Switched to winners mode, updating display');
