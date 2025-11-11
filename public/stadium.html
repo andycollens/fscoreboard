@@ -377,12 +377,16 @@
             display: flex;
         }
 
-        .penalty-overlay .penalty-row {
-            display: flex;
+        .team-penalty-track {
+            display: none;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: clamp(16px, 2.4vw, 32px);
-            width: 100%;
+            gap: clamp(10px, 1.2vw, 18px);
+            margin-top: clamp(18px, 1.8vw, 28px);
+        }
+
+        body.penalty-mode .team-penalty-track {
+            display: flex;
         }
 
         .penalty-dots {
@@ -393,33 +397,27 @@
             flex-wrap: nowrap;
         }
 
-        .penalty-dots.right {
-            flex-direction: row-reverse;
-        }
-
         .penalty-dot {
             position: relative;
             width: clamp(40px, 4vw, 60px);
             height: clamp(40px, 4vw, 60px);
             border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            background: transparent;
+            border: 2px solid rgba(200, 200, 200, 0.45);
+            background: rgba(140, 140, 140, 0.35);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.6;
-            transition: transform 0.25s ease, opacity 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+            opacity: 1;
+            transition: transform 0.25s ease, opacity 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
         }
 
         .penalty-dot.goal {
             background: #fff;
             border-color: #fff;
-            opacity: 1;
         }
 
         .penalty-dot.miss {
             border-color: #fff;
-            opacity: 1;
         }
 
         .penalty-dot.miss::before,
@@ -443,20 +441,20 @@
         }
 
         .penalty-dot.pending {
-            opacity: 0.3;
-            border-color: rgba(255, 255, 255, 0.25);
-            transform: scale(0.5);
+            background: rgba(120, 120, 120, 0.35);
+            border-color: rgba(180, 180, 180, 0.45);
+            transform: scale(0.9);
         }
 
         .penalty-dot.active {
-            opacity: 0.7;
-            border-color: #bcbcbc;
-            background: #bcbcbc;
-            transform: scale(0.7);
+            background: rgba(180, 180, 180, 0.7);
+            border-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 6px rgba(180, 180, 180, 0.25);
+            transform: scale(1.05);
         }
 
         .penalty-dot.sudden-death {
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.3);
         }
 
         .penalty-score {
@@ -861,10 +859,6 @@
                 gap: clamp(16px, 4vw, 32px);
             }
 
-            .penalty-overlay .penalty-row {
-                gap: clamp(10px, 3vw, 22px);
-            }
-
             .penalty-dots {
                 gap: clamp(10px, 3vw, 22px);
             }
@@ -1093,16 +1087,10 @@ body.penalty-mode .colon::after {
         <!-- Средняя область -->
         <div class="middle-section">
             <div class="penalty-overlay" id="stadiumPenaltyOverlay">
-                <div class="penalty-row team-left">
-                    <div class="penalty-dots" id="stadiumPenaltyDotsTeam1"></div>
-                </div>
                 <div class="penalty-score">
                     <span id="stadiumPenaltyCountTeam1">0</span>
                     <span class="penalty-divider"></span>
                     <span id="stadiumPenaltyCountTeam2">0</span>
-                </div>
-                <div class="penalty-row team-right">
-                    <div class="penalty-dots right" id="stadiumPenaltyDotsTeam2"></div>
                 </div>
             </div>
 
@@ -1114,6 +1102,9 @@ body.penalty-mode .colon::after {
                     <div class="team1-name" id="team1Name">Команда 1</div>
                     <div id="team1Stripe" class="team1-stripe"></div>
                     <div class="team1-city" id="team1City">Город 1</div>
+                    <div class="team-penalty-track" id="team1PenaltyTrack">
+                        <div class="penalty-dots" id="stadiumPenaltyDotsTeam1"></div>
+                    </div>
                 </div>
 
                 <!-- Счет 1 -->
@@ -1138,6 +1129,9 @@ body.penalty-mode .colon::after {
                     <div class="team2-name" id="team2Name">Команда 2</div>
                     <div id="team2Stripe" class="team2-stripe"></div>
                     <div class="team2-city" id="team2City">Город 2</div>
+                    <div class="team-penalty-track" id="team2PenaltyTrack">
+                        <div class="penalty-dots" id="stadiumPenaltyDotsTeam2"></div>
+                    </div>
                 </div>
             </div>
         </div>
