@@ -987,14 +987,14 @@
         }
 
         body.penalty-mode .score1-section {
-            left: auto;
-            right: calc(50% + 150px);
+            right: calc(50% + 115px);
+            left: auto !important;
             transform: translateY(-50%);
         }
 
         body.penalty-mode .score2-section {
-            left: calc(50% + 150px);
-            right: auto;
+            left: calc(50% + 115px);
+            right: auto !important;
             transform: translateY(-50%);
         }
 
@@ -1119,7 +1119,8 @@ body.penalty-mode .score2-section {
 
 body.penalty-mode .divider-section {
     left: 50%;
-    transform: translate(-50%, 0);
+    right: auto !important;
+    transform: translateX(-50%);
 }
 
 body.penalty-mode .team1-section,
