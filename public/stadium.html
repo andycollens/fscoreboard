@@ -1017,15 +1017,15 @@
         }
 
         body.penalty-mode .score1-section {
-            right: calc(50% + 55px) !important;
-            left: auto !important;
-            transform: none !important;
+            left: 50% !important;
+            right: auto !important;
+            transform: translate(-50%, -50%) !important;
         }
 
         body.penalty-mode .score2-section {
-            left: calc(50% + 55px) !important;
+            left: 50% !important;
             right: auto !important;
-            transform: none !important;
+            transform: translate(-50%, -50%) !important;
         }
 
         .penalty-dot {
@@ -1133,25 +1133,26 @@ body.penalty-mode .score1-section,
 body.penalty-mode .score2-section,
 body.penalty-mode .divider-section {
     position: absolute !important;
-    top: auto !important;
-    bottom: clamp(18px, 7vh, 42px) !important;
+    top: 50% !important;
     margin: 0 !important;
 }
 
 body.penalty-mode .score1-section {
-    right: calc(50% + 55px) !important;
-    left: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, -50%) !important;
 }
 
 body.penalty-mode .score2-section {
-    left: calc(50% + 55px) !important;
+    left: 50% !important;
     right: auto !important;
+    transform: translate(-50%, -50%) !important;
 }
 
 body.penalty-mode .divider-section {
     left: 50% !important;
     right: auto !important;
-    transform: translateX(-50%) !important;
+    transform: translate(-50%, calc(-50% - 30px)) !important;
 }
 
 body.penalty-mode .penalty-score {
