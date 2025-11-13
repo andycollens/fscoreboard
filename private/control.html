@@ -356,9 +356,10 @@
     }
     
     .penalty-stadium-mode-btn.active {
-      background: #eef4ff;
-      color: #4c5d7a;
-      font-weight: 500;
+      background: #338af3;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
     }
     
     .penalty-stadium-mode-btn:not(.active):not(:disabled):hover {
@@ -437,12 +438,13 @@
       gap: 9px;
       box-shadow: 0 2px 8px rgba(22, 61, 116, 0.08);
       position: relative;
-      transition: box-shadow 0.2s, transform 0.2s;
+      transition: box-shadow 0.2s, border 0.2s;
+      border: 3px solid transparent;
     }
 
     .penalty-team-block.active {
-      box-shadow: 0 0 0 3px rgba(142, 153, 174, 0.32);
-      transform: translateY(-2px);
+      border-color: rgba(142, 153, 174, 0.32);
+      box-shadow: 0 2px 8px rgba(22, 61, 116, 0.08);
     }
 
     .penalty-team-block:not(:first-child)::before {
@@ -2617,8 +2619,8 @@
       <div class="penalty-stadium-mode-wrapper">
         <span class="penalty-stadium-mode-label">Режим табло:</span>
         <div class="penalty-stadium-mode-buttons" id="penaltyStadiumModeButtons">
-          <button type="button" id="penaltyNormalStadiumBtn" class="penalty-stadium-mode-btn active">📺 Обычное табло</button>
-          <button type="button" id="penaltyPenaltyStadiumBtn" class="penalty-stadium-mode-btn">📺 Пенальти на табло</button>
+          <button type="button" id="penaltyNormalStadiumBtn" class="penalty-stadium-mode-btn active">Обычное</button>
+          <button type="button" id="penaltyPenaltyStadiumBtn" class="penalty-stadium-mode-btn">Пенальти</button>
         </div>
       </div>
       <div class="penalty-mode-options">
