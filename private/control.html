@@ -738,6 +738,21 @@
       border-radius: 12px;
     }
     
+    .team-upper-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      padding: 12px 0;
+    }
+    
+    .divider-upper {
+      width: 1px;
+      background: linear-gradient(to bottom, rgba(103, 132, 189, 0), rgba(103, 132, 189, 0.35), rgba(103, 132, 189, 0));
+      margin: 0;
+      flex-shrink: 0;
+    }
+    
     .score-block { 
       display: flex; 
       flex-direction: column; 
@@ -753,9 +768,10 @@
     
     .score-controls { 
       display: flex; 
-      gap: 10px; 
+      gap: 8px; 
       margin-bottom: 0;
       align-items: center;
+      justify-content: center;
     }
     
     .score-btn {
@@ -763,8 +779,8 @@
       color: #fff; 
       border: none; 
       border-radius: 10px;
-      width: 44px; 
-      height: 44px; 
+      width: 36px; 
+      height: 50px; 
       font-size: 1.4em; 
       font-weight: bold; 
       cursor: pointer;
@@ -2225,8 +2241,9 @@
     .team-preset-row {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 0;
       margin-top: 0;
+      width: 100%;
     }
     
     .team-preset-row select {
@@ -2313,12 +2330,7 @@
     </div>
     <form id="controlForm" autocomplete="off" spellcheck="false">
       <div class="score-row">
-        <div class="score-block">
-          <div class="score-controls">
-            <button type="button" class="score-btn" id="score1Dec">-</button>
-            <span class="score-value" id="score1Value">0</span>
-            <button type="button" class="score-btn" id="score1Inc">+</button>
-          </div>
+        <div class="team-upper-section">
           <div class="short-label-row">
             <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
             <span class="team-short-display" id="team1ShortDisplay">---</span>
@@ -2332,24 +2344,9 @@
                   ontouchcancel="handleMainLogoPressEnd('team1', event)"></span>
             <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
           </div>
-          <div class="team-display-info">
-            <div class="team-name-display" id="team1NameDisplay">Не введено</div>
-            <div class="team-city-display" id="team1CityDisplay">Не введено</div>
-          </div>
-          <div class="team-preset-row">
-            <span class="label-caption">Команда из турниров</span>
-            <select id="team1TournamentTeamSelect">
-              <option value="">-- Выберите команду --</option>
-            </select>
-          </div>
         </div>
-        <div class="divider"></div>
-        <div class="score-block">
-          <div class="score-controls">
-            <button type="button" class="score-btn" id="score2Dec">-</button>
-            <span class="score-value" id="score2Value">0</span>
-            <button type="button" class="score-btn" id="score2Inc">+</button>
-          </div>
+        <div class="divider-upper"></div>
+        <div class="team-upper-section">
           <div class="short-label-row">
             <span id="team2LogoMini" class="logo-mini-main" 
                   onclick="handleMainLogoClick('team2', event)"
@@ -2363,12 +2360,37 @@
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
           </div>
+        </div>
+      </div>
+      <div class="score-row">
+        <div class="score-block">
+          <div class="score-controls">
+            <button type="button" class="score-btn" id="score1Dec">-</button>
+            <span class="score-value" id="score1Value">0</span>
+            <button type="button" class="score-btn" id="score1Inc">+</button>
+          </div>
+          <div class="team-display-info">
+            <div class="team-name-display" id="team1NameDisplay">Не введено</div>
+            <div class="team-city-display" id="team1CityDisplay">Не введено</div>
+          </div>
+          <div class="team-preset-row">
+            <select id="team1TournamentTeamSelect">
+              <option value="">-- Выберите команду --</option>
+            </select>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="score-block">
+          <div class="score-controls">
+            <button type="button" class="score-btn" id="score2Dec">-</button>
+            <span class="score-value" id="score2Value">0</span>
+            <button type="button" class="score-btn" id="score2Inc">+</button>
+          </div>
           <div class="team-display-info">
             <div class="team-name-display" id="team2NameDisplay">Не введено</div>
             <div class="team-city-display" id="team2CityDisplay">Не введено</div>
           </div>
           <div class="team-preset-row">
-            <span class="label-caption">Команда из турниров</span>
             <select id="team2TournamentTeamSelect">
               <option value="">-- Выберите команду --</option>
             </select>
