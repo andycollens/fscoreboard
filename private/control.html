@@ -3859,6 +3859,36 @@
       
       syncMainTeamPresetSelectsFromState();
       
+      // Обновление режима пенальти после обновления команд и логотипов
+      if ('penaltyActive' in data || 'penaltyMode' in data || 'penaltyMaxAttempts' in data || 'penaltySeries' in data) {
+        if (typeof data.penaltyActive === 'boolean') {
+          scoreboardState.penaltyActive = data.penaltyActive;
+        }
+        if (typeof data.penaltyMode === 'string') {
+          scoreboardState.penaltyMode = data.penaltyMode === 'child' ? 'child' : 'adult';
+        }
+        if (typeof data.penaltyMaxAttempts === 'number') {
+          scoreboardState.penaltyMaxAttempts = data.penaltyMaxAttempts;
+        } else {
+          scoreboardState.penaltyMaxAttempts = getPenaltyMaxAttempts(scoreboardState.penaltyMode);
+        }
+        if (data.penaltySeries) {
+          scoreboardState.penaltySeries = data.penaltySeries;
+        } else if (data.penaltySeries === null) {
+          scoreboardState.penaltySeries = null;
+        }
+        const newPenaltySignature = scoreboardState.penaltyActive
+          ? JSON.stringify(scoreboardState.penaltySeries || null)
+          : null;
+        if (previousPenaltySignature !== newPenaltySignature) {
+          cancelPenaltyHold();
+        }
+        window.penaltyModeActive = !!scoreboardState.penaltyActive;
+        updatePenaltyControlsUI();
+      }
+      
+      getCurrentScoreboardSnapshot();
+      
       ready = true;
     }
     
