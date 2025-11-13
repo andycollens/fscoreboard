@@ -37,12 +37,6 @@
       font-size: 24px;
       gap: 0;
     }
-    .scoreboard-row > .kit1-section {
-      margin-right: 4px;
-    }
-    .scoreboard-row > .team2-section {
-      margin-right: 4px;
-    }
     .section {
       display: flex;
       align-items: center;
@@ -70,6 +64,10 @@
       width: 10px;
       background: #2b2b2b;
     }
+    .spacer-section {
+      width: 3px;
+      background: #2b2b2b;
+    }
     .team1-section, .team2-section {
       width: 70px;
       background: #2b2b2b;
@@ -94,7 +92,7 @@
       opacity: 0.9;
     }
     .penalty-dots-section {
-      width: 60px;
+      width: 80px;
       background: #2b2b2b;
       display: flex;
       align-items: center;
@@ -167,6 +165,8 @@
     <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">00:00</span></div>
     <!-- Kit 1 section: displays the color of the first team's kit -->
     <div class="section kit1-section" id="kit1"></div>
+    <!-- Spacer section -->
+    <div class="section spacer-section"></div>
     <!-- Team 1 section: displays the short name and match score of the first team -->
     <div class="section team1-section">
       <span id="team1" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: inherit; transform: translateY(2px);">ABC</span>
@@ -197,6 +197,8 @@
       <span class="match-score" id="matchScore2" style="transform: translateY(2px);">(0)</span>
       <span id="team2" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: inherit; transform: translateY(2px);">XYZ</span>
     </div>
+    <!-- Spacer section -->
+    <div class="section spacer-section"></div>
     <!-- Kit 2 section: displays the color of the second team's kit -->
     <div class="section kit2-section" id="kit2"></div>
   </div>
