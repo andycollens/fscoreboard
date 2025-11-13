@@ -1382,6 +1382,9 @@ body.penalty-mode .penalty-score {
                 : attempts.filter(result => result === 'goal').length;
  
             countEl.textContent = totalGoals.toString();
+            
+            // Обновляем размер шрифта в зависимости от счета
+            updatePenaltyScoreFontSize(data);
  
             const finished = !!(series && series.finished);
             const currentTeam = series && !series.finished ? series.currentTeam : null;
