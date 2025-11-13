@@ -1755,14 +1755,19 @@
       }
       
       .score-row {
-        flex-direction: row;
+        flex-direction: column;
         gap: 6px;
-        justify-content: space-between;
         padding: 6px;
       }
       
       .score-upper-section {
         padding: 4px 0;
+      }
+      
+      .score-blocks-container {
+        flex-direction: row;
+        gap: 6px;
+        justify-content: space-between;
       }
       
       .score-block {
@@ -1771,6 +1776,10 @@
         padding: 6px;
         gap: 7px;
         box-sizing: border-box;
+      }
+      
+      body {
+        padding: 20px;
       }
       
       .score-controls {
