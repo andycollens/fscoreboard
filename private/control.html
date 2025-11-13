@@ -790,12 +790,20 @@
       text-align: center; 
     }
     
+    .team-logo-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
     .short-label-row { 
       margin-top: 0; 
       display: flex; 
       justify-content: center; 
       align-items: center; 
       gap: 10px;
+      margin-bottom: 12px;
     }
     
     .short-label-row input[type="text"] {
@@ -2316,9 +2324,7 @@
     <form id="controlForm" autocomplete="off" spellcheck="false">
       <div class="score-row">
         <div class="score-block">
-          <div class="short-label-row">
-            <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
-            <span class="team-short-display" id="team1ShortDisplay">---</span>
+          <div class="team-logo-section">
             <span id="team1LogoMini" class="logo-mini-main" 
                   onclick="handleMainLogoClick('team1', event)"
                   onmousedown="handleMainLogoPressStart('team1', event)"
@@ -2328,6 +2334,10 @@
                   ontouchend="handleMainLogoPressEnd('team1', event)"
                   ontouchcancel="handleMainLogoPressEnd('team1', event)"></span>
             <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
+          </div>
+          <div class="short-label-row">
+            <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
+            <span class="team-short-display" id="team1ShortDisplay">---</span>
           </div>
           <div class="score-controls">
             <button type="button" class="score-btn" id="score1Dec">-</button>
@@ -2346,7 +2356,7 @@
         </div>
         <div class="divider"></div>
         <div class="score-block">
-          <div class="short-label-row">
+          <div class="team-logo-section">
             <span id="team2LogoMini" class="logo-mini-main" 
                   onclick="handleMainLogoClick('team2', event)"
                   onmousedown="handleMainLogoPressStart('team2', event)"
@@ -2355,9 +2365,11 @@
                   ontouchstart="handleMainLogoPressStart('team2', event)"
                   ontouchend="handleMainLogoPressEnd('team2', event)"
                   ontouchcancel="handleMainLogoPressEnd('team2', event)"></span>
+            <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
+          </div>
+          <div class="short-label-row">
             <span class="team-short-display" id="team2ShortDisplay">---</span>
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
-            <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
           </div>
           <div class="score-controls">
             <button type="button" class="score-btn" id="score2Dec">-</button>
@@ -6990,4 +7002,6 @@
     });
   </script>
 </body>
+</html>
+</html>
 </html>
