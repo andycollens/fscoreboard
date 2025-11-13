@@ -738,6 +738,21 @@
       border-radius: 12px;
     }
     
+    .score-upper-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      padding: 12px 0;
+    }
+    
+    .divider-upper {
+      width: 1px;
+      background: linear-gradient(to bottom, rgba(103, 132, 189, 0), rgba(103, 132, 189, 0.35), rgba(103, 132, 189, 0));
+      margin: 0;
+      flex-shrink: 0;
+    }
+    
     .score-block { 
       display: flex; 
       flex-direction: column; 
@@ -2339,6 +2354,23 @@
     </div>
     <form id="controlForm" autocomplete="off" spellcheck="false">
       <div class="score-row">
+        <div class="score-upper-section">
+          <div class="score-controls">
+            <button type="button" class="score-btn" id="score1Dec">-</button>
+            <span class="score-value" id="score1Value">0</span>
+            <button type="button" class="score-btn" id="score1Inc">+</button>
+          </div>
+        </div>
+        <div class="divider-upper"></div>
+        <div class="score-upper-section">
+          <div class="score-controls">
+            <button type="button" class="score-btn" id="score2Dec">-</button>
+            <span class="score-value" id="score2Value">0</span>
+            <button type="button" class="score-btn" id="score2Inc">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="score-row">
         <div class="score-block">
           <div class="team-logo-section">
             <span id="team1LogoMini" class="logo-mini-main" 
@@ -2354,11 +2386,6 @@
           <div class="short-label-row">
             <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
             <span class="team-short-display" id="team1ShortDisplay">---</span>
-          </div>
-          <div class="score-controls">
-            <button type="button" class="score-btn" id="score1Dec">-</button>
-            <span class="score-value" id="score1Value">0</span>
-            <button type="button" class="score-btn" id="score1Inc">+</button>
           </div>
           <div class="team-display-info">
             <div class="team-name-display" id="team1NameDisplay">Не введено</div>
@@ -2386,11 +2413,6 @@
           <div class="short-label-row">
             <span class="team-short-display" id="team2ShortDisplay">---</span>
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
-          </div>
-          <div class="score-controls">
-            <button type="button" class="score-btn" id="score2Dec">-</button>
-            <span class="score-value" id="score2Value">0</span>
-            <button type="button" class="score-btn" id="score2Inc">+</button>
           </div>
           <div class="team-display-info">
             <div class="team-name-display" id="team2NameDisplay">Не введено</div>
