@@ -104,8 +104,8 @@
       gap: 4px;
     }
     .penalty-dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: rgba(115, 115, 115, 0.8);
     }
@@ -208,7 +208,7 @@
       if (!dotsContainer || !scoreEl) return;
 
       const series = data && data.penaltySeries ? data.penaltySeries : null;
-      const maxAttempts = series && typeof series.maxAttempts === 'number'
+      const maxAttempts = (series && typeof series.maxAttempts === 'number')
         ? series.maxAttempts
         : getPenaltyMaxAttempts(data);
 
@@ -224,6 +224,8 @@
 
       const finished = !!(series && series.finished);
       const currentTeam = series && !series.finished ? series.currentTeam : null;
+      const firstTeam = series && series.firstTeam ? series.firstTeam : 'team1';
+
       const shouldMarkCurrent = !finished && series && currentTeam === teamKey;
       const activeSlotIndex = shouldMarkCurrent ? (attempts.length % maxAttempts) : null;
 
@@ -241,10 +243,13 @@
 
         if (slotResult === 'goal') {
           dot.classList.add('goal');
+          dot.textContent = '';
         } else if (slotResult === 'miss') {
           dot.classList.add('miss');
+          dot.textContent = '';
         } else {
           dot.classList.add('pending');
+          dot.textContent = '';
         }
 
         if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
@@ -257,10 +262,11 @@
         dotsContainer.appendChild(dot);
       });
 
-      if (!series && teamKey === (series && series.firstTeam ? series.firstTeam : 'team1') && dotsContainer.children.length === 0) {
+      if (!series && teamKey === firstTeam && dotsContainer.children.length === 0) {
         for (let i = 0; i < maxAttempts; i++) {
           const dot = document.createElement('div');
           dot.className = 'penalty-dot pending';
+          dot.textContent = '';
           dotsContainer.appendChild(dot);
         }
       }
