@@ -296,32 +296,59 @@
       gap: 12px;
     }
     
-    .penalty-stadium-mode-btn {
+    .penalty-stadium-mode-buttons {
+      display: flex;
+      gap: 0;
+      margin-top: 8px;
+      border-radius: 10px;
+      overflow: hidden;
       border: 1px solid #c5d9ff;
-      border-radius: 8px;
+      background: #f8fbff;
+    }
+    
+    .penalty-stadium-mode-btn {
+      flex: 1;
+      border: none;
+      border-radius: 0;
       background: #f8fbff;
       color: #61708a;
       font-weight: 500;
       font-size: 12px;
-      padding: 5px 12px;
+      padding: 8px 16px;
       cursor: pointer;
       box-shadow: none;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      transition: all 0.15s;
+      position: relative;
     }
     
-    .penalty-stadium-mode-btn:hover:not(:disabled) {
+    .penalty-stadium-mode-btn:first-child {
+      border-top-left-radius: 10px;
+      border-bottom-left-radius: 10px;
+      border-right: 1px solid #c5d9ff;
+    }
+    
+    .penalty-stadium-mode-btn:last-child {
+      border-top-right-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+    
+    .penalty-stadium-mode-btn.active {
+      background: #338af3;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .penalty-stadium-mode-btn:not(.active):hover {
       background: #eef4ff;
       color: #4c5d7a;
-      border-color: #a8c0f0;
     }
     
     .penalty-stadium-mode-btn:disabled {
       background: #f8fbff;
       color: #a3a9b8;
-      border-color: #e0e8f5;
-      box-shadow: none;
       cursor: default;
-      transform: none;
+      opacity: 0.6;
     }
 
     .penalty-controls-note {
@@ -2557,9 +2584,12 @@
       <div class="penalty-controls-header">
         <div class="penalty-controls-header-left">
           <span>Пенальти активированы</span>
-          <button type="button" id="penaltyStadiumModeBtn" class="penalty-stadium-mode-btn">📺 Пенальти на табло</button>
         </div>
         <button type="button" id="penaltyUndoBtn" class="penalty-undo-btn" disabled>Отменить удар</button>
+      </div>
+      <div class="penalty-stadium-mode-buttons">
+        <button type="button" id="penaltyNormalStadiumBtn" class="penalty-stadium-mode-btn active">📺 Обычное табло</button>
+        <button type="button" id="penaltyPenaltyStadiumBtn" class="penalty-stadium-mode-btn">📺 Пенальти на табло</button>
       </div>
       <div class="penalty-mode-options">
         <button type="button" class="penalty-mode-button" data-mode="child">Детский режим (3 удара)</button>
