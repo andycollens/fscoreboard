@@ -289,9 +289,11 @@
           dot.textContent = '';
         }
 
-        if (activeSlotIndex !== null && slotIndex === activeSlotIndex && slotResult === null) {
+        if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
           dot.classList.add('active');
-          dot.classList.add('pending');
+          if (slotResult === null) {
+            dot.classList.add('pending');
+          }
         }
 
         dotsContainer.appendChild(dot);
