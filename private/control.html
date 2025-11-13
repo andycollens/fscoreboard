@@ -3051,17 +3051,28 @@
     }
 
     function getPenaltyTeamLabel(teamKey) {
-      const nameInput = document.getElementById(teamKey === 'team1' ? 'team1Short' : 'team2Short');
-      const fullNameInput = document.getElementById(teamKey === 'team1' ? 'team1Name' : 'team2Name');
-      const cityInput = document.getElementById(teamKey === 'team1' ? 'team1City' : 'team2City');
+      // Сначала пробуем получить из display элементов
+      const nameDisplay = document.getElementById(teamKey === 'team1' ? 'team1NameDisplay' : 'team2NameDisplay');
+      const shortDisplayUpper = document.getElementById(teamKey === 'team1' ? 'team1ShortDisplayUpper' : 'team2ShortDisplayUpper');
+      
+      // Пробуем получить из состояния
+      const short = scoreboardState[teamKey === 'team1' ? 'team1Short' : 'team2Short'];
+      const full = scoreboardState[teamKey === 'team1' ? 'team1Name' : 'team2Name'];
+      
+      // Приоритет: display элементы > состояние > дефолт
+      if (shortDisplayUpper && shortDisplayUpper.textContent && shortDisplayUpper.textContent.trim() !== '---') {
+        return shortDisplayUpper.textContent.trim().toUpperCase();
+      }
+      if (nameDisplay && nameDisplay.textContent && nameDisplay.textContent.trim() !== 'Не введено') {
+        return nameDisplay.textContent.trim();
+      }
+      if (short && short.trim()) {
+        return short.trim().toUpperCase();
+      }
+      if (full && full.trim()) {
+        return full.trim();
+      }
 
-      const short = nameInput ? nameInput.value.trim() : '';
-      const full = fullNameInput ? fullNameInput.value.trim() : '';
-      const city = cityInput ? cityInput.value.trim() : '';
-
-      if (short) return short.toUpperCase();
-      if (full) return full;
-      if (city) return city;
       return teamKey === 'team1' ? 'Команда 1' : 'Команда 2';
     }
 
