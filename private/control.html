@@ -3080,55 +3080,51 @@
         undoBtn.dataset.listenerAttached = 'true';
       }
 
-      const stadiumModeBtn = document.getElementById('penaltyStadiumModeBtn');
-      if (stadiumModeBtn && stadiumModeBtn.dataset.listenerAttached !== 'true') {
-        // Функция для обновления текста кнопки
-        const updateStadiumModeButtonText = async () => {
-          try {
-            const configResponse = await fetch(`/api/config?token=${getToken()}`);
-            if (configResponse.ok) {
-              const currentConfig = await configResponse.json();
-              if (currentConfig.stadiumMode === 'penalty') {
-                stadiumModeBtn.textContent = '📺 Обычное табло';
+      const normalStadiumBtn = document.getElementById('penaltyNormalStadiumBtn');
+      const penaltyStadiumBtn = document.getElementById('penaltyPenaltyStadiumBtn');
+      
+      // Функция для обновления активного состояния кнопок
+      const updateStadiumModeButtons = async () => {
+        try {
+          const configResponse = await fetch(`/api/config?token=${getToken()}`);
+          if (configResponse.ok) {
+            const currentConfig = await configResponse.json();
+            const isPenaltyMode = currentConfig.stadiumMode === 'penalty';
+            
+            if (normalStadiumBtn && penaltyStadiumBtn) {
+              if (isPenaltyMode) {
+                normalStadiumBtn.classList.remove('active');
+                penaltyStadiumBtn.classList.add('active');
               } else {
-                stadiumModeBtn.textContent = '📺 Пенальти на табло';
+                normalStadiumBtn.classList.add('active');
+                penaltyStadiumBtn.classList.remove('active');
               }
             }
-          } catch (error) {
-            console.error('Ошибка получения режима табло:', error);
           }
-        };
-        
-        // Обновляем текст кнопки при загрузке
-        updateStadiumModeButtonText();
-        
-        stadiumModeBtn.addEventListener('click', async () => {
+        } catch (error) {
+          console.error('Ошибка получения режима табло:', error);
+        }
+      };
+      
+      // Обработчик для кнопки "Обычное табло"
+      if (normalStadiumBtn && normalStadiumBtn.dataset.listenerAttached !== 'true') {
+        normalStadiumBtn.addEventListener('click', async () => {
+          if (normalStadiumBtn.classList.contains('active')) return;
+          
+          if (!confirm('Переключить табло стадиона на обычное табло? Табло обновится моментально.')) {
+            return;
+          }
+          
           try {
-            // Загружаем текущую конфигурацию
-            const configResponse = await fetch(`/api/config?token=${getToken()}`);
-            let currentConfig = {};
-            if (configResponse.ok) {
-              currentConfig = await configResponse.json();
-            }
-            
-            const currentMode = currentConfig.stadiumMode || 'scoreboard';
-            const newMode = currentMode === 'penalty' ? 'scoreboard' : 'penalty';
-            const modeName = newMode === 'penalty' ? 'Пенальти' : 'обычное табло';
-            
-            if (!confirm(`Переключить табло стадиона на режим ${modeName}? Табло обновится моментально.`)) {
-              return;
-            }
-            
-            // Сохраняем новый режим
             const response = await fetch(`/api/config?token=${getToken()}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ stadiumMode: newMode })
+              body: JSON.stringify({ stadiumMode: 'scoreboard' })
             });
             
             if (response.ok) {
-              showNotification(`Табло стадиона переключено на режим ${modeName}!`, 'success');
-              updateStadiumModeButtonText();
+              showNotification('Табло стадиона переключено на обычное табло!', 'success');
+              updateStadiumModeButtons();
             } else {
               throw new Error('Ошибка переключения режима');
             }
@@ -3137,8 +3133,41 @@
             showNotification('Ошибка переключения режима табло', 'error');
           }
         });
-        stadiumModeBtn.dataset.listenerAttached = 'true';
+        normalStadiumBtn.dataset.listenerAttached = 'true';
       }
+      
+      // Обработчик для кнопки "Пенальти на табло"
+      if (penaltyStadiumBtn && penaltyStadiumBtn.dataset.listenerAttached !== 'true') {
+        penaltyStadiumBtn.addEventListener('click', async () => {
+          if (penaltyStadiumBtn.classList.contains('active')) return;
+          
+          if (!confirm('Переключить табло стадиона на режим Пенальти? Табло обновится моментально.')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch(`/api/config?token=${getToken()}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ stadiumMode: 'penalty' })
+            });
+            
+            if (response.ok) {
+              showNotification('Табло стадиона переключено на режим Пенальти!', 'success');
+              updateStadiumModeButtons();
+            } else {
+              throw new Error('Ошибка переключения режима');
+            }
+          } catch (error) {
+            console.error('Ошибка переключения режима табло:', error);
+            showNotification('Ошибка переключения режима табло', 'error');
+          }
+        });
+        penaltyStadiumBtn.dataset.listenerAttached = 'true';
+      }
+      
+      // Обновляем состояние кнопок при загрузке
+      updateStadiumModeButtons();
 
       updatePenaltyControlsUI();
     }
