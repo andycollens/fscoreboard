@@ -297,58 +297,62 @@
     }
     
     .penalty-stadium-mode-buttons {
-      display: flex;
+      display: inline-flex;
       gap: 0;
       margin-top: 8px;
-      border-radius: 10px;
+      border-radius: 8px;
       overflow: hidden;
-      border: 1px solid #c5d9ff;
+      border: 1px solid #d8e3f6;
       background: #f8fbff;
     }
     
     .penalty-stadium-mode-btn {
-      flex: 1;
       border: none;
       border-radius: 0;
       background: #f8fbff;
       color: #61708a;
-      font-weight: 500;
-      font-size: 12px;
-      padding: 8px 16px;
+      font-weight: 400;
+      font-size: 11px;
+      padding: 5px 12px;
       cursor: pointer;
       box-shadow: none;
       transition: all 0.15s;
       position: relative;
+      white-space: nowrap;
     }
     
     .penalty-stadium-mode-btn:first-child {
-      border-top-left-radius: 10px;
-      border-bottom-left-radius: 10px;
-      border-right: 1px solid #c5d9ff;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+      border-right: 1px solid #d8e3f6;
     }
     
     .penalty-stadium-mode-btn:last-child {
-      border-top-right-radius: 10px;
-      border-bottom-right-radius: 10px;
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
     }
     
     .penalty-stadium-mode-btn.active {
-      background: #338af3;
-      color: #fff;
-      font-weight: 600;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      background: #eef4ff;
+      color: #4c5d7a;
+      font-weight: 500;
     }
     
-    .penalty-stadium-mode-btn:not(.active):hover {
+    .penalty-stadium-mode-btn:not(.active):not(:disabled):hover {
       background: #eef4ff;
       color: #4c5d7a;
     }
     
     .penalty-stadium-mode-btn:disabled {
       background: #f8fbff;
-      color: #a3a9b8;
+      color: #c5d0e0;
       cursor: default;
-      opacity: 0.6;
+      opacity: 0.4;
+    }
+    
+    .penalty-stadium-mode-buttons.disabled {
+      opacity: 0.3;
+      pointer-events: none;
     }
 
     .penalty-controls-note {
@@ -2580,16 +2584,16 @@
       </label>
     </div>
 
+    <div class="penalty-stadium-mode-buttons" id="penaltyStadiumModeButtons">
+      <button type="button" id="penaltyNormalStadiumBtn" class="penalty-stadium-mode-btn active">📺 Обычное табло</button>
+      <button type="button" id="penaltyPenaltyStadiumBtn" class="penalty-stadium-mode-btn">📺 Пенальти на табло</button>
+    </div>
     <div id="penaltyControls" class="penalty-controls hidden">
       <div class="penalty-controls-header">
         <div class="penalty-controls-header-left">
           <span>Пенальти активированы</span>
         </div>
         <button type="button" id="penaltyUndoBtn" class="penalty-undo-btn" disabled>Отменить удар</button>
-      </div>
-      <div class="penalty-stadium-mode-buttons">
-        <button type="button" id="penaltyNormalStadiumBtn" class="penalty-stadium-mode-btn active">📺 Обычное табло</button>
-        <button type="button" id="penaltyPenaltyStadiumBtn" class="penalty-stadium-mode-btn">📺 Пенальти на табло</button>
       </div>
       <div class="penalty-mode-options">
         <button type="button" class="penalty-mode-button" data-mode="child">Детский режим (3 удара)</button>
@@ -2958,6 +2962,25 @@
           playPauseBtn.classList.remove('disabled-field');
           playPauseBtn.style.opacity = '';
           playPauseBtn.style.cursor = '';
+        }
+      }
+
+      // Управление кнопками переключения табло
+      const stadiumModeButtons = document.getElementById('penaltyStadiumModeButtons');
+      const normalStadiumBtn = document.getElementById('penaltyNormalStadiumBtn');
+      const penaltyStadiumBtn = document.getElementById('penaltyPenaltyStadiumBtn');
+      
+      if (stadiumModeButtons && normalStadiumBtn && penaltyStadiumBtn) {
+        if (scoreboardState.penaltyActive) {
+          // Когда режим пенальти активен - кнопки активны
+          stadiumModeButtons.classList.remove('disabled');
+          normalStadiumBtn.disabled = false;
+          penaltyStadiumBtn.disabled = false;
+        } else {
+          // Когда режим пенальти выключен - кнопки заблокированы, но видимы
+          stadiumModeButtons.classList.add('disabled');
+          normalStadiumBtn.disabled = true;
+          penaltyStadiumBtn.disabled = true;
         }
       }
 
