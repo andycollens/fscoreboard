@@ -297,27 +297,28 @@
     }
     
     .penalty-stadium-mode-btn {
-      border: none;
-      border-radius: 999px;
-      background: #338af3;
-      color: #fff;
-      font-weight: 600;
+      border: 1px solid #c5d9ff;
+      border-radius: 8px;
+      background: #f8fbff;
+      color: #61708a;
+      font-weight: 500;
       font-size: 12px;
-      padding: 6px 16px;
+      padding: 5px 12px;
       cursor: pointer;
-      box-shadow: 0 2px 6px rgba(51, 138, 243, 0.25);
-      transition: transform 0.15s, filter 0.15s, box-shadow 0.15s;
+      box-shadow: none;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
     
     .penalty-stadium-mode-btn:hover:not(:disabled) {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-      box-shadow: 0 4px 10px rgba(51, 138, 243, 0.35);
+      background: #eef4ff;
+      color: #4c5d7a;
+      border-color: #a8c0f0;
     }
     
     .penalty-stadium-mode-btn:disabled {
-      background: #ebedf3;
+      background: #f8fbff;
       color: #a3a9b8;
+      border-color: #e0e8f5;
       box-shadow: none;
       cursor: default;
       transform: none;
