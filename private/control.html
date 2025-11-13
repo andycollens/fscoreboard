@@ -266,6 +266,39 @@
       color: #163d74;
       font-weight: 600;
     }
+    
+    .penalty-controls-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .penalty-stadium-mode-btn {
+      border: none;
+      border-radius: 999px;
+      background: #338af3;
+      color: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 6px 16px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(51, 138, 243, 0.25);
+      transition: transform 0.15s, filter 0.15s, box-shadow 0.15s;
+    }
+    
+    .penalty-stadium-mode-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow: 0 4px 10px rgba(51, 138, 243, 0.35);
+    }
+    
+    .penalty-stadium-mode-btn:disabled {
+      background: #ebedf3;
+      color: #a3a9b8;
+      box-shadow: none;
+      cursor: default;
+      transform: none;
+    }
 
     .penalty-controls-note {
       font-size: 13px;
@@ -2357,7 +2390,10 @@
 
     <div id="penaltyControls" class="penalty-controls hidden">
       <div class="penalty-controls-header">
-        <span>Пенальти активированы</span>
+        <div class="penalty-controls-header-left">
+          <span>Пенальти активированы</span>
+          <button type="button" id="penaltyStadiumModeBtn" class="penalty-stadium-mode-btn">📺 Пенальти на табло</button>
+        </div>
         <button type="button" id="penaltyUndoBtn" class="penalty-undo-btn" disabled>Отменить удар</button>
       </div>
       <div class="penalty-mode-options">
@@ -2832,6 +2868,41 @@
       if (undoBtn && undoBtn.dataset.listenerAttached !== 'true') {
         undoBtn.addEventListener('click', () => undoLastPenaltyShot());
         undoBtn.dataset.listenerAttached = 'true';
+      }
+
+      const stadiumModeBtn = document.getElementById('penaltyStadiumModeBtn');
+      if (stadiumModeBtn && stadiumModeBtn.dataset.listenerAttached !== 'true') {
+        stadiumModeBtn.addEventListener('click', async () => {
+          if (!confirm('Переключить табло стадиона на режим Пенальти? Табло обновится моментально.')) {
+            return;
+          }
+          
+          try {
+            // Загружаем текущую конфигурацию, чтобы сохранить другие настройки
+            const configResponse = await fetch(`/api/config?token=${getToken()}`);
+            let currentConfig = {};
+            if (configResponse.ok) {
+              currentConfig = await configResponse.json();
+            }
+            
+            // Сохраняем режим пенальти
+            const response = await fetch(`/api/config?token=${getToken()}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ stadiumMode: 'penalty' })
+            });
+            
+            if (response.ok) {
+              showNotification('Табло стадиона переключено на режим Пенальти!', 'success');
+            } else {
+              throw new Error('Ошибка переключения режима');
+            }
+          } catch (error) {
+            console.error('Ошибка переключения режима табло:', error);
+            showNotification('Ошибка переключения режима табло', 'error');
+          }
+        });
+        stadiumModeBtn.dataset.listenerAttached = 'true';
       }
 
       updatePenaltyControlsUI();
