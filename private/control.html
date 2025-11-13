@@ -3713,15 +3713,9 @@
           if (penaltyModeActiveInUpdate) {
             btn.classList.add('disabled-field');
             btn.disabled = true;
-            btn.style.pointerEvents = 'none';
-            btn.style.cursor = 'not-allowed';
-            btn.style.opacity = '0.5';
           } else {
             btn.classList.remove('disabled-field');
             btn.disabled = false;
-            btn.style.pointerEvents = 'auto';
-            btn.style.cursor = 'pointer';
-            btn.style.opacity = '1';
           }
         }
       });
