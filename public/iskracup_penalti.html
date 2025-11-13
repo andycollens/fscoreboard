@@ -93,21 +93,25 @@
       font-weight: normal;
       opacity: 0.9;
     }
-    .penalty-section {
-      width: 120px;
+    .penalty-dots-section {
+      width: 60px;
       background: #2b2b2b;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: 4px 0;
+      justify-content: center;
+    }
+    .penalty-score-section {
+      width: 40px;
+      background: #2b2b2b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .penalty-dots {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 4px;
-      flex: 0 0 auto;
     }
     .penalty-dot {
       width: 10px;
@@ -168,19 +172,25 @@
       <span id="team1" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: inherit; transform: translateY(2px);">ABC</span>
       <span class="match-score" id="matchScore1" style="transform: translateY(2px);">(0)</span>
     </div>
-    <!-- Penalty section for team 1 -->
-    <div class="section penalty-section">
+    <!-- Penalty dots for team 1 -->
+    <div class="section penalty-dots-section">
       <div class="penalty-dots" id="penaltyDots1"></div>
+    </div>
+    <!-- Penalty score for team 1 -->
+    <div class="section penalty-score-section">
       <div class="penalty-score" id="penaltyScore1">0</div>
     </div>
     <!-- Divider section with ISKRA CUP logo -->
     <div class="section divider-section">
       <img src="/public/img/iskracup_scoreboard_logo.png" alt="ISKRA CUP" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; max-height: none; max-width: none; width: auto; height: auto;">
     </div>
-    <!-- Penalty section for team 2 -->
-    <div class="section penalty-section">
-      <div class="penalty-dots" id="penaltyDots2"></div>
+    <!-- Penalty score for team 2 -->
+    <div class="section penalty-score-section">
       <div class="penalty-score" id="penaltyScore2">0</div>
+    </div>
+    <!-- Penalty dots for team 2 -->
+    <div class="section penalty-dots-section">
+      <div class="penalty-dots" id="penaltyDots2"></div>
     </div>
     <!-- Team 2 section: displays the match score and short name of the second team -->
     <div class="section team2-section">
