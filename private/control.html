@@ -2244,6 +2244,16 @@
       line-height: 1.3;
     }
     
+    .team-short-display {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #163d74;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      min-width: 50px;
+      text-align: center;
+    }
+    
     .team-input-row .label-caption {
       font-size: 12px;
       color: #777;
@@ -2287,6 +2297,8 @@
             <div class="team-city-display" id="team1CityDisplay">Не введено</div>
           </div>
           <div class="short-label-row">
+            <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
+            <span class="team-short-display" id="team1ShortDisplay">---</span>
             <span id="team1LogoMini" class="logo-mini-main" 
                   onclick="handleMainLogoClick('team1', event)"
                   onmousedown="handleMainLogoPressStart('team1', event)"
@@ -2295,7 +2307,6 @@
                   ontouchstart="handleMainLogoPressStart('team1', event)"
                   ontouchend="handleMainLogoPressEnd('team1', event)"
                   ontouchcancel="handleMainLogoPressEnd('team1', event)"></span>
-            <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
           </div>
         </div>
@@ -2325,6 +2336,7 @@
                   ontouchstart="handleMainLogoPressStart('team2', event)"
                   ontouchend="handleMainLogoPressEnd('team2', event)"
                   ontouchcancel="handleMainLogoPressEnd('team2', event)"></span>
+            <span class="team-short-display" id="team2ShortDisplay">---</span>
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
           </div>
@@ -3344,8 +3356,10 @@
       // Обновление команд - отображение информации
       const team1NameDisplay = document.getElementById('team1NameDisplay');
       const team1CityDisplay = document.getElementById('team1CityDisplay');
+      const team1ShortDisplay = document.getElementById('team1ShortDisplay');
       const team2NameDisplay = document.getElementById('team2NameDisplay');
       const team2CityDisplay = document.getElementById('team2CityDisplay');
+      const team2ShortDisplay = document.getElementById('team2ShortDisplay');
       const kit1ColorEl = document.getElementById('kit1Color');
       const kit2ColorEl = document.getElementById('kit2Color');
       
@@ -3354,6 +3368,8 @@
       if (team2NameDisplay) team2NameDisplay.textContent = data.team2Name || 'Не введено';
       if (team1CityDisplay) team1CityDisplay.textContent = data.team1City || 'Не введено';
       if (team2CityDisplay) team2CityDisplay.textContent = data.team2City || 'Не введено';
+      if (team1ShortDisplay) team1ShortDisplay.textContent = data.team1Short || '---';
+      if (team2ShortDisplay) team2ShortDisplay.textContent = data.team2Short || '---';
       if (kit1ColorEl) kit1ColorEl.value = data.kit1Color || '#2b2b2b';
       if (kit2ColorEl) kit2ColorEl.value = data.kit2Color || '#2b2b2b';
       
@@ -5844,13 +5860,17 @@
       // Применение данных предустановки к display элементам
       const team1NameDisplay = document.getElementById('team1NameDisplay');
       const team1CityDisplay = document.getElementById('team1CityDisplay');
+      const team1ShortDisplay = document.getElementById('team1ShortDisplay');
       const team2NameDisplay = document.getElementById('team2NameDisplay');
       const team2CityDisplay = document.getElementById('team2CityDisplay');
+      const team2ShortDisplay = document.getElementById('team2ShortDisplay');
       
       if (team1NameDisplay) team1NameDisplay.textContent = preset.team1Name || 'Не введено';
       if (team1CityDisplay) team1CityDisplay.textContent = preset.team1City || 'Не введено';
+      if (team1ShortDisplay) team1ShortDisplay.textContent = preset.team1Short || '---';
       if (team2NameDisplay) team2NameDisplay.textContent = preset.team2Name || 'Не введено';
       if (team2CityDisplay) team2CityDisplay.textContent = preset.team2City || 'Не введено';
+      if (team2ShortDisplay) team2ShortDisplay.textContent = preset.team2Short || '---';
       
       // Сохраняем шорткоды в состояние
       scoreboardState.team1Short = preset.team1Short || '';
@@ -6747,6 +6767,9 @@
       
       // Сохраняем шорткод в состояние для отправки на сервер
       const fallbackShort = team.short || (team.name ? team.name.replace(/[^A-Za-zА-Яа-я0-9]/g, '').slice(0, 3).toUpperCase() : '');
+      const shortDisplay = document.getElementById(`${teamKey}ShortDisplay`);
+      if (shortDisplay) shortDisplay.textContent = fallbackShort || '---';
+      
       if (teamKey === 'team1') {
         scoreboardState.team1Short = fallbackShort;
       } else {
