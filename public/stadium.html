@@ -1411,7 +1411,7 @@ body.penalty-mode .penalty-score {
  
                 if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
                     dot.classList.add('active');
-                    if (slotResult !== 'goal' && slotResult !== 'miss') {
+                    if (slotResult === null) {
                         dot.classList.add('pending');
                     }
                 }
