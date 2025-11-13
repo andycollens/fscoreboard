@@ -738,18 +738,28 @@
       }
 
       .penalty-attempts-track {
-        gap: 9px;
+        gap: 1px;
+        flex-wrap: nowrap;
       }
 
       .penalty-attempt-wrapper {
-        min-width: 42px;
-        grid-template-rows: 28px 36px 28px;
-        gap: 4px;
+        min-width: 0;
+        flex: 0 0 auto;
+        width: auto;
+        grid-template-rows: 26px 32px 26px;
+        gap: 3px;
       }
 
       .penalty-attempt {
-        width: 30px;
-        height: 30px;
+        width: 24px;
+        height: 24px;
+      }
+      
+      .penalty-action-button {
+        border-radius: 6px;
+        padding: 3px 6px;
+        font-size: 10px;
+        min-width: 36px;
       }
 
       .penalty-attempt.pending {
