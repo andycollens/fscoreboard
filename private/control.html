@@ -385,32 +385,82 @@
       line-height: 1.5;
     }
 
-    .penalty-mode-options {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    .penalty-mode-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
     }
-
-    .penalty-mode-button {
-      border: 1px solid #338af3;
-      background: #fff;
-      color: #1d4f91;
-      padding: 8px 16px;
-      border-radius: 999px;
+    
+    .penalty-mode-label {
+      font-size: 12px;
+      color: #61708a;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .penalty-mode-buttons {
+      display: inline-flex;
+      gap: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #d8e3f6;
+      background: #f8fbff;
+      visibility: visible;
+    }
+    
+    .penalty-controls.hidden .penalty-mode-wrapper {
+      opacity: 0.3;
+    }
+    
+    .penalty-controls.hidden .penalty-mode-buttons {
+      display: inline-flex !important;
+      visibility: visible !important;
+    }
+    
+    .penalty-mode-btn {
+      border: none;
+      border-radius: 0;
+      background: #f8fbff;
+      color: #61708a;
+      font-weight: 400;
+      font-size: 11px;
+      padding: 5px 12px;
       cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      box-shadow: none;
+      transition: all 0.15s;
+      position: relative;
+      white-space: nowrap;
     }
-
-    .penalty-mode-button:hover {
-      background: #e6f0ff;
+    
+    .penalty-mode-btn:first-child {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+      border-right: 1px solid #d8e3f6;
     }
-
-    .penalty-mode-button.active {
+    
+    .penalty-mode-btn:last-child {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+    
+    .penalty-mode-btn.active {
       background: #338af3;
       color: #fff;
-      box-shadow: 0 4px 12px rgba(51, 138, 243, 0.3);
+      font-weight: 600;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+    
+    .penalty-mode-btn:not(.active):hover {
+      background: #eef4ff;
+      color: #4c5d7a;
+    }
+    
+    .penalty-mode-btn:disabled {
+      background: #f8fbff;
+      color: #a3a9b8;
+      cursor: default;
+      opacity: 0.6;
     }
 
     .penalty-series-board {
@@ -2638,9 +2688,12 @@
           <button type="button" id="penaltyPenaltyStadiumBtn" class="penalty-stadium-mode-btn">Пенальти</button>
         </div>
       </div>
-      <div class="penalty-mode-options">
-        <button type="button" class="penalty-mode-button" data-mode="child">Детский режим (3 удара)</button>
-        <button type="button" class="penalty-mode-button" data-mode="adult">Взрослый режим (5 ударов)</button>
+      <div class="penalty-mode-wrapper">
+        <span class="penalty-mode-label">Режим пенальти:</span>
+        <div class="penalty-mode-buttons">
+          <button type="button" id="penaltyChildModeBtn" class="penalty-mode-btn" data-mode="child">3 удара</button>
+          <button type="button" id="penaltyAdultModeBtn" class="penalty-mode-btn" data-mode="adult">5 ударов</button>
+        </div>
       </div>
       <div id="penaltySeriesBoard" class="penalty-series-board hidden">
         <div class="penalty-series-summary">
