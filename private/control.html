@@ -853,6 +853,7 @@
       letter-spacing: 2px;
       min-width: 50px;
       text-align: center;
+      margin-top: 4px;
     }
     
     .score-blocks-container {
@@ -2545,7 +2546,6 @@
                     ontouchend="handleMainLogoPressEnd('team1', event)"
                     ontouchcancel="handleMainLogoPressEnd('team1', event)"></span>
               <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
-              <span class="team-short-display-upper" id="team1ShortDisplayUpper">---</span>
             </div>
             <div class="score-controls">
               <button type="button" class="score-btn" id="score1Dec">-</button>
@@ -2554,11 +2554,11 @@
               <div class="score-divider"></div>
               <button type="button" class="score-btn" id="score1Inc">+</button>
             </div>
+            <span class="team-short-display-upper" id="team1ShortDisplayUpper">---</span>
           </div>
           <div class="divider-upper"></div>
           <div class="score-upper-section">
             <div class="team-logo-section-upper">
-              <span class="team-short-display-upper" id="team2ShortDisplayUpper">---</span>
               <span id="team2LogoMini" class="logo-mini-main" 
                     onclick="handleMainLogoClick('team2', event)"
                     onmousedown="handleMainLogoPressStart('team2', event)"
@@ -2576,6 +2576,7 @@
               <div class="score-divider"></div>
               <button type="button" class="score-btn" id="score2Inc">+</button>
             </div>
+            <span class="team-short-display-upper" id="team2ShortDisplayUpper">---</span>
           </div>
         </div>
         <div class="score-blocks-container">
