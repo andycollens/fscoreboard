@@ -4932,6 +4932,14 @@
       // Таймер
       document.getElementById('playPauseBtn').onclick = function() {
         const isRunning = document.getElementById('playPauseIcon').innerHTML.includes('rect');
+        const isPenaltyActive = scoreboardState.penaltyActive;
+        
+        // Если режим пенальти активен, можно только ставить на паузу, но не запускать
+        if (isPenaltyActive && !isRunning) {
+          showNotification('Запуск таймера недоступен во время режима пенальти. Можно только поставить на паузу или изменить время кнопкой Set.', 'info');
+          return;
+        }
+        
         socket.emit('updateScoreboard', { 
           timerRunning: !isRunning 
         });
