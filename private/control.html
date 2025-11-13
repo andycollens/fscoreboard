@@ -3649,6 +3649,13 @@
       if (data.team2Short) scoreboardState.team2Short = data.team2Short;
       
       // Обновление логотипов - точно как в stadium.html
+      const previousTeam1Logo = state.team1Logo || '';
+      const previousTeam2Logo = state.team2Logo || '';
+      const previousTeam1Name = scoreboardState.team1Name || '';
+      const previousTeam2Name = scoreboardState.team2Name || '';
+      const previousTeam1Short = scoreboardState.team1Short || '';
+      const previousTeam2Short = scoreboardState.team2Short || '';
+      
       state.team1Logo = data.team1Logo || '';
       if (data.team1Logo && data.team1Logo.trim() !== '') {
         updateMainLogoMini('team1', data.team1Logo);
@@ -3663,8 +3670,20 @@
         showKitColorCircle('team2');
       }
       
-      // Перерисовка предустановок
-      if (!editingPresetId) {
+      // Сохраняем названия команд в состояние для сравнения
+      if (data.team1Name) scoreboardState.team1Name = data.team1Name;
+      if (data.team2Name) scoreboardState.team2Name = data.team2Name;
+      
+      // Перерисовка предустановок только если изменились данные команд
+      const teamDataChanged = 
+        previousTeam1Logo !== (data.team1Logo || '') ||
+        previousTeam2Logo !== (data.team2Logo || '') ||
+        previousTeam1Name !== (data.team1Name || '') ||
+        previousTeam2Name !== (data.team2Name || '') ||
+        previousTeam1Short !== (data.team1Short || '') ||
+        previousTeam2Short !== (data.team2Short || '');
+      
+      if (!editingPresetId && teamDataChanged) {
         renderTournamentPresets();
       }
       
