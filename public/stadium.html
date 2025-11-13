@@ -1436,6 +1436,36 @@ body.penalty-mode .penalty-score {
             }
         }
 
+        function updatePenaltyScoreFontSize(data) {
+            const penaltyScoreEl = document.querySelector('.penalty-score');
+            if (!penaltyScoreEl) return;
+            
+            const series = data && data.penaltySeries ? data.penaltySeries : null;
+            if (!series) {
+                penaltyScoreEl.style.fontSize = 'clamp(320px, 21vw, 400px)';
+                return;
+            }
+            
+            const goalsTeam1 = series.totalGoals && typeof series.totalGoals.team1 === 'number'
+                ? series.totalGoals.team1
+                : (series.attempts && Array.isArray(series.attempts.team1) 
+                    ? series.attempts.team1.filter(result => result === 'goal').length 
+                    : 0);
+            
+            const goalsTeam2 = series.totalGoals && typeof series.totalGoals.team2 === 'number'
+                ? series.totalGoals.team2
+                : (series.attempts && Array.isArray(series.attempts.team2) 
+                    ? series.attempts.team2.filter(result => result === 'goal').length 
+                    : 0);
+            
+            // Если хотя бы один счет двузначный (>= 10), уменьшаем размер шрифта
+            if (goalsTeam1 >= 10 || goalsTeam2 >= 10) {
+                penaltyScoreEl.style.fontSize = '300px';
+            } else {
+                penaltyScoreEl.style.fontSize = 'clamp(320px, 21vw, 400px)';
+            }
+        }
+
         window.getPenaltyMaxAttemptsFromData = getPenaltyMaxAttemptsFromData;
         window.clearStadiumPenalty = clearStadiumPenalty;
         window.renderStadiumPenalty = renderStadiumPenalty;
