@@ -3794,35 +3794,7 @@
       if (score2ValueEl) {
         score2ValueEl.textContent = typeof data.score2 === 'number' ? data.score2 : "0";
       }
-      if ('penaltyActive' in data || 'penaltyMode' in data || 'penaltyMaxAttempts' in data || 'penaltySeries' in data) {
-        if (typeof data.penaltyActive === 'boolean') {
-          scoreboardState.penaltyActive = data.penaltyActive;
-        }
-        if (typeof data.penaltyMode === 'string') {
-          scoreboardState.penaltyMode = data.penaltyMode === 'child' ? 'child' : 'adult';
-        }
-        if (typeof data.penaltyMaxAttempts === 'number') {
-          scoreboardState.penaltyMaxAttempts = data.penaltyMaxAttempts;
-        } else {
-          scoreboardState.penaltyMaxAttempts = getPenaltyMaxAttempts(scoreboardState.penaltyMode);
-        }
-        if (data.penaltySeries) {
-          scoreboardState.penaltySeries = data.penaltySeries;
-        } else if (data.penaltySeries === null) {
-          scoreboardState.penaltySeries = null;
-        }
-        const newPenaltySignature = scoreboardState.penaltyActive
-          ? JSON.stringify(scoreboardState.penaltySeries || null)
-          : null;
-        if (previousPenaltySignature !== newPenaltySignature) {
-          cancelPenaltyHold();
-        }
-        window.penaltyModeActive = !!scoreboardState.penaltyActive;
-        updatePenaltyControlsUI();
-      }
-      getCurrentScoreboardSnapshot();
-      
-      // Обновление команд - отображение информации
+      // Обновление команд - отображение информации (сначала обновляем команды, потом режим пенальти)
       const team1NameDisplay = document.getElementById('team1NameDisplay');
       const team1CityDisplay = document.getElementById('team1CityDisplay');
       const team1ShortDisplayUpper = document.getElementById('team1ShortDisplayUpper');
