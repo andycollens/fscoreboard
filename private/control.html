@@ -2220,6 +2220,30 @@
       border-color: #338af3;
     }
     
+    .team-display-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-top: 0;
+      width: 100%;
+    }
+    
+    .team-name-display {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2d3d;
+      text-align: center;
+      line-height: 1.4;
+    }
+    
+    .team-city-display {
+      font-size: 13px;
+      color: #61708a;
+      text-align: center;
+      line-height: 1.3;
+    }
+    
     .team-input-row .label-caption {
       font-size: 12px;
       color: #777;
@@ -2252,6 +2276,16 @@
             <span class="score-value" id="score1Value">0</span>
             <button type="button" class="score-btn" id="score1Inc">+</button>
           </div>
+          <div class="team-preset-row">
+            <span class="label-caption">Команда из турниров</span>
+            <select id="team1TournamentTeamSelect">
+              <option value="">-- Выберите команду --</option>
+            </select>
+          </div>
+          <div class="team-display-info">
+            <div class="team-name-display" id="team1NameDisplay">Не введено</div>
+            <div class="team-city-display" id="team1CityDisplay">Не введено</div>
+          </div>
           <div class="short-label-row">
             <span id="team1LogoMini" class="logo-mini-main" 
                   onclick="handleMainLogoClick('team1', event)"
@@ -2261,23 +2295,8 @@
                   ontouchstart="handleMainLogoPressStart('team1', event)"
                   ontouchend="handleMainLogoPressEnd('team1', event)"
                   ontouchcancel="handleMainLogoPressEnd('team1', event)"></span>
-            <input type="text" id="team1Short" maxlength="3" placeholder="ХОЗ" />
             <input type="color" id="kit1Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team1LogoUpload" accept="image/*" onchange="uploadMainLogo('team1', this)" style="display: none;">
-          </div>
-          <div class="team-input-row">
-            <span class="label-caption">Название команды</span>
-            <input type="text" id="team1Name" maxlength="40" placeholder="Не введено" />
-          </div>
-          <div class="city-input-row team-input-row">
-            <span class="label-caption">Город</span>
-            <input type="text" id="team1City" maxlength="30" placeholder="Не введено" />
-          </div>
-          <div class="team-preset-row">
-            <span class="label-caption">Команда из турниров</span>
-            <select id="team1TournamentTeamSelect">
-              <option value="">-- Выберите команду --</option>
-            </select>
           </div>
         </div>
         <div class="divider"></div>
@@ -2286,6 +2305,16 @@
             <button type="button" class="score-btn" id="score2Dec">-</button>
             <span class="score-value" id="score2Value">0</span>
             <button type="button" class="score-btn" id="score2Inc">+</button>
+          </div>
+          <div class="team-preset-row">
+            <span class="label-caption">Команда из турниров</span>
+            <select id="team2TournamentTeamSelect">
+              <option value="">-- Выберите команду --</option>
+            </select>
+          </div>
+          <div class="team-display-info">
+            <div class="team-name-display" id="team2NameDisplay">Не введено</div>
+            <div class="team-city-display" id="team2CityDisplay">Не введено</div>
           </div>
           <div class="short-label-row">
             <span id="team2LogoMini" class="logo-mini-main" 
@@ -2296,23 +2325,8 @@
                   ontouchstart="handleMainLogoPressStart('team2', event)"
                   ontouchend="handleMainLogoPressEnd('team2', event)"
                   ontouchcancel="handleMainLogoPressEnd('team2', event)"></span>
-            <input type="text" id="team2Short" maxlength="3" placeholder="ГОС" />
             <input type="color" id="kit2Color" value="#2b2b2b" class="kit-color">
             <input type="file" id="team2LogoUpload" accept="image/*" onchange="uploadMainLogo('team2', this)" style="display: none;">
-          </div>
-          <div class="team-input-row">
-            <span class="label-caption">Название команды</span>
-            <input type="text" id="team2Name" maxlength="40" placeholder="Не введено" />
-          </div>
-          <div class="city-input-row team-input-row">
-            <span class="label-caption">Город</span>
-            <input type="text" id="team2City" maxlength="30" placeholder="Не введено" />
-          </div>
-          <div class="team-preset-row">
-            <span class="label-caption">Команда из турниров</span>
-            <select id="team2TournamentTeamSelect">
-              <option value="">-- Выберите команду --</option>
-            </select>
           </div>
         </div>
       </div>
@@ -3251,8 +3265,7 @@
       
       // Блокировка полей при таймере
       const fieldsToDisable = [
-        'team1Name', 'team1City', 'team1Short', 'kit1Color',
-        'team2Name', 'team2City', 'team2Short', 'kit2Color'
+        'kit1Color', 'kit2Color'
       ];
       const penaltyModeActiveInUpdate = typeof data.penaltyActive === 'boolean'
         ? data.penaltyActive
@@ -3328,25 +3341,25 @@
       }
       getCurrentScoreboardSnapshot();
       
-      // Обновление команд - точно как в stadium.html (прямое обновление без проверок)
-      const team1NameEl = document.getElementById('team1Name');
-      const team1CityEl = document.getElementById('team1City');
-      const team1ShortEl = document.getElementById('team1Short');
-      const team2NameEl = document.getElementById('team2Name');
-      const team2CityEl = document.getElementById('team2City');
-      const team2ShortEl = document.getElementById('team2Short');
+      // Обновление команд - отображение информации
+      const team1NameDisplay = document.getElementById('team1NameDisplay');
+      const team1CityDisplay = document.getElementById('team1CityDisplay');
+      const team2NameDisplay = document.getElementById('team2NameDisplay');
+      const team2CityDisplay = document.getElementById('team2CityDisplay');
       const kit1ColorEl = document.getElementById('kit1Color');
       const kit2ColorEl = document.getElementById('kit2Color');
       
-      // Обновляем напрямую как в stadium.html
-      if (team1NameEl) team1NameEl.value = data.team1Name || '';
-      if (team2NameEl) team2NameEl.value = data.team2Name || '';
-      if (team1CityEl) team1CityEl.value = data.team1City || '';
-      if (team2CityEl) team2CityEl.value = data.team2City || '';
-      if (team1ShortEl) team1ShortEl.value = data.team1Short || '';
-      if (team2ShortEl) team2ShortEl.value = data.team2Short || '';
+      // Обновляем отображение
+      if (team1NameDisplay) team1NameDisplay.textContent = data.team1Name || 'Не введено';
+      if (team2NameDisplay) team2NameDisplay.textContent = data.team2Name || 'Не введено';
+      if (team1CityDisplay) team1CityDisplay.textContent = data.team1City || 'Не введено';
+      if (team2CityDisplay) team2CityDisplay.textContent = data.team2City || 'Не введено';
       if (kit1ColorEl) kit1ColorEl.value = data.kit1Color || '#2b2b2b';
       if (kit2ColorEl) kit2ColorEl.value = data.kit2Color || '#2b2b2b';
+      
+      // Сохраняем шорткоды в состояние
+      if (data.team1Short) scoreboardState.team1Short = data.team1Short;
+      if (data.team2Short) scoreboardState.team2Short = data.team2Short;
       
       // Обновление логотипов - точно как в stadium.html
       state.team1Logo = data.team1Logo || '';
@@ -4777,28 +4790,25 @@
         }
       };
 
-      // Автогенерация шорткодов
-      autoShortName('team1Name', 'team1Short', 'ХОЗ');
-      autoShortName('team2Name', 'team2Short', 'ГОС');
-
-      // Обработчики изменений для всех полей команд - синхронизация с сервером
-      const fields = [
-        'team1Name', 'team2Name', 'team1City', 'team2City',
-        'team1Short', 'team2Short', 'kit1Color', 'kit2Color'
-      ];
+      // Обработчики изменений для цветов футболок - синхронизация с сервером
+      const kit1ColorEl = document.getElementById('kit1Color');
+      const kit2ColorEl = document.getElementById('kit2Color');
       
-      fields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field) {
-          // Используем 'input' для текстовых полей и 'change' для color
-          const eventType = fieldId.includes('Color') ? 'change' : 'input';
-          field.addEventListener(eventType, () => {
-            if (ready) { // Отправляем только если готовы, чтобы избежать циклов
-              sendState();
-            }
-          });
-        }
-      });
+      if (kit1ColorEl) {
+        kit1ColorEl.addEventListener('change', () => {
+          if (ready) {
+            sendState();
+          }
+        });
+      }
+      
+      if (kit2ColorEl) {
+        kit2ColorEl.addEventListener('change', () => {
+          if (ready) {
+            sendState();
+          }
+        });
+      }
 
       // Обработка ввода времени
       document.getElementById('timeInput').addEventListener('input', function(e) {
@@ -4819,13 +4829,11 @@
       const team1Logo = state.team1Logo || '';
       const team2Logo = state.team2Logo || '';
       
-      // Получаем все значения из формы
-      const team1NameEl = document.getElementById('team1Name');
-      const team1CityEl = document.getElementById('team1City');
-      const team1ShortEl = document.getElementById('team1Short');
-      const team2NameEl = document.getElementById('team2Name');
-      const team2CityEl = document.getElementById('team2City');
-      const team2ShortEl = document.getElementById('team2Short');
+      // Получаем значения из display элементов и цветов
+      const team1NameDisplay = document.getElementById('team1NameDisplay');
+      const team1CityDisplay = document.getElementById('team1CityDisplay');
+      const team2NameDisplay = document.getElementById('team2NameDisplay');
+      const team2CityDisplay = document.getElementById('team2CityDisplay');
       const kit1ColorEl = document.getElementById('kit1Color');
       const kit2ColorEl = document.getElementById('kit2Color');
       
@@ -4833,12 +4841,13 @@
       // ВАЖНО: отправляем все поля, чтобы сервер сохранил полное состояние
       const stateUpdate = {};
       
-      if (team1NameEl) stateUpdate.team1Name = team1NameEl.value || '';
-      if (team1CityEl) stateUpdate.team1City = team1CityEl.value || '';
-      if (team1ShortEl) stateUpdate.team1Short = team1ShortEl.value || '';
-      if (team2NameEl) stateUpdate.team2Name = team2NameEl.value || '';
-      if (team2CityEl) stateUpdate.team2City = team2CityEl.value || '';
-      if (team2ShortEl) stateUpdate.team2Short = team2ShortEl.value || '';
+      if (team1NameDisplay) stateUpdate.team1Name = team1NameDisplay.textContent !== 'Не введено' ? team1NameDisplay.textContent : '';
+      if (team1CityDisplay) stateUpdate.team1City = team1CityDisplay.textContent !== 'Не введено' ? team1CityDisplay.textContent : '';
+      if (team2NameDisplay) stateUpdate.team2Name = team2NameDisplay.textContent !== 'Не введено' ? team2NameDisplay.textContent : '';
+      if (team2CityDisplay) stateUpdate.team2City = team2CityDisplay.textContent !== 'Не введено' ? team2CityDisplay.textContent : '';
+      // Шорткоды берем из текущего состояния, так как они не отображаются
+      stateUpdate.team1Short = scoreboardState.team1Short || '';
+      stateUpdate.team2Short = scoreboardState.team2Short || '';
       if (kit1ColorEl) stateUpdate.kit1Color = kit1ColorEl.value || '#2b2b2b';
       if (kit2ColorEl) stateUpdate.kit2Color = kit2ColorEl.value || '#2b2b2b';
       
@@ -5832,16 +5841,25 @@
         team2Logo = preset.team2Logo;
       }
       
-      // Применение данных предустановки к основным полям
-      document.getElementById('team1Name').value = preset.team1Name;
-      document.getElementById('team1City').value = preset.team1City;
-      document.getElementById('team1Short').value = preset.team1Short;
-      document.getElementById('kit1Color').value = preset.kit1Color;
+      // Применение данных предустановки к display элементам
+      const team1NameDisplay = document.getElementById('team1NameDisplay');
+      const team1CityDisplay = document.getElementById('team1CityDisplay');
+      const team2NameDisplay = document.getElementById('team2NameDisplay');
+      const team2CityDisplay = document.getElementById('team2CityDisplay');
       
-      document.getElementById('team2Name').value = preset.team2Name;
-      document.getElementById('team2City').value = preset.team2City;
-      document.getElementById('team2Short').value = preset.team2Short;
-      document.getElementById('kit2Color').value = preset.kit2Color;
+      if (team1NameDisplay) team1NameDisplay.textContent = preset.team1Name || 'Не введено';
+      if (team1CityDisplay) team1CityDisplay.textContent = preset.team1City || 'Не введено';
+      if (team2NameDisplay) team2NameDisplay.textContent = preset.team2Name || 'Не введено';
+      if (team2CityDisplay) team2CityDisplay.textContent = preset.team2City || 'Не введено';
+      
+      // Сохраняем шорткоды в состояние
+      scoreboardState.team1Short = preset.team1Short || '';
+      scoreboardState.team2Short = preset.team2Short || '';
+      
+      const kit1ColorEl = document.getElementById('kit1Color');
+      const kit2ColorEl = document.getElementById('kit2Color');
+      if (kit1ColorEl) kit1ColorEl.value = preset.kit1Color || '#2b2b2b';
+      if (kit2ColorEl) kit2ColorEl.value = preset.kit2Color || '#2b2b2b';
       
       // Копирование логотипов из турнира (создание уникальных копий для основной панели)
       // Это НЕ изменяет логотипы команд в турнире, только применяет их к панели
@@ -6720,16 +6738,19 @@
       const wasReady = ready;
       ready = false;
 
-      const nameInput = document.getElementById(`${teamKey}Name`);
-      const cityInput = document.getElementById(`${teamKey}City`);
-      const shortInput = document.getElementById(`${teamKey}Short`);
+      const nameDisplay = document.getElementById(`${teamKey}NameDisplay`);
+      const cityDisplay = document.getElementById(`${teamKey}CityDisplay`);
       const kitInput = document.getElementById(teamKey === 'team1' ? 'kit1Color' : 'kit2Color');
 
-      if (nameInput) nameInput.value = team.name || '';
-      if (cityInput) cityInput.value = team.city || '';
-      if (shortInput) {
-        const fallbackShort = team.short || (team.name ? team.name.replace(/[^A-Za-zА-Яа-я0-9]/g, '').slice(0, 3).toUpperCase() : '');
-        shortInput.value = fallbackShort;
+      if (nameDisplay) nameDisplay.textContent = team.name || 'Не введено';
+      if (cityDisplay) cityDisplay.textContent = team.city || 'Не введено';
+      
+      // Сохраняем шорткод в состояние для отправки на сервер
+      const fallbackShort = team.short || (team.name ? team.name.replace(/[^A-Za-zА-Яа-я0-9]/g, '').slice(0, 3).toUpperCase() : '');
+      if (teamKey === 'team1') {
+        scoreboardState.team1Short = fallbackShort;
+      } else {
+        scoreboardState.team2Short = fallbackShort;
       }
 
       const kitColor = team.kitColor || '#2b2b2b';
@@ -6777,10 +6798,10 @@
           return;
         }
 
-        const nameInput = document.getElementById(`${key}Name`);
-        const cityInput = document.getElementById(`${key}City`);
-        const name = nameInput ? nameInput.value.trim() : '';
-        const city = cityInput ? cityInput.value.trim() : '';
+        const nameDisplay = document.getElementById(`${key}NameDisplay`);
+        const cityDisplay = document.getElementById(`${key}CityDisplay`);
+        const name = nameDisplay && nameDisplay.textContent !== 'Не введено' ? nameDisplay.textContent.trim() : '';
+        const city = cityDisplay && cityDisplay.textContent !== 'Не введено' ? cityDisplay.textContent.trim() : '';
 
         if (!name) {
           select.value = '';
