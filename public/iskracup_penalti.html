@@ -71,13 +71,61 @@
       font-size: 1.25em;
       letter-spacing: 2px;
       text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
-    .score1-section, .score2-section {
-      width: 40px;
+    .team1-section {
+      justify-content: flex-start;
+    }
+    .team2-section {
+      justify-content: flex-end;
+    }
+    .match-score {
+      font-size: 0.7em;
+      font-weight: normal;
+      opacity: 0.9;
+    }
+    .penalty-section {
+      width: 120px;
       background: #2b2b2b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 2px 0;
+    }
+    .penalty-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .penalty-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(115, 115, 115, 0.8);
+    }
+    .penalty-dot.goal {
+      background: #34c759;
+    }
+    .penalty-dot.miss {
+      background: #ff3b30;
+    }
+    .penalty-dot.pending {
+      background: rgba(115, 115, 115, 0.8);
+    }
+    .penalty-dot.pending.active {
+      background: rgba(240, 240, 240, 0.9);
+    }
+    .penalty-score {
       color: #fff;
       font-size: 1.6em;
       font-weight: normal;
+      line-height: 1;
     }
     .divider-section {
       width: 70px;
@@ -107,18 +155,30 @@
     <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">00:00</span></div>
     <!-- Kit 1 section: displays the color of the first team's kit -->
     <div class="section kit1-section" id="kit1"></div>
-    <!-- Team 1 section: displays the short name of the first team, now lifted by 3px -->
-    <div class="section team1-section"><span id="team1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">ABC</span></div>
-    <!-- Score 1 section: displays the score of the first team, now lifted by 3px -->
-    <div class="section score1-section"><span id="score1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">0</span></div>
+    <!-- Team 1 section: displays the short name and match score of the first team -->
+    <div class="section team1-section">
+      <span id="team1" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: inherit; transform: translateY(2px);">ABC</span>
+      <span class="match-score" id="matchScore1" style="transform: translateY(2px);">(0)</span>
+    </div>
+    <!-- Penalty section for team 1 -->
+    <div class="section penalty-section">
+      <div class="penalty-dots" id="penaltyDots1"></div>
+      <div class="penalty-score" id="penaltyScore1">0</div>
+    </div>
     <!-- Divider section with ISKRA CUP logo -->
     <div class="section divider-section">
       <img src="/public/img/iskracup_scoreboard_logo.png" alt="ISKRA CUP" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; max-height: none; max-width: none; width: auto; height: auto;">
     </div>
-    <!-- Score 2 section: displays the score of the second team, now lifted by 3px -->
-    <div class="section score2-section"><span id="score2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">0</span></div>
-    <!-- Team 2 section: displays the short name of the second team, now lifted by 3px -->
-    <div class="section team2-section"><span id="team2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">XYZ</span></div>
+    <!-- Penalty section for team 2 -->
+    <div class="section penalty-section">
+      <div class="penalty-dots" id="penaltyDots2"></div>
+      <div class="penalty-score" id="penaltyScore2">0</div>
+    </div>
+    <!-- Team 2 section: displays the match score and short name of the second team -->
+    <div class="section team2-section">
+      <span class="match-score" id="matchScore2" style="transform: translateY(2px);">(0)</span>
+      <span id="team2" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: inherit; transform: translateY(2px);">XYZ</span>
+    </div>
     <!-- Kit 2 section: displays the color of the second team's kit -->
     <div class="section kit2-section" id="kit2"></div>
   </div>
@@ -131,6 +191,81 @@
     // Initialize socket.io client
     const socket = io();
 
+    function getPenaltyMaxAttempts(data) {
+      if (data && typeof data.penaltyMaxAttempts === 'number' && data.penaltyMaxAttempts > 0) {
+        return data.penaltyMaxAttempts;
+      }
+      if (data && typeof data.penaltyMode === 'string' && data.penaltyMode === 'child') {
+        return 3;
+      }
+      return 5;
+    }
+
+    function renderPenaltyDots(teamKey, data) {
+      const dotsContainer = document.getElementById(teamKey === 'team1' ? 'penaltyDots1' : 'penaltyDots2');
+      const scoreEl = document.getElementById(teamKey === 'team1' ? 'penaltyScore1' : 'penaltyScore2');
+      
+      if (!dotsContainer || !scoreEl) return;
+
+      const series = data && data.penaltySeries ? data.penaltySeries : null;
+      const maxAttempts = series && typeof series.maxAttempts === 'number'
+        ? series.maxAttempts
+        : getPenaltyMaxAttempts(data);
+
+      const attempts = series && series.attempts && Array.isArray(series.attempts[teamKey])
+        ? series.attempts[teamKey]
+        : [];
+
+      const totalGoals = series && series.totalGoals && typeof series.totalGoals[teamKey] === 'number'
+        ? series.totalGoals[teamKey]
+        : attempts.filter(result => result === 'goal').length;
+
+      scoreEl.textContent = totalGoals.toString();
+
+      const finished = !!(series && series.finished);
+      const currentTeam = series && !series.finished ? series.currentTeam : null;
+      const shouldMarkCurrent = !finished && series && currentTeam === teamKey;
+      const activeSlotIndex = shouldMarkCurrent ? (attempts.length % maxAttempts) : null;
+
+      const slotStates = new Array(Math.max(1, maxAttempts)).fill(null);
+      attempts.forEach((result, idx) => {
+        const slotIndex = idx % maxAttempts;
+        slotStates[slotIndex] = result;
+      });
+
+      dotsContainer.innerHTML = '';
+
+      slotStates.forEach((slotResult, slotIndex) => {
+        const dot = document.createElement('div');
+        dot.className = 'penalty-dot';
+
+        if (slotResult === 'goal') {
+          dot.classList.add('goal');
+        } else if (slotResult === 'miss') {
+          dot.classList.add('miss');
+        } else {
+          dot.classList.add('pending');
+        }
+
+        if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
+          dot.classList.add('active');
+          if (slotResult !== 'goal' && slotResult !== 'miss') {
+            dot.classList.add('pending');
+          }
+        }
+
+        dotsContainer.appendChild(dot);
+      });
+
+      if (!series && teamKey === (series && series.firstTeam ? series.firstTeam : 'team1') && dotsContainer.children.length === 0) {
+        for (let i = 0; i < maxAttempts; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'penalty-dot pending';
+          dotsContainer.appendChild(dot);
+        }
+      }
+    }
+
     // Listen for 'scoreboardUpdate' events from the server
     socket.on('scoreboardUpdate', (data) => {
       // Update timer display
@@ -141,9 +276,14 @@
       // Update team names
       document.getElementById('team1').textContent = data.team1Short || defaultTeamShort;
       document.getElementById('team2').textContent = data.team2Short || defaultTeamShort;
-      // Update scores, ensuring they are numbers
-      document.getElementById('score1').textContent = typeof data.score1 === 'number' ? data.score1 : "0";
-      document.getElementById('score2').textContent = typeof data.score2 === 'number' ? data.score2 : "0";
+      // Update match scores in brackets
+      const score1 = typeof data.score1 === 'number' ? data.score1 : 0;
+      const score2 = typeof data.score2 === 'number' ? data.score2 : 0;
+      document.getElementById('matchScore1').textContent = `(${score1})`;
+      document.getElementById('matchScore2').textContent = `(${score2})`;
+      // Update penalty displays
+      renderPenaltyDots('team1', data);
+      renderPenaltyDots('team2', data);
     });
   </script>
 </body>
