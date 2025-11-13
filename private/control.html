@@ -5272,11 +5272,11 @@
           
           const section = document.createElement('div');
           section.className = 'tournament-day-section';
-          section.style.cssText = 'width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 0 2px;';
+          section.style.cssText = 'width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 0;';
           section.innerHTML = `
-            <div class="day-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0; box-sizing: border-box; width: 100%; max-width: 100%; padding: 6px 8px; flex-wrap: nowrap; cursor: pointer;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();">
+            <div class="day-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 0; box-sizing: border-box; width: 100%; max-width: 100%; padding: 6px 8px 6px 0; flex-wrap: nowrap; cursor: pointer;" onclick="toggleDayPresets('${tournament.id}', '${dayKey}'); event.stopPropagation();">
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; flex: 1; min-width: 0; padding-left: 0; margin-left: 0;">
-                <span class="day-toggle-arrow ${arrowClass}" style="user-select: none; padding: 0; display: inline-block; box-sizing: border-box; flex-shrink: 0; vertical-align: middle; margin-left: 0; margin-right: 4px;"></span>
+                <span class="day-toggle-arrow ${arrowClass}" style="user-select: none; padding: 0; display: inline-block; box-sizing: border-box; flex-shrink: 0; vertical-align: middle; margin-left: 0; margin-right: 4px; position: relative; left: 0;"></span>
                 <div style="font-weight: 600; color: #333; white-space: nowrap; flex-shrink: 0;">${label}</div>
               </div>
               <span class="preset-edit-link" style="flex-shrink: 0;" onclick="openAddPresetFromTournament('${tournament.id}', '${iso || ''}'); event.stopPropagation();" title="Добавить пресет">+add</span>
