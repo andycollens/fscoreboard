@@ -2065,8 +2065,8 @@
     }
     
     .logo-mini-main {
-      width: 30px;
-      height: 30px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
@@ -2074,15 +2074,12 @@
       flex-shrink: 0;
       cursor: pointer;
       position: relative;
-      border: 2px solid #c5d9ff;
-      background: #fff;
-      box-shadow: 0 1px 3px rgba(22, 61, 116, 0.1);
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      border: none;
+      background: none;
+      transition: transform 0.2s;
     }
     
     .logo-mini-main:hover {
-      border-color: #338af3;
-      box-shadow: 0 2px 6px rgba(51, 138, 243, 0.2);
       transform: scale(1.05);
     }
     
@@ -2235,7 +2232,7 @@
       display: flex;
       flex-direction: column;
       gap: 0;
-      margin-top: 0;
+      margin-top: auto;
       width: 100%;
     }
     
@@ -2267,7 +2264,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 0;
       margin-top: 0;
       width: 100%;
     }
@@ -2278,6 +2275,13 @@
       color: #1f2d3d;
       text-align: center;
       line-height: 1.4;
+      height: 2.8em;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: break-word;
     }
     
     .team-city-display {
@@ -2285,6 +2289,7 @@
       color: #61708a;
       text-align: center;
       line-height: 1.3;
+      margin-top: 4px;
     }
     
     .team-short-display {
