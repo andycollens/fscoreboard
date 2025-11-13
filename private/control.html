@@ -6073,17 +6073,17 @@
       // Применение данных предустановки к display элементам
       const team1NameDisplay = document.getElementById('team1NameDisplay');
       const team1CityDisplay = document.getElementById('team1CityDisplay');
-      const team1ShortDisplay = document.getElementById('team1ShortDisplay');
+      const team1ShortDisplayUpper = document.getElementById('team1ShortDisplayUpper');
       const team2NameDisplay = document.getElementById('team2NameDisplay');
       const team2CityDisplay = document.getElementById('team2CityDisplay');
-      const team2ShortDisplay = document.getElementById('team2ShortDisplay');
+      const team2ShortDisplayUpper = document.getElementById('team2ShortDisplayUpper');
       
       if (team1NameDisplay) team1NameDisplay.textContent = preset.team1Name || 'Не введено';
       if (team1CityDisplay) team1CityDisplay.textContent = preset.team1City || 'Не введено';
-      if (team1ShortDisplay) team1ShortDisplay.textContent = preset.team1Short || '---';
+      if (team1ShortDisplayUpper) team1ShortDisplayUpper.textContent = preset.team1Short || '---';
       if (team2NameDisplay) team2NameDisplay.textContent = preset.team2Name || 'Не введено';
       if (team2CityDisplay) team2CityDisplay.textContent = preset.team2City || 'Не введено';
-      if (team2ShortDisplay) team2ShortDisplay.textContent = preset.team2Short || '---';
+      if (team2ShortDisplayUpper) team2ShortDisplayUpper.textContent = preset.team2Short || '---';
       
       // Сохраняем шорткоды в состояние
       scoreboardState.team1Short = preset.team1Short || '';
