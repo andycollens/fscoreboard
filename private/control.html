@@ -3017,7 +3017,7 @@
       const controls = document.getElementById('penaltyControls');
       const board = document.getElementById('penaltySeriesBoard');
       const undoBtn = document.getElementById('penaltyUndoBtn');
-      const penaltyModeButtons = document.querySelectorAll('.penalty-mode-button');
+      const penaltyModeButtons = document.querySelectorAll('.penalty-mode-btn');
       const playPauseBtn = document.getElementById('playPauseBtn');
       const timerActive = !!timerRunning;
 
@@ -3181,7 +3181,7 @@
         });
       }
 
-      document.querySelectorAll('.penalty-mode-button').forEach(button => {
+      document.querySelectorAll('.penalty-mode-btn').forEach(button => {
         button.addEventListener('click', () => {
           if (timerRunning && scoreboardState.penaltyActive) {
             showNotification('Изменение формата серии заблокировано во время активного таймера', 'info');
