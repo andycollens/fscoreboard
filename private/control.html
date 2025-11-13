@@ -739,6 +739,14 @@
       border-radius: 12px;
     }
     
+    .score-upper-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+    
     .score-upper-section {
       display: flex;
       justify-content: center;
@@ -2376,19 +2384,21 @@
     </div>
     <form id="controlForm" autocomplete="off" spellcheck="false">
       <div class="score-row">
-        <div class="score-upper-section">
-          <div class="score-controls">
-            <button type="button" class="score-btn" id="score1Dec">-</button>
-            <span class="score-value" id="score1Value">0</span>
-            <button type="button" class="score-btn" id="score1Inc">+</button>
+        <div class="score-upper-row">
+          <div class="score-upper-section">
+            <div class="score-controls">
+              <button type="button" class="score-btn" id="score1Dec">-</button>
+              <span class="score-value" id="score1Value">0</span>
+              <button type="button" class="score-btn" id="score1Inc">+</button>
+            </div>
           </div>
-        </div>
-        <div class="divider-upper"></div>
-        <div class="score-upper-section">
-          <div class="score-controls">
-            <button type="button" class="score-btn" id="score2Dec">-</button>
-            <span class="score-value" id="score2Value">0</span>
-            <button type="button" class="score-btn" id="score2Inc">+</button>
+          <div class="divider-upper"></div>
+          <div class="score-upper-section">
+            <div class="score-controls">
+              <button type="button" class="score-btn" id="score2Dec">-</button>
+              <span class="score-value" id="score2Value">0</span>
+              <button type="button" class="score-btn" id="score2Inc">+</button>
+            </div>
           </div>
         </div>
         <div class="score-blocks-container">
