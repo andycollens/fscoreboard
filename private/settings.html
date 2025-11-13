@@ -318,11 +318,19 @@
     
     .add-tournament-form,
     .add-team-form {
-      background: #e3f2fd;
-      border: 2px solid #2196f3;
-      border-radius: 8px;
-      padding: 20px;
-      margin-top: 20px;
+      background: #eef4ff;
+      border: 1px solid #c5d9ff;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 8px 0;
+      box-shadow: 0 2px 8px rgba(22, 61, 116, 0.08);
+    }
+    
+    .add-team-form h4 {
+      margin: 0 0 12px 0;
+      color: #163d74;
+      font-weight: 600;
+      font-size: 14px;
     }
     
     .form-row {
@@ -603,43 +611,43 @@
               <span class="team-delete-link" onclick="deleteTournament('${tournament.id}')">delete</span>
             </div>
           </div>
+          <div id="addTeamForm-${tournament.id}" class="add-team-form hidden">
+            <h4>Добавить команду в турнир</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Название команды *</label>
+                <input type="text" id="newTeamName-${tournament.id}" placeholder="Название команды" maxlength="40">
+              </div>
+              <div class="form-group">
+                <label>Город</label>
+                <input type="text" id="newTeamCity-${tournament.id}" placeholder="Город" maxlength="30">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Шорткод</label>
+                <input type="text" id="newTeamShort-${tournament.id}" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;">
+              </div>
+              <div class="form-group">
+                <label>Цвет формы</label>
+                <input type="color" id="newTeamKitColor-${tournament.id}" value="#2b2b2b">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Логотип</label>
+                <input type="file" id="newTeamLogo-${tournament.id}" accept="image/*" onchange="previewTeamLogo('${tournament.id}', this)">
+                <div id="teamLogoPreview-${tournament.id}" class="logo-preview"></div>
+              </div>
+            </div>
+            <div class="form-buttons">
+              <button class="btn btn-primary" onclick="saveNewTeam('${tournament.id}')">Добавить</button>
+              <button class="btn btn-secondary" onclick="cancelAddTeam('${tournament.id}')">Отмена</button>
+            </div>
+          </div>
           <div class="tournament-teams" id="teams-${tournament.id}">
             <div class="team-list">
               ${teamsHtml}
-            </div>
-            <div id="addTeamForm-${tournament.id}" class="add-team-form hidden">
-              <h4>Добавить команду в турнир</h4>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Название команды *</label>
-                  <input type="text" id="newTeamName-${tournament.id}" placeholder="Название команды" maxlength="40">
-                </div>
-                <div class="form-group">
-                  <label>Город</label>
-                  <input type="text" id="newTeamCity-${tournament.id}" placeholder="Город" maxlength="30">
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Шорткод</label>
-                  <input type="text" id="newTeamShort-${tournament.id}" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;">
-                </div>
-                <div class="form-group">
-                  <label>Цвет формы</label>
-                  <input type="color" id="newTeamKitColor-${tournament.id}" value="#2b2b2b">
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Логотип</label>
-                  <input type="file" id="newTeamLogo-${tournament.id}" accept="image/*" onchange="previewTeamLogo('${tournament.id}', this)">
-                  <div id="teamLogoPreview-${tournament.id}" class="logo-preview"></div>
-                </div>
-              </div>
-              <div class="form-buttons">
-                <button class="btn btn-primary" onclick="saveNewTeam('${tournament.id}')">Добавить</button>
-                <button class="btn btn-secondary" onclick="cancelAddTeam('${tournament.id}')">Отмена</button>
-              </div>
             </div>
           </div>
         `;
