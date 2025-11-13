@@ -289,11 +289,9 @@
           dot.textContent = '';
         }
 
-        if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
+        if (activeSlotIndex !== null && slotIndex === activeSlotIndex && slotResult === null) {
           dot.classList.add('active');
-          if (slotResult !== 'goal' && slotResult !== 'miss') {
-            dot.classList.add('pending');
-          }
+          dot.classList.add('pending');
         }
 
         dotsContainer.appendChild(dot);
