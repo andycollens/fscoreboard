@@ -296,10 +296,23 @@
       gap: 12px;
     }
     
+    .penalty-stadium-mode-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .penalty-stadium-mode-label {
+      font-size: 12px;
+      color: #61708a;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
     .penalty-stadium-mode-buttons {
       display: inline-flex;
       gap: 0;
-      margin-top: 8px;
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid #d8e3f6;
@@ -307,10 +320,13 @@
       visibility: visible;
     }
     
+    .penalty-controls.hidden .penalty-stadium-mode-wrapper {
+      opacity: 0.3;
+    }
+    
     .penalty-controls.hidden .penalty-stadium-mode-buttons {
       display: inline-flex !important;
       visibility: visible !important;
-      opacity: 0.3;
     }
     
     .penalty-stadium-mode-btn {
@@ -2598,9 +2614,12 @@
         </div>
         <button type="button" id="penaltyUndoBtn" class="penalty-undo-btn" disabled>Отменить удар</button>
       </div>
-      <div class="penalty-stadium-mode-buttons" id="penaltyStadiumModeButtons">
-        <button type="button" id="penaltyNormalStadiumBtn" class="penalty-stadium-mode-btn active">📺 Обычное табло</button>
-        <button type="button" id="penaltyPenaltyStadiumBtn" class="penalty-stadium-mode-btn">📺 Пенальти на табло</button>
+      <div class="penalty-stadium-mode-wrapper">
+        <span class="penalty-stadium-mode-label">Режим табло:</span>
+        <div class="penalty-stadium-mode-buttons" id="penaltyStadiumModeButtons">
+          <button type="button" id="penaltyNormalStadiumBtn" class="penalty-stadium-mode-btn active">📺 Обычное табло</button>
+          <button type="button" id="penaltyPenaltyStadiumBtn" class="penalty-stadium-mode-btn">📺 Пенальти на табло</button>
+        </div>
       </div>
       <div class="penalty-mode-options">
         <button type="button" class="penalty-mode-button" data-mode="child">Детский режим (3 удара)</button>
