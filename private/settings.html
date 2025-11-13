@@ -695,6 +695,8 @@
           teamsDiv.classList.add('expanded');
           expandedTournaments.add(tournamentId);
         }
+        // Прокручиваем к форме для удобства
+        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
     
