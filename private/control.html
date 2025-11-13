@@ -2125,9 +2125,22 @@
     }
     
     .disabled-field {
-      opacity: 0.6;
+      opacity: 0.4;
       pointer-events: none;
-      background-color: #f8f9fa !important;
+      cursor: not-allowed !important;
+      filter: grayscale(0.5);
+    }
+    
+    .score-btn.disabled-field {
+      background: #a8c0f0 !important;
+      opacity: 0.5;
+      filter: grayscale(0.3);
+    }
+    
+    .kit-color.disabled-field {
+      opacity: 0.4;
+      filter: grayscale(0.6);
+      cursor: not-allowed !important;
     }
     
     .preset-card.editable {
