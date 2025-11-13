@@ -2888,6 +2888,7 @@
       const board = document.getElementById('penaltySeriesBoard');
       const undoBtn = document.getElementById('penaltyUndoBtn');
       const penaltyModeButtons = document.querySelectorAll('.penalty-mode-button');
+      const playPauseBtn = document.getElementById('playPauseBtn');
       const timerActive = !!timerRunning;
 
       if (!toggle || !controls) return;
@@ -2915,6 +2916,20 @@
         button.disabled = timerActive && scoreboardState.penaltyActive;
         button.classList.toggle('disabled-field', button.disabled);
       });
+
+      // Блокируем кнопку play/pause, если режим пенальти активен и таймер не запущен
+      if (playPauseBtn) {
+        const shouldDisablePlay = scoreboardState.penaltyActive && !timerActive;
+        if (shouldDisablePlay) {
+          playPauseBtn.classList.add('disabled-field');
+          playPauseBtn.style.opacity = '0.5';
+          playPauseBtn.style.cursor = 'not-allowed';
+        } else {
+          playPauseBtn.classList.remove('disabled-field');
+          playPauseBtn.style.opacity = '';
+          playPauseBtn.style.cursor = '';
+        }
+      }
 
       syncingPenaltyControls = false;
 
