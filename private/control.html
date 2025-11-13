@@ -659,16 +659,15 @@
       opacity: 0.6;
     }
 
+    .penalty-attempt {
+      box-sizing: border-box;
+      border: 2px solid transparent;
+    }
+    
     .penalty-attempt.active {
       background: #d9deea;
       box-shadow: 0 2px 6px rgba(171, 181, 199, 0.35);
-      outline: 2px solid rgba(171, 181, 199, 0.35);
-      outline-offset: -2px;
-      box-sizing: border-box;
-    }
-    
-    .penalty-attempt {
-      box-sizing: border-box;
+      border-color: rgba(171, 181, 199, 0.35);
     }
 
     .penalty-attempt.goal::after,
