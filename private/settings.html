@@ -1997,6 +1997,11 @@
             stadiumTokenInput.value = config.stadiumToken || '';
           }
           
+          const stadiumTournamentTitleInput = document.getElementById('stadiumTournamentTitleInput');
+          if (stadiumTournamentTitleInput) {
+            stadiumTournamentTitleInput.value = config.tournamentTitle || 'ISKRA CUP 2025';
+          }
+          
         if (stadiumLink) {
           const currentUrl = window.location.origin;
           const stadiumUrl = `${currentUrl}/stadium.html?token=${encodeURIComponent(config.stadiumToken || '')}`;
@@ -2348,10 +2353,10 @@
     }
   </script>
 
-  <!-- Секция Секрет для Stadium (менее заметная, внизу страницы) -->
+  <!-- Секция Настройки Stadium (менее заметная, внизу страницы) -->
   <div class="section stadium-token-section">
     <div class="section-header">
-      <h2>Секрет для Stadium</h2>
+      <h2>Настройки Stadium</h2>
     </div>
     
     <div style="margin-bottom: 12px;">
@@ -2363,6 +2368,14 @@
       <div style="margin-top: 8px; padding: 8px; background: #eef4ff; border-radius: 8px; font-size: 12px; color: #61708a;">
         <strong>Ссылка на Stadium:</strong><br>
         <a id="stadiumLink" href="#" target="_blank" style="color: #338af3; word-break: break-all;">Загрузка...</a>
+      </div>
+    </div>
+    
+    <div style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 6px;">Название турнира на табло:</label>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input type="text" id="stadiumTournamentTitleInput" style="flex: 1; padding: 6px 10px; border: 1px solid #c5d9ff; border-radius: 8px; font-size: 13px; background: #fff;" placeholder="Например: ISKRA CUP 2025">
+        <button class="btn btn-primary" onclick="saveStadiumTournamentTitle()">Сохранить</button>
       </div>
     </div>
   </div>

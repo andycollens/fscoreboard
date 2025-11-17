@@ -1231,6 +1231,12 @@ app.put('/api/config', (req, res) => {
       winnersResolved: currentConfig.winnersResolved || null
     });
   }
+  if (req.body.tournamentTitle !== undefined) {
+    // Сохраняем название турнира
+    currentConfig.tournamentTitle = req.body.tournamentTitle;
+    // Отправляем событие всем подключенным клиентам для обновления названия
+    io.emit('scoreboardUpdate', { tournamentTitle: req.body.tournamentTitle });
+  }
   if (req.body.graphicStyle !== undefined) {
     // Сохраняем стиль графического оформления
     currentConfig.graphicStyle = req.body.graphicStyle;
