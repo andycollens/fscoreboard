@@ -370,7 +370,7 @@ verify_update() {
     
     # Проверяем HTTP ответ
     local port=$(grep -o 'PORT=[0-9]*' /opt/fscoreboard/.env 2>/dev/null | cut -d'=' -f2 || echo "3002")
-    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$port/public/iskracup_scoreboard.html" | grep -q "200"; then
+    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$port/scoreboard.html" | grep -q "200"; then
         print_success "HTTP сервер отвечает"
     else
         print_warning "HTTP сервер не отвечает (возможно, еще загружается)"
@@ -453,15 +453,12 @@ print_results() {
     echo -e "  ${GREEN}http://$current_domain/private/control.html?token=$current_token${NC}"
     echo ""
     echo -e "${YELLOW}Страницы табло:${NC}"
-    echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (основное табло)"
+    echo -e "  ${GREEN}http://$current_domain/scoreboard.html${NC}  (основное табло)"
+    echo -e "  ${GREEN}http://$current_domain/penalti.html${NC}  (табло пенальти)"
+    echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (табло для vMix)"
     echo -e "  ${GREEN}http://$current_domain/stadium.html?token=$current_stadium_token${NC}  (стадион)"
-    echo -e "  ${GREEN}http://$current_domain/public/htbreak.html${NC}  (перерыв)"
-    echo -e "  ${GREEN}http://$current_domain/public/preloader.html${NC}  (загрузочный экран)"
-    echo ""
-    echo -e "${YELLOW}ISKRA CUP страницы:${NC}"
-    echo -e "  ${GREEN}http://$current_domain/public/iskracup_scoreboard.html${NC}  (табло)"
-    echo -e "  ${GREEN}http://$current_domain/public/iskracup_break.html${NC}  (перерыв)"
-    echo -e "  ${GREEN}http://$current_domain/public/iskracup_prematch.html${NC}  (прематч)"
+    echo -e "  ${GREEN}http://$current_domain/prematch.html${NC}  (прематч)"
+    echo -e "  ${GREEN}http://$current_domain/break.html${NC}  (перерыв)"
     
     echo -e "\n${CYAN}⚙️  КОНФИГУРАЦИЯ:${NC}"
     echo -e "${YELLOW}Порт:${NC}               $current_port"

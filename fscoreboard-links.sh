@@ -114,7 +114,7 @@ check_status() {
     fi
     
     # Проверяем HTTP ответ
-    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$PORT/public/iskracup_scoreboard.html" | grep -q "200"; then
+    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$PORT/scoreboard.html" | grep -q "200"; then
         print_success "HTTP сервер отвечает"
     else
         print_error "HTTP сервер не отвечает"
@@ -135,14 +135,12 @@ print_links() {
     echo -e "  ${GREEN}http://$DOMAIN/private/settings.html?token=$TOKEN${NC}"
     
     echo -e "\n${YELLOW}📺 ОСНОВНЫЕ СТРАНИЦЫ ТАБЛО:${NC}"
-    echo -e "  ${GREEN}http://$DOMAIN/public/scoreboard_vmix.html${NC}  (основное табло)"
+    echo -e "  ${GREEN}http://$DOMAIN/scoreboard.html${NC}  (основное табло)"
+    echo -e "  ${GREEN}http://$DOMAIN/penalti.html${NC}  (табло пенальти)"
+    echo -e "  ${GREEN}http://$DOMAIN/public/scoreboard_vmix.html${NC}  (табло для vMix)"
     echo -e "  ${GREEN}http://$DOMAIN/stadium.html?token=$STADIUM_TOKEN${NC}  (стадион)"
-    echo -e "  ${GREEN}http://$DOMAIN/public/preloader.html${NC}  (загрузочный экран)"
-    
-    echo -e "\n${YELLOW}🏆 ISKRA CUP СТРАНИЦЫ:${NC}"
-    echo -e "  ${GREEN}http://$DOMAIN/public/iskracup_scoreboard.html${NC}  (табло)"
-    echo -e "  ${GREEN}http://$DOMAIN/public/iskracup_break.html${NC}  (перерыв)"
-    echo -e "  ${GREEN}http://$DOMAIN/public/iskracup_prematch.html${NC}  (прематч)"
+    echo -e "  ${GREEN}http://$DOMAIN/prematch.html${NC}  (прематч)"
+    echo -e "  ${GREEN}http://$DOMAIN/break.html${NC}  (перерыв)"
     
     echo -e "\n${YELLOW}⚙️  КОНФИГУРАЦИЯ:${NC}"
     echo -e "  ${CYAN}IP/Домен:${NC}        $DOMAIN"
