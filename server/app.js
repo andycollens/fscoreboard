@@ -303,14 +303,8 @@ app.use('/public', express.static(path.join(__dirname, '../public')));
 app.get('/scoreboard_vmix.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'scoreboard_vmix.html'));
 });
-app.get('/htbreak.html', (_, res) => {
-  res.sendFile(path.join(__dirname, '../public', 'htbreak.html'));
-});
 app.get('/htbreak_score.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'htbreak_score.html'));
-});
-app.get('/preloader.html', (_, res) => {
-  res.sendFile(path.join(__dirname, '../public', 'preloader.html'));
 });
 
 app.get('/prematch.html', (_, res) => {
@@ -1127,7 +1121,6 @@ server.listen(PORT, () => {
   console.log(`Панель управления: http://localhost:${PORT}/control?token=${getActualToken()}`);
   console.log(`Табло vMix: http://localhost:${PORT}/scoreboard_vmix.html`);
   console.log(`Счет перерыва: http://localhost:${PORT}/htbreak_score.html`);
-  console.log(`Заставка: http://localhost:${PORT}/preloader.html`);
   console.log(`Prematch: http://localhost:${PORT}/prematch.html`);
   console.log(`Break: http://localhost:${PORT}/break.html`);
   console.log(`Stadium: http://localhost:${PORT}/stadium.html?token=${getActualStadiumToken()}`);
