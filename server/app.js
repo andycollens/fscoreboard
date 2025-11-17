@@ -1106,10 +1106,6 @@ app.get('/api/config', (req, res) => {
   const actualToken = getActualToken();
   const actualStadiumToken = getActualStadiumToken();
   
-  if (token !== actualToken && token !== actualStadiumToken) {
-    return res.status(403).send('Forbidden');
-  }
-  
   // Загружаем полную конфигурацию
   let config = { token: actualToken, stadiumToken: actualStadiumToken };
   if (fs.existsSync(CONFIG_PATH)) {
@@ -1119,6 +1115,15 @@ app.get('/api/config', (req, res) => {
     } catch (error) {
       console.error('Ошибка загрузки конфигурации:', error);
     }
+  }
+
+  // Если токен не предоставлен или неверный, возвращаем только публичные данные
+  if (token !== actualToken && token !== actualStadiumToken) {
+    // Возвращаем только публичные данные (graphicStyle) без токенов и других секретных данных
+    const publicConfig = {
+      graphicStyle: config.graphicStyle || 'default'
+    };
+    return res.json(publicConfig);
   }
 
   if (config.winners && !config.winnersResolved) {
