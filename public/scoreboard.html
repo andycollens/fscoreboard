@@ -65,15 +65,35 @@
       background: #2b2b2b;
     }
     
-    .kit1-section {
+    /* Default style - no margins */
+    .style-default .kit1-section {
+      margin-right: 0;
+    }
+    
+    .style-default .kit2-section {
+      margin-left: 0;
+    }
+    
+    /* ISKRACUP style - with margins */
+    .style-iskracup .kit1-section {
       margin-right: 5px;
     }
     
-    .kit2-section {
+    .style-iskracup .kit2-section {
       margin-left: 5px;
     }
-    .team1-section, .team2-section {
+    
+    /* Default style - team width 70px */
+    .style-default .team1-section, .style-default .team2-section {
+      width: 70px;
+    }
+    
+    /* ISKRACUP style - team width 75px */
+    .style-iskracup .team1-section, .style-iskracup .team2-section {
       width: 75px;
+    }
+    
+    .team1-section, .team2-section {
       background: #2b2b2b;
       color: #fff;
       font-size: 1.25em;
@@ -87,7 +107,22 @@
       font-size: 1.6em;
       font-weight: normal;
     }
-    .divider-section {
+    
+    /* Default style - divider 2px */
+    .style-default .divider-section {
+      width: 2px;
+      background: #424242;
+      height: 40px;
+      line-height: 40px;
+      margin: 0;
+      padding: 0;
+      border-radius: 0;
+      flex-shrink: 0;
+      flex-grow: 0;
+    }
+    
+    /* ISKRACUP style - divider 70px with logo */
+    .style-iskracup .divider-section {
       width: 70px;
       background: #2b2b2b;
       height: 40px;
@@ -102,6 +137,38 @@
       flex-grow: 0;
       position: relative;
     }
+    
+    .divider-section {
+      height: 40px;
+    }
+    
+    .divider-logo {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      max-height: none;
+      max-width: none;
+      width: auto;
+      height: auto;
+      display: none;
+    }
+    
+    .style-iskracup .divider-logo {
+      display: block;
+    }
+    
+    /* Default style - transform -3px */
+    .style-default .section span {
+      transform: translateY(-3px);
+    }
+    
+    /* ISKRACUP style - transform 2px */
+    .style-iskracup .section span {
+      transform: translateY(2px);
+    }
+    
     .scoreboard-row > * {
       margin: 0 !important;
       padding: 0 !important;
@@ -110,23 +177,23 @@
   </style>
 </head>
 <body>
-  <div class="scoreboard-row" style="position: absolute; top: 80px; left: 120px;">
-    <!-- Timer section: displays the game timer, now lifted by 3px -->
-    <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">00:00</span></div>
+  <div class="scoreboard-row style-default" id="scoreboardRow" style="position: absolute; top: 80px; left: 120px;">
+    <!-- Timer section: displays the game timer -->
+    <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">00:00</span></div>
     <!-- Kit 1 section: displays the color of the first team's kit -->
     <div class="section kit1-section" id="kit1"></div>
-    <!-- Team 1 section: displays the short name of the first team, now lifted by 3px -->
-    <div class="section team1-section"><span id="team1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">ABC</span></div>
-    <!-- Score 1 section: displays the score of the first team, now lifted by 3px -->
-    <div class="section score1-section"><span id="score1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">0</span></div>
-    <!-- Divider section with ISKRA CUP logo -->
+    <!-- Team 1 section: displays the short name of the first team -->
+    <div class="section team1-section"><span id="team1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">ABC</span></div>
+    <!-- Score 1 section: displays the score of the first team -->
+    <div class="section score1-section"><span id="score1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">0</span></div>
+    <!-- Divider section -->
     <div class="section divider-section" id="divider-logo">
-      <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; max-height: none; max-width: none; width: auto; height: auto; display: none;">
+      <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" class="divider-logo" id="dividerLogoImg">
     </div>
-    <!-- Score 2 section: displays the score of the second team, now lifted by 3px -->
-    <div class="section score2-section"><span id="score2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">0</span></div>
-    <!-- Team 2 section: displays the short name of the second team, now lifted by 3px -->
-    <div class="section team2-section"><span id="team2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">XYZ</span></div>
+    <!-- Score 2 section: displays the score of the second team -->
+    <div class="section score2-section"><span id="score2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">0</span></div>
+    <!-- Team 2 section: displays the short name of the second team -->
+    <div class="section team2-section"><span id="team2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">XYZ</span></div>
     <!-- Kit 2 section: displays the color of the second team's kit -->
     <div class="section kit2-section" id="kit2"></div>
   </div>
@@ -156,13 +223,21 @@
 
     // Apply graphic style
     function applyGraphicStyle(style) {
-      const logoImg = document.querySelector('#divider-logo img');
+      const scoreboardRow = document.getElementById('scoreboardRow');
+      const logoImg = document.getElementById('dividerLogoImg');
+      
+      // Remove all style classes
+      scoreboardRow.classList.remove('style-default', 'style-iskracup');
+      
       if (style === 'iskracup') {
+        // Apply ISKRACUP style
+        scoreboardRow.classList.add('style-iskracup');
         if (logoImg) {
           logoImg.src = '/public/img/iskracup_scoreboard_logo.png';
-          logoImg.style.display = 'block';
         }
       } else {
+        // Apply default style
+        scoreboardRow.classList.add('style-default');
         if (logoImg) {
           logoImg.style.display = 'none';
         }
@@ -196,4 +271,3 @@
   </script>
 </body>
 </html>
-
