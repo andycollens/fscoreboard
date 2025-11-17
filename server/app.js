@@ -1257,7 +1257,8 @@ app.put('/api/config', (req, res) => {
     // Сохраняем название турнира
     currentConfig.tournamentTitle = req.body.tournamentTitle;
     // Отправляем событие всем подключенным клиентам для обновления названия
-    io.emit('scoreboardUpdate', { tournamentTitle: req.body.tournamentTitle });
+    // Важно: отправляем полный state с обновленным tournamentTitle, чтобы не потерять остальные данные
+    io.emit('scoreboardUpdate', enrichStateWithConfig(state));
   }
   if (req.body.graphicStyle !== undefined) {
     // Сохраняем стиль графического оформления
