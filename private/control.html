@@ -3889,21 +3889,29 @@
       const previousTeam2Logo = state.team2Logo || '';
       const previousTeam1Name = scoreboardState.team1Name || '';
       const previousTeam2Name = scoreboardState.team2Name || '';
-      const previousTeam1Short = scoreboardState.team1Short || '';
+      const previousTeam1Short = scoreboardState.team2Short || '';
       const previousTeam2Short = scoreboardState.team2Short || '';
       
-      state.team1Logo = data.team1Logo || '';
-      if (data.team1Logo && data.team1Logo.trim() !== '') {
-        updateMainLogoMini('team1', data.team1Logo);
-      } else {
-        showKitColorCircle('team1');
+      // Обновляем логотипы только если они изменились (чтобы не моргали при работе таймера)
+      const newTeam1Logo = data.team1Logo || '';
+      const newTeam2Logo = data.team2Logo || '';
+      
+      if (previousTeam1Logo !== newTeam1Logo) {
+        state.team1Logo = newTeam1Logo;
+        if (newTeam1Logo && newTeam1Logo.trim() !== '') {
+          updateMainLogoMini('team1', newTeam1Logo);
+        } else {
+          showKitColorCircle('team1');
+        }
       }
       
-      state.team2Logo = data.team2Logo || '';
-      if (data.team2Logo && data.team2Logo.trim() !== '') {
-        updateMainLogoMini('team2', data.team2Logo);
-      } else {
-        showKitColorCircle('team2');
+      if (previousTeam2Logo !== newTeam2Logo) {
+        state.team2Logo = newTeam2Logo;
+        if (newTeam2Logo && newTeam2Logo.trim() !== '') {
+          updateMainLogoMini('team2', newTeam2Logo);
+        } else {
+          showKitColorCircle('team2');
+        }
       }
       
       // Сохраняем названия команд в состояние для сравнения
