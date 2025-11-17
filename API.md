@@ -68,6 +68,73 @@ Authorization: Bearer your-secret-token-here
 #### DELETE /api/presets/:id
 Удаление предустановки.
 
+#### GET /api/config
+Получение конфигурации системы.
+```json
+{
+  "graphicStyle": "iskracup",
+  "stadiumMode": "scoreboard",
+  "tournamentTitle": "ISKRA CUP 2025",
+  "stadiumToken": "stadium-token-here"
+}
+```
+
+#### PUT /api/config
+Обновление конфигурации системы.
+```json
+{
+  "graphicStyle": "custom:style-id",
+  "stadiumMode": "penalty",
+  "tournamentTitle": "Новый турнир"
+}
+```
+
+#### GET /api/custom-styles
+Получение списка кастомных стилей (требует токен).
+
+#### POST /api/custom-styles
+Создание нового кастомного стиля (требует токен, multipart/form-data).
+- `name`: Название стиля
+- `stripeMode`: "single" или "separate"
+- `stripeSingle`: Файл фона (для single режима)
+- `breakStripe`: Файл фона для break.html (для separate режима)
+- `prematchStripe`: Файл фона для prematch.html (для separate режима)
+- `logo`: Файл логотипа
+
+#### PUT /api/custom-styles/:id
+Обновление кастомного стиля (требует токен, multipart/form-data).
+
+#### DELETE /api/custom-styles/:id
+Удаление кастомного стиля (требует токен).
+
+#### GET /api/tournaments
+Получение списка турниров (требует токен).
+
+#### POST /api/tournaments
+Создание нового турнира (требует токен).
+```json
+{
+  "name": "Чемпионат России 2024",
+  "startDate": "2024-01-01",
+  "endDate": "2024-12-31"
+}
+```
+
+#### PUT /api/tournaments/:id
+Обновление турнира (требует токен).
+
+#### DELETE /api/tournaments/:id
+Удаление турнира (требует токен).
+
+#### POST /api/tournaments/:id/teams
+Добавление команды в турнир (требует токен, multipart/form-data).
+
+#### PUT /api/tournaments/:id/teams/:teamId
+Обновление команды в турнире (требует токен, multipart/form-data).
+
+#### DELETE /api/tournaments/:id/teams/:teamId
+Удаление команды из турнира (требует токен).
+
 ## Socket.IO Events
 
 ### Подключение
@@ -111,6 +178,33 @@ socket.on('stateUpdate', (state) => {
 ```javascript
 socket.on('presetUpdate', (presets) => {
   console.log('Предустановки обновлены:', presets);
+});
+```
+
+#### configUpdate
+Обновление конфигурации (графический стиль, режим стадиона и т.д.).
+```javascript
+socket.on('configUpdate', (config) => {
+  console.log('Конфигурация обновлена:', config);
+  // config.graphicStyle, config.customStyleData и т.д.
+});
+```
+
+#### scoreboardUpdate
+Обновление состояния табло (для stadium.html и других страниц).
+```javascript
+socket.on('scoreboardUpdate', (data) => {
+  console.log('Состояние табло обновлено:', data);
+  // data содержит полное состояние: команды, счет, таймер, tournamentTitle и т.д.
+});
+```
+
+#### stadiumWinnersChange
+Обновление победителей (для режима Winners на стадионе).
+```javascript
+socket.on('stadiumWinnersChange', (data) => {
+  console.log('Победители обновлены:', data);
+  // data.winners, data.winnersTitle, data.winnersResolved
 });
 ```
 

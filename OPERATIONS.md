@@ -58,17 +58,37 @@ pm2 monit
 ### Файлы состояния
 - **Состояние табло**: `/opt/fscoreboard/server/state.json`
 - **Предустановки**: `/opt/fscoreboard/server/presets.json`
-- **Логотипы**: `/opt/fscoreboard/public/logos/`
+- **Конфигурация**: `/opt/fscoreboard/server/config.json`
+- **Турниры**: `/opt/fscoreboard/server/tournaments.json`
+- **Кастомные стили**: `/opt/fscoreboard/server/custom-styles.json`
+- **Логотипы команд**: `/opt/fscoreboard/public/logos/`
+- **Изображения кастомных стилей**: `/opt/fscoreboard/public/img/custom-styles/`
 
 ### Резервное копирование
 ```bash
-# Создание бэкапа
-cp /opt/fscoreboard/server/state.json /backup/state_$(date +%Y%m%d).json
-cp /opt/fscoreboard/server/presets.json /backup/presets_$(date +%Y%m%d).json
-cp -r /opt/fscoreboard/public/logos /backup/logos_$(date +%Y%m%d)/
+# Создание полного бэкапа
+BACKUP_DIR="/backup/fscoreboard_$(date +%Y%m%d_%H%M%S)"
+mkdir -p $BACKUP_DIR
+
+# Копирование файлов состояния
+cp /opt/fscoreboard/server/state.json $BACKUP_DIR/
+cp /opt/fscoreboard/server/presets.json $BACKUP_DIR/
+cp /opt/fscoreboard/server/config.json $BACKUP_DIR/
+cp /opt/fscoreboard/server/tournaments.json $BACKUP_DIR/
+cp /opt/fscoreboard/server/custom-styles.json $BACKUP_DIR/
+
+# Копирование изображений
+cp -r /opt/fscoreboard/public/logos $BACKUP_DIR/
+cp -r /opt/fscoreboard/public/img/custom-styles $BACKUP_DIR/ 2>/dev/null || true
+
+# Архивирование
+tar -czf $BACKUP_DIR.tar.gz $BACKUP_DIR
+rm -rf $BACKUP_DIR
 
 # Восстановление
-cp /backup/state_20240101.json /opt/fscoreboard/server/state.json
+tar -xzf /backup/fscoreboard_20240101_120000.tar.gz -C /tmp/
+cp /tmp/fscoreboard_20240101_120000/*.json /opt/fscoreboard/server/
+cp -r /tmp/fscoreboard_20240101_120000/logos/* /opt/fscoreboard/public/logos/
 pm2 restart fscoreboard
 ```
 
