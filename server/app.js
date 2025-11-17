@@ -1234,8 +1234,22 @@ app.put('/api/config', (req, res) => {
   if (req.body.graphicStyle !== undefined) {
     // Сохраняем стиль графического оформления
     currentConfig.graphicStyle = req.body.graphicStyle;
+    
+    // Если это custom стиль, загружаем данные стиля
+    let customStyleData = null;
+    if (req.body.graphicStyle && req.body.graphicStyle.startsWith('custom:')) {
+      const styleId = req.body.graphicStyle.replace('custom:', '');
+      const customStyles = loadCustomStyles();
+      if (customStyles[styleId]) {
+        customStyleData = customStyles[styleId];
+      }
+    }
+    
     // Отправляем событие всем подключенным клиентам для обновления стиля
-    io.emit('configUpdate', { graphicStyle: req.body.graphicStyle });
+    io.emit('configUpdate', { 
+      graphicStyle: req.body.graphicStyle,
+      customStyleData: customStyleData
+    });
   }
   // Важно: не перезаписываем winners и stadiumMode, если они не переданы
   
