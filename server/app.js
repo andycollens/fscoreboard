@@ -65,6 +65,28 @@ function getActualStadiumToken() {
   return STADIUM_TOKEN;
 }
 
+// Функция для получения tournamentTitle из конфига
+function getTournamentTitle() {
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      return savedConfig.tournamentTitle || null;
+    } catch (error) {
+      return null;
+    }
+  }
+  return null;
+}
+
+// Функция для добавления tournamentTitle к state перед отправкой
+function enrichStateWithConfig(state) {
+  const tournamentTitle = getTournamentTitle();
+  if (tournamentTitle) {
+    return { ...state, tournamentTitle };
+  }
+  return state;
+}
+
 // Используем токены из конфигурации для инициализации
 const ACTUAL_TOKEN = config.token || TOKEN;
 const ACTUAL_STADIUM_TOKEN = config.stadiumToken || STADIUM_TOKEN;
@@ -247,7 +269,7 @@ setInterval(() => {
     const ss = (state.timerSeconds % 60).toString().padStart(2, '0');
     state.time = `${mm}:${ss}`;
     
-    io.emit('scoreboardUpdate', state);
+    io.emit('scoreboardUpdate', enrichStateWithConfig(state));
   }
   
   // Сохраняем состояние
@@ -980,25 +1002,12 @@ io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
   
   // Отправляем текущее состояние при подключении
-  socket.emit('scoreboardUpdate', state);
+  socket.emit('scoreboardUpdate', enrichStateWithConfig(state));
   socket.emit('stadiumModeChange', { mode: stadiumModeState });
   
   // Обработчик запроса текущего состояния
   socket.on('getCurrentState', () => {
-    // Загружаем tournamentTitle из конфига, если он есть
-    let config = {};
-    if (fs.existsSync(CONFIG_PATH)) {
-      try {
-        config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      } catch (e) {
-        console.error('Ошибка чтения config.json', e);
-      }
-    }
-    const currentState = { ...state };
-    if (config.tournamentTitle) {
-      currentState.tournamentTitle = config.tournamentTitle;
-    }
-    socket.emit('currentState', currentState);
+    socket.emit('currentState', enrichStateWithConfig(state));
   });
 
   // Изменение состояния с панели управления
@@ -1040,7 +1049,7 @@ io.on('connection', (socket) => {
     const ss = (state.timerSeconds % 60).toString().padStart(2, '0');
     state.time = `${mm}:${ss}`;
 
-    io.emit('scoreboardUpdate', state);
+    io.emit('scoreboardUpdate', enrichStateWithConfig(state));
     fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
   });
 
@@ -1075,7 +1084,7 @@ io.on('connection', (socket) => {
     state.penaltyMaxAttempts = 5;
     state.penaltySeries = null;
 
-    io.emit('scoreboardUpdate', state);
+    io.emit('scoreboardUpdate', enrichStateWithConfig(state));
     fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
   });
 
@@ -1104,7 +1113,7 @@ io.on('connection', (socket) => {
       penaltySeries: null
     };
 
-    io.emit('scoreboardUpdate', state);
+    io.emit('scoreboardUpdate', enrichStateWithConfig(state));
     fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
   });
 
