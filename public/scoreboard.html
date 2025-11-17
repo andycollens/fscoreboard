@@ -221,8 +221,14 @@
 
     // Apply graphic style
     function applyGraphicStyle(style) {
+      console.log('Applying graphic style:', style);
       const scoreboardRow = document.getElementById('scoreboardRow');
       const logoImg = document.getElementById('dividerLogoImg');
+      
+      if (!scoreboardRow) {
+        console.error('scoreboardRow not found');
+        return;
+      }
       
       // Remove all style classes
       scoreboardRow.classList.remove('style-default', 'style-iskracup');
@@ -230,6 +236,7 @@
       if (style === 'iskracup') {
         // Apply ISKRACUP style
         scoreboardRow.classList.add('style-iskracup');
+        console.log('Added style-iskracup class');
         if (logoImg) {
           logoImg.src = '/public/img/iskracup_scoreboard_logo.png';
           // Use requestAnimationFrame to ensure CSS class is applied first
@@ -239,10 +246,14 @@
               logoImg.style.opacity = '1';
             });
           });
+          console.log('Logo should be visible now');
+        } else {
+          console.error('logoImg not found');
         }
       } else {
         // Apply default style
         scoreboardRow.classList.add('style-default');
+        console.log('Added style-default class');
         if (logoImg) {
           logoImg.style.opacity = '0';
           // Hide after transition
@@ -272,7 +283,9 @@
 
     // Listen for config updates
     socket.on('configUpdate', (data) => {
+      console.log('Received configUpdate event:', data);
       if (data.graphicStyle) {
+        console.log('Updating graphic style to:', data.graphicStyle);
         applyGraphicStyle(data.graphicStyle);
       }
     });
