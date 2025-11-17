@@ -2081,11 +2081,13 @@
     
     // Сохранение режима работы табло
     async function saveStadiumMode() {
-      const selectedMode = document.querySelector('input[name="stadiumMode"]:checked');
-      if (!selectedMode) {
+      const selectedModeBtn = document.querySelector('.stadium-mode-btn.active');
+      if (!selectedModeBtn) {
         showNotification('Выберите режим отображения', 'error');
         return;
       }
+      
+      const selectedMode = selectedModeBtn.getAttribute('data-mode');
       
       if (!confirm('Применить этот режим? Табло стадиона обновится моментально.')) {
         return;
@@ -2103,7 +2105,7 @@
         const response = await fetch(`/api/config?token=${getToken()}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stadiumMode: selectedMode.value })
+          body: JSON.stringify({ stadiumMode: selectedMode })
         });
         
         if (response.ok) {
@@ -2208,7 +2210,7 @@
   <!-- Секция Секрет для Stadium (менее заметная, внизу страницы) -->
   <div class="section stadium-token-section">
     <div class="section-header">
-      <h2>🔐 Секрет для Stadium</h2>
+      <h2>Секрет для Stadium</h2>
     </div>
     
     <div style="margin-bottom: 12px;">
