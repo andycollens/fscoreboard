@@ -89,7 +89,7 @@
 
         /* Ключевой стиль для анимации: плавный переход цвета для каждого треугольника */
         .logo-triangle {
-            transition: fill 1s ease-in-out;
+            transition: fill 2s ease-in-out;
         }
 
         /* Стили для контейнера логотипа */
@@ -1821,8 +1821,16 @@ body.penalty-mode .penalty-score {
 
         const namespace = "http://www.w3.org/2000/svg";
 
-        // Палитра темных цветов
-        const colors = ['#080808', '#101010', '#181818', '#202020', '#282828'];
+        // Расширенная палитра цветов для эффекта мерцания отражения света
+        // От темных к более светлым оттенкам
+        const colors = [
+            '#080808', '#0a0a0a', '#0c0c0c', '#0e0e0e',
+            '#101010', '#121212', '#141414', '#161616',
+            '#181818', '#1a1a1a', '#1c1c1c', '#1e1e1e',
+            '#202020', '#222222', '#242424', '#262626',
+            '#282828', '#2a2a2a', '#2c2c2c', '#2e2e2e',
+            '#303030', '#323232', '#343434', '#363636'
+        ];
 
         // Параметры сетки
         const triangleSize = 40;
@@ -1881,23 +1889,42 @@ body.penalty-mode .penalty-score {
             const allTriangles = document.querySelectorAll('.logo-triangle');
             if (allTriangles.length === 0) return;
 
-            const randomIndex = Math.floor(Math.random() * allTriangles.length);
-            const triangleToAnimate = allTriangles[randomIndex];
+            // Анимируем несколько треугольников одновременно для более плавного эффекта
+            const trianglesToAnimate = Math.min(3, Math.floor(allTriangles.length / 100));
+            
+            for (let i = 0; i < trianglesToAnimate; i++) {
+                const randomIndex = Math.floor(Math.random() * allTriangles.length);
+                const triangleToAnimate = allTriangles[randomIndex];
 
-            const currentColor = triangleToAnimate.getAttribute('fill');
-            let newColor;
-            do {
-                newColor = colors[Math.floor(Math.random() * colors.length)];
-            } while (newColor === currentColor);
-
-            triangleToAnimate.setAttribute('fill', newColor);
+                const currentColor = triangleToAnimate.getAttribute('fill');
+                const currentIndex = colors.indexOf(currentColor);
+                
+                // Плавный переход к соседнему оттенку для эффекта мерцания
+                let newIndex;
+                if (currentIndex === -1) {
+                    // Если цвет не найден в палитре, выбираем случайный
+                    newIndex = Math.floor(Math.random() * colors.length);
+                } else {
+                    // Переход к соседнему оттенку (вверх или вниз на 1-3 позиции)
+                    const direction = Math.random() > 0.5 ? 1 : -1;
+                    const step = Math.floor(Math.random() * 3) + 1; // 1-3 шага
+                    newIndex = currentIndex + (direction * step);
+                    // Ограничиваем границами массива
+                    newIndex = Math.max(0, Math.min(colors.length - 1, newIndex));
+                }
+                
+                const newColor = colors[newIndex];
+                if (newColor !== currentColor) {
+                    triangleToAnimate.setAttribute('fill', newColor);
+                }
+            }
         }
 
         // Запускаем создание сетки и анимацию
         createGrid();
 
-        // Запускаем анимацию
-        logoAnimationInterval = setInterval(animateMosaic, 100);
+        // Запускаем анимацию с более частым обновлением для плавного эффекта
+        logoAnimationInterval = setInterval(animateMosaic, 80);
 
         // Перерисовываем сетку при изменении размера окна
         logoResizeHandler = () => {
