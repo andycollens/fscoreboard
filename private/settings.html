@@ -629,7 +629,7 @@
         </div>
         
         <div style="margin-bottom: 10px;">
-          <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Фон для break.html и prematch.html:</label>
+          <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Фон для break.html и prematch.html (опционально):</label>
           <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
             <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #61708a; cursor: pointer;">
               <input type="radio" name="stripeMode" value="single" id="stripeModeSingle" checked style="cursor: pointer;">
@@ -642,8 +642,9 @@
           </div>
           <input type="file" id="customStripeSingle" accept="image/*" style="width: 100%; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 12px;">
           <div style="font-size: 10px; color: #61708a; margin-top: 2px;">1920x1080px</div>
-          <div id="customStripeSinglePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+          <div id="customStripeSinglePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none; position: relative;">
             <img id="customStripeSinglePreviewImg" style="width: 100%; height: auto; display: block;">
+            <button type="button" onclick="removeCustomStripeSingle()" style="position: absolute; top: 4px; right: 4px; background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1; padding: 0;">×</button>
           </div>
         </div>
         
@@ -652,16 +653,18 @@
             <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Фон для break.html:</label>
             <input type="file" id="customBreakStripe" accept="image/*" style="width: 100%; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 12px;">
             <div style="font-size: 10px; color: #61708a; margin-top: 2px;">1920x1080px</div>
-            <div id="customBreakStripePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+            <div id="customBreakStripePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none; position: relative;">
               <img id="customBreakStripePreviewImg" style="width: 100%; height: auto; display: block;">
+              <button type="button" onclick="removeCustomBreakStripe()" style="position: absolute; top: 4px; right: 4px; background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1; padding: 0;">×</button>
             </div>
           </div>
           <div>
             <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Фон для prematch.html:</label>
             <input type="file" id="customPrematchStripe" accept="image/*" style="width: 100%; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 12px;">
             <div style="font-size: 10px; color: #61708a; margin-top: 2px;">1920x1080px</div>
-            <div id="customPrematchStripePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+            <div id="customPrematchStripePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none; position: relative;">
               <img id="customPrematchStripePreviewImg" style="width: 100%; height: auto; display: block;">
+              <button type="button" onclick="removeCustomPrematchStripe()" style="position: absolute; top: 4px; right: 4px; background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1; padding: 0;">×</button>
             </div>
           </div>
         </div>
@@ -670,8 +673,9 @@
           <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Логотип (опционально):</label>
           <input type="file" id="customLogo" accept="image/*" style="width: 100%; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 12px;">
           <div style="font-size: 10px; color: #61708a; margin-top: 2px;">до 70x40px</div>
-          <div id="customLogoPreview" style="margin-top: 6px; max-width: 150px; max-height: 75px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+          <div id="customLogoPreview" style="margin-top: 6px; max-width: 150px; max-height: 75px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none; position: relative;">
             <img id="customLogoPreviewImg" style="width: 100%; height: auto; display: block;">
+            <button type="button" onclick="removeCustomLogo()" style="position: absolute; top: 4px; right: 4px; background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1; padding: 0;">×</button>
           </div>
         </div>
         
@@ -1577,6 +1581,30 @@
       document.getElementById('customStyleForm').style.display = 'none';
     }
     
+    function removeCustomLogo() {
+      document.getElementById('customLogo').value = '';
+      document.getElementById('customLogoPreview').style.display = 'none';
+      document.getElementById('customLogoPreviewImg').src = '';
+    }
+    
+    function removeCustomStripeSingle() {
+      document.getElementById('customStripeSingle').value = '';
+      document.getElementById('customStripeSinglePreview').style.display = 'none';
+      document.getElementById('customStripeSinglePreviewImg').src = '';
+    }
+    
+    function removeCustomBreakStripe() {
+      document.getElementById('customBreakStripe').value = '';
+      document.getElementById('customBreakStripePreview').style.display = 'none';
+      document.getElementById('customBreakStripePreviewImg').src = '';
+    }
+    
+    function removeCustomPrematchStripe() {
+      document.getElementById('customPrematchStripe').value = '';
+      document.getElementById('customPrematchStripePreview').style.display = 'none';
+      document.getElementById('customPrematchStripePreviewImg').src = '';
+    }
+    
     // Setup file preview handlers
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', setupFilePreviews);
@@ -1681,17 +1709,15 @@
       const isEditing = editingStyleId !== null;
       const existingStyle = isEditing ? customStyles[editingStyleId] : null;
       
-      if (!isEditing) {
-        // When creating new style, require at least one stripe
-        if (stripeMode === 'single' && !stripeSingleFile) {
-          showNotification('Загрузите фон для страниц', 'error');
-          return;
-        }
-        
-        if (stripeMode === 'separate' && !breakStripeFile && !prematchStripeFile) {
-          showNotification('Загрузите хотя бы один фон (break или prematch)', 'error');
-          return;
-        }
+      // Check if we have at least one element (logo or stripe)
+      const hasStripe = stripeMode === 'single' 
+        ? (stripeSingleFile || (isEditing && existingStyle && existingStyle.breakStripe))
+        : (breakStripeFile || prematchStripeFile || (isEditing && (existingStyle && (existingStyle.breakStripe || existingStyle.prematchStripe))));
+      const hasLogo = logoFile || (isEditing && existingStyle && existingStyle.logo);
+      
+      if (!hasStripe && !hasLogo) {
+        showNotification('Добавьте хотя бы один элемент: логотип или фон', 'error');
+        return;
       }
       
       const formData = new FormData();

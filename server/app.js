@@ -1320,14 +1320,14 @@ app.post('/api/custom-styles', uploadCustomStyle.fields([
   
   const stripeMode = req.body.stripeMode || 'single';
   
-  if (stripeMode === 'single') {
-    if (!req.files || !req.files.stripeSingle) {
-      return res.status(400).json({ error: 'Stripe file is required' });
-    }
-  } else {
-    if (!req.files || (!req.files.breakStripe && !req.files.prematchStripe)) {
-      return res.status(400).json({ error: 'At least one stripe (break or prematch) is required' });
-    }
+  // Check if we have at least one element (logo or stripe)
+  const hasStripe = stripeMode === 'single'
+    ? (req.files && req.files.stripeSingle)
+    : (req.files && (req.files.breakStripe || req.files.prematchStripe));
+  const hasLogo = req.files && req.files.logo;
+  
+  if (!hasStripe && !hasLogo) {
+    return res.status(400).json({ error: 'At least one element (logo or stripe) is required' });
   }
   
   const styles = loadCustomStyles();
