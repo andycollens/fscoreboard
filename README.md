@@ -41,8 +41,8 @@ npm start
 
 ### Доступ к интерфейсам
 - **Панель управления**: `http://localhost:PORT/private/control.html?token=TOKEN`
-- **Основные страницы**: `scoreboard_vmix.html`, `htbreak_score.html`, `preloader.html`, `stadium.html`
-- **ISKRA CUP**: `iskracup_scoreboard.html`, `iskracup_break.html`, `iskracup_prematch.html`
+- **Основные страницы**: `scoreboard.html`, `penalti.html`, `prematch.html`, `break.html`, `preloader.html`, `stadium.html`
+- **Legacy**: `scoreboard_vmix.html` (для vMix)
 
 > 💡 **Совет:** Используйте `fscoreboard-links` для получения всех ссылок с актуальными IP и токенами
 
@@ -99,15 +99,20 @@ fscoreboard/
 ├── server/
 │   └── app.js              # Основной сервер
 ├── public/
-│   ├── scoreboard_vmix.html # Табло для vMix
-│   ├── htbreak_score.html   # Счет перерыва
-│   ├── preloader.html       # Заставка
-│   ├── fonts/RPL.ttf        # Шрифт
-│   └── img/ISKRA-hor_logo.png # Логотип
+│   ├── scoreboard.html     # Основное табло (с переключением стилей)
+│   ├── penalti.html        # Табло пенальти (с переключением стилей)
+│   ├── prematch.html       # Прематч (с переключением стилей)
+│   ├── break.html          # Перерыв (с переключением стилей)
+│   ├── preloader.html      # Заглушка для стримов (анимация лого)
+│   ├── scoreboard_vmix.html # Табло для vMix (legacy)
+│   ├── stadium.html        # Табло стадиона
+│   ├── fonts/RPL.ttf       # Шрифт
+│   └── img/                # Изображения и логотипы
 ├── private/
-│   └── control.html         # Панель управления
+│   ├── control.html        # Панель управления
+│   └── settings.html      # Настройки
 ├── package.json
-└── ecosystem.config.js      # PM2 конфигурация
+└── ecosystem.config.js     # PM2 конфигурация
 ```
 
 ## 🔧 Управление

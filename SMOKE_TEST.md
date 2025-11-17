@@ -27,11 +27,13 @@ curl -I "http://localhost:3001/private/control.html"
 ```
 
 ### Проверка страниц
+- [ ] `http://localhost:3001/scoreboard.html` — загружается
+- [ ] `http://localhost:3001/penalti.html` — загружается
+- [ ] `http://localhost:3001/prematch.html` — загружается
+- [ ] `http://localhost:3001/break.html` — загружается
+- [ ] `http://localhost:3001/preloader.html` — загружается
 - [ ] `http://localhost:3001/public/scoreboard_vmix.html` — загружается
-- [ ] `http://localhost:3001/public/htbreak_score.html` — загружается
-- [ ] `http://localhost:3001/public/preloader.html` — загружается
-- [ ] `http://localhost:3001/public/stadium.html` — загружается
-- [ ] `http://localhost:3001/public/iskracup_scoreboard.html` — загружается
+- [ ] `http://localhost:3001/stadium.html?token=TOKEN` — загружается
 
 ### Проверка API
 ```bash
@@ -79,7 +81,8 @@ fscoreboard-links
 curl -s ifconfig.me
 
 # Проверка внешнего доступа
-curl -I http://YOUR_SERVER_IP/public/iskracup_scoreboard.html
+curl -I http://YOUR_SERVER_IP/scoreboard.html
+curl -I http://YOUR_SERVER_IP/preloader.html
 # Ожидаемый результат: HTTP/1.1 200 OK
 ```
 
