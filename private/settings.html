@@ -209,6 +209,107 @@
       color: #4c5d7a;
     }
     
+    .winners-settings {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 2px solid #eef4ff;
+    }
+    
+    .winners-settings-section {
+      margin-bottom: 24px;
+    }
+    
+    .winners-settings-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .winners-settings-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #163d74;
+    }
+    
+    .winners-settings-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #c5d9ff;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
+    }
+    
+    .winners-settings-input:focus {
+      outline: none;
+      border-color: #338af3;
+      box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.1);
+    }
+    
+    .winners-settings-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #c5d9ff;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
+    }
+    
+    .winners-settings-select:focus {
+      outline: none;
+      border-color: #338af3;
+      box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.1);
+    }
+    
+    .winners-places {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .winner-place-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .winner-place-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #163d74;
+    }
+    
+    .winner-place-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #338af3;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    
+    .winners-settings-header {
+      font-size: 15px;
+      font-weight: 600;
+      color: #163d74;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eef4ff;
+    }
+    
     .graphic-style-previews {
       display: flex;
       gap: 20px;
@@ -680,36 +781,50 @@
     </div>
 
     <!-- Настройки победителей (показываются только если выбран режим Победители) -->
-    <div id="winnersSettings" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-      <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Название для режима победителей:</label>
-        <input type="text" id="winnersTitleInput" placeholder="Например: Победители турнира 2025" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+    <div id="winnersSettings" class="winners-settings" style="display: none;">
+      <div class="winners-settings-section">
+        <label class="winners-settings-label" for="winnersTitleInput">Название для режима победителей:</label>
+        <input type="text" id="winnersTitleInput" class="winners-settings-input" placeholder="Например: Победители турнира 2025">
       </div>
       
-      <label style="display: block; margin-bottom: 15px; font-weight: bold;">Выберите команды-победители:</label>
-      
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 600;">1 место:</label>
-        <select id="winner1Select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-          <option value="">-- Выберите команду --</option>
-        </select>
+      <div class="winners-settings-section">
+        <div class="winners-settings-header">Выберите команды-победители:</div>
+        <div class="winners-places">
+          <div class="winner-place-item">
+            <label class="winner-place-label" for="winner1Select">
+              <span class="winner-place-number">1</span>
+              <span>1 место</span>
+            </label>
+            <select id="winner1Select" class="winners-settings-select">
+              <option value="">-- Выберите команду --</option>
+            </select>
+          </div>
+          
+          <div class="winner-place-item">
+            <label class="winner-place-label" for="winner2Select">
+              <span class="winner-place-number">2</span>
+              <span>2 место</span>
+            </label>
+            <select id="winner2Select" class="winners-settings-select">
+              <option value="">-- Выберите команду --</option>
+            </select>
+          </div>
+          
+          <div class="winner-place-item">
+            <label class="winner-place-label" for="winner3Select">
+              <span class="winner-place-number">3</span>
+              <span>3 место</span>
+            </label>
+            <select id="winner3Select" class="winners-settings-select">
+              <option value="">-- Выберите команду --</option>
+            </select>
+          </div>
+        </div>
       </div>
       
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 600;">2 место:</label>
-        <select id="winner2Select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-          <option value="">-- Выберите команду --</option>
-        </select>
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eef4ff;">
+        <button class="btn btn-primary" onclick="saveWinners()">Сохранить победителей</button>
       </div>
-      
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 600;">3 место:</label>
-        <select id="winner3Select" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-          <option value="">-- Выберите команду --</option>
-        </select>
-      </div>
-      
-      <button class="btn btn-primary" onclick="saveWinners()">Сохранить победителей</button>
     </div>
   </div>
 
