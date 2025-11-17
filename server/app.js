@@ -1306,6 +1306,7 @@ app.get('/api/custom-styles', (req, res) => {
 
 // POST /api/custom-styles - Create custom style
 app.post('/api/custom-styles', uploadCustomStyle.fields([
+  { name: 'stripeSingle', maxCount: 1 },
   { name: 'breakStripe', maxCount: 1 },
   { name: 'prematchStripe', maxCount: 1 },
   { name: 'logo', maxCount: 1 }
@@ -1317,8 +1318,16 @@ app.post('/api/custom-styles', uploadCustomStyle.fields([
     return res.status(400).json({ error: 'Name is required' });
   }
   
-  if (!req.files || (!req.files.breakStripe && !req.files.prematchStripe)) {
-    return res.status(400).json({ error: 'At least one stripe (break or prematch) is required' });
+  const stripeMode = req.body.stripeMode || 'single';
+  
+  if (stripeMode === 'single') {
+    if (!req.files || !req.files.stripeSingle) {
+      return res.status(400).json({ error: 'Stripe file is required' });
+    }
+  } else {
+    if (!req.files || (!req.files.breakStripe && !req.files.prematchStripe)) {
+      return res.status(400).json({ error: 'At least one stripe (break or prematch) is required' });
+    }
   }
   
   const styles = loadCustomStyles();
@@ -1326,10 +1335,20 @@ app.post('/api/custom-styles', uploadCustomStyle.fields([
   
   const style = {
     name: name.trim(),
-    breakStripe: req.files.breakStripe ? `/public/img/custom-styles/${req.files.breakStripe[0].filename}` : null,
-    prematchStripe: req.files.prematchStripe ? `/public/img/custom-styles/${req.files.prematchStripe[0].filename}` : null,
-    logo: req.files.logo ? `/public/img/custom-styles/${req.files.logo[0].filename}` : null
+    stripeMode: stripeMode
   };
+  
+  if (stripeMode === 'single') {
+    if (req.files.stripeSingle) {
+      style.breakStripe = `/public/img/custom-styles/${req.files.stripeSingle[0].filename}`;
+      style.prematchStripe = `/public/img/custom-styles/${req.files.stripeSingle[0].filename}`;
+    }
+  } else {
+    style.breakStripe = req.files.breakStripe ? `/public/img/custom-styles/${req.files.breakStripe[0].filename}` : null;
+    style.prematchStripe = req.files.prematchStripe ? `/public/img/custom-styles/${req.files.prematchStripe[0].filename}` : null;
+  }
+  
+  style.logo = req.files.logo ? `/public/img/custom-styles/${req.files.logo[0].filename}` : null;
   
   styles[styleId] = style;
   saveCustomStyles(styles);

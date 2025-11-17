@@ -623,41 +623,61 @@
       <div id="customStyleForm" style="display: none; margin-top: 20px; padding: 16px; background: #f8fbff; border-radius: 8px; border: 1px solid #d8e3f6;">
         <h3 style="margin-top: 0; margin-bottom: 16px; color: #163d74; font-size: 16px;">Создать custom стиль</h3>
         
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74;">Название стиля:</label>
-          <input type="text" id="customStyleName" placeholder="Введите название" style="width: 100%; padding: 8px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 14px;">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Название стиля:</label>
+          <input type="text" id="customStyleName" placeholder="Введите название" style="width: 100%; padding: 6px 8px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 13px;">
         </div>
         
-        <div style="margin-bottom: 12px;">
-          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74;">Полоса для break.html:</label>
-          <input type="file" id="customBreakStripe" accept="image/*" style="width: 100%; padding: 6px; border: 1px solid #c5d9ff; border-radius: 6px;">
-          <div style="font-size: 11px; color: #61708a; margin-top: 4px;">Рекомендуемый размер: 1920x1080px</div>
-          <div id="customBreakStripePreview" style="margin-top: 8px; max-width: 300px; max-height: 150px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
-            <img id="customBreakStripePreviewImg" style="width: 100%; height: auto; display: block;">
+        <div style="margin-bottom: 10px;">
+          <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Фон для break.html и prematch.html:</label>
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
+            <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #61708a; cursor: pointer;">
+              <input type="radio" name="stripeMode" value="single" id="stripeModeSingle" checked style="cursor: pointer;">
+              <span>Один для всех</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #61708a; cursor: pointer;">
+              <input type="radio" name="stripeMode" value="separate" id="stripeModeSeparate" style="cursor: pointer;">
+              <span>Свой для каждой</span>
+            </label>
+          </div>
+          <input type="file" id="customStripeSingle" accept="image/*" style="width: 100%; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 12px;">
+          <div style="font-size: 10px; color: #61708a; margin-top: 2px;">1920x1080px</div>
+          <div id="customStripeSinglePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+            <img id="customStripeSinglePreviewImg" style="width: 100%; height: auto; display: block;">
+          </div>
+        </div>
+        
+        <div id="customStripeSeparateContainer" style="margin-bottom: 10px; display: none;">
+          <div style="margin-bottom: 6px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Фон для break.html:</label>
+            <input type="file" id="customBreakStripe" accept="image/*" style="width: 100%; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 12px;">
+            <div style="font-size: 10px; color: #61708a; margin-top: 2px;">1920x1080px</div>
+            <div id="customBreakStripePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+              <img id="customBreakStripePreviewImg" style="width: 100%; height: auto; display: block;">
+            </div>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Фон для prematch.html:</label>
+            <input type="file" id="customPrematchStripe" accept="image/*" style="width: 100%; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 12px;">
+            <div style="font-size: 10px; color: #61708a; margin-top: 2px;">1920x1080px</div>
+            <div id="customPrematchStripePreview" style="margin-top: 6px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+              <img id="customPrematchStripePreviewImg" style="width: 100%; height: auto; display: block;">
+            </div>
           </div>
         </div>
         
         <div style="margin-bottom: 12px;">
-          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74;">Полоса для prematch.html:</label>
-          <input type="file" id="customPrematchStripe" accept="image/*" style="width: 100%; padding: 6px; border: 1px solid #c5d9ff; border-radius: 6px;">
-          <div style="font-size: 11px; color: #61708a; margin-top: 4px;">Рекомендуемый размер: 1920x1080px</div>
-          <div id="customPrematchStripePreview" style="margin-top: 8px; max-width: 300px; max-height: 150px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
-            <img id="customPrematchStripePreviewImg" style="width: 100%; height: auto; display: block;">
-          </div>
-        </div>
-        
-        <div style="margin-bottom: 16px;">
-          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74;">Логотип для scoreboard.html и penalti.html (опционально):</label>
-          <input type="file" id="customLogo" accept="image/*" style="width: 100%; padding: 6px; border: 1px solid #c5d9ff; border-radius: 6px;">
-          <div style="font-size: 11px; color: #61708a; margin-top: 4px;">Рекомендуемый размер: до 70x40px</div>
-          <div id="customLogoPreview" style="margin-top: 8px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+          <label style="display: block; margin-bottom: 4px; font-weight: 500; color: #163d74; font-size: 13px;">Логотип (опционально):</label>
+          <input type="file" id="customLogo" accept="image/*" style="width: 100%; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 12px;">
+          <div style="font-size: 10px; color: #61708a; margin-top: 2px;">до 70x40px</div>
+          <div id="customLogoPreview" style="margin-top: 6px; max-width: 150px; max-height: 75px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
             <img id="customLogoPreviewImg" style="width: 100%; height: auto; display: block;">
           </div>
         </div>
         
         <div style="display: flex; gap: 8px;">
-          <button class="btn btn-primary" onclick="saveCustomStyle()">Сохранить custom стиль</button>
-          <button class="btn btn-secondary" onclick="cancelCustomStyle()">Отмена</button>
+          <button class="btn btn-primary" onclick="saveCustomStyle()" style="padding: 6px 12px; font-size: 13px;">Сохранить</button>
+          <button class="btn btn-secondary" onclick="cancelCustomStyle()" style="padding: 6px 12px; font-size: 13px;">Отмена</button>
         </div>
       </div>
       
@@ -1476,12 +1496,17 @@
     function showCustomStyleForm() {
       document.getElementById('customStyleForm').style.display = 'block';
       document.getElementById('customStyleName').value = '';
+      document.getElementById('customStripeSingle').value = '';
       document.getElementById('customBreakStripe').value = '';
       document.getElementById('customPrematchStripe').value = '';
       document.getElementById('customLogo').value = '';
+      document.getElementById('customStripeSinglePreview').style.display = 'none';
       document.getElementById('customBreakStripePreview').style.display = 'none';
       document.getElementById('customPrematchStripePreview').style.display = 'none';
       document.getElementById('customLogoPreview').style.display = 'none';
+      document.getElementById('stripeModeSingle').checked = true;
+      document.getElementById('stripeModeSeparate').checked = false;
+      document.getElementById('customStripeSeparateContainer').style.display = 'none';
     }
     
     function cancelCustomStyle() {
@@ -1496,9 +1521,41 @@
     }
     
     function setupFilePreviews() {
+      const stripeSingleInput = document.getElementById('customStripeSingle');
       const breakStripeInput = document.getElementById('customBreakStripe');
       const prematchStripeInput = document.getElementById('customPrematchStripe');
       const logoInput = document.getElementById('customLogo');
+      const stripeModeSingle = document.getElementById('stripeModeSingle');
+      const stripeModeSeparate = document.getElementById('stripeModeSeparate');
+      const stripeSeparateContainer = document.getElementById('customStripeSeparateContainer');
+      
+      // Toggle between single and separate stripe modes
+      if (stripeModeSingle && stripeModeSeparate && stripeSeparateContainer) {
+        stripeModeSingle.addEventListener('change', function() {
+          if (this.checked) {
+            stripeSeparateContainer.style.display = 'none';
+          }
+        });
+        stripeModeSeparate.addEventListener('change', function() {
+          if (this.checked) {
+            stripeSeparateContainer.style.display = 'block';
+          }
+        });
+      }
+      
+      if (stripeSingleInput) {
+        stripeSingleInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              document.getElementById('customStripeSinglePreviewImg').src = e.target.result;
+              document.getElementById('customStripeSinglePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
       
       if (breakStripeInput) {
         breakStripeInput.addEventListener('change', function(e) {
@@ -1545,6 +1602,8 @@
     
     async function saveCustomStyle() {
       const name = document.getElementById('customStyleName').value.trim();
+      const stripeMode = document.querySelector('input[name="stripeMode"]:checked').value;
+      const stripeSingleFile = document.getElementById('customStripeSingle').files[0];
       const breakStripeFile = document.getElementById('customBreakStripe').files[0];
       const prematchStripeFile = document.getElementById('customPrematchStripe').files[0];
       const logoFile = document.getElementById('customLogo').files[0];
@@ -1554,15 +1613,29 @@
         return;
       }
       
-      if (!breakStripeFile && !prematchStripeFile) {
-        showNotification('Загрузите хотя бы одну полосу (break или prematch)', 'error');
+      if (stripeMode === 'single' && !stripeSingleFile) {
+        showNotification('Загрузите фон для страниц', 'error');
+        return;
+      }
+      
+      if (stripeMode === 'separate' && !breakStripeFile && !prematchStripeFile) {
+        showNotification('Загрузите хотя бы один фон (break или prematch)', 'error');
         return;
       }
       
       const formData = new FormData();
       formData.append('name', name);
-      if (breakStripeFile) formData.append('breakStripe', breakStripeFile);
-      if (prematchStripeFile) formData.append('prematchStripe', prematchStripeFile);
+      formData.append('stripeMode', stripeMode);
+      
+      if (stripeMode === 'single') {
+        if (stripeSingleFile) {
+          formData.append('stripeSingle', stripeSingleFile);
+        }
+      } else {
+        if (breakStripeFile) formData.append('breakStripe', breakStripeFile);
+        if (prematchStripeFile) formData.append('prematchStripe', prematchStripeFile);
+      }
+      
       if (logoFile) formData.append('logo', logoFile);
       
       try {
