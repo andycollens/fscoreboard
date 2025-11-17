@@ -223,10 +223,12 @@
                 }
             } else if (style && style.startsWith('custom:') && customStyleData) {
                 // Apply custom style
-                if (stripeImage && customStyleData.breakStripe) {
-                    stripeImage.src = customStyleData.breakStripe;
-                } else if (stripeImage) {
-                    stripeImage.src = '/public/img/stripe_default.png';
+                if (stripeImage) {
+                    if (customStyleData.breakStripe) {
+                        stripeImage.src = customStyleData.breakStripe;
+                    } else {
+                        stripeImage.src = '/public/img/stripe_default.png';
+                    }
                 }
             } else {
                 if (stripeImage) {
