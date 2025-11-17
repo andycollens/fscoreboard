@@ -167,16 +167,35 @@
                 const allTriangles = document.querySelectorAll('.logo-triangle');
                 if (allTriangles.length === 0) return;
 
-                const randomIndex = Math.floor(Math.random() * allTriangles.length);
-                const triangleToAnimate = allTriangles[randomIndex];
+                // Анимируем несколько треугольников одновременно для более плавного эффекта
+                const trianglesToAnimate = Math.min(3, Math.floor(allTriangles.length / 100));
+                
+                for (let i = 0; i < trianglesToAnimate; i++) {
+                    const randomIndex = Math.floor(Math.random() * allTriangles.length);
+                    const triangleToAnimate = allTriangles[randomIndex];
 
-                const currentColor = triangleToAnimate.getAttribute('fill');
-                let newColor;
-                do {
-                    newColor = colors[Math.floor(Math.random() * colors.length)];
-                } while (newColor === currentColor);
-
-                triangleToAnimate.setAttribute('fill', newColor);
+                    const currentColor = triangleToAnimate.getAttribute('fill');
+                    const currentIndex = colors.indexOf(currentColor);
+                    
+                    // Плавный переход к соседнему оттенку для эффекта мерцания
+                    let newIndex;
+                    if (currentIndex === -1) {
+                        // Если цвет не найден в палитре, выбираем случайный
+                        newIndex = Math.floor(Math.random() * colors.length);
+                    } else {
+                        // Переход к соседнему оттенку (вверх или вниз на 1-3 позиции)
+                        const direction = Math.random() > 0.5 ? 1 : -1;
+                        const step = Math.floor(Math.random() * 3) + 1; // 1-3 шага
+                        newIndex = currentIndex + (direction * step);
+                        // Ограничиваем границами массива
+                        newIndex = Math.max(0, Math.min(colors.length - 1, newIndex));
+                    }
+                    
+                    const newColor = colors[newIndex];
+                    if (newColor !== currentColor) {
+                        triangleToAnimate.setAttribute('fill', newColor);
+                    }
+                }
             }
 
             // Запускаем создание сетки и анимацию
