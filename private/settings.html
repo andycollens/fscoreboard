@@ -862,18 +862,16 @@
   <div class="section graphic-style-section">
     <div class="section-header">
       <h2>Графическое оформление</h2>
+      <button class="btn btn-secondary" onclick="showCustomStyleForm()" style="padding: 4px 10px; font-size: 11px; margin: 0;">+ Создать</button>
     </div>
     
     <div style="margin-bottom: 20px;">
-      <div class="graphic-style-wrapper" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-        <div style="display: inline-flex; align-items: center; gap: 8px;">
-          <span class="graphic-style-label">Стиль:</span>
-          <div class="graphic-style-buttons" id="graphicStyleButtons">
-            <button type="button" id="graphicStyleDefaultBtn" class="graphic-style-btn" data-style="default">default</button>
-            <button type="button" id="graphicStyleIskracupBtn" class="graphic-style-btn" data-style="iskracup">ISKRACUP</button>
-          </div>
+      <div class="graphic-style-wrapper" style="display: flex; align-items: center; gap: 8px;">
+        <span class="graphic-style-label">Стиль:</span>
+        <div class="graphic-style-buttons" id="graphicStyleButtons">
+          <button type="button" id="graphicStyleDefaultBtn" class="graphic-style-btn" data-style="default">default</button>
+          <button type="button" id="graphicStyleIskracupBtn" class="graphic-style-btn" data-style="iskracup">ISKRACUP</button>
         </div>
-        <button class="btn btn-secondary" onclick="showCustomStyleForm()" style="padding: 4px 10px; font-size: 11px; margin: 0;">+ Создать</button>
       </div>
       
       <!-- Custom styles list -->
