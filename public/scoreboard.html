@@ -159,16 +159,6 @@
       display: block;
     }
     
-    /* Default style - transform -3px */
-    .style-default .section span {
-      transform: translateY(-3px);
-    }
-    
-    /* ISKRACUP style - transform 2px */
-    .style-iskracup .section span {
-      transform: translateY(2px);
-    }
-    
     .scoreboard-row > * {
       margin: 0 !important;
       padding: 0 !important;
@@ -179,21 +169,21 @@
 <body>
   <div class="scoreboard-row style-default" id="scoreboardRow" style="position: absolute; top: 80px; left: 120px;">
     <!-- Timer section: displays the game timer -->
-    <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">00:00</span></div>
+    <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">00:00</span></div>
     <!-- Kit 1 section: displays the color of the first team's kit -->
     <div class="section kit1-section" id="kit1"></div>
     <!-- Team 1 section: displays the short name of the first team -->
-    <div class="section team1-section"><span id="team1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">ABC</span></div>
+    <div class="section team1-section"><span id="team1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">ABC</span></div>
     <!-- Score 1 section: displays the score of the first team -->
-    <div class="section score1-section"><span id="score1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">0</span></div>
+    <div class="section score1-section"><span id="score1" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">0</span></div>
     <!-- Divider section -->
     <div class="section divider-section" id="divider-logo">
       <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" class="divider-logo" id="dividerLogoImg">
     </div>
     <!-- Score 2 section: displays the score of the second team -->
-    <div class="section score2-section"><span id="score2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">0</span></div>
+    <div class="section score2-section"><span id="score2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">0</span></div>
     <!-- Team 2 section: displays the short name of the second team -->
-    <div class="section team2-section"><span id="team2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit;">XYZ</span></div>
+    <div class="section team2-section"><span id="team2" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">XYZ</span></div>
     <!-- Kit 2 section: displays the color of the second team's kit -->
     <div class="section kit2-section" id="kit2"></div>
   </div>
