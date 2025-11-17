@@ -169,9 +169,30 @@
       transform: translateY(3px);
     }
     .divider-section {
+      height: 40px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+    
+    /* Default style - divider 2px */
+    .style-default .divider-section {
+      width: 2px;
+      background: #424242;
+      line-height: 40px;
+      margin: 0;
+      padding: 0;
+      border-radius: 0;
+      flex-shrink: 0;
+      flex-grow: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    /* ISKRACUP style - divider 70px with logo */
+    .style-iskracup .divider-section {
       width: 70px;
       background: #2b2b2b;
-      height: 40px;
       line-height: 40px;
       margin: 0;
       padding: 0;
@@ -183,6 +204,26 @@
       flex-grow: 0;
       position: relative;
     }
+    
+    .divider-logo {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      max-height: none;
+      max-width: none;
+      width: auto;
+      height: auto;
+      display: none;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+    
+    .style-iskracup .divider-logo {
+      display: block;
+      opacity: 1;
+    }
     .scoreboard-row > * {
       margin: 0 !important;
       padding: 0 !important;
@@ -191,7 +232,7 @@
   </style>
 </head>
 <body>
-  <div class="scoreboard-row" style="position: absolute; top: 80px; left: 120px;">
+  <div class="scoreboard-row style-default" id="scoreboardRow" style="position: absolute; top: 80px; left: 120px;">
     <!-- Timer section: displays the game timer, now lifted by 3px -->
     <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">00:00</span></div>
     <!-- Kit 1 section: displays the color of the first team's kit -->
@@ -216,7 +257,7 @@
     </div>
     <!-- Divider section with ISKRA CUP logo -->
     <div class="section divider-section" id="divider-logo">
-      <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; max-height: none; max-width: none; width: auto; height: auto; display: none;">
+      <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" class="divider-logo" id="dividerLogoImg">
     </div>
     <!-- Penalty score for team 2 -->
     <div class="section penalty-score-section">
@@ -265,14 +306,47 @@
 
     // Apply graphic style
     function applyGraphicStyle(style) {
-      const logoImg = document.querySelector('#divider-logo img');
+      console.log('Applying graphic style:', style);
+      const scoreboardRow = document.getElementById('scoreboardRow');
+      const logoImg = document.getElementById('dividerLogoImg');
+      
+      if (!scoreboardRow) {
+        console.error('scoreboardRow not found');
+        return;
+      }
+      
+      // Remove all style classes
+      scoreboardRow.classList.remove('style-default', 'style-iskracup');
+      
       if (style === 'iskracup') {
+        // Apply ISKRACUP style
+        scoreboardRow.classList.add('style-iskracup');
+        console.log('Added style-iskracup class');
         if (logoImg) {
-          logoImg.style.display = 'block';
+          logoImg.src = '/public/img/iskracup_scoreboard_logo.png';
+          // Use requestAnimationFrame to ensure CSS class is applied first
+          requestAnimationFrame(() => {
+            logoImg.style.display = 'block';
+            requestAnimationFrame(() => {
+              logoImg.style.opacity = '1';
+            });
+          });
+          console.log('Logo should be visible now');
+        } else {
+          console.error('logoImg not found');
         }
       } else {
+        // Apply default style
+        scoreboardRow.classList.add('style-default');
+        console.log('Added style-default class');
         if (logoImg) {
-          logoImg.style.display = 'none';
+          logoImg.style.opacity = '0';
+          // Hide after transition
+          setTimeout(() => {
+            if (scoreboardRow.classList.contains('style-default')) {
+              logoImg.style.display = 'none';
+            }
+          }, 300);
         }
       }
     }
