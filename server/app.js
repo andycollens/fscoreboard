@@ -308,6 +308,10 @@ app.get('/prematch.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'prematch.html'));
 });
 
+app.get('/preloader.html', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'preloader.html'));
+});
+
 app.get('/break.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'break.html'));
 });
@@ -1116,6 +1120,7 @@ server.listen(PORT, () => {
   console.log(`Пенальти: http://localhost:${PORT}/penalti.html`);
   console.log(`Prematch: http://localhost:${PORT}/prematch.html`);
   console.log(`Break: http://localhost:${PORT}/break.html`);
+  console.log(`Preloader: http://localhost:${PORT}/preloader.html`);
   console.log(`Stadium: http://localhost:${PORT}/stadium.html?token=${getActualStadiumToken()}`);
 });
 
