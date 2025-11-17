@@ -452,6 +452,22 @@
     </div>
   </div>
 
+  <!-- Секция Графическое оформление -->
+  <div class="section">
+    <div class="section-header">
+      <h2>🎨 Графическое оформление</h2>
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: bold;">Выберите стиль оформления:</label>
+      <select id="graphicStyleSelect" style="width: 100%; padding: 8px; border: 1px solid #c5d9ff; border-radius: 8px; font-size: 14px; background: #fff; cursor: pointer;">
+        <option value="default">default</option>
+        <option value="iskracup">ISKRACUP</option>
+      </select>
+      <button class="btn btn-primary" onclick="saveGraphicStyle()" style="margin-top: 12px;">Применить стиль</button>
+    </div>
+  </div>
+
   <!-- Секция Режим работы табло стадиона -->
   <div class="section">
     <div class="section-header">
@@ -1257,6 +1273,39 @@
       }, 3000);
     }
     
+    // Сохранение стиля графического оформления
+    async function saveGraphicStyle() {
+      const styleSelect = document.getElementById('graphicStyleSelect');
+      if (!styleSelect) {
+        showNotification('Ошибка: элемент выбора стиля не найден', 'error');
+        return;
+      }
+      
+      const selectedStyle = styleSelect.value;
+      
+      if (!confirm('Применить этот стиль оформления? Страницы обновятся моментально.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ graphicStyle: selectedStyle })
+        });
+        
+        if (response.ok) {
+          showNotification('Стиль оформления сохранен!', 'success');
+          // Событие отправляется автоматически на сервере через Socket.IO
+        } else {
+          throw new Error('Ошибка сохранения стиля');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения стиля:', error);
+        showNotification('Ошибка сохранения стиля', 'error');
+      }
+    }
+    
     // Загрузка конфигурации (секрет для Stadium)
     async function loadConfig() {
       try {
@@ -1275,6 +1324,20 @@
           const stadiumUrl = `${currentUrl}/stadium.html?token=${encodeURIComponent(config.stadiumToken || '')}`;
           stadiumLink.href = stadiumUrl;
           stadiumLink.textContent = stadiumUrl;
+        }
+        
+        // Загружаем стиль графического оформления
+        if (config.graphicStyle) {
+          const styleSelect = document.getElementById('graphicStyleSelect');
+          if (styleSelect) {
+            styleSelect.value = config.graphicStyle;
+          }
+        } else {
+          // По умолчанию - default
+          const styleSelect = document.getElementById('graphicStyleSelect');
+          if (styleSelect) {
+            styleSelect.value = 'default';
+          }
         }
         
         // Загружаем режим работы табло

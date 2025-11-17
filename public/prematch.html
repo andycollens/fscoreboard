@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prematch - FSCOREBOARD</title>
+    <style>
+        @font-face {
+            font-family: 'RPL';
+            src: url('/public/fonts/RPL.ttf') format('truetype');
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: transparent;
+            font-family: 'RPL', Arial, sans-serif;
+        }
+
+        .prematch-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .image-container {
+            position: absolute;
+            bottom: 220px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1920px;
+            height: auto;
+            z-index: 1;
+        }
+
+        .stripe-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .team1-logo {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            bottom: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-left: -400px;
+            z-index: 2;
+            object-fit: contain;
+        }
+
+        .team2-logo {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            bottom: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-left: 400px;
+            z-index: 2;
+            object-fit: contain;
+        }
+
+        .team1-name {
+            position: absolute;
+            bottom: 250px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-left: -400px;
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            z-index: 3;
+            width: 300px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .team2-name {
+            position: absolute;
+            bottom: 250px;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-left: 400px;
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            z-index: 3;
+            width: 300px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="prematch-container">
+        <div class="image-container">
+            <img src="/public/img/stripe_default.png" alt="Stripe" class="stripe-image" id="stripeImage">
+        </div>
+        <img src="" alt="Team 1 Logo" class="team1-logo" id="team1Logo" style="display: none;">
+        <img src="" alt="Team 2 Logo" class="team2-logo" id="team2Logo" style="display: none;">
+        <div class="team1-name" id="team1Name">Команда 1</div>
+        <div class="team2-name" id="team2Name">Команда 2</div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Load graphic style from config
+        async function loadGraphicStyle() {
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    const config = await response.json();
+                    const style = config.graphicStyle || 'default';
+                    applyGraphicStyle(style);
+                }
+            } catch (error) {
+                console.error('Error loading graphic style:', error);
+                applyGraphicStyle('default');
+            }
+        }
+
+        // Apply graphic style
+        function applyGraphicStyle(style) {
+            const stripeImage = document.getElementById('stripeImage');
+            if (style === 'iskracup') {
+                if (stripeImage) {
+                    stripeImage.src = '/public/img/iskracup_stripe_prematch.png';
+                }
+            } else {
+                if (stripeImage) {
+                    stripeImage.src = '/public/img/stripe_default.png';
+                }
+            }
+        }
+
+        socket.on('scoreboardUpdate', (data) => {
+            const team1Logo = document.getElementById('team1Logo');
+            const team2Logo = document.getElementById('team2Logo');
+            const team1Name = document.getElementById('team1Name');
+            const team2Name = document.getElementById('team2Name');
+
+            if (data.team1Logo) {
+                team1Logo.src = data.team1Logo;
+                team1Logo.style.display = 'block';
+            } else {
+                team1Logo.style.display = 'none';
+            }
+
+            if (data.team2Logo) {
+                team2Logo.src = data.team2Logo;
+                team2Logo.style.display = 'block';
+            } else {
+                team2Logo.style.display = 'none';
+            }
+
+            team1Name.textContent = data.team1Name || 'Команда 1';
+            team2Name.textContent = data.team2Name || 'Команда 2';
+        });
+
+        // Listen for config updates
+        socket.on('configUpdate', (data) => {
+            if (data.graphicStyle) {
+                applyGraphicStyle(data.graphicStyle);
+            }
+        });
+
+        // Load style on page load
+        loadGraphicStyle();
+    </script>
+</body>
+</html>
+
