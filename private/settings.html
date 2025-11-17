@@ -2108,6 +2108,36 @@
       }
     }
     
+    // Сохранение названия турнира для Stadium
+    async function saveStadiumTournamentTitle() {
+      const tournamentTitleInput = document.getElementById('stadiumTournamentTitleInput');
+      if (!tournamentTitleInput) return;
+      
+      const tournamentTitle = tournamentTitleInput.value.trim();
+      
+      if (!tournamentTitle) {
+        showNotification('Введите название турнира', 'error');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tournamentTitle })
+        });
+        
+        if (response.ok) {
+          showNotification('Название турнира сохранено!', 'success');
+        } else {
+          throw new Error('Ошибка сохранения названия турнира');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения названия турнира:', error);
+        showNotification('Ошибка сохранения названия турнира', 'error');
+      }
+    }
+    
     // Заполнение списков команд для выбора победителей
     function fillWinnersSelects() {
       const winner1Select = document.getElementById('winner1Select');

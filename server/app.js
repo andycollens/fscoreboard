@@ -985,7 +985,20 @@ io.on('connection', (socket) => {
   
   // Обработчик запроса текущего состояния
   socket.on('getCurrentState', () => {
-    socket.emit('currentState', state);
+    // Загружаем tournamentTitle из конфига, если он есть
+    let config = {};
+    if (fs.existsSync(CONFIG_PATH)) {
+      try {
+        config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      } catch (e) {
+        console.error('Ошибка чтения config.json', e);
+      }
+    }
+    const currentState = { ...state };
+    if (config.tournamentTitle) {
+      currentState.tournamentTitle = config.tournamentTitle;
+    }
+    socket.emit('currentState', currentState);
   });
 
   // Изменение состояния с панели управления
