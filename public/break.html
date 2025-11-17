@@ -59,93 +59,140 @@
             position: absolute;
             width: 250px;
             height: 250px;
-            bottom: 300px;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-left: -400px;
-            z-index: 2;
             object-fit: contain;
+            z-index: 2;
+            left: 0;
+            top: 0;
         }
 
         .team2-logo {
             position: absolute;
             width: 250px;
             height: 250px;
-            bottom: 300px;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-left: 400px;
-            z-index: 2;
             object-fit: contain;
+            z-index: 2;
+            left: 0;
+            top: 0;
         }
 
-        .team1-name {
+        .team1-info {
             position: absolute;
-            bottom: 250px;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-left: -400px;
-            font-size: 48px;
-            font-weight: bold;
-            color: #fff;
+            left: 0;
+            top: 0;
             text-align: center;
-            z-index: 3;
-            width: 300px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            color: white;
+            z-index: 2;
+            width: 480px;
+            max-height: 120px;
+            overflow: hidden;
         }
 
-        .team2-name {
+        .team2-info {
             position: absolute;
-            bottom: 250px;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-left: 400px;
-            font-size: 48px;
-            font-weight: bold;
-            color: #fff;
+            left: 0;
+            top: 0;
             text-align: center;
-            z-index: 3;
-            width: 300px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            color: white;
+            z-index: 2;
+            width: 480px;
+            max-height: 120px;
+            overflow: hidden;
         }
 
-        .score {
+        .score1-block {
             position: absolute;
-            bottom: 300px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 120px;
-            font-weight: bold;
-            color: #fff;
-            z-index: 3;
+            left: 0;
+            top: 0;
             text-align: center;
+            color: white;
+            z-index: 2;
+            width: 150px;
+            font-size: 110px;
+            font-weight: bold;
         }
 
-        .score-separator {
-            margin: 0 20px;
+        .score2-block {
+            position: absolute;
+            left: 0;
+            top: 0;
+            text-align: center;
+            color: white;
+            z-index: 2;
+            width: 150px;
+            font-size: 110px;
+            font-weight: bold;
         }
+
+        .team-name {
+            font-size: 29px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .team-city {
+            font-size: 21px;
+            font-weight: normal;
+            white-space: nowrap;
+        }
+
+        /* Фиксированные размеры - без адаптивности */
     </style>
 </head>
 <body>
-    <div class="break-container" id="breakContainer">
+    <div class="break-container">
+        <!-- Контейнер изображения с привязанными элементами -->
         <div class="image-container">
-            <img src="/public/img/stripe_default_grey.png" alt="Stripe" class="stripe-image" id="stripeImage">
+            <!-- Фоновое изображение -->
+            <img src="/public/img/stripe_default_grey.png" alt="Break Stripe" class="stripe-image" id="stripeImage">
+            
+            <!-- Логотип команды 1 -->
+            <img id="team1Logo" src="" alt="Team 1 Logo" class="team1-logo" style="display: none;">
+            
+            <!-- Логотип команды 2 -->
+            <img id="team2Logo" src="" alt="Team 2 Logo" class="team2-logo" style="display: none;">
+            
+            <!-- Информация о команде 1 -->
+            <div class="team1-info">
+                <div id="team1Name" class="team-name">Команда 1</div>
+                <div id="team1City" class="team-city">Город 1</div>
+            </div>
+            
+            <!-- Информация о команде 2 -->
+            <div class="team2-info">
+                <div id="team2Name" class="team-name">Команда 2</div>
+                <div id="team2City" class="team-city">Город 2</div>
+            </div>
+
+            <!-- Счет команды 1 -->
+            <div class="score1-block">
+                <div id="team1Score">0</div>
+            </div>
+
+            <!-- Счет команды 2 -->
+            <div class="score2-block">
+                <div id="team2Score">0</div>
+            </div>
         </div>
-        <img src="" alt="Team 1 Logo" class="team1-logo" id="team1Logo" style="display: none;">
-        <img src="" alt="Team 2 Logo" class="team2-logo" id="team2Logo" style="display: none;">
-        <div class="team1-name" id="team1Name">Команда 1</div>
-        <div class="score" id="score">
-            <span id="score1">0</span>
-            <span class="score-separator">:</span>
-            <span id="score2">0</span>
-        </div>
-        <div class="team2-name" id="team2Name">Команда 2</div>
     </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Подключение к WebSocket
         const socket = io();
+
+        // Элементы DOM
+        const team1NameEl = document.getElementById('team1Name');
+        const team1CityEl = document.getElementById('team1City');
+        const team1LogoEl = document.getElementById('team1Logo');
+        const team2NameEl = document.getElementById('team2Name');
+        const team2CityEl = document.getElementById('team2City');
+        const team2LogoEl = document.getElementById('team2Logo');
+        const team1ScoreEl = document.getElementById('team1Score');
+        const team2ScoreEl = document.getElementById('team2Score');
+        const stripeImage = document.getElementById('stripeImage');
 
         // Load graphic style from config
         async function loadGraphicStyle() {
@@ -154,7 +201,11 @@
                 if (response.ok) {
                     const config = await response.json();
                     const style = config.graphicStyle || 'default';
+                    console.log('Loaded graphic style from config:', style);
                     applyGraphicStyle(style);
+                } else {
+                    console.error('Failed to load config:', response.status);
+                    applyGraphicStyle('default');
                 }
             } catch (error) {
                 console.error('Error loading graphic style:', error);
@@ -164,7 +215,7 @@
 
         // Apply graphic style
         function applyGraphicStyle(style) {
-            const stripeImage = document.getElementById('stripeImage');
+            console.log('Applying graphic style:', style);
             if (style === 'iskracup') {
                 if (stripeImage) {
                     stripeImage.src = '/public/img/iskracup_stripe_break.png';
@@ -176,49 +227,186 @@
             }
         }
 
-        socket.on('scoreboardUpdate', (data) => {
-            const team1Logo = document.getElementById('team1Logo');
-            const team2Logo = document.getElementById('team2Logo');
-            const team1Name = document.getElementById('team1Name');
-            const team2Name = document.getElementById('team2Name');
-            const score1 = document.getElementById('score1');
-            const score2 = document.getElementById('score2');
-
-            if (data.team1Logo) {
-                team1Logo.src = data.team1Logo;
-                team1Logo.style.display = 'block';
-            } else {
-                team1Logo.style.display = 'none';
-            }
-
-            if (data.team2Logo) {
-                team2Logo.src = data.team2Logo;
-                team2Logo.style.display = 'block';
-            } else {
-                team2Logo.style.display = 'none';
-            }
-
-            team1Name.textContent = data.team1Name || 'Команда 1';
-            team2Name.textContent = data.team2Name || 'Команда 2';
-            score1.textContent = typeof data.score1 === 'number' ? data.score1 : '0';
-            score2.textContent = typeof data.score2 === 'number' ? data.score2 : '0';
+        // Обработка обновлений от сервера
+        socket.on('scoreboardUpdate', function(data) {
+            updateDisplay(data);
         });
+
+        // Функция обновления отображения
+        function updateDisplay(data) {
+            // Обновляем названия команд
+            if (data.team1Name) {
+                team1NameEl.textContent = data.team1Name;
+            }
+            if (data.team1City) {
+                team1CityEl.textContent = data.team1City;
+            }
+            if (data.team2Name) {
+                team2NameEl.textContent = data.team2Name;
+            }
+            if (data.team2City) {
+                team2CityEl.textContent = data.team2City;
+            }
+
+            // Обновляем счета (используем те же поля что и в scoreboard_vmix.html)
+            if (data.score1 !== undefined) {
+                team1ScoreEl.textContent = typeof data.score1 === 'number' ? data.score1 : "0";
+            }
+            if (data.score2 !== undefined) {
+                team2ScoreEl.textContent = typeof data.score2 === 'number' ? data.score2 : "0";
+            }
+
+            // Обновляем логотипы
+            if (data.team1Logo && data.team1Logo !== '') {
+                team1LogoEl.src = data.team1Logo;
+                team1LogoEl.style.display = 'block';
+            } else {
+                team1LogoEl.style.display = 'none';
+            }
+
+            if (data.team2Logo && data.team2Logo !== '') {
+                team2LogoEl.src = data.team2Logo;
+                team2LogoEl.style.display = 'block';
+            } else {
+                team2LogoEl.style.display = 'none';
+            }
+            
+            // Автоматически подстраиваем размер шрифта
+            const team1Info = document.querySelector('.team1-info');
+            const team2Info = document.querySelector('.team2-info');
+            if (team1Info) adjustFontSize(team1Info);
+            if (team2Info) adjustFontSize(team2Info);
+        }
+
+        // Функция позиционирования логотипов и текстовых блоков
+        function positionLogos() {
+            const team1Info = document.querySelector('.team1-info');
+            const team2Info = document.querySelector('.team2-info');
+            const score1Block = document.querySelector('.score1-block');
+            const score2Block = document.querySelector('.score2-block');
+            
+            if (stripeImage && team1LogoEl && team2LogoEl && team1Info && team2Info && score1Block && score2Block) {
+                // Получаем размеры изображения
+                const imageWidth = stripeImage.offsetWidth;
+                const imageHeight = stripeImage.offsetHeight;
+                
+                console.log('Image dimensions:', imageWidth, 'x', imageHeight);
+                
+                // Вычисляем центр изображения
+                const imageCenterX = imageWidth / 2; // Центр по ширине
+                const imageCenterY = imageHeight / 2; // Центр по высоте
+                
+                // Позиционируем логотипы: ±759px от центра изображения
+                const leftLogoX = imageCenterX - 759 - 125; // Центр - 759px - половина логотипа
+                const leftLogoY = imageCenterY - 125; // Центр по высоте - половина логотипа
+                team1LogoEl.style.left = leftLogoX + 'px';
+                team1LogoEl.style.top = leftLogoY + 'px';
+                
+                const rightLogoX = imageCenterX + 759 - 125; // Центр + 759px - половина логотипа
+                const rightLogoY = imageCenterY - 125; // Центр по высоте - половина логотипа
+                team2LogoEl.style.left = rightLogoX + 'px';
+                team2LogoEl.style.top = rightLogoY + 'px';
+                
+                // Позиционируем текстовые блоки: смещение на 405px от центра (365 + 40)
+                const leftTextX = imageCenterX - 405 - 240; // Центр - 405px - половина ширины блока (240px)
+                const leftTextY = imageCenterY - 35; // Центр по высоте - 35px (сдвиг на 5px вниз)
+                team1Info.style.left = leftTextX + 'px';
+                team1Info.style.top = leftTextY + 'px';
+                
+                const rightTextX = imageCenterX + 405 - 240; // Центр + 405px - половина ширины блока (240px)
+                const rightTextY = imageCenterY - 35; // Центр по высоте - 35px (сдвиг на 5px вниз)
+                team2Info.style.left = rightTextX + 'px';
+                team2Info.style.top = rightTextY + 'px';
+                
+                // Позиционируем блоки со счетом: ±100px от центра
+                const leftScoreX = imageCenterX - 100 - 75; // Центр - 100px - половина ширины блока (75px)
+                const leftScoreY = imageCenterY - 40; // Центр по высоте - 40px (сдвиг на 25px вниз)
+                score1Block.style.left = leftScoreX + 'px';
+                score1Block.style.top = leftScoreY + 'px';
+                
+                const rightScoreX = imageCenterX + 100 - 75; // Центр + 100px - половина ширины блока (75px)
+                const rightScoreY = imageCenterY - 40; // Центр по высоте - 40px (сдвиг на 25px вниз)
+                score2Block.style.left = rightScoreX + 'px';
+                score2Block.style.top = rightScoreY + 'px';
+                
+                console.log('Image center:', imageCenterX, imageCenterY);
+                console.log('Left logo position:', leftLogoX, leftLogoY);
+                console.log('Right logo position:', rightLogoX, rightLogoY);
+                console.log('Left text position:', leftTextX, leftTextY);
+                console.log('Right text position:', rightTextX, rightTextY);
+                console.log('Left score position:', leftScoreX, leftScoreY);
+                console.log('Right score position:', rightScoreX, rightScoreY);
+            }
+        }
+
+        // Функция автоматического уменьшения шрифта для текстовых блоков
+        function adjustFontSize(teamInfo) {
+            const teamName = teamInfo.querySelector('.team-name');
+            const teamCity = teamInfo.querySelector('.team-city');
+            
+            if (teamName && teamCity) {
+                // Стандартные размеры
+                let nameSize = 29;
+                let citySize = 21;
+                
+                // Устанавливаем базовые размеры
+                teamName.style.fontSize = nameSize + 'px';
+                teamCity.style.fontSize = citySize + 'px';
+                
+                // Уменьшаем шрифт только для города (название может переноситься)
+                while (teamCity.scrollWidth > teamInfo.offsetWidth && citySize > 12) {
+                    citySize -= 0.5; // Уменьшаем на 0.5px для более точной подгонки
+                    teamCity.style.fontSize = citySize + 'px';
+                }
+            }
+        }
+
+        // Запрос текущего состояния при загрузке страницы
+        socket.emit('getCurrentState');
+        
+        socket.on('currentState', function(data) {
+            updateDisplay(data);
+        });
+
+        // Позиционируем логотипы после загрузки изображения
+        if (stripeImage) {
+            stripeImage.addEventListener('load', function() {
+                console.log('Stripe image loaded, positioning logos...');
+                positionLogos();
+                // Показываем страницу после полной загрузки
+                document.querySelector('.break-container').classList.add('loaded');
+            });
+            
+            // Если изображение уже загружено
+            if (stripeImage.complete) {
+                console.log('Stripe image already loaded, positioning logos...');
+                positionLogos();
+                document.querySelector('.break-container').classList.add('loaded');
+            }
+        }
+
+        // Позиционируем логотипы при изменении размера окна
+        window.addEventListener('resize', positionLogos);
 
         // Listen for config updates
         socket.on('configUpdate', (data) => {
+            console.log('Received configUpdate event:', data);
             if (data.graphicStyle) {
+                console.log('Updating graphic style to:', data.graphicStyle);
                 applyGraphicStyle(data.graphicStyle);
+                // Перепозиционируем элементы после смены изображения
+                if (stripeImage) {
+                    stripeImage.addEventListener('load', positionLogos, { once: true });
+                }
             }
         });
 
         // Load style on page load
-        loadGraphicStyle();
-
-        // Show container after load
-        window.addEventListener('load', () => {
-            document.getElementById('breakContainer').classList.add('loaded');
-        });
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadGraphicStyle);
+        } else {
+            loadGraphicStyle();
+        }
     </script>
 </body>
 </html>
-
