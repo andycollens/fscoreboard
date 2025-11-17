@@ -251,6 +251,11 @@ setInterval(() => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Ignore favicon requests to avoid 404 errors
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
+
 // ====== Раздача статики ======
 // Защита stadium.html в публичной папке
 app.use('/public', (req, res, next) => {
