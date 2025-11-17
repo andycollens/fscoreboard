@@ -1744,11 +1744,28 @@
       });
     }
     
+    // Обработчики для кнопок выбора стиля
+    function initGraphicStyleButtons() {
+      const styleButtons = document.querySelectorAll('.graphic-style-btn');
+      styleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const style = this.getAttribute('data-style');
+          styleButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          updateGraphicStylePreviews(style);
+        });
+      });
+    }
+    
     // Инициализация при загрузке
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initModeRadios);
+      document.addEventListener('DOMContentLoaded', function() {
+        initModeRadios();
+        initGraphicStyleButtons();
+      });
     } else {
       initModeRadios();
+      initGraphicStyleButtons();
     }
     
     // Сохранение режима работы табло
