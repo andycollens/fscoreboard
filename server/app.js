@@ -1449,6 +1449,15 @@ app.put('/api/custom-styles/:id', uploadCustomStyle.fields([
         fs.unlinkSync(oldFilePath);
       }
     }
+  } else if (req.body.removeLogo === 'true') {
+    // Remove logo
+    if (existingStyle.logo) {
+      const oldFilePath = path.join(__dirname, '..', existingStyle.logo);
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
+    }
+    style.logo = null;
   } else if (req.body.keepLogo === 'true' && existingStyle.logo) {
     style.logo = existingStyle.logo;
   } else {
