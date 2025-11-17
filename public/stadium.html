@@ -2081,6 +2081,14 @@ body.penalty-mode .penalty-score {
                     }
                 }
                 
+                // Загружаем название турнира
+                if (config.tournamentTitle) {
+                    const tournamentTitleEl = document.getElementById('tournamentTitle');
+                    if (tournamentTitleEl) {
+                        tournamentTitleEl.textContent = config.tournamentTitle;
+                    }
+                }
+                
                 // Затем загружаем сохраненный режим (по умолчанию 'scoreboard')
                 const mode = config.stadiumMode || 'scoreboard';
                 console.log('Setting mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
