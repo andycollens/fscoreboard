@@ -1865,6 +1865,15 @@
     }
     
     async function deleteCustomStyle(styleId) {
+      // Check if this style is currently active
+      const activeBtn = document.querySelector('.graphic-style-btn.active');
+      const activeStyle = activeBtn ? activeBtn.getAttribute('data-style') : null;
+      
+      if (activeStyle === `custom:${styleId}`) {
+        showNotification('Нельзя удалить активный стиль. Сначала выберите другой стиль.', 'error');
+        return;
+      }
+      
       if (!confirm(`Удалить стиль "${customStyles[styleId].name}"?`)) {
         return;
       }
@@ -1877,15 +1886,13 @@
         if (response.ok) {
           showNotification('Custom стиль удален', 'success');
           await loadCustomStyles();
-          
-          // If this style was active, switch to default
-          const activeBtn = document.querySelector('.graphic-style-btn.active');
-          if (activeBtn && activeBtn.getAttribute('data-style') === `custom:${styleId}`) {
-            document.getElementById('graphicStyleDefaultBtn').click();
-            await saveGraphicStyle();
-          }
         } else {
-          throw new Error('Ошибка удаления custom стиля');
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.error && errorData.error.includes('active')) {
+            showNotification('Нельзя удалить активный стиль. Сначала выберите другой стиль.', 'error');
+          } else {
+            throw new Error('Ошибка удаления custom стиля');
+          }
         }
       } catch (error) {
         console.error('Ошибка удаления custom стиля:', error);

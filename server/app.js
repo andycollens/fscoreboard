@@ -1481,6 +1481,14 @@ app.delete('/api/custom-styles/:id', (req, res) => {
     return res.status(404).json({ error: 'Style not found' });
   }
   
+  // Check if this style is currently active
+  const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+  const currentGraphicStyle = config.graphicStyle || 'default';
+  
+  if (currentGraphicStyle === `custom:${styleId}`) {
+    return res.status(400).json({ error: 'Cannot delete active style. Please select another style first.' });
+  }
+  
   const style = styles[styleId];
   
   // Delete files
