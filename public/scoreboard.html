@@ -63,6 +63,7 @@
     .kit1-section, .kit2-section {
       width: 10px;
       background: #2b2b2b;
+      transition: margin 0.3s ease;
     }
     
     /* Default style - no margins */
@@ -83,6 +84,15 @@
       margin-left: 5px;
     }
     
+    .team1-section, .team2-section {
+      background: #2b2b2b;
+      color: #fff;
+      font-size: 1.25em;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: width 0.3s ease;
+    }
+    
     /* Default style - team width 70px */
     .style-default .team1-section, .style-default .team2-section {
       width: 70px;
@@ -92,14 +102,6 @@
     .style-iskracup .team1-section, .style-iskracup .team2-section {
       width: 75px;
     }
-    
-    .team1-section, .team2-section {
-      background: #2b2b2b;
-      color: #fff;
-      font-size: 1.25em;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
     .score1-section, .score2-section {
       width: 40px;
       background: #2b2b2b;
@@ -108,24 +110,31 @@
       font-weight: normal;
     }
     
+    .divider-section {
+      height: 40px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+    
     /* Default style - divider 2px */
     .style-default .divider-section {
       width: 2px;
       background: #424242;
-      height: 40px;
       line-height: 40px;
       margin: 0;
       padding: 0;
       border-radius: 0;
       flex-shrink: 0;
       flex-grow: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
     }
     
     /* ISKRACUP style - divider 70px with logo */
     .style-iskracup .divider-section {
       width: 70px;
       background: #2b2b2b;
-      height: 40px;
       line-height: 40px;
       margin: 0;
       padding: 0;
@@ -136,10 +145,6 @@
       flex-shrink: 0;
       flex-grow: 0;
       position: relative;
-    }
-    
-    .divider-section {
-      height: 40px;
     }
     
     .divider-logo {
@@ -153,10 +158,13 @@
       width: auto;
       height: auto;
       display: none;
+      transition: opacity 0.3s ease;
+      opacity: 0;
     }
     
     .style-iskracup .divider-logo {
       display: block;
+      opacity: 1;
     }
     
     .scoreboard-row > * {
