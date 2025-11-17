@@ -605,19 +605,19 @@
     </div>
     
     <div style="margin-bottom: 20px;">
-      <div class="graphic-style-wrapper">
-        <span class="graphic-style-label">Стиль:</span>
-        <div class="graphic-style-buttons" id="graphicStyleButtons">
-          <button type="button" id="graphicStyleDefaultBtn" class="graphic-style-btn" data-style="default">default</button>
-          <button type="button" id="graphicStyleIskracupBtn" class="graphic-style-btn" data-style="iskracup">ISKRACUP</button>
+      <div class="graphic-style-wrapper" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <div style="display: inline-flex; align-items: center; gap: 8px;">
+          <span class="graphic-style-label">Стиль:</span>
+          <div class="graphic-style-buttons" id="graphicStyleButtons">
+            <button type="button" id="graphicStyleDefaultBtn" class="graphic-style-btn" data-style="default">default</button>
+            <button type="button" id="graphicStyleIskracupBtn" class="graphic-style-btn" data-style="iskracup">ISKRACUP</button>
+          </div>
         </div>
+        <button class="btn btn-secondary" onclick="showCustomStyleForm()" style="padding: 4px 10px; font-size: 11px; margin: 0;">+ Создать</button>
       </div>
       
       <!-- Custom styles list -->
       <div id="customStylesList" style="margin-top: 16px; margin-bottom: 16px;"></div>
-      
-      <!-- Button to create custom style -->
-      <button class="btn btn-secondary" onclick="showCustomStyleForm()" style="margin-bottom: 12px;">+ Создать custom стиль</button>
       
       <!-- Custom style form (hidden by default) -->
       <div id="customStyleForm" style="display: none; margin-top: 20px; padding: 16px; background: #f8fbff; border-radius: 8px; border: 1px solid #d8e3f6;">
