@@ -1185,6 +1185,12 @@ app.put('/api/config', (req, res) => {
       winnersResolved: currentConfig.winnersResolved || null
     });
   }
+  if (req.body.graphicStyle !== undefined) {
+    // Сохраняем стиль графического оформления
+    currentConfig.graphicStyle = req.body.graphicStyle;
+    // Отправляем событие всем подключенным клиентам для обновления стиля
+    io.emit('configUpdate', { graphicStyle: req.body.graphicStyle });
+  }
   // Важно: не перезаписываем winners и stadiumMode, если они не переданы
   
   // Сохраняем конфигурацию
@@ -1194,7 +1200,8 @@ app.put('/api/config', (req, res) => {
     token: req.body.token !== undefined ? '***changed***' : 'unchanged', 
     stadiumToken: req.body.stadiumToken !== undefined ? '***changed***' : 'unchanged',
     stadiumMode: req.body.stadiumMode !== undefined ? req.body.stadiumMode : (currentConfig.stadiumMode || 'scoreboard'),
-    winners: req.body.winners !== undefined ? '***changed***' : (currentConfig.winners ? 'preserved' : 'none')
+    winners: req.body.winners !== undefined ? '***changed***' : (currentConfig.winners ? 'preserved' : 'none'),
+    graphicStyle: req.body.graphicStyle !== undefined ? req.body.graphicStyle : (currentConfig.graphicStyle || 'default')
   });
   res.json({ success: true, ...currentConfig });
 });
