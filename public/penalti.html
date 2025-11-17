@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Penalti Scoreboard</title>
+  <style>
+    @font-face {
+      font-family: 'RPL';
+      src: url('/public/fonts/RPL.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    html, body {
+      font-family: 'RPL', Arial, sans-serif;
+      background: transparent !important;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+    body {
+      font-family: 'RPL', Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: transparent !important;
+    }
+    .scoreboard-row {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      height: 40px;
+      line-height: 40px;
+      user-select: none;
+      -webkit-user-select: none;
+      background: transparent !important;
+      font-size: 24px;
+      gap: 0;
+      overflow: hidden;
+    }
+    .section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      line-height: 40px;
+      box-sizing: border-box;
+      font-family: 'RPL', Arial, sans-serif;
+      font-weight: normal;
+      border-radius: 0;
+      box-shadow: none;
+      background: transparent;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .timer-section {
+      width: 100px;
+      background: #f6f3fc;
+      color: #2b2b2b;
+      font-size: 1.4em;
+      letter-spacing: 2px;
+    }
+    .kit1-section, .kit2-section {
+      width: 10px;
+      background: #2b2b2b;
+    }
+    .spacer-section {
+      width: 10px;
+      background: #2b2b2b;
+    }
+    .team1-section, .team2-section {
+      width: 60px;
+      background: #2b2b2b;
+      color: #fff;
+      font-size: 1.25em;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-shrink: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      min-width: 60px;
+      max-width: 60px;
+      box-sizing: border-box;
+    }
+    
+    .team1-section span,
+    .team2-section span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+    .team1-section {
+      justify-content: flex-start;
+    }
+    .team2-section {
+      justify-content: flex-end;
+    }
+    .match-score-section {
+      width: 30px;
+      background: #2b2b2b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.0em;
+      font-weight: normal;
+    }
+    .penalty-dots-section {
+      background: #2b2b2b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .penalty-dots-section.child-mode {
+      width: 65px;
+      flex-shrink: 0;
+    }
+    .penalty-dots-section.adult-mode {
+      width: 95px;
+      flex-shrink: 0;
+    }
+    .penalty-score-section {
+      width: 40px;
+      background: #2b2b2b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .penalty-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .penalty-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(115, 115, 115, 0.8);
+    }
+    .penalty-dot.goal {
+      background: #34c759;
+    }
+    .penalty-dot.miss {
+      background: #ff3b30;
+    }
+    .penalty-dot.pending {
+      background: rgba(115, 115, 115, 0.8);
+    }
+    .penalty-dot.pending.active {
+      background: rgba(240, 240, 240, 0.9);
+    }
+    .penalty-dot.active {
+      background: rgba(240, 240, 240, 0.9) !important;
+    }
+    .penalty-score {
+      color: #fff;
+      font-size: 1.6em;
+      font-weight: normal;
+      line-height: 1;
+      flex: 0 0 auto;
+      text-align: center;
+      transform: translateY(3px);
+    }
+    .divider-section {
+      width: 70px;
+      background: #2b2b2b;
+      height: 40px;
+      line-height: 40px;
+      margin: 0;
+      padding: 0;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      flex-grow: 0;
+      position: relative;
+    }
+    .scoreboard-row > * {
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="scoreboard-row" style="position: absolute; top: 80px; left: 120px;">
+    <!-- Timer section: displays the game timer, now lifted by 3px -->
+    <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">00:00</span></div>
+    <!-- Kit 1 section: displays the color of the first team's kit -->
+    <div class="section kit1-section" id="kit1"></div>
+    <!-- Spacer section -->
+    <div class="section spacer-section"></div>
+    <!-- Team 1 section: displays the short name of the first team -->
+    <div class="section team1-section">
+      <span id="team1" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: inherit; transform: translateY(2px);">ABC</span>
+    </div>
+    <!-- Penalty dots for team 1 -->
+    <div class="section penalty-dots-section adult-mode">
+      <div class="penalty-dots" id="penaltyDots1"></div>
+    </div>
+    <!-- Match score for team 1 -->
+    <div class="section match-score-section">
+      <span id="matchScore1" style="transform: translateY(2px);">(0)</span>
+    </div>
+    <!-- Penalty score for team 1 -->
+    <div class="section penalty-score-section">
+      <div class="penalty-score" id="penaltyScore1">0</div>
+    </div>
+    <!-- Divider section with ISKRA CUP logo -->
+    <div class="section divider-section" id="divider-logo">
+      <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; max-height: none; max-width: none; width: auto; height: auto; display: none;">
+    </div>
+    <!-- Penalty score for team 2 -->
+    <div class="section penalty-score-section">
+      <div class="penalty-score" id="penaltyScore2">0</div>
+    </div>
+    <!-- Match score for team 2 -->
+    <div class="section match-score-section">
+      <span id="matchScore2" style="transform: translateY(2px);">(0)</span>
+    </div>
+    <!-- Penalty dots for team 2 -->
+    <div class="section penalty-dots-section adult-mode">
+      <div class="penalty-dots" id="penaltyDots2"></div>
+    </div>
+    <!-- Team 2 section: displays the short name of the second team -->
+    <div class="section team2-section">
+      <span id="team2" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: inherit; transform: translateY(2px);">XYZ</span>
+    </div>
+    <!-- Spacer section -->
+    <div class="section spacer-section"></div>
+    <!-- Kit 2 section: displays the color of the second team's kit -->
+    <div class="section kit2-section" id="kit2"></div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Default colors and team names for the scoreboard
+    const defaultKitColor = "#2b2b2b";
+    const defaultTeamShort = "???";
+    
+    // Initialize socket.io client
+    const socket = io();
+
+    // Load graphic style from config
+    async function loadGraphicStyle() {
+      try {
+        const response = await fetch('/api/config');
+        if (response.ok) {
+          const config = await response.json();
+          const style = config.graphicStyle || 'default';
+          applyGraphicStyle(style);
+        }
+      } catch (error) {
+        console.error('Error loading graphic style:', error);
+        applyGraphicStyle('default');
+      }
+    }
+
+    // Apply graphic style
+    function applyGraphicStyle(style) {
+      const logoImg = document.querySelector('#divider-logo img');
+      if (style === 'iskracup') {
+        if (logoImg) {
+          logoImg.style.display = 'block';
+        }
+      } else {
+        if (logoImg) {
+          logoImg.style.display = 'none';
+        }
+      }
+    }
+
+    function getPenaltyMaxAttempts(data) {
+      if (data && typeof data.penaltyMaxAttempts === 'number' && data.penaltyMaxAttempts > 0) {
+        return data.penaltyMaxAttempts;
+      }
+      if (data && typeof data.penaltyMode === 'string' && data.penaltyMode === 'child') {
+        return 3;
+      }
+      return 5;
+    }
+
+    function renderPenaltyDots(teamKey, data) {
+      const dotsContainer = document.getElementById(teamKey === 'team1' ? 'penaltyDots1' : 'penaltyDots2');
+      const scoreEl = document.getElementById(teamKey === 'team1' ? 'penaltyScore1' : 'penaltyScore2');
+      
+      if (!dotsContainer || !scoreEl) return;
+
+      const series = data && data.penaltySeries ? data.penaltySeries : null;
+      const maxAttempts = (series && typeof series.maxAttempts === 'number')
+        ? series.maxAttempts
+        : getPenaltyMaxAttempts(data);
+
+      const attempts = series && series.attempts && Array.isArray(series.attempts[teamKey])
+        ? series.attempts[teamKey]
+        : [];
+
+      const totalGoals = series && series.totalGoals && typeof series.totalGoals[teamKey] === 'number'
+        ? series.totalGoals[teamKey]
+        : attempts.filter(result => result === 'goal').length;
+
+      scoreEl.textContent = totalGoals.toString();
+
+      const finished = !!(series && series.finished);
+      const currentTeam = series && !series.finished ? series.currentTeam : null;
+      const firstTeam = series && series.firstTeam ? series.firstTeam : 'team1';
+
+      const shouldMarkCurrent = !finished && series && currentTeam === teamKey;
+      const activeSlotIndex = shouldMarkCurrent ? (attempts.length % maxAttempts) : null;
+
+      const slotStates = new Array(Math.max(1, maxAttempts)).fill(null);
+      attempts.forEach((result, idx) => {
+        const slotIndex = idx % maxAttempts;
+        slotStates[slotIndex] = result;
+      });
+
+      dotsContainer.innerHTML = '';
+
+      slotStates.forEach((slotResult, slotIndex) => {
+        const dot = document.createElement('div');
+        dot.className = 'penalty-dot';
+
+        if (slotResult === 'goal') {
+          dot.classList.add('goal');
+          dot.textContent = '';
+        } else if (slotResult === 'miss') {
+          dot.classList.add('miss');
+          dot.textContent = '';
+        } else {
+          dot.classList.add('pending');
+          dot.textContent = '';
+        }
+
+        if (activeSlotIndex !== null && slotIndex === activeSlotIndex) {
+          dot.classList.add('active');
+          if (slotResult === null) {
+            dot.classList.add('pending');
+          }
+        }
+
+        dotsContainer.appendChild(dot);
+      });
+
+      if (!series && teamKey === firstTeam && dotsContainer.children.length === 0) {
+        for (let i = 0; i < maxAttempts; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'penalty-dot pending';
+          dot.textContent = '';
+          dotsContainer.appendChild(dot);
+        }
+      }
+    }
+
+    // Listen for 'scoreboardUpdate' events from the server
+    socket.on('scoreboardUpdate', (data) => {
+      // Update timer display
+      document.getElementById('timer').textContent = data.time || "00:00";
+      // Update kit colors
+      document.getElementById('kit1').style.background = data.kit1Color || defaultKitColor;
+      document.getElementById('kit2').style.background = data.kit2Color || defaultKitColor;
+      // Update team names
+      document.getElementById('team1').textContent = data.team1Short || defaultTeamShort;
+      document.getElementById('team2').textContent = data.team2Short || defaultTeamShort;
+      // Update match scores in brackets
+      const score1 = typeof data.score1 === 'number' ? data.score1 : 0;
+      const score2 = typeof data.score2 === 'number' ? data.score2 : 0;
+      document.getElementById('matchScore1').textContent = `(${score1})`;
+      document.getElementById('matchScore2').textContent = `(${score2})`;
+      // Update penalty mode classes
+      const maxAttempts = getPenaltyMaxAttempts(data);
+      const penaltyDots1 = document.getElementById('penaltyDots1').parentElement;
+      const penaltyDots2 = document.getElementById('penaltyDots2').parentElement;
+      penaltyDots1.classList.remove('child-mode', 'adult-mode');
+      penaltyDots2.classList.remove('child-mode', 'adult-mode');
+      if (maxAttempts === 3) {
+        penaltyDots1.classList.add('child-mode');
+        penaltyDots2.classList.add('child-mode');
+      } else {
+        penaltyDots1.classList.add('adult-mode');
+        penaltyDots2.classList.add('adult-mode');
+      }
+      // Update penalty displays
+      renderPenaltyDots('team1', data);
+      renderPenaltyDots('team2', data);
+    });
+
+    // Listen for config updates
+    socket.on('configUpdate', (data) => {
+      if (data.graphicStyle) {
+        applyGraphicStyle(data.graphicStyle);
+      }
+    });
+
+    // Load style on page load
+    loadGraphicStyle();
+  </script>
+</body>
+</html>
+

@@ -87,6 +87,152 @@
       font-size: 12px;
     }
     
+    .graphic-style-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .graphic-style-label {
+      font-size: 12px;
+      color: #61708a;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .graphic-style-buttons {
+      display: inline-flex;
+      gap: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #d8e3f6;
+      background: #f8fbff;
+    }
+    
+    .graphic-style-btn {
+      border: none;
+      border-radius: 0;
+      background: #f8fbff;
+      color: #61708a;
+      font-weight: 400;
+      font-size: 11px;
+      padding: 5px 12px;
+      cursor: pointer;
+      box-shadow: none;
+      transition: all 0.15s;
+      position: relative;
+      white-space: nowrap;
+    }
+    
+    .graphic-style-btn:first-child {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+      border-right: 1px solid #d8e3f6;
+    }
+    
+    .graphic-style-btn:last-child {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+    
+    .graphic-style-btn.active {
+      background: #338af3;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+    
+    .graphic-style-btn:not(.active):hover {
+      background: #eef4ff;
+      color: #4c5d7a;
+    }
+    
+    .graphic-style-previews {
+      display: flex;
+      gap: 20px;
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8fbff;
+      border-radius: 8px;
+      border: 1px solid #d8e3f6;
+    }
+    
+    .graphic-style-preview {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .graphic-style-preview-label {
+      font-size: 11px;
+      color: #61708a;
+      font-weight: 500;
+    }
+    
+    .graphic-style-preview-content {
+      background: #fff;
+      border: 1px solid #d8e3f6;
+      border-radius: 6px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .graphic-style-preview-scoreboard {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      transform: scale(0.7);
+      transform-origin: center;
+    }
+    
+    .graphic-style-preview-scoreboard .preview-section {
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: #fff;
+      background: #2b2b2b;
+      padding: 0 4px;
+    }
+    
+    .graphic-style-preview-scoreboard .preview-divider {
+      width: 35px;
+      height: 20px;
+      background: #2b2b2b;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .graphic-style-preview-scoreboard .preview-logo {
+      max-width: 30px;
+      max-height: 15px;
+      object-fit: contain;
+    }
+    
+    .graphic-style-preview-prematch {
+      width: 100%;
+      height: 40px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+    
+    .graphic-style-preview-prematch img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
     .btn {
       padding: 8px 16px;
       border: none;
@@ -459,11 +605,75 @@
     </div>
     
     <div style="margin-bottom: 20px;">
-      <label style="display: block; margin-bottom: 8px; font-weight: bold;">Выберите стиль оформления:</label>
-      <select id="graphicStyleSelect" style="width: 100%; padding: 8px; border: 1px solid #c5d9ff; border-radius: 8px; font-size: 14px; background: #fff; cursor: pointer;">
-        <option value="default">default</option>
-        <option value="iskracup">ISKRACUP</option>
-      </select>
+      <div class="graphic-style-wrapper">
+        <span class="graphic-style-label">Стиль:</span>
+        <div class="graphic-style-buttons">
+          <button type="button" id="graphicStyleDefaultBtn" class="graphic-style-btn" data-style="default">default</button>
+          <button type="button" id="graphicStyleIskracupBtn" class="graphic-style-btn" data-style="iskracup">ISKRACUP</button>
+        </div>
+      </div>
+      
+      <div class="graphic-style-previews">
+        <div class="graphic-style-preview">
+          <div class="graphic-style-preview-label">scoreboard.html</div>
+          <div class="graphic-style-preview-content">
+            <div class="graphic-style-preview-scoreboard">
+              <div class="preview-section" style="width: 50px; font-size: 6px;">00:00</div>
+              <div class="preview-section" style="width: 5px;"></div>
+              <div class="preview-section" style="width: 37px; font-size: 6px;">ABC</div>
+              <div class="preview-section" style="width: 20px; font-size: 7px;">0</div>
+              <div class="preview-section preview-divider" id="previewDivider">
+                <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" class="preview-logo" id="previewScoreboardLogo" style="display: none;">
+              </div>
+              <div class="preview-section" style="width: 20px; font-size: 7px;">0</div>
+              <div class="preview-section" style="width: 37px; font-size: 6px;">XYZ</div>
+              <div class="preview-section" style="width: 5px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="graphic-style-preview">
+          <div class="graphic-style-preview-label">penalti.html</div>
+          <div class="graphic-style-preview-content">
+            <div class="graphic-style-preview-scoreboard">
+              <div class="preview-section" style="width: 50px; font-size: 6px;">00:00</div>
+              <div class="preview-section" style="width: 5px;"></div>
+              <div class="preview-section" style="width: 30px; font-size: 6px;">ABC</div>
+              <div class="preview-section" style="width: 47px; font-size: 5px; gap: 1px;">
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+              </div>
+              <div class="preview-section" style="width: 15px; font-size: 6px;">(0)</div>
+              <div class="preview-section" style="width: 20px; font-size: 7px;">0</div>
+              <div class="preview-section preview-divider" id="previewPenaltiDivider">
+                <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" class="preview-logo" id="previewPenaltiLogo" style="display: none;">
+              </div>
+              <div class="preview-section" style="width: 20px; font-size: 7px;">0</div>
+              <div class="preview-section" style="width: 15px; font-size: 6px;">(0)</div>
+              <div class="preview-section" style="width: 47px; font-size: 5px; gap: 1px;">
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+                <div style="width: 3px; height: 3px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
+              </div>
+              <div class="preview-section" style="width: 30px; font-size: 6px;">XYZ</div>
+              <div class="preview-section" style="width: 5px;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="graphic-style-preview">
+          <div class="graphic-style-preview-label">prematch.html</div>
+          <div class="graphic-style-preview-content">
+            <div class="graphic-style-preview-prematch">
+              <img src="/public/img/stripe_default.png" alt="Prematch Stripe" id="previewPrematchStripe">
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <button class="btn btn-primary" onclick="saveGraphicStyle()" style="margin-top: 12px;">Применить стиль</button>
     </div>
   </div>
@@ -1273,15 +1483,44 @@
       }, 3000);
     }
     
+    // Обновление миниатюр при выборе стиля
+    function updateGraphicStylePreviews(style) {
+      const previewScoreboardLogo = document.getElementById('previewScoreboardLogo');
+      const previewPenaltiLogo = document.getElementById('previewPenaltiLogo');
+      const previewPrematchStripe = document.getElementById('previewPrematchStripe');
+      
+      if (style === 'iskracup') {
+        if (previewScoreboardLogo) {
+          previewScoreboardLogo.style.display = 'block';
+        }
+        if (previewPenaltiLogo) {
+          previewPenaltiLogo.style.display = 'block';
+        }
+        if (previewPrematchStripe) {
+          previewPrematchStripe.src = '/public/img/iskracup_stripe_prematch.png';
+        }
+      } else {
+        if (previewScoreboardLogo) {
+          previewScoreboardLogo.style.display = 'none';
+        }
+        if (previewPenaltiLogo) {
+          previewPenaltiLogo.style.display = 'none';
+        }
+        if (previewPrematchStripe) {
+          previewPrematchStripe.src = '/public/img/stripe_default.png';
+        }
+      }
+    }
+    
     // Сохранение стиля графического оформления
     async function saveGraphicStyle() {
-      const styleSelect = document.getElementById('graphicStyleSelect');
-      if (!styleSelect) {
-        showNotification('Ошибка: элемент выбора стиля не найден', 'error');
+      const activeBtn = document.querySelector('.graphic-style-btn.active');
+      if (!activeBtn) {
+        showNotification('Ошибка: выберите стиль оформления', 'error');
         return;
       }
       
-      const selectedStyle = styleSelect.value;
+      const selectedStyle = activeBtn.getAttribute('data-style');
       
       if (!confirm('Применить этот стиль оформления? Страницы обновятся моментально.')) {
         return;
@@ -1327,18 +1566,20 @@
         }
         
         // Загружаем стиль графического оформления
-        if (config.graphicStyle) {
-          const styleSelect = document.getElementById('graphicStyleSelect');
-          if (styleSelect) {
-            styleSelect.value = config.graphicStyle;
-          }
+        const graphicStyle = config.graphicStyle || 'default';
+        const styleBtn = document.querySelector(`.graphic-style-btn[data-style="${graphicStyle}"]`);
+        if (styleBtn) {
+          document.querySelectorAll('.graphic-style-btn').forEach(btn => btn.classList.remove('active'));
+          styleBtn.classList.add('active');
         } else {
           // По умолчанию - default
-          const styleSelect = document.getElementById('graphicStyleSelect');
-          if (styleSelect) {
-            styleSelect.value = 'default';
+          const defaultBtn = document.getElementById('graphicStyleDefaultBtn');
+          if (defaultBtn) {
+            document.querySelectorAll('.graphic-style-btn').forEach(btn => btn.classList.remove('active'));
+            defaultBtn.classList.add('active');
           }
         }
+        updateGraphicStylePreviews(graphicStyle);
         
         // Загружаем режим работы табло
         if (config.stadiumMode) {
