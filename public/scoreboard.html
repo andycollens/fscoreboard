@@ -211,21 +211,22 @@
         if (response.ok) {
           const config = await response.json();
           const style = config.graphicStyle || 'default';
+          const customStyleData = config.customStyleData || null;
           console.log('Loaded graphic style from config:', style);
-          applyGraphicStyle(style);
+          applyGraphicStyle(style, customStyleData);
         } else {
           console.error('Failed to load config:', response.status);
-          applyGraphicStyle('default');
+          applyGraphicStyle('default', null);
         }
       } catch (error) {
         console.error('Error loading graphic style:', error);
-        applyGraphicStyle('default');
+        applyGraphicStyle('default', null);
       }
     }
 
     // Apply graphic style
-    function applyGraphicStyle(style) {
-      console.log('Applying graphic style:', style);
+    function applyGraphicStyle(style, customStyleData) {
+      console.log('Applying graphic style:', style, customStyleData);
       const scoreboardRow = document.getElementById('scoreboardRow');
       const logoImg = document.getElementById('dividerLogoImg');
       
@@ -253,6 +254,31 @@
           console.log('Logo should be visible now');
         } else {
           console.error('logoImg not found');
+        }
+      } else if (style && style.startsWith('custom:') && customStyleData) {
+        // Apply custom style
+        scoreboardRow.classList.add('style-default');
+        console.log('Added style-default class for custom style');
+        if (logoImg && customStyleData.logo) {
+          logoImg.src = customStyleData.logo;
+          // Use requestAnimationFrame to ensure CSS class is applied first
+          requestAnimationFrame(() => {
+            logoImg.style.display = 'block';
+            requestAnimationFrame(() => {
+              logoImg.style.opacity = '1';
+            });
+          });
+          console.log('Custom logo should be visible now');
+        } else {
+          // No logo in custom style, hide it
+          if (logoImg) {
+            logoImg.style.opacity = '0';
+            setTimeout(() => {
+              if (scoreboardRow.classList.contains('style-default')) {
+                logoImg.style.display = 'none';
+              }
+            }, 300);
+          }
         }
       } else {
         // Apply default style
@@ -290,7 +316,7 @@
       console.log('Received configUpdate event:', data);
       if (data.graphicStyle) {
         console.log('Updating graphic style to:', data.graphicStyle);
-        applyGraphicStyle(data.graphicStyle);
+        applyGraphicStyle(data.graphicStyle, data.customStyleData || null);
       }
     });
 

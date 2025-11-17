@@ -18,6 +18,13 @@ const PRESETS_PATH = path.join(__dirname, 'presets.json');
 const TOURNAMENTS_PATH = path.join(__dirname, 'tournaments.json');
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const LOGOS_PATH = path.join(__dirname, '..', 'public', 'logos');
+const CUSTOM_STYLES_PATH = path.join(__dirname, 'custom-styles.json');
+const CUSTOM_STYLES_DIR = path.join(__dirname, '..', 'public', 'img', 'custom-styles');
+
+// Ensure custom styles directory exists
+if (!fs.existsSync(CUSTOM_STYLES_DIR)) {
+  fs.mkdirSync(CUSTOM_STYLES_DIR, { recursive: true });
+}
 
 // Загрузка конфигурации (токены)
 let config = { token: TOKEN, stadiumToken: STADIUM_TOKEN };
@@ -1104,6 +1111,25 @@ server.listen(PORT, () => {
   console.log(`Stadium: http://localhost:${PORT}/stadium.html?token=${getActualStadiumToken()}`);
 });
 
+// ====== Custom Styles Functions ======
+// Load custom styles
+function loadCustomStyles() {
+  if (fs.existsSync(CUSTOM_STYLES_PATH)) {
+    try {
+      return JSON.parse(fs.readFileSync(CUSTOM_STYLES_PATH, 'utf8'));
+    } catch (error) {
+      console.error('Error loading custom styles:', error);
+      return {};
+    }
+  }
+  return {};
+}
+
+// Save custom styles
+function saveCustomStyles(styles) {
+  fs.writeFileSync(CUSTOM_STYLES_PATH, JSON.stringify(styles, null, 2));
+}
+
 // ====== API для конфигурации (токены) ======
 app.get('/api/config', (req, res) => {
   // Разрешаем доступ с токеном управления ИЛИ токеном стадиона
@@ -1128,6 +1154,16 @@ app.get('/api/config', (req, res) => {
     const publicConfig = {
       graphicStyle: config.graphicStyle || 'default'
     };
+    
+    // Если это custom стиль, загружаем данные стиля
+    if (publicConfig.graphicStyle && publicConfig.graphicStyle.startsWith('custom:')) {
+      const styleId = publicConfig.graphicStyle.replace('custom:', '');
+      const customStyles = loadCustomStyles();
+      if (customStyles[styleId]) {
+        publicConfig.customStyleData = customStyles[styleId];
+      }
+    }
+    
     return res.json(publicConfig);
   }
 
@@ -1214,4 +1250,114 @@ app.put('/api/config', (req, res) => {
     graphicStyle: req.body.graphicStyle !== undefined ? req.body.graphicStyle : (currentConfig.graphicStyle || 'default')
   });
   res.json({ success: true, ...currentConfig });
+});
+
+// ====== Custom Styles API ======
+// Multer для загрузки custom стилей
+const customStylesStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, CUSTOM_STYLES_DIR);
+  },
+  filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9);
+    let extension = '.png';
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+      extension = '.jpg';
+    } else if (file.mimetype === 'image/png') {
+      extension = '.png';
+    } else if (file.mimetype === 'image/gif') {
+      extension = '.gif';
+    } else if (file.mimetype === 'image/webp') {
+      extension = '.webp';
+    } else {
+      const originalExt = path.extname(file.originalname).toLowerCase();
+      if (originalExt && /\.(jpg|jpeg|png|gif|webp)$/i.test(originalExt)) {
+        extension = originalExt;
+      }
+    }
+    cb(null, `custom_${timestamp}_${random}${extension}`);
+  }
+});
+
+const uploadCustomStyle = multer({ storage: customStylesStorage });
+
+// GET /api/custom-styles - Get all custom styles
+app.get('/api/custom-styles', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const styles = loadCustomStyles();
+  res.json(styles);
+});
+
+// POST /api/custom-styles - Create custom style
+app.post('/api/custom-styles', uploadCustomStyle.fields([
+  { name: 'breakStripe', maxCount: 1 },
+  { name: 'prematchStripe', maxCount: 1 },
+  { name: 'logo', maxCount: 1 }
+]), (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const name = req.body.name;
+  if (!name || name.trim() === '') {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+  
+  if (!req.files || (!req.files.breakStripe && !req.files.prematchStripe)) {
+    return res.status(400).json({ error: 'At least one stripe (break or prematch) is required' });
+  }
+  
+  const styles = loadCustomStyles();
+  const styleId = Date.now().toString();
+  
+  const style = {
+    name: name.trim(),
+    breakStripe: req.files.breakStripe ? `/public/img/custom-styles/${req.files.breakStripe[0].filename}` : null,
+    prematchStripe: req.files.prematchStripe ? `/public/img/custom-styles/${req.files.prematchStripe[0].filename}` : null,
+    logo: req.files.logo ? `/public/img/custom-styles/${req.files.logo[0].filename}` : null
+  };
+  
+  styles[styleId] = style;
+  saveCustomStyles(styles);
+  
+  res.json({ success: true, styleId, style });
+});
+
+// DELETE /api/custom-styles/:id - Delete custom style
+app.delete('/api/custom-styles/:id', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const styles = loadCustomStyles();
+  const styleId = req.params.id;
+  
+  if (!styles[styleId]) {
+    return res.status(404).json({ error: 'Style not found' });
+  }
+  
+  const style = styles[styleId];
+  
+  // Delete files
+  if (style.breakStripe) {
+    const filePath = path.join(__dirname, '..', style.breakStripe);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  }
+  if (style.prematchStripe) {
+    const filePath = path.join(__dirname, '..', style.prematchStripe);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  }
+  if (style.logo) {
+    const filePath = path.join(__dirname, '..', style.logo);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  }
+  
+  delete styles[styleId];
+  saveCustomStyles(styles);
+  
+  res.json({ success: true });
 });

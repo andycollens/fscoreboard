@@ -607,70 +607,57 @@
     <div style="margin-bottom: 20px;">
       <div class="graphic-style-wrapper">
         <span class="graphic-style-label">Стиль:</span>
-        <div class="graphic-style-buttons">
+        <div class="graphic-style-buttons" id="graphicStyleButtons">
           <button type="button" id="graphicStyleDefaultBtn" class="graphic-style-btn" data-style="default">default</button>
           <button type="button" id="graphicStyleIskracupBtn" class="graphic-style-btn" data-style="iskracup">ISKRACUP</button>
         </div>
       </div>
       
-      <div class="graphic-style-previews">
-        <div class="graphic-style-preview">
-          <div class="graphic-style-preview-label">scoreboard.html</div>
-          <div class="graphic-style-preview-content">
-            <div class="graphic-style-preview-scoreboard">
-              <div class="preview-section" style="width: 80px; font-size: 10px;">00:00</div>
-              <div class="preview-section" style="width: 8px;"></div>
-              <div class="preview-section" style="width: 60px; font-size: 10px;">ABC</div>
-              <div class="preview-section" style="width: 35px; font-size: 11px;">0</div>
-              <div class="preview-section preview-divider" id="previewDivider">
-                <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" class="preview-logo" id="previewScoreboardLogo" style="display: none;">
-              </div>
-              <div class="preview-section" style="width: 35px; font-size: 11px;">0</div>
-              <div class="preview-section" style="width: 60px; font-size: 10px;">XYZ</div>
-              <div class="preview-section" style="width: 8px;"></div>
-            </div>
+      <!-- Custom styles list -->
+      <div id="customStylesList" style="margin-top: 16px; margin-bottom: 16px;"></div>
+      
+      <!-- Button to create custom style -->
+      <button class="btn btn-secondary" onclick="showCustomStyleForm()" style="margin-bottom: 12px;">+ Создать custom стиль</button>
+      
+      <!-- Custom style form (hidden by default) -->
+      <div id="customStyleForm" style="display: none; margin-top: 20px; padding: 16px; background: #f8fbff; border-radius: 8px; border: 1px solid #d8e3f6;">
+        <h3 style="margin-top: 0; margin-bottom: 16px; color: #163d74; font-size: 16px;">Создать custom стиль</h3>
+        
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74;">Название стиля:</label>
+          <input type="text" id="customStyleName" placeholder="Введите название" style="width: 100%; padding: 8px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 14px;">
+        </div>
+        
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74;">Полоса для break.html:</label>
+          <input type="file" id="customBreakStripe" accept="image/*" style="width: 100%; padding: 6px; border: 1px solid #c5d9ff; border-radius: 6px;">
+          <div style="font-size: 11px; color: #61708a; margin-top: 4px;">Рекомендуемый размер: 1920x1080px</div>
+          <div id="customBreakStripePreview" style="margin-top: 8px; max-width: 300px; max-height: 150px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+            <img id="customBreakStripePreviewImg" style="width: 100%; height: auto; display: block;">
           </div>
         </div>
-        <div class="graphic-style-preview">
-          <div class="graphic-style-preview-label">penalti.html</div>
-          <div class="graphic-style-preview-content">
-            <div class="graphic-style-preview-scoreboard">
-              <div class="preview-section" style="width: 80px; font-size: 10px;">00:00</div>
-              <div class="preview-section" style="width: 8px;"></div>
-              <div class="preview-section" style="width: 50px; font-size: 10px;">ABC</div>
-              <div class="preview-section" style="width: 75px; font-size: 8px; gap: 2px; display: flex; align-items: center; justify-content: center;">
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-              </div>
-              <div class="preview-section" style="width: 25px; font-size: 10px;">(0)</div>
-              <div class="preview-section" style="width: 35px; font-size: 11px;">0</div>
-              <div class="preview-section preview-divider" id="previewPenaltiDivider">
-                <img src="/public/img/iskracup_scoreboard_logo.png" alt="Logo" class="preview-logo" id="previewPenaltiLogo" style="display: none;">
-              </div>
-              <div class="preview-section" style="width: 35px; font-size: 11px;">0</div>
-              <div class="preview-section" style="width: 25px; font-size: 10px;">(0)</div>
-              <div class="preview-section" style="width: 75px; font-size: 8px; gap: 2px; display: flex; align-items: center; justify-content: center;">
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-                <div style="width: 5px; height: 5px; border-radius: 50%; background: rgba(115, 115, 115, 0.8);"></div>
-              </div>
-              <div class="preview-section" style="width: 50px; font-size: 10px;">XYZ</div>
-              <div class="preview-section" style="width: 8px;"></div>
-            </div>
+        
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74;">Полоса для prematch.html:</label>
+          <input type="file" id="customPrematchStripe" accept="image/*" style="width: 100%; padding: 6px; border: 1px solid #c5d9ff; border-radius: 6px;">
+          <div style="font-size: 11px; color: #61708a; margin-top: 4px;">Рекомендуемый размер: 1920x1080px</div>
+          <div id="customPrematchStripePreview" style="margin-top: 8px; max-width: 300px; max-height: 150px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+            <img id="customPrematchStripePreviewImg" style="width: 100%; height: auto; display: block;">
           </div>
         </div>
-        <div class="graphic-style-preview">
-          <div class="graphic-style-preview-label">prematch.html</div>
-          <div class="graphic-style-preview-content">
-            <div class="graphic-style-preview-prematch">
-              <img src="/public/img/stripe_default.png" alt="Prematch Stripe" id="previewPrematchStripe">
-            </div>
+        
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74;">Логотип для scoreboard.html и penalti.html (опционально):</label>
+          <input type="file" id="customLogo" accept="image/*" style="width: 100%; padding: 6px; border: 1px solid #c5d9ff; border-radius: 6px;">
+          <div style="font-size: 11px; color: #61708a; margin-top: 4px;">Рекомендуемый размер: до 70x40px</div>
+          <div id="customLogoPreview" style="margin-top: 8px; max-width: 200px; max-height: 100px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: none;">
+            <img id="customLogoPreviewImg" style="width: 100%; height: auto; display: block;">
           </div>
+        </div>
+        
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-primary" onclick="saveCustomStyle()">Сохранить custom стиль</button>
+          <button class="btn btn-secondary" onclick="cancelCustomStyle()">Отмена</button>
         </div>
       </div>
       
@@ -1483,32 +1470,243 @@
       }, 3000);
     }
     
-    // Обновление миниатюр при выборе стиля
-    function updateGraphicStylePreviews(style) {
-      const previewScoreboardLogo = document.getElementById('previewScoreboardLogo');
-      const previewPenaltiLogo = document.getElementById('previewPenaltiLogo');
-      const previewPrematchStripe = document.getElementById('previewPrematchStripe');
+    // Custom styles management
+    let customStyles = {};
+    
+    function showCustomStyleForm() {
+      document.getElementById('customStyleForm').style.display = 'block';
+      document.getElementById('customStyleName').value = '';
+      document.getElementById('customBreakStripe').value = '';
+      document.getElementById('customPrematchStripe').value = '';
+      document.getElementById('customLogo').value = '';
+      document.getElementById('customBreakStripePreview').style.display = 'none';
+      document.getElementById('customPrematchStripePreview').style.display = 'none';
+      document.getElementById('customLogoPreview').style.display = 'none';
+    }
+    
+    function cancelCustomStyle() {
+      document.getElementById('customStyleForm').style.display = 'none';
+    }
+    
+    // Setup file preview handlers
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupFilePreviews);
+    } else {
+      setupFilePreviews();
+    }
+    
+    function setupFilePreviews() {
+      const breakStripeInput = document.getElementById('customBreakStripe');
+      const prematchStripeInput = document.getElementById('customPrematchStripe');
+      const logoInput = document.getElementById('customLogo');
       
-      if (style === 'iskracup') {
-        if (previewScoreboardLogo) {
-          previewScoreboardLogo.style.display = 'block';
+      if (breakStripeInput) {
+        breakStripeInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              document.getElementById('customBreakStripePreviewImg').src = e.target.result;
+              document.getElementById('customBreakStripePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+      
+      if (prematchStripeInput) {
+        prematchStripeInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              document.getElementById('customPrematchStripePreviewImg').src = e.target.result;
+              document.getElementById('customPrematchStripePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+      
+      if (logoInput) {
+        logoInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              document.getElementById('customLogoPreviewImg').src = e.target.result;
+              document.getElementById('customLogoPreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    }
+    
+    async function saveCustomStyle() {
+      const name = document.getElementById('customStyleName').value.trim();
+      const breakStripeFile = document.getElementById('customBreakStripe').files[0];
+      const prematchStripeFile = document.getElementById('customPrematchStripe').files[0];
+      const logoFile = document.getElementById('customLogo').files[0];
+      
+      if (!name) {
+        showNotification('Введите название стиля', 'error');
+        return;
+      }
+      
+      if (!breakStripeFile && !prematchStripeFile) {
+        showNotification('Загрузите хотя бы одну полосу (break или prematch)', 'error');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('name', name);
+      if (breakStripeFile) formData.append('breakStripe', breakStripeFile);
+      if (prematchStripeFile) formData.append('prematchStripe', prematchStripeFile);
+      if (logoFile) formData.append('logo', logoFile);
+      
+      try {
+        const response = await fetch(`/api/custom-styles?token=${getToken()}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          showNotification('Custom стиль сохранен!', 'success');
+          cancelCustomStyle();
+          await loadCustomStyles();
+        } else {
+          throw new Error('Ошибка сохранения custom стиля');
         }
-        if (previewPenaltiLogo) {
-          previewPenaltiLogo.style.display = 'block';
+      } catch (error) {
+        console.error('Ошибка сохранения custom стиля:', error);
+        showNotification('Ошибка сохранения custom стиля', 'error');
+      }
+    }
+    
+    async function loadCustomStyles() {
+      try {
+        const response = await fetch(`/api/custom-styles?token=${getToken()}`);
+        if (response.ok) {
+          customStyles = await response.json();
+          renderCustomStylesList();
         }
-        if (previewPrematchStripe) {
-          previewPrematchStripe.src = '/public/img/iskracup_stripe_prematch.png';
+      } catch (error) {
+        console.error('Ошибка загрузки custom стилей:', error);
+      }
+    }
+    
+    function renderCustomStylesList() {
+      const listContainer = document.getElementById('customStylesList');
+      const buttonsContainer = document.getElementById('graphicStyleButtons');
+      
+      // Clear existing custom buttons
+      const existingCustomButtons = buttonsContainer.querySelectorAll('[data-style^="custom:"]');
+      existingCustomButtons.forEach(btn => btn.remove());
+      
+      // Clear list
+      listContainer.innerHTML = '';
+      
+      if (Object.keys(customStyles).length === 0) {
+        return;
+      }
+      
+      // Add custom style buttons
+      Object.keys(customStyles).forEach(styleId => {
+        const style = customStyles[styleId];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'graphic-style-btn';
+        btn.setAttribute('data-style', `custom:${styleId}`);
+        btn.textContent = style.name;
+        buttonsContainer.appendChild(btn);
+      });
+      
+      // Re-init button handlers
+      initGraphicStyleButtons();
+      
+      // Render list with previews
+      Object.keys(customStyles).forEach(styleId => {
+        const style = customStyles[styleId];
+        const item = document.createElement('div');
+        item.style.cssText = 'padding: 12px; margin-bottom: 8px; background: #fff; border: 1px solid #d8e3f6; border-radius: 6px; display: flex; align-items: center; gap: 12px;';
+        
+        const previews = document.createElement('div');
+        previews.style.cssText = 'display: flex; gap: 8px; flex: 1;';
+        
+        if (style.breakStripe) {
+          const breakPreview = document.createElement('div');
+          breakPreview.style.cssText = 'width: 100px; height: 56px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden;';
+          const breakImg = document.createElement('img');
+          breakImg.src = style.breakStripe;
+          breakImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+          breakPreview.appendChild(breakImg);
+          previews.appendChild(breakPreview);
         }
-      } else {
-        if (previewScoreboardLogo) {
-          previewScoreboardLogo.style.display = 'none';
+        
+        if (style.prematchStripe) {
+          const prematchPreview = document.createElement('div');
+          prematchPreview.style.cssText = 'width: 100px; height: 56px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden;';
+          const prematchImg = document.createElement('img');
+          prematchImg.src = style.prematchStripe;
+          prematchImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+          prematchPreview.appendChild(prematchImg);
+          previews.appendChild(prematchPreview);
         }
-        if (previewPenaltiLogo) {
-          previewPenaltiLogo.style.display = 'none';
+        
+        if (style.logo) {
+          const logoPreview = document.createElement('div');
+          logoPreview.style.cssText = 'width: 70px; height: 40px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8fbff;';
+          const logoImg = document.createElement('img');
+          logoImg.src = style.logo;
+          logoImg.style.cssText = 'max-width: 100%; max-height: 100%; object-fit: contain;';
+          logoPreview.appendChild(logoImg);
+          previews.appendChild(logoPreview);
         }
-        if (previewPrematchStripe) {
-          previewPrematchStripe.src = '/public/img/stripe_default.png';
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.style.cssText = 'font-weight: 500; color: #163d74; min-width: 150px;';
+        nameDiv.textContent = style.name;
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-danger';
+        deleteBtn.style.cssText = 'padding: 4px 12px; font-size: 12px;';
+        deleteBtn.textContent = 'Удалить';
+        deleteBtn.onclick = () => deleteCustomStyle(styleId);
+        
+        item.appendChild(nameDiv);
+        item.appendChild(previews);
+        item.appendChild(deleteBtn);
+        listContainer.appendChild(item);
+      });
+    }
+    
+    async function deleteCustomStyle(styleId) {
+      if (!confirm(`Удалить стиль "${customStyles[styleId].name}"?`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/custom-styles/${styleId}?token=${getToken()}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showNotification('Custom стиль удален', 'success');
+          await loadCustomStyles();
+          
+          // If this style was active, switch to default
+          const activeBtn = document.querySelector('.graphic-style-btn.active');
+          if (activeBtn && activeBtn.getAttribute('data-style') === `custom:${styleId}`) {
+            document.getElementById('graphicStyleDefaultBtn').click();
+            await saveGraphicStyle();
+          }
+        } else {
+          throw new Error('Ошибка удаления custom стиля');
         }
+      } catch (error) {
+        console.error('Ошибка удаления custom стиля:', error);
+        showNotification('Ошибка удаления custom стиля', 'error');
       }
     }
     
@@ -1545,6 +1743,9 @@
       }
     }
     
+    // Update loadConfig to handle custom styles
+    // This is already done in loadConfig function above
+    
     // Загрузка конфигурации (секрет для Stadium)
     async function loadConfig() {
       try {
@@ -1579,8 +1780,8 @@
             defaultBtn.classList.add('active');
           }
         }
-        // Обновляем превью с сохраненным стилем
-        updateGraphicStylePreviews(graphicStyle);
+        // Load custom styles
+        await loadCustomStyles();
         
         // Загружаем режим работы табло
         if (config.stadiumMode) {
@@ -1873,8 +2074,26 @@
       }
     }
     
+    // Initialize graphic style buttons
+    function initGraphicStyleButtons() {
+      document.querySelectorAll('.graphic-style-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.graphic-style-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+    }
+    
     // Загружаем конфигурацию при загрузке страницы
-    loadConfig();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        loadConfig();
+        initGraphicStyleButtons();
+      });
+    } else {
+      loadConfig();
+      initGraphicStyleButtons();
+    }
   </script>
 
   <!-- Секция Секрет для Stadium (менее заметная, внизу страницы) -->
