@@ -1889,8 +1889,8 @@ body.penalty-mode .penalty-score {
             const allTriangles = document.querySelectorAll('.logo-triangle');
             if (allTriangles.length === 0) return;
 
-            // Анимируем несколько треугольников одновременно для более плавного эффекта
-            const trianglesToAnimate = Math.min(3, Math.floor(allTriangles.length / 100));
+            // Анимируем больше треугольников одновременно для более заметного эффекта
+            const trianglesToAnimate = Math.min(8, Math.floor(allTriangles.length / 50));
             
             for (let i = 0; i < trianglesToAnimate; i++) {
                 const randomIndex = Math.floor(Math.random() * allTriangles.length);
@@ -1905,9 +1905,9 @@ body.penalty-mode .penalty-score {
                     // Если цвет не найден в палитре, выбираем случайный
                     newIndex = Math.floor(Math.random() * colors.length);
                 } else {
-                    // Переход к соседнему оттенку (вверх или вниз на 1-3 позиции)
+                    // Переход к соседнему оттенку (вверх или вниз на 2-5 позиций для более заметного эффекта)
                     const direction = Math.random() > 0.5 ? 1 : -1;
-                    const step = Math.floor(Math.random() * 3) + 1; // 1-3 шага
+                    const step = Math.floor(Math.random() * 4) + 2; // 2-5 шагов
                     newIndex = currentIndex + (direction * step);
                     // Ограничиваем границами массива
                     newIndex = Math.max(0, Math.min(colors.length - 1, newIndex));
@@ -1923,8 +1923,8 @@ body.penalty-mode .penalty-score {
         // Запускаем создание сетки и анимацию
         createGrid();
 
-        // Запускаем анимацию с более частым обновлением для плавного эффекта
-        logoAnimationInterval = setInterval(animateMosaic, 80);
+        // Запускаем анимацию с более частым обновлением для заметного эффекта
+        logoAnimationInterval = setInterval(animateMosaic, 50);
 
         // Перерисовываем сетку при изменении размера окна
         logoResizeHandler = () => {
