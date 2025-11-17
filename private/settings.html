@@ -1570,11 +1570,13 @@
         document.getElementById('customLogoPreview').style.display = 'none';
       }
       
-      // Clear file inputs
+      // Clear file inputs and remove flags
       document.getElementById('customStripeSingle').value = '';
       document.getElementById('customBreakStripe').value = '';
       document.getElementById('customPrematchStripe').value = '';
-      document.getElementById('customLogo').value = '';
+      const logoInput = document.getElementById('customLogo');
+      logoInput.value = '';
+      logoInput.removeAttribute('data-remove');
     }
     
     function cancelCustomStyle() {
@@ -1585,6 +1587,10 @@
       document.getElementById('customLogo').value = '';
       document.getElementById('customLogoPreview').style.display = 'none';
       document.getElementById('customLogoPreviewImg').src = '';
+      // Mark logo for removal when editing
+      if (editingStyleId !== null) {
+        document.getElementById('customLogo').setAttribute('data-remove', 'true');
+      }
     }
     
     function removeCustomStripeSingle() {
@@ -1746,8 +1752,16 @@
         }
       }
       
-      if (logoFile) formData.append('logo', logoFile);
-      else if (isEditing && existingStyle && existingStyle.logo) {
+      const logoInput = document.getElementById('customLogo');
+      const shouldRemoveLogo = logoInput && logoInput.getAttribute('data-remove') === 'true';
+      
+      if (logoFile) {
+        formData.append('logo', logoFile);
+        // Clear remove flag if new file is uploaded
+        if (logoInput) logoInput.removeAttribute('data-remove');
+      } else if (shouldRemoveLogo) {
+        formData.append('removeLogo', 'true');
+      } else if (isEditing && existingStyle && existingStyle.logo) {
         formData.append('keepLogo', 'true');
       }
       
