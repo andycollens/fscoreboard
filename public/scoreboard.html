@@ -167,6 +167,12 @@
       opacity: 1;
     }
     
+    /* Custom style with logo - show logo */
+    .style-default .divider-logo[style*="display: block"] {
+      display: block !important;
+      opacity: 1 !important;
+    }
+    
     .scoreboard-row > * {
       margin: 0 !important;
       padding: 0 !important;
@@ -260,6 +266,9 @@
         scoreboardRow.classList.add('style-default');
         console.log('Added style-default class for custom style');
         if (logoImg && customStyleData.logo) {
+          // For custom style with logo, we need to make divider wider like iskracup style
+          scoreboardRow.classList.add('style-iskracup');
+          scoreboardRow.classList.remove('style-default');
           logoImg.src = customStyleData.logo;
           // Use requestAnimationFrame to ensure CSS class is applied first
           requestAnimationFrame(() => {
