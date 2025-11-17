@@ -1492,9 +1492,12 @@
     
     // Custom styles management
     let customStyles = {};
+    let editingStyleId = null;
     
     function showCustomStyleForm() {
+      editingStyleId = null;
       document.getElementById('customStyleForm').style.display = 'block';
+      document.querySelector('#customStyleForm h3').textContent = 'Создать custom стиль';
       document.getElementById('customStyleName').value = '';
       document.getElementById('customStripeSingle').value = '';
       document.getElementById('customBreakStripe').value = '';
@@ -1507,6 +1510,67 @@
       document.getElementById('stripeModeSingle').checked = true;
       document.getElementById('stripeModeSeparate').checked = false;
       document.getElementById('customStripeSeparateContainer').style.display = 'none';
+    }
+    
+    function editCustomStyle(styleId) {
+      const style = customStyles[styleId];
+      if (!style) return;
+      
+      editingStyleId = styleId;
+      document.getElementById('customStyleForm').style.display = 'block';
+      document.querySelector('#customStyleForm h3').textContent = 'Изменить custom стиль';
+      document.getElementById('customStyleName').value = style.name;
+      
+      // Set stripe mode
+      const stripeMode = style.stripeMode || 'single';
+      if (stripeMode === 'single') {
+        document.getElementById('stripeModeSingle').checked = true;
+        document.getElementById('stripeModeSeparate').checked = false;
+        document.getElementById('customStripeSeparateContainer').style.display = 'none';
+        
+        // Show existing single stripe preview if exists
+        if (style.breakStripe) {
+          document.getElementById('customStripeSinglePreviewImg').src = style.breakStripe;
+          document.getElementById('customStripeSinglePreview').style.display = 'block';
+        } else {
+          document.getElementById('customStripeSinglePreview').style.display = 'none';
+        }
+        document.getElementById('customBreakStripePreview').style.display = 'none';
+        document.getElementById('customPrematchStripePreview').style.display = 'none';
+      } else {
+        document.getElementById('stripeModeSingle').checked = false;
+        document.getElementById('stripeModeSeparate').checked = true;
+        document.getElementById('customStripeSeparateContainer').style.display = 'block';
+        document.getElementById('customStripeSinglePreview').style.display = 'none';
+        
+        // Show existing separate stripe previews if exist
+        if (style.breakStripe) {
+          document.getElementById('customBreakStripePreviewImg').src = style.breakStripe;
+          document.getElementById('customBreakStripePreview').style.display = 'block';
+        } else {
+          document.getElementById('customBreakStripePreview').style.display = 'none';
+        }
+        if (style.prematchStripe) {
+          document.getElementById('customPrematchStripePreviewImg').src = style.prematchStripe;
+          document.getElementById('customPrematchStripePreview').style.display = 'block';
+        } else {
+          document.getElementById('customPrematchStripePreview').style.display = 'none';
+        }
+      }
+      
+      // Show existing logo preview if exists
+      if (style.logo) {
+        document.getElementById('customLogoPreviewImg').src = style.logo;
+        document.getElementById('customLogoPreview').style.display = 'block';
+      } else {
+        document.getElementById('customLogoPreview').style.display = 'none';
+      }
+      
+      // Clear file inputs
+      document.getElementById('customStripeSingle').value = '';
+      document.getElementById('customBreakStripe').value = '';
+      document.getElementById('customPrematchStripe').value = '';
+      document.getElementById('customLogo').value = '';
     }
     
     function cancelCustomStyle() {
@@ -1613,39 +1677,67 @@
         return;
       }
       
-      if (stripeMode === 'single' && !stripeSingleFile) {
-        showNotification('Загрузите фон для страниц', 'error');
-        return;
-      }
+      // If editing, we can keep existing files if no new ones are uploaded
+      const isEditing = editingStyleId !== null;
+      const existingStyle = isEditing ? customStyles[editingStyleId] : null;
       
-      if (stripeMode === 'separate' && !breakStripeFile && !prematchStripeFile) {
-        showNotification('Загрузите хотя бы один фон (break или prematch)', 'error');
-        return;
+      if (!isEditing) {
+        // When creating new style, require at least one stripe
+        if (stripeMode === 'single' && !stripeSingleFile) {
+          showNotification('Загрузите фон для страниц', 'error');
+          return;
+        }
+        
+        if (stripeMode === 'separate' && !breakStripeFile && !prematchStripeFile) {
+          showNotification('Загрузите хотя бы один фон (break или prematch)', 'error');
+          return;
+        }
       }
       
       const formData = new FormData();
       formData.append('name', name);
       formData.append('stripeMode', stripeMode);
+      if (isEditing) {
+        formData.append('styleId', editingStyleId);
+      }
       
       if (stripeMode === 'single') {
         if (stripeSingleFile) {
           formData.append('stripeSingle', stripeSingleFile);
+        } else if (isEditing && existingStyle && existingStyle.breakStripe) {
+          // Keep existing stripe when editing
+          formData.append('keepStripeSingle', 'true');
         }
       } else {
         if (breakStripeFile) formData.append('breakStripe', breakStripeFile);
+        else if (isEditing && existingStyle && existingStyle.breakStripe) {
+          formData.append('keepBreakStripe', 'true');
+        }
+        
         if (prematchStripeFile) formData.append('prematchStripe', prematchStripeFile);
+        else if (isEditing && existingStyle && existingStyle.prematchStripe) {
+          formData.append('keepPrematchStripe', 'true');
+        }
       }
       
       if (logoFile) formData.append('logo', logoFile);
+      else if (isEditing && existingStyle && existingStyle.logo) {
+        formData.append('keepLogo', 'true');
+      }
       
       try {
-        const response = await fetch(`/api/custom-styles?token=${getToken()}`, {
-          method: 'POST',
+        const url = isEditing 
+          ? `/api/custom-styles/${editingStyleId}?token=${getToken()}`
+          : `/api/custom-styles?token=${getToken()}`;
+        const method = isEditing ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+          method: method,
           body: formData
         });
         
         if (response.ok) {
-          showNotification('Custom стиль сохранен!', 'success');
+          showNotification(isEditing ? 'Custom стиль обновлен!' : 'Custom стиль сохранен!', 'success');
           cancelCustomStyle();
           await loadCustomStyles();
         } else {
@@ -1704,67 +1796,18 @@
         const item = document.createElement('div');
         item.style.cssText = 'padding: 12px; margin-bottom: 8px; background: #fff; border: 1px solid #d8e3f6; border-radius: 6px; display: flex; align-items: center; gap: 12px;';
         
-        const previews = document.createElement('div');
-        previews.style.cssText = 'display: flex; gap: 8px; flex: 1;';
-        
-        // Show stripe preview(s)
-        if (style.stripeMode === 'single' && style.breakStripe) {
-          // Single stripe for both pages
-          const stripePreview = document.createElement('div');
-          stripePreview.style.cssText = 'width: 100px; height: 56px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; position: relative;';
-          const stripeImg = document.createElement('img');
-          stripeImg.src = style.breakStripe;
-          stripeImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
-          stripePreview.appendChild(stripeImg);
-          const label = document.createElement('div');
-          label.style.cssText = 'position: absolute; bottom: 2px; left: 2px; right: 2px; background: rgba(0,0,0,0.6); color: #fff; font-size: 9px; padding: 2px 4px; text-align: center; border-radius: 2px;';
-          label.textContent = 'break + prematch';
-          stripePreview.appendChild(label);
-          previews.appendChild(stripePreview);
-        } else {
-          // Separate stripes
-          if (style.breakStripe) {
-            const breakPreview = document.createElement('div');
-            breakPreview.style.cssText = 'width: 100px; height: 56px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; position: relative;';
-            const breakImg = document.createElement('img');
-            breakImg.src = style.breakStripe;
-            breakImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
-            breakPreview.appendChild(breakImg);
-            const label = document.createElement('div');
-            label.style.cssText = 'position: absolute; bottom: 2px; left: 2px; right: 2px; background: rgba(0,0,0,0.6); color: #fff; font-size: 9px; padding: 2px 4px; text-align: center; border-radius: 2px;';
-            label.textContent = 'break';
-            breakPreview.appendChild(label);
-            previews.appendChild(breakPreview);
-          }
-          
-          if (style.prematchStripe) {
-            const prematchPreview = document.createElement('div');
-            prematchPreview.style.cssText = 'width: 100px; height: 56px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; position: relative;';
-            const prematchImg = document.createElement('img');
-            prematchImg.src = style.prematchStripe;
-            prematchImg.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
-            prematchPreview.appendChild(prematchImg);
-            const label = document.createElement('div');
-            label.style.cssText = 'position: absolute; bottom: 2px; left: 2px; right: 2px; background: rgba(0,0,0,0.6); color: #fff; font-size: 9px; padding: 2px 4px; text-align: center; border-radius: 2px;';
-            label.textContent = 'prematch';
-            prematchPreview.appendChild(label);
-            previews.appendChild(prematchPreview);
-          }
-        }
-        
-        if (style.logo) {
-          const logoPreview = document.createElement('div');
-          logoPreview.style.cssText = 'width: 70px; height: 40px; border: 1px solid #d8e3f6; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8fbff;';
-          const logoImg = document.createElement('img');
-          logoImg.src = style.logo;
-          logoImg.style.cssText = 'max-width: 100%; max-height: 100%; object-fit: contain;';
-          logoPreview.appendChild(logoImg);
-          previews.appendChild(logoPreview);
-        }
-        
         const nameDiv = document.createElement('div');
         nameDiv.style.cssText = 'font-weight: 500; color: #163d74; min-width: 150px;';
         nameDiv.textContent = style.name;
+        
+        const buttonsDiv = document.createElement('div');
+        buttonsDiv.style.cssText = 'display: flex; gap: 8px;';
+        
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn btn-secondary';
+        editBtn.style.cssText = 'padding: 4px 12px; font-size: 12px;';
+        editBtn.textContent = 'Изменить';
+        editBtn.onclick = () => editCustomStyle(styleId);
         
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn btn-danger';
@@ -1772,9 +1815,11 @@
         deleteBtn.textContent = 'Удалить';
         deleteBtn.onclick = () => deleteCustomStyle(styleId);
         
+        buttonsDiv.appendChild(editBtn);
+        buttonsDiv.appendChild(deleteBtn);
+        
         item.appendChild(nameDiv);
-        item.appendChild(previews);
-        item.appendChild(deleteBtn);
+        item.appendChild(buttonsDiv);
         listContainer.appendChild(item);
       });
     }

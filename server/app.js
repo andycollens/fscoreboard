@@ -1356,6 +1356,111 @@ app.post('/api/custom-styles', uploadCustomStyle.fields([
   res.json({ success: true, styleId, style });
 });
 
+// PUT /api/custom-styles/:id - Update custom style
+app.put('/api/custom-styles/:id', uploadCustomStyle.fields([
+  { name: 'stripeSingle', maxCount: 1 },
+  { name: 'breakStripe', maxCount: 1 },
+  { name: 'prematchStripe', maxCount: 1 },
+  { name: 'logo', maxCount: 1 }
+]), (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const styleId = req.params.id;
+  const styles = loadCustomStyles();
+  
+  if (!styles[styleId]) {
+    return res.status(404).json({ error: 'Style not found' });
+  }
+  
+  const existingStyle = styles[styleId];
+  const name = req.body.name;
+  if (!name || name.trim() === '') {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+  
+  const stripeMode = req.body.stripeMode || existingStyle.stripeMode || 'single';
+  
+  const style = {
+    name: name.trim(),
+    stripeMode: stripeMode
+  };
+  
+  if (stripeMode === 'single') {
+    if (req.files && req.files.stripeSingle) {
+      // New file uploaded
+      style.breakStripe = `/public/img/custom-styles/${req.files.stripeSingle[0].filename}`;
+      style.prematchStripe = `/public/img/custom-styles/${req.files.stripeSingle[0].filename}`;
+      
+      // Delete old file if it was different
+      if (existingStyle.breakStripe && existingStyle.breakStripe !== style.breakStripe) {
+        const oldFilePath = path.join(__dirname, '..', existingStyle.breakStripe);
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+    } else if (req.body.keepStripeSingle === 'true' && existingStyle.breakStripe) {
+      // Keep existing file
+      style.breakStripe = existingStyle.breakStripe;
+      style.prematchStripe = existingStyle.prematchStripe;
+    } else {
+      // No file and not keeping - use existing or null
+      style.breakStripe = existingStyle.breakStripe || null;
+      style.prematchStripe = existingStyle.prematchStripe || null;
+    }
+  } else {
+    // Separate mode
+    if (req.files && req.files.breakStripe) {
+      style.breakStripe = `/public/img/custom-styles/${req.files.breakStripe[0].filename}`;
+      // Delete old file if it was different
+      if (existingStyle.breakStripe && existingStyle.breakStripe !== style.breakStripe) {
+        const oldFilePath = path.join(__dirname, '..', existingStyle.breakStripe);
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+    } else if (req.body.keepBreakStripe === 'true' && existingStyle.breakStripe) {
+      style.breakStripe = existingStyle.breakStripe;
+    } else {
+      style.breakStripe = existingStyle.breakStripe || null;
+    }
+    
+    if (req.files && req.files.prematchStripe) {
+      style.prematchStripe = `/public/img/custom-styles/${req.files.prematchStripe[0].filename}`;
+      // Delete old file if it was different
+      if (existingStyle.prematchStripe && existingStyle.prematchStripe !== style.prematchStripe) {
+        const oldFilePath = path.join(__dirname, '..', existingStyle.prematchStripe);
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+    } else if (req.body.keepPrematchStripe === 'true' && existingStyle.prematchStripe) {
+      style.prematchStripe = existingStyle.prematchStripe;
+    } else {
+      style.prematchStripe = existingStyle.prematchStripe || null;
+    }
+  }
+  
+  if (req.files && req.files.logo) {
+    style.logo = `/public/img/custom-styles/${req.files.logo[0].filename}`;
+    // Delete old file if it was different
+    if (existingStyle.logo && existingStyle.logo !== style.logo) {
+      const oldFilePath = path.join(__dirname, '..', existingStyle.logo);
+      if (fs.existsSync(oldFilePath)) {
+        fs.unlinkSync(oldFilePath);
+      }
+    }
+  } else if (req.body.keepLogo === 'true' && existingStyle.logo) {
+    style.logo = existingStyle.logo;
+  } else {
+    style.logo = existingStyle.logo || null;
+  }
+  
+  styles[styleId] = style;
+  saveCustomStyles(styles);
+  
+  res.json({ success: true, styleId, style });
+});
+
 // DELETE /api/custom-styles/:id - Delete custom style
 app.delete('/api/custom-styles/:id', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
