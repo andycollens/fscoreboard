@@ -467,7 +467,9 @@
 
     // Listen for config updates
     socket.on('configUpdate', (data) => {
+      console.log('Received configUpdate event:', data);
       if (data.graphicStyle) {
+        console.log('Updating graphic style to:', data.graphicStyle);
         applyGraphicStyle(data.graphicStyle);
       }
     });
