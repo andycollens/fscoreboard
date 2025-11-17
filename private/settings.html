@@ -1766,6 +1766,9 @@
           stadiumLink.textContent = stadiumUrl;
         }
         
+        // Load custom styles first
+        await loadCustomStyles();
+        
         // Загружаем стиль графического оформления
         const graphicStyle = config.graphicStyle || 'default';
         const styleBtn = document.querySelector(`.graphic-style-btn[data-style="${graphicStyle}"]`);
@@ -1780,8 +1783,6 @@
             defaultBtn.classList.add('active');
           }
         }
-        // Load custom styles
-        await loadCustomStyles();
         
         // Загружаем режим работы табло
         if (config.stadiumMode) {
