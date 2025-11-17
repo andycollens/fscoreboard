@@ -211,7 +211,11 @@
         if (response.ok) {
           const config = await response.json();
           const style = config.graphicStyle || 'default';
+          console.log('Loaded graphic style from config:', style);
           applyGraphicStyle(style);
+        } else {
+          console.error('Failed to load config:', response.status);
+          applyGraphicStyle('default');
         }
       } catch (error) {
         console.error('Error loading graphic style:', error);
