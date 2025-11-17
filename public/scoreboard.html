@@ -175,7 +175,7 @@
   </style>
 </head>
 <body>
-  <div class="scoreboard-row style-default" id="scoreboardRow" style="position: absolute; top: 80px; left: 120px;">
+  <div class="scoreboard-row" id="scoreboardRow" style="position: absolute; top: 80px; left: 120px;">
     <!-- Timer section: displays the game timer -->
     <div class="section timer-section"><span id="timer" style="display: flex; align-items: flex-start; justify-content: center; height: 100%; width: 100%; font-size: inherit; transform: translateY(2px);">00:00</span></div>
     <!-- Kit 1 section: displays the color of the first team's kit -->
@@ -291,7 +291,11 @@
     });
 
     // Load style on page load
-    loadGraphicStyle();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadGraphicStyle);
+    } else {
+      loadGraphicStyle();
+    }
   </script>
 </body>
 </html>
