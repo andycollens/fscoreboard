@@ -232,13 +232,25 @@
         scoreboardRow.classList.add('style-iskracup');
         if (logoImg) {
           logoImg.src = '/public/img/iskracup_scoreboard_logo.png';
-          logoImg.style.display = 'block';
+          // Use requestAnimationFrame to ensure CSS class is applied first
+          requestAnimationFrame(() => {
+            logoImg.style.display = 'block';
+            requestAnimationFrame(() => {
+              logoImg.style.opacity = '1';
+            });
+          });
         }
       } else {
         // Apply default style
         scoreboardRow.classList.add('style-default');
         if (logoImg) {
-          logoImg.style.display = 'none';
+          logoImg.style.opacity = '0';
+          // Hide after transition
+          setTimeout(() => {
+            if (scoreboardRow.classList.contains('style-default')) {
+              logoImg.style.display = 'none';
+            }
+          }, 300);
         }
       }
     }
