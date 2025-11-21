@@ -1061,6 +1061,12 @@
       transition: border-color 0.2s, box-shadow 0.2s;
     }
     
+    .kit-color:disabled {
+      opacity: 1 !important;
+      filter: none !important;
+      -webkit-filter: none !important;
+    }
+    
     .kit-color:hover {
       border-color: #338af3;
       box-shadow: 0 2px 6px rgba(51, 138, 243, 0.2);
@@ -2265,9 +2271,15 @@
       filter: grayscale(0.3);
     }
     
-    .kit-color.disabled-field {
+    .kit-color.disabled-field,
+    .kit-color.disabled-field:disabled,
+    input[type="color"].kit-color.disabled-field,
+    input[type="color"].kit-color:disabled {
       pointer-events: none;
       cursor: not-allowed !important;
+      opacity: 1 !important;
+      filter: none !important;
+      -webkit-filter: none !important;
     }
     
     .preset-card.editable {
@@ -3828,7 +3840,11 @@
         if (field && !field.closest('.edit-preset-form')) {
           if (disableInputs) {
             field.classList.add('disabled-field');
-            field.disabled = true;
+            // For color inputs, don't set disabled attribute to avoid browser graying them out
+            // Instead, we block interaction via CSS (pointer-events: none)
+            if (field.type !== 'color') {
+              field.disabled = true;
+            }
           } else {
             field.classList.remove('disabled-field');
             field.disabled = false;
