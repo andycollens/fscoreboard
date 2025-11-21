@@ -2266,8 +2266,7 @@
     }
     
     .kit-color.disabled-field {
-      opacity: 0.4;
-      filter: grayscale(0.6);
+      pointer-events: none;
       cursor: not-allowed !important;
     }
     
@@ -3838,6 +3837,10 @@
       });
 
       toggleMainTeamPresetSelects(!disableInputs);
+      
+      // Update preset apply buttons state
+      updatePresetApplyButtons();
+      
       ['score1Inc', 'score1Dec', 'score2Inc', 'score2Dec'].forEach(btnId => {
         const btn = document.getElementById(btnId);
         if (btn) {
@@ -5665,6 +5668,23 @@
       });
     }
     
+    // Обновление состояния кнопок "применить" для всех пресетов
+    function updatePresetApplyButtons() {
+      const isDisabled = !!timerRunning || !!window.timerRunning || !!scoreboardState.penaltyActive;
+      const applyButtons = document.querySelectorAll('.preset-apply-symbol');
+      applyButtons.forEach(button => {
+        if (isDisabled) {
+          button.style.opacity = '0.5';
+          button.style.cursor = 'not-allowed';
+          button.style.pointerEvents = 'none';
+        } else {
+          button.style.opacity = '';
+          button.style.cursor = '';
+          button.style.pointerEvents = '';
+        }
+      });
+    }
+    
     // Удаление пресета из турнира
     async function deletePresetFromTournament(tournamentId, presetId) {
       if (!confirm('Удалить этот пресет?')) return;
@@ -6272,6 +6292,9 @@
             }
           }
           renderTournamentPresets();
+          
+          // Update preset apply buttons state after saving
+          updatePresetApplyButtons();
 
           showNotification('Пресет обновлен!', 'success');
         } else {
@@ -6716,6 +6739,9 @@
               renderTournamentPresets(); // Рендерим если видим
             }
           }
+          
+          // Update preset apply buttons state after saving
+          updatePresetApplyButtons();
           
           showNotification('Предустановка создана!', 'success');
         } else {
