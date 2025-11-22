@@ -866,6 +866,11 @@
             .penalty-dots {
                 gap: clamp(10px, 3vw, 22px);
             }
+
+            body.penalty-mode .match-score-label {
+                bottom: calc(clamp(20px, 6vh, 70px) - 70px);
+                font-size: clamp(20px, 1.8vw, 32px);
+            }
         }
 
         @media (max-width: 480px) {
@@ -951,6 +956,11 @@
 
             .penalty-dots {
                 gap: clamp(8px, 3.5vw, 16px);
+            }
+
+            body.penalty-mode .match-score-label {
+                bottom: calc(clamp(20px, 6vh, 70px) - 60px);
+                font-size: clamp(18px, 1.6vw, 28px);
             }
         }
 
@@ -1098,7 +1108,7 @@ body.penalty-mode .colon::after {
 
 .penalty-label {
     position: absolute;
-    bottom: clamp(200px, 16vh, 240px);
+    bottom: clamp(220px, 21vh, 280px);
     left: 50%;
     transform: translateX(-50%);
     padding: 12px 46px;
@@ -1117,6 +1127,25 @@ body.penalty-mode .penalty-label {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.match-score-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(115, 115, 115, 0.8);
+    font-size: clamp(24px, 2vw, 36px);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: none;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+body.penalty-mode .match-score-label {
+    display: block;
+    bottom: calc(clamp(20px, 6vh, 70px) - 80px);
 }
 
 .penalty-dots-row {
@@ -1314,6 +1343,7 @@ body.penalty-mode .penalty-score {
             </div>
 
             <div class="penalty-label" id="penaltyLabel">СЕРИЯ ПЕНАЛЬТИ</div>
+            <div class="match-score-label" id="matchScoreLabel">Счет матча</div>
         </div>
 
         <!-- Нижняя область -->
