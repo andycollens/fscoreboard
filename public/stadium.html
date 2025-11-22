@@ -868,12 +868,16 @@
             }
 
             body.penalty-mode .match-score-label {
-                bottom: calc(clamp(20px, 6vh, 70px) + 180px);
-                font-size: clamp(20px, 1.8vw, 32px);
+                bottom: calc(clamp(20px, 6vh, 70px) + 280px);
+                font-size: 2.2vw;
             }
 
             body.penalty-mode .penalty-label {
-                bottom: clamp(140px, 17vh, 190px);
+                bottom: clamp(240px, 17vh, 290px);
+            }
+
+            body.penalty-mode .penalty-score {
+                bottom: clamp(170px, 9vh, 210px);
             }
         }
 
@@ -963,12 +967,16 @@
             }
 
             body.penalty-mode .match-score-label {
-                bottom: calc(clamp(20px, 6vh, 70px) + 160px);
-                font-size: clamp(18px, 1.6vw, 28px);
+                bottom: calc(clamp(20px, 6vh, 70px) + 260px);
+                font-size: 2.2vw;
             }
 
             body.penalty-mode .penalty-label {
-                bottom: clamp(130px, 16vh, 180px);
+                bottom: clamp(230px, 16vh, 280px);
+            }
+
+            body.penalty-mode .penalty-score {
+                bottom: clamp(170px, 9vh, 210px);
             }
         }
 
@@ -1116,7 +1124,7 @@ body.penalty-mode .colon::after {
 
 .penalty-label {
     position: absolute;
-    bottom: clamp(150px, 18vh, 210px);
+    bottom: clamp(250px, 18vh, 310px);
     left: 50%;
     transform: translateX(-50%);
     padding: 12px 46px;
@@ -1142,7 +1150,7 @@ body.penalty-mode .penalty-label {
     left: 50%;
     transform: translateX(-50%);
     color: rgba(115, 115, 115, 0.8);
-    font-size: clamp(24px, 2vw, 36px);
+    font-size: 2.2vw;
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1153,7 +1161,7 @@ body.penalty-mode .penalty-label {
 
 body.penalty-mode .match-score-label {
     display: block;
-    bottom: calc(clamp(20px, 6vh, 70px) + 200px);
+    bottom: calc(clamp(20px, 6vh, 70px) + 300px);
 }
 
 .penalty-dots-row {
@@ -1215,7 +1223,7 @@ body.penalty-mode .divider-section {
 
 body.penalty-mode .penalty-score {
     position: absolute;
-    bottom: clamp(70px, 9vh, 110px);
+    bottom: clamp(170px, 9vh, 210px);
     left: 50%;
     transform: translateX(-50%);
 }
