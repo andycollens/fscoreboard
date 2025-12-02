@@ -328,6 +328,10 @@ app.get('/flag.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'flag.html'));
 });
 
+app.get('/logo.html', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'logo.html'));
+});
+
 app.get('/stadium.html', (req, res) => {
   if (req.query.token !== getActualStadiumToken()) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../public', 'stadium.html'));
@@ -1126,6 +1130,7 @@ server.listen(PORT, () => {
   console.log(`Break: http://localhost:${PORT}/break.html`);
   console.log(`Preloader: http://localhost:${PORT}/preloader.html`);
   console.log(`Flag: http://localhost:${PORT}/flag.html`);
+  console.log(`Logo: http://localhost:${PORT}/logo.html`);
   console.log(`Stadium: http://localhost:${PORT}/stadium.html?token=${getActualStadiumToken()}`);
 });
 

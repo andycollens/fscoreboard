@@ -461,6 +461,7 @@ print_results() {
     echo -e "  ${GREEN}http://$current_domain/break.html${NC}  (перерыв)"
     echo -e "  ${GREEN}http://$current_domain/preloader.html${NC}  (заглушка для стримов)"
     echo -e "  ${GREEN}http://$current_domain/flag.html${NC}  (флаг)"
+    echo -e "  ${GREEN}http://$current_domain/logo.html${NC}  (лого)"
     
     echo -e "\n${CYAN}⚙️  КОНФИГУРАЦИЯ:${NC}"
     echo -e "${YELLOW}Порт:${NC}               $current_port"
