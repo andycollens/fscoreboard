@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Флаг - FSCOREBOARD</title>
+    <style>
+        @font-face {
+            font-family: 'RPL';
+            src: url('/public/fonts/RPL.ttf') format('truetype');
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'RPL', Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Режим Флаг */
+        .flag-mode {
+            display: block;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(to bottom, 
+                #ffffff 0%, 
+                #ffffff 33.33%, 
+                #0039a6 33.33%, 
+                #0039a6 66.66%, 
+                #d52b1e 66.66%, 
+                #d52b1e 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Режим Флаг -->
+    <div class="flag-mode" id="flagMode"></div>
+</body>
+</html>
+
