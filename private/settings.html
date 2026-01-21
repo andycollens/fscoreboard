@@ -916,6 +916,28 @@
     .btn-ghost:hover {
       color: #a93226;
     }
+
+    /* Roster toggle */
+    .roster-switch {
+      display: inline-flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .switch-btn {
+      padding: 6px 10px;
+      border: 1px solid #c5d9ff;
+      background: #f8fbff;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #163d74;
+    }
+    .switch-btn.active {
+      background: #338af3;
+      color: #fff;
+      border-color: #2c7ada;
+      box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.18);
+    }
     
     .empty-state {
       text-align: center;
@@ -1510,6 +1532,45 @@
         .map(l => parseRosterLine(l, withNumber))
         .filter(item => item.name);
     }
+
+    function listToText(list, type) {
+      const isPlayer = type === 'player';
+      return (list || [])
+        .map(item => {
+          if (!item) return '';
+          if (isPlayer && item.number) return `${item.number} ${item.name || ''}`.trim();
+          return item.name || '';
+        })
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    function setRosterMode(tournamentId, teamId, type) {
+      const textarea = document.getElementById(`rosterPaste-${tournamentId}-${teamId}`);
+      if (!textarea) return;
+      textarea.dataset.activeType = type;
+      const btnPlayers = document.getElementById(`rosterTogglePlayers-${tournamentId}-${teamId}`);
+      const btnStaff = document.getElementById(`rosterToggleStaff-${tournamentId}-${teamId}`);
+      [btnPlayers, btnStaff].forEach(b => b && b.classList.remove('active'));
+      if (type === 'player' && btnPlayers) btnPlayers.classList.add('active');
+      if (type === 'staff' && btnStaff) btnStaff.classList.add('active');
+      const list = type === 'player'
+        ? getRosterFromDOM(`playersList-${tournamentId}-${teamId}`, true)
+        : getRosterFromDOM(`staffList-${tournamentId}-${teamId}`, false);
+      textarea.value = listToText(list, type);
+    }
+
+    function parseRosterUnified(tournamentId, teamId) {
+      const textarea = document.getElementById(`rosterPaste-${tournamentId}-${teamId}`);
+      if (!textarea) return;
+      const type = textarea.dataset.activeType === 'staff' ? 'staff' : 'player';
+      const parsed = parseRosterText(textarea.value, type === 'player');
+      if (type === 'player') {
+        renderRosterList(parsed, `playersList-${tournamentId}-${teamId}`, true);
+      } else {
+        renderRosterList(parsed, `staffList-${tournamentId}-${teamId}`, false);
+      }
+    }
     
     function renderRosterList(list, containerId, withNumber = true) {
       const container = document.getElementById(containerId);
@@ -1710,24 +1771,26 @@
             </div>
           </div>
           <div class="roster-grid">
-            <div class="roster-card">
-              <h4>Состав игроков</h4>
-              <textarea id="playersPaste-${tournamentId}-${teamId}" rows="6" placeholder="Иванов Иван Иванович 10 01.01.2000&#10;Петров Петр 7 12/05/1999"></textarea>
-              <div class="roster-actions">
-                <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterSection('player', '${tournamentId}', '${teamId}')">Парсить игроков</button>
-                <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('playersPaste-${tournamentId}-${teamId}').value=''">Очистить</button>
+            <div class="roster-card" style="grid-column: 1 / -1;">
+              <div class="roster-switch">
+                <button type="button" class="switch-btn active" id="rosterTogglePlayers-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','player')">Игроки</button>
+                <button type="button" class="switch-btn" id="rosterToggleStaff-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','staff')">Тренерский штаб</button>
               </div>
-              <div id="playersList-${tournamentId}-${teamId}" class="roster-list"></div>
-            </div>
-            
-            <div class="roster-card">
-              <h4>Тренерский штаб</h4>
-              <textarea id="staffPaste-${tournamentId}-${teamId}" rows="4" placeholder="Иванов И.И. главный тренер 10.10.1970&#10;Сидоров С.С. ассистент 05-03-1980"></textarea>
+              <textarea id="rosterPaste-${tournamentId}-${teamId}" rows="5" placeholder="Пример:&#10;10 Иванов Иван&#10;Петров Петр"></textarea>
               <div class="roster-actions">
-                <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterSection('staff', '${tournamentId}', '${teamId}')">Парсить штаб</button>
-                <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('staffPaste-${tournamentId}-${teamId}').value=''">Очистить</button>
+                <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterUnified('${tournamentId}', '${teamId}')">Парсить</button>
+                <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('rosterPaste-${tournamentId}-${teamId}').value=''">Очистить</button>
               </div>
-              <div id="staffList-${tournamentId}-${teamId}" class="roster-list"></div>
+              <div class="team-roster-box" style="padding: 6px 0 0 0;">
+                <div>
+                  <div class="team-roster-title">Тренерский штаб</div>
+                  <div id="staffList-${tournamentId}-${teamId}" class="roster-list"></div>
+                </div>
+                <div style="margin-top: 12px;">
+                  <div class="team-roster-title">Игроки</div>
+                  <div id="playersList-${tournamentId}-${teamId}" class="roster-list"></div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="form-buttons">
@@ -1742,6 +1805,7 @@
         // Отрисовываем текущий состав, если есть
         renderRosterList(team.players || [], `playersList-${tournamentId}-${teamId}`, true);
         renderRosterList(team.staff || [], `staffList-${tournamentId}-${teamId}`, false);
+        setRosterMode(tournamentId, teamId, 'player');
       }
     }
     
