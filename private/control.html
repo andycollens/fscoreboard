@@ -2602,6 +2602,19 @@
       border-color: #338af3;
     }
     
+    .team-preset-row select option[data-has-birth-year="true"] {
+      color: #9aa4b2;
+    }
+    
+    .team-preset-row select:not([multiple]) option[data-has-birth-year="true"]:checked {
+      color: #9aa4b2;
+    }
+    
+    .team-preset-row select option[data-has-birth-year="true"]:selected {
+      color: #9aa4b2;
+      background-color: #f8fbff;
+    }
+    
     .team-display-info {
       display: flex;
       flex-direction: column;
@@ -7320,6 +7333,10 @@
               option.textContent = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}${year}`;
               option.dataset.tournamentId = String(tournament.id);
               option.dataset.teamId = String(team.id);
+              if (team.birthYear) {
+                option.dataset.hasBirthYear = 'true';
+                option.dataset.birthYear = String(team.birthYear);
+              }
               optgroup.appendChild(option);
             });
 
