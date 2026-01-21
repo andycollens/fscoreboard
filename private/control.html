@@ -2601,18 +2601,79 @@
     .team-preset-row select:hover {
       border-color: #338af3;
     }
-    
-    .team-preset-row select option[data-has-birth-year="true"] {
-      color: #9aa4b2;
+    /* Custom team select to allow colored birth year */
+    .team-custom-select {
+      position: relative;
+      width: 100%;
+      font-size: 14px;
     }
-    
-    .team-preset-row select:not([multiple]) option[data-has-birth-year="true"]:checked {
-      color: #9aa4b2;
+    .team-custom-selected {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #c5d9ff;
+      border-radius: 10px;
+      background: #fff;
+      color: #1f2d3d;
+      font-weight: 500;
+      box-shadow: 0 1px 3px rgba(22, 61, 116, 0.1);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    
-    .team-preset-row select option[data-has-birth-year="true"]:selected {
+    .team-custom-selected:hover,
+    .team-custom-selected.team-select-open {
+      border-color: #338af3;
+      box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.1);
+    }
+    .team-custom-selected .sel-label {
+      color: #1f2d3d;
+    }
+    .team-custom-selected .sel-year {
       color: #9aa4b2;
-      background-color: #f8fbff;
+      white-space: nowrap;
+    }
+    .team-custom-options {
+      position: absolute;
+      z-index: 20;
+      top: calc(100% + 4px);
+      left: 0;
+      width: 100%;
+      background: #fff;
+      border: 1px solid #d8e3f6;
+      border-radius: 10px;
+      box-shadow: 0 6px 16px rgba(22, 61, 116, 0.18);
+      max-height: 260px;
+      overflow-y: auto;
+      display: none;
+    }
+    .team-custom-options.open {
+      display: block;
+    }
+    .team-custom-option {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: #1f2d3d;
+      font-weight: 500;
+    }
+    .team-custom-option .opt-label {
+      color: #1f2d3d;
+    }
+    .team-custom-option .opt-year {
+      color: #9aa4b2;
+      white-space: nowrap;
+    }
+    .team-custom-option:hover {
+      background: #f3f7ff;
+    }
+    .team-custom-option.selected {
+      background: #e7f1ff;
+    }
+    .native-team-select-hidden {
+      display: none !important;
     }
     
     .team-display-info {
@@ -4049,6 +4110,11 @@
             renderTournamentPresets();
           }
           syncMainTeamPresetSelectsFromState();
+          // Обновляем кастомные селекты после загрузки
+          ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
+            const select = document.getElementById(id);
+            if (select) enhanceCustomTeamSelect(select);
+          });
         }
       } catch (error) {
         console.error('Ошибка загрузки турниров:', error);
@@ -4066,6 +4132,10 @@
             loadTournaments().then(() => {
               loadPresets().then(() => {
                 renderTournamentPresets();
+                ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
+                  const select = document.getElementById(id);
+                  if (select) enhanceCustomTeamSelect(select);
+                });
               });
             });
           } catch (error) {
@@ -4086,6 +4156,11 @@
               loadTournaments().then(() => {
                 loadPresets().then(() => {
                   renderTournamentPresets();
+                  // После перезагрузки пресетов нужно обновить кастомные селекты
+                  ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
+                    const select = document.getElementById(id);
+                    if (select) enhanceCustomTeamSelect(select);
+                  });
                 });
               });
               // Очищаем флаг обновления
@@ -7293,6 +7368,12 @@
         });
         select.dataset.listenerAttached = 'true';
       });
+
+    // Инициализируем кастомные селекты
+    configs.forEach(({ id }) => {
+      const select = document.getElementById(id);
+      if (select) enhanceCustomTeamSelect(select);
+    });
     }
 
     function populateMainTeamPresetSelects() {
@@ -7329,19 +7410,23 @@
               const value = buildTournamentTeamOptionValue(tournament.id, team.id);
               const option = document.createElement('option');
               option.value = value;
-              const year = team.birthYear ? ` · ${team.birthYear}` : '';
-              option.textContent = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}${year}`;
+              const year = team.birthYear ? String(team.birthYear) : '';
+              const label = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}`;
+              option.textContent = year ? `${label} · ${year}` : label;
               option.dataset.tournamentId = String(tournament.id);
               option.dataset.teamId = String(team.id);
-              if (team.birthYear) {
-                option.dataset.hasBirthYear = 'true';
-                option.dataset.birthYear = String(team.birthYear);
+              option.dataset.label = label;
+              if (year) {
+                option.dataset.birthYear = year;
               }
               optgroup.appendChild(option);
             });
 
             select.appendChild(optgroup);
           });
+
+        // Обновляем кастомный селект
+        enhanceCustomTeamSelect(select);
 
         if (previousValue) {
           const exists = Array.from(select.options).some(opt => opt.value === previousValue);
@@ -7540,6 +7625,101 @@
       return null;
     }
 
+  // ==== Custom team select to color birth year only ====
+  function enhanceCustomTeamSelect(nativeSelect) {
+    if (!nativeSelect) return;
+
+    // Hide native select
+    nativeSelect.classList.add('native-team-select-hidden');
+
+    // Remove old wrapper if exists
+    const existing = nativeSelect.parentElement.querySelector('.team-custom-select');
+    if (existing) existing.remove();
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'team-custom-select';
+
+    const selected = document.createElement('div');
+    selected.className = 'team-custom-selected';
+
+    const selectedLabel = document.createElement('span');
+    selectedLabel.className = 'sel-label';
+    const selectedYear = document.createElement('span');
+    selectedYear.className = 'sel-year';
+
+    selected.appendChild(selectedLabel);
+    selected.appendChild(selectedYear);
+
+    const optionsBox = document.createElement('div');
+    optionsBox.className = 'team-custom-options';
+
+    // Build options
+    Array.from(nativeSelect.options).forEach(opt => {
+      const optDiv = document.createElement('div');
+      optDiv.className = 'team-custom-option';
+      optDiv.dataset.value = opt.value;
+
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'opt-label';
+      const yearSpan = document.createElement('span');
+      yearSpan.className = 'opt-year';
+
+      const label = opt.dataset.label || opt.textContent || '';
+      const year = opt.dataset.birthYear || '';
+      labelSpan.textContent = label;
+      yearSpan.textContent = year ? ` · ${year}` : '';
+
+      optDiv.appendChild(labelSpan);
+      if (year) optDiv.appendChild(yearSpan);
+
+      if (opt.selected) optDiv.classList.add('selected');
+
+      optDiv.addEventListener('click', () => {
+        nativeSelect.value = opt.value;
+        nativeSelect.dispatchEvent(new Event('change'));
+        updateSelectedDisplay(label, year);
+        optionsBox.classList.remove('open');
+        selected.classList.remove('team-select-open');
+        optionsBox.querySelectorAll('.team-custom-option').forEach(o => o.classList.remove('selected'));
+        optDiv.classList.add('selected');
+      });
+
+      optionsBox.appendChild(optDiv);
+    });
+
+    function updateSelectedDisplay(label, year) {
+      selectedLabel.textContent = label || '-- Выберите команду --';
+      selectedYear.textContent = year ? ` · ${year}` : '';
+    }
+
+    // Init selected display from current value
+    const currentOpt = nativeSelect.selectedOptions[0] || nativeSelect.options[0];
+    const curLabel = currentOpt ? (currentOpt.dataset.label || currentOpt.textContent || '') : '';
+    const curYear = currentOpt ? (currentOpt.dataset.birthYear || '') : '';
+    updateSelectedDisplay(curLabel, curYear);
+
+    selected.addEventListener('click', () => {
+      const isOpen = optionsBox.classList.contains('open');
+      document.querySelectorAll('.team-custom-options.open').forEach(el => el.classList.remove('open'));
+      document.querySelectorAll('.team-custom-selected.team-select-open').forEach(el => el.classList.remove('team-select-open'));
+      if (!isOpen) {
+        optionsBox.classList.add('open');
+        selected.classList.add('team-select-open');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!wrapper.contains(e.target)) {
+        optionsBox.classList.remove('open');
+        selected.classList.remove('team-select-open');
+      }
+    });
+
+    wrapper.appendChild(selected);
+    wrapper.appendChild(optionsBox);
+    nativeSelect.parentElement.appendChild(wrapper);
+  }
+
     function buildTournamentTeamOptionValue(tournamentId, teamId) {
       return `${String(tournamentId)}__${String(teamId)}`;
     }
@@ -7562,6 +7742,11 @@
         const shouldDisable = !enabled || select.options.length === 0;
         select.toggleAttribute('disabled', shouldDisable);
         select.classList.toggle('disabled-field', shouldDisable);
+
+      const customWrapper = select.parentElement.querySelector('.team-custom-select');
+      if (customWrapper) {
+        customWrapper.classList.toggle('disabled-field', shouldDisable);
+      }
       });
     }
   </script>
