@@ -635,6 +635,29 @@
     .team-delete-link:hover {
       color: #c82333;
     }
+
+    .team-roster-view {
+      padding: 10px 12px;
+      border-top: 1px solid #e5e7eb;
+      background: #f8fafc;
+      border-radius: 0 0 8px 8px;
+    }
+    .team-roster-box {
+      padding: 8px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .team-roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .team-roster-title {
+      font-weight: 600;
+      color: #163d74;
+      margin-bottom: 6px;
+    }
     
     .btn-small {
       padding: 4px 8px;
@@ -1088,7 +1111,7 @@
           ? tournament.teams.map((team, index) => `
             <div class="team-item" data-team-id="${team.id}" data-tournament-id="${tournament.id}" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragend="handleDragEnd(event)">
               <div class="team-drag-handle" title="Перетащите для изменения порядка"></div>
-              <div class="team-item-info" id="team-info-${tournament.id}-${team.id}">
+              <div class="team-item-info" id="team-info-${tournament.id}-${team.id}" onclick="toggleTeamRoster('${tournament.id}', '${team.id}', event)">
                 ${team.logo ? `<img src="${team.logo}" alt="${team.name}" class="team-logo-mini">` : '<div class="team-logo-mini" style="background: #ddd;"></div>'}
                 <div class="team-short">${team.short || ''}</div>
                 <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
@@ -1102,6 +1125,7 @@
                 <span class="team-delete-link" onclick="deleteTeam('${tournament.id}', '${team.id}')">delete</span>
               </div>
               <div id="team-edit-form-${tournament.id}-${team.id}" class="team-edit-form-inline hidden"></div>
+              <div id="team-roster-${tournament.id}-${team.id}" class="team-roster-view hidden"></div>
             </div>
           `).join('')
           : '<div class="empty-state" style="padding: 20px;">Команд пока нет. Добавьте первую команду.</div>';
@@ -1470,6 +1494,51 @@
       const parsed = parseRosterText(textarea.value, isPlayer);
       renderRosterList(parsed, listId, isPlayer);
     }
+
+    function renderTeamRosterView(tournamentId, teamId) {
+      const rosterDiv = document.getElementById(`team-roster-${tournamentId}-${teamId}`);
+      if (!rosterDiv) return;
+      const tournament = tournaments.find(t => t.id === tournamentId);
+      if (!tournament) return;
+      const team = tournament.teams.find(t => t.id === teamId);
+      if (!team) return;
+      
+      const players = team.players && team.players.length
+        ? team.players.map(p => `<div>• ${p.name}${p.number ? ' #' + p.number : ''}${p.birthDate ? ' (' + p.birthDate + ')' : ''}</div>`).join('')
+        : '<div class="roster-empty">Список игроков пуст</div>';
+      
+      const staff = team.staff && team.staff.length
+        ? team.staff.map(p => `<div>• ${p.name}${p.birthDate ? ' (' + p.birthDate + ')' : ''}</div>`).join('')
+        : '<div class="roster-empty">Список штаба пуст</div>';
+      
+      rosterDiv.innerHTML = `
+        <div class="team-roster-box">
+          <div class="team-roster-grid">
+            <div>
+              <div class="team-roster-title">Игроки</div>
+              ${players}
+            </div>
+            <div>
+              <div class="team-roster-title">Тренерский штаб</div>
+              ${staff}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleTeamRoster(tournamentId, teamId, event) {
+      if (event && event.target && event.target.closest('.team-actions')) return;
+      const rosterDiv = document.getElementById(`team-roster-${tournamentId}-${teamId}`);
+      if (!rosterDiv) return;
+      const isHidden = rosterDiv.classList.contains('hidden');
+      if (isHidden) {
+        renderTeamRosterView(tournamentId, teamId);
+        rosterDiv.classList.remove('hidden');
+      } else {
+        rosterDiv.classList.add('hidden');
+      }
+    }
     
     // Редактирование команды
     function editTeam(tournamentId, teamId) {
@@ -1508,6 +1577,10 @@
       const teamInfo = document.getElementById(`team-info-${tournamentId}-${teamId}`);
       if (teamInfo) {
         teamInfo.style.display = 'none';
+      }
+      const rosterView = document.getElementById(`team-roster-${tournamentId}-${teamId}`);
+      if (rosterView) {
+        rosterView.classList.add('hidden');
       }
       
       // Показываем форму редактирования на месте команды
