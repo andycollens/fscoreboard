@@ -352,12 +352,16 @@
 
         .rosters-subtitle {
             display: none;
-            font-size: 32px;
+            font-size: 3vw;
             font-weight: 600;
             color: #dfe6f5;
             margin-top: 8px;
             text-align: center;
             letter-spacing: 0.02em;
+        }
+
+        body.rosters-mode .tournament-title {
+            display: none;
         }
 
         body.rosters-mode .rosters-subtitle {
@@ -366,6 +370,9 @@
 
         body.rosters-mode .top-section {
             flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 20px;
         }
 
         /* Средняя область (1/2 высоты) */
@@ -884,7 +891,7 @@
             white-space: pre;
             padding: 0;
             column-count: 2;
-            column-gap: 24px;
+            column-gap: 12px;
             word-break: break-word;
             width: 100%;
             max-width: 100%;
@@ -896,11 +903,11 @@
         }
 
         .rosters-mode .score1-section .roster-list {
-            text-align: right;
+            text-align: left;
         }
 
         .rosters-mode .score2-section .roster-list {
-            text-align: left;
+            text-align: right;
         }
 
         .roster-title {
@@ -1877,7 +1884,7 @@ body.penalty-mode .penalty-score {
                 .replace(/'/g, '&#39;');
         }
 
-        function renderRosterList(el, players, staff) {
+        function renderRosterList(el, players, staff, isRightSide = false) {
             if (!el) return;
             const parts = [];
 
@@ -1900,8 +1907,12 @@ body.penalty-mode .penalty-score {
                     .map(item => {
                         if (!item) return '';
                         if (typeof item === 'string') return escapeHtml(item);
-                        const num = item.number ? `${item.number} ` : '';
-                        return escapeHtml(`${num}${item.name || ''}`.trim());
+                        const num = item.number ? String(item.number) : '';
+                        const name = item.name || '';
+                        const line = isRightSide
+                            ? `${name}${num ? ' ' + num : ''}`   // ФИО №
+                            : `${num ? num + ' ' : ''}${name}`;   // № ФИО
+                        return escapeHtml(line.trim());
                     })
                     .filter(Boolean)
                     .join('<br>');
@@ -1937,7 +1948,8 @@ body.penalty-mode .penalty-score {
                 renderRosterList(
                     team1Roster,
                     data.team1Players || data.players1 || [],
-                    data.team1Staff || data.staff1 || []
+                    data.team1Staff || data.staff1 || [],
+                    false
                 );
             }
 
@@ -1976,7 +1988,8 @@ body.penalty-mode .penalty-score {
                 renderRosterList(
                     team2Roster,
                     data.team2Players || data.players2 || [],
-                    data.team2Staff || data.staff2 || []
+                    data.team2Staff || data.staff2 || [],
+                    true
                 );
             }
 
@@ -2046,6 +2059,8 @@ body.penalty-mode .penalty-score {
         const flagMode = document.getElementById('flagMode');
         const winnersMode = document.getElementById('winnersMode');
         const logoMode = document.getElementById('logoMode');
+        const titleEl = document.getElementById('tournamentTitle');
+        const subtitleEl = document.getElementById('rostersSubtitle');
         
         if (!scoreboardMode || !flagMode || !winnersMode || !logoMode) {
             console.error('Mode elements not found');
@@ -2072,6 +2087,17 @@ body.penalty-mode .penalty-score {
             winnersMode.classList.add('active');
         } else if (mode === 'logo') {
             logoMode.classList.add('active');
+        }
+
+        // Переключаем заголовок / подзаголовок
+        if (titleEl && subtitleEl) {
+            if (mode === 'rosters') {
+                titleEl.style.display = 'none';
+                subtitleEl.style.display = 'block';
+            } else {
+                titleEl.style.display = '';
+                subtitleEl.style.display = 'none';
+            }
         }
 
         refreshDisplayForMode(mode, window.lastScoreboardData || latestData || {});
