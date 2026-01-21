@@ -1651,7 +1651,7 @@
       rosterDiv.innerHTML = `
         <div class="team-roster-box">
           <div>
-            <div class="team-roster-title">Тренерский штаб</div>
+            <div class="team-roster-title">Тренерский состав</div>
             ${staff}
           </div>
           <div style="margin-top: 12px;">
@@ -1764,7 +1764,7 @@
               <div class="roster-switch">
                 <div class="stadium-mode-buttons">
                   <button type="button" class="stadium-mode-btn active" id="rosterTogglePlayers-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','player')">Игроки</button>
-                  <button type="button" class="stadium-mode-btn" id="rosterToggleStaff-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','staff')">Тренерский штаб</button>
+                  <button type="button" class="stadium-mode-btn" id="rosterToggleStaff-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','staff')">Тренерский состав</button>
                 </div>
               </div>
               <textarea id="rosterPaste-${tournamentId}-${teamId}" rows="5" placeholder="Пример:&#10;10 Иванов Иван&#10;Петров Петр"></textarea>
@@ -1774,7 +1774,7 @@
               </div>
               <div class="team-roster-box" style="padding: 6px 0 0 0;">
                 <div>
-                  <div class="team-roster-title">Тренерский штаб</div>
+                  <div class="team-roster-title">Тренерский состав</div>
                   <div id="staffList-${tournamentId}-${teamId}" class="roster-list"></div>
                 </div>
                 <div style="margin-top: 12px;">
