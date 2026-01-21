@@ -714,6 +714,50 @@
             line-height: 1.2;
         }
 
+        /* Режим "Составы" */
+        .rosters-mode .team1-logo,
+        .rosters-mode .team2-logo,
+        .rosters-mode .team1-no-logo,
+        .rosters-mode .team2-no-logo {
+            transform: scale(0.75);
+            transform-origin: center;
+        }
+
+        .rosters-mode .team1-name,
+        .rosters-mode .team2-name {
+            font-size: 3vw;
+        }
+
+        .rosters-mode .team1-city,
+        .rosters-mode .team2-city {
+            font-size: 1.65vw;
+        }
+
+        .rosters-mode .score1-section,
+        .rosters-mode .score2-section,
+        .rosters-mode .match-score-label,
+        .rosters-mode .penalty-label,
+        .rosters-mode .timer,
+        .rosters-mode .team-penalty-track {
+            display: none !important;
+        }
+        .rosters-mode .bottom-section {
+            display: none !important;
+        }
+
+        .roster-list {
+            display: none;
+            font-size: 2.2vw;
+            color: #fff;
+            line-height: 1.25;
+            text-align: center;
+            white-space: pre-line;
+        }
+
+        .rosters-mode .roster-list {
+            display: block;
+        }
+
         /* Нижняя область (1/4 высоты) */
         .bottom-section {
             flex: 1;
@@ -1331,9 +1375,10 @@ body.penalty-mode .penalty-score {
                     </div>
                 </div>
 
-                <!-- Счет 1 -->
+                <!-- Счет 1 / Ростер 1 -->
                 <div class="score1-section">
                     <div class="team1-score" id="team1Score">0</div>
+                    <div class="roster-list" id="team1Roster"></div>
                 </div>
 
                 <!-- Разделитель -->
@@ -1341,9 +1386,10 @@ body.penalty-mode .penalty-score {
                     <div class="colon"></div>
                 </div>
 
-                <!-- Счет 2 -->
+                <!-- Счет 2 / Ростер 2 -->
                 <div class="score2-section">
                     <div class="team2-score" id="team2Score">0</div>
+                    <div class="roster-list" id="team2Roster"></div>
                 </div>
 
                 <!-- Команда 2 -->
@@ -1543,12 +1589,14 @@ body.penalty-mode .penalty-score {
         const team1Name = document.getElementById('team1Name');
         const team1City = document.getElementById('team1City');
         const team1Score = document.getElementById('team1Score');
+        const team1Roster = document.getElementById('team1Roster');
         
         const team2Logo = document.getElementById('team2Logo');
         const team2NoLogo = document.getElementById('team2NoLogo');
         const team2Name = document.getElementById('team2Name');
         const team2City = document.getElementById('team2City');
         const team2Score = document.getElementById('team2Score');
+        const team2Roster = document.getElementById('team2Roster');
         
         const timer = document.getElementById('timer');
         const timerMinutes = document.getElementById('timerMinutes');
@@ -1664,6 +1712,23 @@ body.penalty-mode .penalty-score {
         }
 
         // Функция обновления отображения
+        function formatRosterList(value) {
+            if (!value) return '';
+            if (Array.isArray(value)) {
+                return value
+                    .map(item => {
+                        if (!item) return '';
+                        if (typeof item === 'string') return item;
+                        const num = item.number ? `${item.number} ` : '';
+                        return `${num}${item.name || ''}`.trim();
+                    })
+                    .filter(Boolean)
+                    .join('\n');
+            }
+            if (typeof value === 'string') return value;
+            return '';
+        }
+
         function updateDisplay(data) {
             console.log('Stadium обновляет отображение:', data);
  
@@ -1685,6 +1750,13 @@ body.penalty-mode .penalty-score {
             team1Score.textContent = data.score1 || 0;
             adjustScoreFontSize(team1Score);
             updateStripe('team1', data.kit1Color);
+
+            if (team1Roster) {
+                const roster1 = formatRosterList(
+                    data.team1Roster || data.team1Players || data.players1 || data.team1RosterText
+                );
+                team1Roster.textContent = roster1;
+            }
 
             const stadiumTeam1Short = document.getElementById('stadiumTeam1');
             const stadiumTeam2Short = document.getElementById('stadiumTeam2');
@@ -1716,6 +1788,13 @@ body.penalty-mode .penalty-score {
             team2City.textContent = data.team2City || 'Город 2';
             team2Score.textContent = data.score2 || 0;
             adjustScoreFontSize(team2Score);
+
+            if (team2Roster) {
+                const roster2 = formatRosterList(
+                    data.team2Roster || data.team2Players || data.players2 || data.team2RosterText
+                );
+                team2Roster.textContent = roster2;
+            }
 
             // Обновляем полоску для команды 2
             updateStripe('team2', data.kit2Color);
@@ -1778,6 +1857,7 @@ body.penalty-mode .penalty-score {
         lastAppliedMode = mode;
         console.log('Switching mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
         
+        document.body.classList.toggle('rosters-mode', mode === 'rosters');
         const scoreboardMode = document.getElementById('scoreboardMode');
         const flagMode = document.getElementById('flagMode');
         const winnersMode = document.getElementById('winnersMode');
