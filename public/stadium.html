@@ -741,88 +741,85 @@
 
         /* Режим "Составы" */
         .rosters-mode .middle-content {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
+            /* Две равные по ширине области под команды, сверху шапки, снизу составы */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr;
+            column-gap: 0;
+            row-gap: 3vh;
+            align-items: start;
+            justify-items: stretch;
             width: 100%;
             max-width: 100vw;
-            padding: 0 2vw;
+            padding: 0 4vw;
             box-sizing: border-box;
-            position: relative;
-            height: 100%;
-            overflow: hidden;
+        }
+
+        .rosters-mode .team1-section,
+        .rosters-mode .team2-section,
+        .rosters-mode .score1-section,
+        .rosters-mode .score2-section {
+            position: static;
+            margin: 0;
+            width: 100%;
+            height: auto;
+            box-sizing: border-box;
+            min-width: 0;
         }
 
         .rosters-mode .team1-section {
-            position: absolute;
-            left: 2vw;
-            top: 5vh;
-            width: calc(50% - 3vw);
-            max-width: calc(50% - 3vw);
+            grid-column: 1;
+            grid-row: 1;
             display: flex;
             flex-direction: row;
             align-items: flex-start;
             justify-content: flex-start;
-            gap: 12px;
-            box-sizing: border-box;
-            overflow: hidden;
+            gap: 14px;
+            padding-right: 2vw;
         }
 
         .rosters-mode .team2-section {
-            position: absolute;
-            right: 2vw;
-            top: 5vh;
-            width: calc(50% - 3vw);
-            max-width: calc(50% - 3vw);
+            grid-column: 2;
+            grid-row: 1;
             display: flex;
-            flex-direction: row;
+            flex-direction: row-reverse;
             align-items: flex-start;
             justify-content: flex-end;
-            gap: 12px;
-            box-sizing: border-box;
-            overflow: hidden;
+            gap: 14px;
+            padding-left: 2vw;
         }
 
         .rosters-mode .score1-section {
-            position: absolute;
-            left: 2vw;
-            top: 20vh;
-            width: calc(50% - 3vw);
-            max-width: calc(50% - 3vw);
+            grid-column: 1;
+            grid-row: 2;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
             justify-content: flex-start;
-            box-sizing: border-box;
-            overflow: hidden;
+            padding-right: 2vw;
         }
 
         .rosters-mode .score2-section {
-            position: absolute;
-            right: 2vw;
-            top: 20vh;
-            width: calc(50% - 3vw);
-            max-width: calc(50% - 3vw);
+            grid-column: 2;
+            grid-row: 2;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             justify-content: flex-start;
-            box-sizing: border-box;
-            overflow: hidden;
+            padding-left: 2vw;
         }
 
         .rosters-mode .team1-logo,
         .rosters-mode .team2-logo,
         .rosters-mode .team1-no-logo,
         .rosters-mode .team2-no-logo {
-            transform: scale(0.75);
-            transform-origin: center;
+            transform: none;
             margin: 0;
             flex-shrink: 0;
+            width: 120px;
+            height: 120px;
             max-width: 120px;
             max-height: 120px;
-            width: auto;
-            height: auto;
         }
 
         /* Скрываем penalty-track в режиме rosters */
@@ -830,99 +827,49 @@
             display: none !important;
         }
 
-        /* Для левой команды: логотип слева, затем блок (название сверху, город снизу), затем полоска */
-        .rosters-mode .team1-section {
-            flex-wrap: nowrap;
+        .rosters-mode .team1-meta,
+        .rosters-mode .team2-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
         }
 
-        /* Создаем вертикальный блок для названия и города */
-        .rosters-mode .team1-name {
-            font-size: 3vw;
-            margin: 0;
-            white-space: nowrap;
-            flex-shrink: 1;
-            display: block;
-            line-height: 1.2;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .rosters-mode .team1-meta {
+            align-items: flex-start;
+            text-align: left;
         }
 
-        .rosters-mode .team1-city {
-            font-size: 1.65vw;
-            margin: 5px 0 0 0;
-            white-space: nowrap;
-            flex-shrink: 1;
-            display: block;
-            line-height: 1.2;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .rosters-mode .team2-meta {
+            align-items: flex-end;
+            text-align: right;
         }
 
-        .rosters-mode .team1-stripe {
-            display: block;
-            width: 50px;
-            height: 16px;
-            margin: 0 0 0 10px;
-            flex-shrink: 0;
-            align-self: flex-start;
-            margin-top: 0.5vw;
-            opacity: 1 !important;
-        }
-
-        /* Для правой команды: полоска, затем блок (название сверху, город снизу), затем логотип */
+        .rosters-mode .team1-name,
         .rosters-mode .team2-name {
             font-size: 3vw;
             margin: 0;
             white-space: nowrap;
-            flex-shrink: 1;
-            display: block;
-            line-height: 1.2;
-            max-width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        .rosters-mode .team1-city,
         .rosters-mode .team2-city {
             font-size: 1.65vw;
-            margin: 5px 0 0 0;
+            margin: 0;
             white-space: nowrap;
-            flex-shrink: 1;
-            display: block;
-            line-height: 1.2;
-            max-width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        .rosters-mode .team1-stripe,
         .rosters-mode .team2-stripe {
             display: block;
-            width: 50px;
+            width: 120px;
             height: 16px;
-            margin: 0 10px 0 0;
-            flex-shrink: 0;
-            align-self: flex-start;
-            margin-top: 0.5vw;
+            margin: 4px 0 0 0;
             opacity: 1 !important;
-        }
-
-        /* Порядок элементов для правой команды */
-        .rosters-mode .team2-logo,
-        .rosters-mode .team2-no-logo {
-            order: 3; /* Логотип справа (последний) */
-        }
-
-        .rosters-mode .team2-name {
-            order: 2; /* Название вторым */
-        }
-
-        .rosters-mode .team2-stripe {
-            order: 1; /* Полоска первой (слева) */
-        }
-
-        .rosters-mode .team2-city {
-            order: 2; /* Город вместе с названием (в том же порядке) */
         }
 
         .rosters-mode .divider-section {
@@ -1613,9 +1560,11 @@ body.penalty-mode .penalty-score {
                 <div class="team1-section">
                     <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
                     <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
-                    <div class="team1-name" id="team1Name">Команда 1</div>
-                    <div id="team1Stripe" class="team1-stripe"></div>
-                    <div class="team1-city" id="team1City">Город 1</div>
+                    <div class="team1-meta">
+                        <div class="team1-name" id="team1Name">Команда 1</div>
+                        <div id="team1Stripe" class="team1-stripe"></div>
+                        <div class="team1-city" id="team1City">Город 1</div>
+                    </div>
                     <div class="team-penalty-track" id="team1PenaltyTrack">
                         <div class="penalty-dots" id="stadiumPenaltyDotsTeam1"></div>
                     </div>
@@ -1642,9 +1591,11 @@ body.penalty-mode .penalty-score {
                 <div class="team2-section">
                     <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
                     <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
-                    <div class="team2-name" id="team2Name">Команда 2</div>
-                    <div id="team2Stripe" class="team2-stripe"></div>
-                    <div class="team2-city" id="team2City">Город 2</div>
+                    <div class="team2-meta">
+                        <div class="team2-name" id="team2Name">Команда 2</div>
+                        <div id="team2Stripe" class="team2-stripe"></div>
+                        <div class="team2-city" id="team2City">Город 2</div>
+                    </div>
                     <div class="team-penalty-track" id="team2PenaltyTrack">
                         <div class="penalty-dots" id="stadiumPenaltyDotsTeam2"></div>
                     </div>
