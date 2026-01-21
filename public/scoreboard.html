@@ -84,6 +84,15 @@
       margin-left: 5px;
     }
     
+    /* Winterleague style - with margins */
+    .style-winterleague .kit1-section {
+      margin-right: 5px;
+    }
+    
+    .style-winterleague .kit2-section {
+      margin-left: 5px;
+    }
+    
     .team1-section, .team2-section {
       background: #2b2b2b;
       color: #fff;
@@ -100,6 +109,11 @@
     
     /* ISKRACUP style - team width 75px */
     .style-iskracup .team1-section, .style-iskracup .team2-section {
+      width: 75px;
+    }
+    
+    /* Winterleague style - team width 75px */
+    .style-winterleague .team1-section, .style-winterleague .team2-section {
       width: 75px;
     }
     .score1-section, .score2-section {
@@ -147,6 +161,22 @@
       position: relative;
     }
     
+    /* Winterleague style - divider 70px with logo */
+    .style-winterleague .divider-section {
+      width: 70px;
+      background: #2b2b2b;
+      line-height: 40px;
+      margin: 0;
+      padding: 0;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      flex-grow: 0;
+      position: relative;
+    }
+    
     .divider-logo {
       position: absolute;
       top: 50%;
@@ -165,6 +195,11 @@
     }
     
     .style-iskracup .divider-logo {
+      display: block;
+      opacity: 1;
+    }
+    
+    .style-winterleague .divider-logo {
       display: block;
       opacity: 1;
     }
@@ -244,7 +279,7 @@
       }
       
       // Remove all style classes
-      scoreboardRow.classList.remove('style-default', 'style-iskracup');
+      scoreboardRow.classList.remove('style-default', 'style-iskracup', 'style-winterleague');
       
       if (style === 'iskracup') {
         // Apply ISKRACUP style
@@ -260,6 +295,23 @@
             });
           });
           console.log('Logo should be visible now');
+        } else {
+          console.error('logoImg not found');
+        }
+      } else if (style === 'winterleague') {
+        // Apply Winterleague style
+        scoreboardRow.classList.add('style-winterleague');
+        console.log('Added style-winterleague class');
+        if (logoImg) {
+          logoImg.src = '/public/img/winterleague_scoreboard_logo.png';
+          // Use requestAnimationFrame to ensure CSS class is applied first
+          requestAnimationFrame(() => {
+            logoImg.style.display = 'block';
+            requestAnimationFrame(() => {
+              logoImg.style.opacity = '1';
+            });
+          });
+          console.log('Winterleague logo should be visible now');
         } else {
           console.error('logoImg not found');
         }
