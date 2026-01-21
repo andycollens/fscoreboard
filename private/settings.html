@@ -919,14 +919,10 @@
 
     /* Roster toggle (match stadium-mode buttons) */
     .roster-switch {
-      display: inline-flex;
+      display: flex;
+      align-items: center;
       gap: 8px;
-      margin-bottom: 8px;
-    }
-    .roster-switch .stadium-mode-btn {
-      padding: 6px 12px;
-      font-size: 12px;
-      min-width: 0;
+      margin-bottom: 12px;
     }
     
     .empty-state {
@@ -1763,8 +1759,10 @@
           <div class="roster-grid">
             <div class="roster-card" style="grid-column: 1 / -1;">
               <div class="roster-switch">
-                <button type="button" class="stadium-mode-btn active" id="rosterTogglePlayers-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','player')">Игроки</button>
-                <button type="button" class="stadium-mode-btn" id="rosterToggleStaff-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','staff')">Тренерский штаб</button>
+                <div class="stadium-mode-buttons">
+                  <button type="button" class="stadium-mode-btn active" id="rosterTogglePlayers-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','player')">Игроки</button>
+                  <button type="button" class="stadium-mode-btn" id="rosterToggleStaff-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','staff')">Тренерский штаб</button>
+                </div>
               </div>
               <textarea id="rosterPaste-${tournamentId}-${teamId}" rows="5" placeholder="Пример:&#10;10 Иванов Иван&#10;Петров Петр"></textarea>
               <div class="roster-actions">
