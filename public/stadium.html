@@ -763,6 +763,7 @@
             margin: 0;
             width: 100%;
             height: auto;
+            box-sizing: border-box;
         }
 
         .rosters-mode .team1-section {
@@ -773,6 +774,7 @@
             align-items: center;
             justify-content: flex-start; /* к левому краю своей половины */
             gap: 15px;
+            padding-right: 2vw; /* симметричный внутренний отступ от центральной оси */
         }
 
         .rosters-mode .team2-section {
@@ -783,6 +785,7 @@
             align-items: center;
             justify-content: flex-end; /* к правому краю своей половины */
             gap: 15px;
+            padding-left: 2vw; /* симметричный внутренний отступ от центральной оси */
         }
 
         .rosters-mode .score1-section {
@@ -791,6 +794,7 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
+            padding-right: 2vw; /* тот же отступ, что и у шапки слева */
         }
 
         .rosters-mode .score2-section {
@@ -799,6 +803,7 @@
             display: flex;
             align-items: flex-start;
             justify-content: flex-end;
+            padding-left: 2vw; /* тот же отступ, что и у шапки справа */
         }
 
         .rosters-mode .team1-logo,
