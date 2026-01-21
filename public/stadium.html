@@ -369,10 +369,16 @@
         }
 
         body.rosters-mode .top-section {
+            flex: 0 0 auto;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             padding-top: 20px;
+            padding-bottom: 10px;
+        }
+
+        body.rosters-mode .middle-section {
+            flex: 1;
         }
 
         /* Средняя область (1/2 высоты) */
@@ -753,6 +759,8 @@
             max-width: 100vw;
             padding: 0 4vw;
             box-sizing: border-box;
+            height: 100%;
+            align-content: start;
         }
 
         .rosters-mode .team1-section,
