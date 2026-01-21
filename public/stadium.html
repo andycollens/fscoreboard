@@ -1797,6 +1797,8 @@ body.penalty-mode .penalty-score {
         
         if (mode === 'scoreboard') {
             scoreboardMode.style.display = 'flex';
+        } else if (mode === 'rosters') {
+            scoreboardMode.style.display = 'flex';
         } else if (mode === 'penalty') {
             scoreboardMode.style.display = 'flex';
             document.body.classList.add('penalty-mode');
@@ -1812,7 +1814,7 @@ body.penalty-mode .penalty-score {
     }
     
     function refreshDisplayForMode(mode, data) {
-        if (mode === 'scoreboard' || mode === 'penalty') {
+        if (mode === 'scoreboard' || mode === 'rosters' || mode === 'penalty') {
             if (data && Object.keys(data).length) {
                 updateDisplay(data);
                 const isPenaltyView = mode === 'penalty';
