@@ -771,10 +771,10 @@
             grid-row: 1;
             display: flex;
             flex-direction: row;
-            align-items: center;
-            justify-content: flex-start; /* к левому краю своей половины */
+            align-items: flex-start;
+            justify-content: flex-start;
             gap: 15px;
-            padding-right: 2vw; /* симметричный внутренний отступ от центральной оси */
+            padding-right: 2vw;
         }
 
         .rosters-mode .team2-section {
@@ -782,28 +782,30 @@
             grid-row: 1;
             display: flex;
             flex-direction: row;
-            align-items: center;
-            justify-content: flex-end; /* к правому краю своей половины */
+            align-items: flex-start;
+            justify-content: flex-end;
             gap: 15px;
-            padding-left: 2vw; /* симметричный внутренний отступ от центральной оси */
+            padding-left: 2vw;
         }
 
         .rosters-mode .score1-section {
             grid-column: 1;
             grid-row: 2;
             display: flex;
+            flex-direction: column;
             align-items: flex-start;
             justify-content: flex-start;
-            padding-right: 2vw; /* тот же отступ, что и у шапки слева */
+            padding-right: 2vw;
         }
 
         .rosters-mode .score2-section {
             grid-column: 2;
             grid-row: 2;
             display: flex;
-            align-items: flex-start;
-            justify-content: flex-end;
-            padding-left: 2vw; /* тот же отступ, что и у шапки справа */
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: flex-start;
+            padding-left: 2vw;
         }
 
         .rosters-mode .team1-logo,
@@ -821,62 +823,87 @@
             display: none !important;
         }
 
-        /* Группируем name, stripe, city в одну строку */
-        .rosters-mode .team1-name,
-        .rosters-mode .team1-stripe,
-        .rosters-mode .team1-city,
-        .rosters-mode .team2-name,
-        .rosters-mode .team2-stripe,
-        .rosters-mode .team2-city {
-            display: inline-flex;
-            align-items: center;
+        /* Для левой команды: логотип слева, затем блок (название сверху, город снизу), затем полоска */
+        .rosters-mode .team1-section {
+            flex-wrap: nowrap;
+        }
+
+        /* Создаем вертикальный блок для названия и города */
+        .rosters-mode .team1-name {
+            font-size: 3vw;
+            margin: 0;
             white-space: nowrap;
             flex-shrink: 0;
+            display: block;
+            line-height: 1.2;
         }
 
-        .rosters-mode .team1-name,
-        .rosters-mode .team2-name {
-            font-size: 3vw;
-            margin: 0 10px 0 0;
-            max-width: 18vw;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .rosters-mode .team1-city,
-        .rosters-mode .team2-city {
+        .rosters-mode .team1-city {
             font-size: 1.65vw;
-            margin: 0 0 0 10px;
-            max-width: 16vw;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            margin: 5px 0 0 0;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: block;
+            line-height: 1.2;
         }
 
-        .rosters-mode .team1-stripe,
-        .rosters-mode .team2-stripe {
-            display: inline-block;
+        .rosters-mode .team1-stripe {
+            display: block;
             width: 60px;
             height: 16px;
-            margin: 0 10px;
-            vertical-align: middle;
+            margin: 0 0 0 15px;
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 0.5vw;
+            opacity: 1 !important;
         }
 
-        /* Для правой команды меняем порядок элементов: name + stripe + city, затем logo */
-        .rosters-mode .team2-logo,
-        .rosters-mode .team2-no-logo {
-            order: 4; /* Логотип справа (последний) */
-        }
-
+        /* Для правой команды: полоска, затем блок (название сверху, город снизу), затем логотип */
         .rosters-mode .team2-name {
-            order: 1; /* Название первым */
-        }
-
-        .rosters-mode .team2-stripe {
-            order: 2; /* Полоска второй */
+            font-size: 3vw;
+            margin: 0;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: block;
+            line-height: 1.2;
         }
 
         .rosters-mode .team2-city {
-            order: 3; /* Город третьим */
+            font-size: 1.65vw;
+            margin: 5px 0 0 0;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .rosters-mode .team2-stripe {
+            display: block;
+            width: 60px;
+            height: 16px;
+            margin: 0 15px 0 0;
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 0.5vw;
+            opacity: 1 !important;
+        }
+
+        /* Порядок элементов для правой команды */
+        .rosters-mode .team2-logo,
+        .rosters-mode .team2-no-logo {
+            order: 3; /* Логотип справа (последний) */
+        }
+
+        .rosters-mode .team2-name {
+            order: 2; /* Название вторым */
+        }
+
+        .rosters-mode .team2-stripe {
+            order: 1; /* Полоска первой (слева) */
+        }
+
+        .rosters-mode .team2-city {
+            order: 2; /* Город вместе с названием (в том же порядке) */
         }
 
         .rosters-mode .divider-section {
@@ -903,8 +930,6 @@
             text-align: left;
             white-space: pre;
             padding: 0;
-            column-count: 2;
-            column-gap: 12px;
             word-break: break-word;
             width: 100%;
             max-width: 100%;
@@ -913,31 +938,50 @@
 
         .rosters-mode .roster-list {
             display: block;
+            width: 100%;
         }
 
         .rosters-mode .score1-section .roster-list {
             text-align: left;
-            max-width: 80%;
-            margin-left: 0;
-            margin-right: auto;
         }
 
         .rosters-mode .score2-section .roster-list {
             text-align: right;
-            max-width: 80%;
-            margin-left: auto;
-            margin-right: 0;
         }
 
         .roster-title {
             font-weight: 700;
-            font-size: 2.6vw;
-            margin-bottom: 10px;
+            font-size: 2.2vw;
+            margin-bottom: 8px;
+            display: block;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .rosters-mode .score1-section .roster-title {
+            text-align: left;
+        }
+
+        .rosters-mode .score2-section .roster-title {
+            text-align: right;
         }
 
         .roster-lines {
-            font-size: 1.8vw;
+            font-size: 2vw;
             font-weight: 500;
+            display: block;
+            column-count: 2;
+            column-gap: 8px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .rosters-mode .score1-section .roster-lines {
+            text-align: left;
+        }
+
+        .rosters-mode .score2-section .roster-lines {
+            text-align: right;
         }
 
         /* Нижняя область (1/4 высоты) */
@@ -1938,7 +1982,7 @@ body.penalty-mode .penalty-score {
                 if (playerLines) parts.push(`<div class="roster-lines">${playerLines}</div>`);
             }
 
-            el.innerHTML = parts.join('<br>');
+            el.innerHTML = parts.join('');
         }
 
         function updateDisplay(data) {
