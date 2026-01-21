@@ -777,6 +777,7 @@
             box-sizing: border-box;
             justify-content: space-between;
             align-items: center;
+            overflow: hidden;
         }
 
         body.rosters-mode .team1-section,
@@ -861,6 +862,11 @@
             text-overflow: ellipsis;
         }
 
+        body.rosters-mode .middle-content .score1-section,
+        body.rosters-mode .middle-content .score2-section {
+            display: none !important;
+        }
+
         body.rosters-mode .score1-section {
             display: flex;
             flex-direction: column;
@@ -899,21 +905,29 @@
             grid-template-columns: 1fr 1fr;
             flex: 1 1 auto;
             min-height: 0;
+            max-height: 100%;
             padding: 2vh 3vw;
             box-sizing: border-box;
             align-items: flex-start;
             justify-content: stretch;
             gap: 0;
+            overflow: hidden;
         }
 
         body.rosters-mode .bottom-section .score1-section {
             grid-column: 1;
+            display: flex !important;
             overflow-y: auto;
+            overflow-x: hidden;
+            max-height: 100%;
         }
 
         body.rosters-mode .bottom-section .score2-section {
             grid-column: 2;
+            display: flex !important;
             overflow-y: auto;
+            overflow-x: hidden;
+            max-height: 100%;
         }
 
         body.rosters-mode .roster-list {
@@ -2199,34 +2213,54 @@ body.penalty-mode .penalty-score {
         const team1Section = document.querySelector('.team1-section');
         const dividerSection = document.querySelector('.divider-section');
         
-        if (mode === 'rosters' && middleContent && bottomSection && score1Section && score2Section) {
+        if (mode === 'rosters') {
             // Перемещаем в bottom-section
-            if (score1Section.parentElement !== bottomSection) {
-                bottomSection.appendChild(score1Section);
-            }
-            if (score2Section.parentElement !== bottomSection) {
-                bottomSection.appendChild(score2Section);
-            }
-        } else if (middleContent && score1Section && score2Section) {
-            // Возвращаем обратно в middle-content
-            if (score1Section.parentElement !== middleContent) {
-                // Вставляем score1-section после team1-section
-                if (team1Section && team1Section.nextSibling) {
-                    middleContent.insertBefore(score1Section, team1Section.nextSibling);
-                } else if (team1Section) {
-                    team1Section.insertAdjacentElement('afterend', score1Section);
-                } else {
-                    middleContent.insertBefore(score1Section, middleContent.firstChild);
+            if (middleContent && bottomSection && score1Section && score2Section) {
+                // Убеждаемся, что элементы не находятся в middle-content
+                if (score1Section.parentElement === middleContent) {
+                    middleContent.removeChild(score1Section);
+                }
+                if (score2Section.parentElement === middleContent) {
+                    middleContent.removeChild(score2Section);
+                }
+                // Добавляем в bottom-section, если их там еще нет
+                if (score1Section.parentElement !== bottomSection) {
+                    bottomSection.appendChild(score1Section);
+                }
+                if (score2Section.parentElement !== bottomSection) {
+                    bottomSection.appendChild(score2Section);
                 }
             }
-            if (score2Section.parentElement !== middleContent) {
-                // Вставляем score2-section после divider-section
-                if (dividerSection && dividerSection.nextSibling) {
-                    middleContent.insertBefore(score2Section, dividerSection.nextSibling);
-                } else if (dividerSection) {
-                    dividerSection.insertAdjacentElement('afterend', score2Section);
-                } else {
-                    middleContent.appendChild(score2Section);
+        } else {
+            // Возвращаем обратно в middle-content
+            if (middleContent && score1Section && score2Section) {
+                // Удаляем из bottom-section, если они там
+                if (score1Section.parentElement === bottomSection) {
+                    bottomSection.removeChild(score1Section);
+                }
+                if (score2Section.parentElement === bottomSection) {
+                    bottomSection.removeChild(score2Section);
+                }
+                // Вставляем обратно в middle-content
+                if (score1Section.parentElement !== middleContent) {
+                    // Вставляем score1-section после team1-section
+                    if (team1Section && team1Section.nextSibling) {
+                        middleContent.insertBefore(score1Section, team1Section.nextSibling);
+                    } else if (team1Section) {
+                        team1Section.insertAdjacentElement('afterend', score1Section);
+                    } else {
+                        middleContent.insertBefore(score1Section, middleContent.firstChild);
+                    }
+                }
+                if (score2Section.parentElement !== middleContent) {
+                    // Вставляем score2-section после divider-section
+                    if (dividerSection && dividerSection.nextSibling) {
+                        middleContent.insertBefore(score2Section, dividerSection.nextSibling);
+                    } else if (dividerSection) {
+                        dividerSection.insertAdjacentElement('afterend', score2Section);
+                    } else {
+                        middleContent.appendChild(score2Section);
+                    }
                 }
             }
         }
