@@ -938,7 +938,7 @@
             overflow-x: hidden;
             max-height: 100%;
             width: 100%;
-            max-width: 100%;
+            max-width: 50vw;
             min-width: 0;
             box-sizing: border-box;
             margin: 50px 0 0 0;
@@ -989,6 +989,20 @@
         body.rosters-mode .score1-section .roster-title,
         body.rosters-mode .score1-section .roster-lines {
             text-align: left;
+            max-width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        body.rosters-mode .score1-section .roster-lines {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        body.rosters-mode .score1-section .roster-list {
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         body.rosters-mode .score2-section .roster-title,
