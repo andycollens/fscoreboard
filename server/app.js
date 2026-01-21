@@ -880,11 +880,17 @@ app.post('/api/tournaments/:id/teams', (req, res) => {
       .filter(s => s.name);
   };
 
+  const sanitizeBirthYear = (value) => {
+    const str = value === undefined || value === null ? '' : String(value).trim();
+    return /^\d{4}$/.test(str) ? str : '';
+  };
+
   const newTeam = {
     id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
     name: req.body.name,
     city: req.body.city || '',
     short: req.body.short || '',
+    birthYear: sanitizeBirthYear(req.body.birthYear),
     kitColor: req.body.kitColor || '#2b2b2b',
     logo: req.body.logo || '',
     players: sanitizePlayers(req.body.players),
@@ -921,6 +927,14 @@ app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
   // Если logo не передан (undefined) - сохраняем существующий (это защита от случайного изменения)
   const existingLogo = tournament.teams[teamIndex].logo || '';
   const newLogo = (req.body.logo !== undefined && req.body.logo !== null) ? req.body.logo : existingLogo;
+  const existingBirthYear = tournament.teams[teamIndex].birthYear || '';
+
+  const sanitizeBirthYear = (value) => {
+    const str = value === undefined || value === null ? '' : String(value).trim();
+    return /^\d{4}$/.test(str) ? str : '';
+  };
+
+  const newBirthYear = (req.body.birthYear !== undefined) ? sanitizeBirthYear(req.body.birthYear) : existingBirthYear;
 
   const sanitizePlayers = (players) => {
     if (!Array.isArray(players)) return tournament.teams[teamIndex].players || [];
@@ -946,6 +960,7 @@ app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
     name: req.body.name,
     city: req.body.city || '',
     short: req.body.short || '',
+    birthYear: newBirthYear,
     kitColor: req.body.kitColor || '#2b2b2b',
     logo: newLogo, // Всегда используем newLogo, который уже содержит существующий если новый пустой
     players: sanitizePlayers(req.body.players),

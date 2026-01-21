@@ -546,6 +546,15 @@
     .team-details {
       flex: 1;
     }
+
+    .team-birth-year {
+      margin-left: auto;
+      color: #9aa4b2;
+      font-size: 12px;
+      min-width: 48px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
     
     .team-name {
       font-weight: bold;
@@ -1194,6 +1203,7 @@
                     <div class="team-name">${team.name}</div>
                     <div class="team-city">${team.city || ''}</div>
                   </div>
+                  <div class="team-birth-year">${team.birthYear || ''}</div>
                 </div>
                 <div class="team-actions">
                   <span class="team-edit-link" onclick="editTeam('${tournament.id}', '${team.id}')">edit</span>
@@ -1238,6 +1248,12 @@
                 <label>Шорткод</label>
                 <input type="text" id="newTeamShort-${tournament.id}" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;">
               </div>
+              <div class="form-group">
+                <label>Год рождения</label>
+                <input type="text" id="newTeamBirthYear-${tournament.id}" placeholder="2014" maxlength="4" inputmode="numeric">
+              </div>
+            </div>
+            <div class="form-row">
               <div class="form-group">
                 <label>Цвет формы</label>
                 <input type="color" id="newTeamKitColor-${tournament.id}" value="#2b2b2b">
@@ -1319,6 +1335,8 @@
         document.getElementById(`newTeamName-${tournamentId}`).value = '';
         document.getElementById(`newTeamCity-${tournamentId}`).value = '';
         document.getElementById(`newTeamShort-${tournamentId}`).value = '';
+        const birthYearEl = document.getElementById(`newTeamBirthYear-${tournamentId}`);
+        if (birthYearEl) birthYearEl.value = '';
         document.getElementById(`newTeamKitColor-${tournamentId}`).value = '#2b2b2b';
         document.getElementById(`newTeamLogo-${tournamentId}`).value = '';
         document.getElementById(`teamLogoPreview-${tournamentId}`).innerHTML = '';
@@ -1342,6 +1360,7 @@
       const name = document.getElementById(`newTeamName-${tournamentId}`).value.trim();
       const city = document.getElementById(`newTeamCity-${tournamentId}`).value.trim();
       const short = document.getElementById(`newTeamShort-${tournamentId}`).value.trim().toUpperCase();
+      const birthYear = (document.getElementById(`newTeamBirthYear-${tournamentId}`)?.value || '').trim();
       const kitColor = document.getElementById(`newTeamKitColor-${tournamentId}`).value;
       const logoFile = document.getElementById(`newTeamLogo-${tournamentId}`).files[0];
       
@@ -1378,10 +1397,9 @@
         name,
         city,
         short,
+        birthYear,
         kitColor,
-        logo: logoUrl,
-        players: getRosterFromDOM(`playersList-${tournamentId}-${teamId}`, true),
-        staff: getRosterFromDOM(`staffList-${tournamentId}-${teamId}`, false)
+        logo: logoUrl
       };
       
       try {
@@ -1674,6 +1692,12 @@
               <input type="text" id="editTeamShort-${tournamentId}-${teamId}" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;" value="${team.short || ''}">
             </div>
             <div class="form-group">
+              <label>Год рождения</label>
+              <input type="text" id="editTeamBirthYear-${tournamentId}-${teamId}" placeholder="2014" maxlength="4" inputmode="numeric" value="${team.birthYear || ''}">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
               <label>Цвет формы</label>
               <input type="color" id="editTeamKitColor-${tournamentId}-${teamId}" value="${team.kitColor || '#2b2b2b'}">
             </div>
@@ -1757,6 +1781,7 @@
       const name = document.getElementById(`editTeamName-${tournamentId}-${teamId}`).value.trim();
       const city = document.getElementById(`editTeamCity-${tournamentId}-${teamId}`).value.trim();
       const short = document.getElementById(`editTeamShort-${tournamentId}-${teamId}`).value.trim().toUpperCase();
+      const birthYear = (document.getElementById(`editTeamBirthYear-${tournamentId}-${teamId}`)?.value || '').trim();
       const kitColor = document.getElementById(`editTeamKitColor-${tournamentId}-${teamId}`).value;
       const logoFile = document.getElementById(`editTeamLogo-${tournamentId}-${teamId}`).files[0];
       const players = getRosterFromDOM(`playersList-${tournamentId}-${teamId}`, true);
@@ -1810,6 +1835,7 @@
         name,
         city,
         short,
+        birthYear,
         kitColor,
         logo: logoUrl,
         players,
