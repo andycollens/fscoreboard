@@ -716,6 +716,100 @@
     .hidden {
       display: none;
     }
+
+    /* Roster UI */
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .roster-card {
+      border: 1px solid #d8e3f6;
+      border-radius: 12px;
+      padding: 14px;
+      background: #f9fbff;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    }
+
+    .roster-card h4 {
+      margin: 0 0 10px 0;
+      font-size: 15px;
+      color: #163d74;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .roster-card textarea {
+      width: 100%;
+      min-height: 110px;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #c5d9ff;
+      background: #fff;
+      resize: vertical;
+    }
+
+    .roster-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .roster-list {
+      margin-top: 12px;
+      border: 1px solid #d8e3f6;
+      border-radius: 10px;
+      background: #fff;
+      padding: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .roster-row {
+      display: grid;
+      grid-template-columns: 1fr 90px 150px 34px;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+
+    .roster-row.staff {
+      grid-template-columns: 1fr 150px 34px;
+    }
+
+    .roster-row label {
+      font-size: 11px;
+      color: #61708a;
+      margin-bottom: 2px;
+      display: block;
+    }
+
+    .roster-row input {
+      width: 100%;
+    }
+
+    .roster-empty {
+      text-align: center;
+      padding: 12px;
+      color: #61708a;
+      font-size: 13px;
+    }
+
+    .btn-ghost {
+      border: none;
+      background: transparent;
+      color: #c0392b;
+      cursor: pointer;
+      font-size: 15px;
+      padding: 4px;
+      line-height: 1;
+    }
     
     .empty-state {
       text-align: center;
@@ -1295,23 +1389,26 @@
       if (!container) return;
       const rows = list && Array.isArray(list) ? list : [];
       if (rows.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="padding: 8px 0;">Список пуст</div>';
+        container.innerHTML = '<div class="roster-empty">Список пуст</div>';
         return;
       }
       container.innerHTML = rows.map((row, idx) => `
-        <div class="form-row roster-row" data-index="${idx}">
-          <div class="form-group" style="flex: 2;">
+        <div class="roster-row ${withNumber ? '' : 'staff'}" data-index="${idx}">
+          <div>
             <label>ФИО</label>
             <input type="text" class="roster-name" value="${row.name || ''}" placeholder="Фамилия Имя Отчество">
           </div>
           ${withNumber ? `
-          <div class="form-group" style="flex: 0 0 90px;">
+          <div>
             <label>№</label>
             <input type="text" class="roster-number" value="${row.number || ''}" placeholder="10">
           </div>` : ''}
-          <div class="form-group" style="flex: 0 0 150px;">
+          <div>
             <label>Дата рождения</label>
             <input type="text" class="roster-birth" value="${row.birthDate || ''}" placeholder="dd.mm.yyyy">
+          </div>
+          <div style="display:flex; align-items:flex-end; justify-content:center;">
+            <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
           </div>
         </div>
       `).join('');
@@ -1327,6 +1424,14 @@
         const birthDate = row.querySelector('.roster-birth')?.value.trim() || '';
         return { name, number, birthDate };
       }).filter(r => r.name);
+    }
+
+    function removeRosterRow(containerId, idx, withNumber = true) {
+      const current = getRosterFromDOM(containerId, withNumber);
+      if (idx >= 0 && idx < current.length) {
+        current.splice(idx, 1);
+      }
+      renderRosterList(current, containerId, withNumber);
     }
     
     function parseRosterSection(type, tournamentId, teamId) {
@@ -1413,22 +1518,21 @@
               <div id="editTeamLogoPreview-${tournamentId}-${teamId}" class="logo-preview">${team.logo ? `<img src="${team.logo}" alt="Превью">` : ''}</div>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group" style="flex: 1;">
-              <label>Состав игроков (вставьте списком, каждая строка: ФИО, номер, дата рождения)</label>
-              <textarea id="playersPaste-${tournamentId}-${teamId}" rows="6" placeholder="Иванов Иван Иванович 10 01.01.2000\nПетров Петр 7 12/05/1999"></textarea>
-              <div class="form-buttons" style="margin-top: 8px;">
+          <div class="roster-grid">
+            <div class="roster-card">
+              <h4>Состав игроков</h4>
+              <textarea id="playersPaste-${tournamentId}-${teamId}" rows="6" placeholder="Иванов Иван Иванович 10 01.01.2000&#10;Петров Петр 7 12/05/1999"></textarea>
+              <div class="roster-actions">
                 <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterSection('player', '${tournamentId}', '${teamId}')">Парсить игроков</button>
                 <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('playersPaste-${tournamentId}-${teamId}').value=''">Очистить</button>
               </div>
               <div id="playersList-${tournamentId}-${teamId}" class="roster-list"></div>
             </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group" style="flex: 1;">
-              <label>Тренерский штаб (вставьте списком, каждая строка: ФИО, дата рождения)</label>
-              <textarea id="staffPaste-${tournamentId}-${teamId}" rows="4" placeholder="Иванов И.И. главный тренер 10.10.1970\nСидоров С.С. ассистент 05-03-1980"></textarea>
-              <div class="form-buttons" style="margin-top: 8px;">
+            
+            <div class="roster-card">
+              <h4>Тренерский штаб</h4>
+              <textarea id="staffPaste-${tournamentId}-${teamId}" rows="4" placeholder="Иванов И.И. главный тренер 10.10.1970&#10;Сидоров С.С. ассистент 05-03-1980"></textarea>
+              <div class="roster-actions">
                 <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterSection('staff', '${tournamentId}', '${teamId}')">Парсить штаб</button>
                 <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('staffPaste-${tournamentId}-${teamId}').value=''">Очистить</button>
               </div>
