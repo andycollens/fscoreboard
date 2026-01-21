@@ -741,76 +741,64 @@
 
         /* Режим "Составы" */
         .rosters-mode .middle-content {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
+            /* Две равные по ширине области под команды, сверху шапки, снизу составы */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr;
+            column-gap: 0;
+            row-gap: 2vh;
+            align-items: start;
+            justify-items: stretch;
             width: 100%;
             max-width: 100vw;
-            padding: 0 2vw;
-            position: relative;
-            height: 100%;
+            padding: 0 4vw;
+            box-sizing: border-box;
+        }
+
+        .rosters-mode .team1-section,
+        .rosters-mode .team2-section,
+        .rosters-mode .score1-section,
+        .rosters-mode .score2-section {
+            position: static;
+            margin: 0;
+            width: 100%;
+            height: auto;
         }
 
         .rosters-mode .team1-section {
-            position: absolute;
-            left: 2vw;
-            top: 15vh;
-            transform: none;
-            width: auto;
-            max-width: 45%;
-            margin: 0;
+            grid-column: 1;
+            grid-row: 1;
             display: flex;
             flex-direction: row;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: flex-start; /* к левому краю своей половины */
             gap: 15px;
-            z-index: 5;
         }
 
         .rosters-mode .team2-section {
-            position: absolute;
-            right: 2vw;
-            top: 15vh;
-            transform: none;
-            width: auto;
-            max-width: 45%;
-            margin: 0;
+            grid-column: 2;
+            grid-row: 1;
             display: flex;
             flex-direction: row;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: flex-end; /* к правому краю своей половины */
             gap: 15px;
-            z-index: 5;
         }
 
         .rosters-mode .score1-section {
-            position: absolute;
-            left: 2vw;
-            top: calc(15vh + 120px);
-            transform: none;
-            width: auto;
-            max-width: 45%;
-            margin: 0;
+            grid-column: 1;
+            grid-row: 2;
             display: flex;
             align-items: flex-start;
             justify-content: flex-start;
-            height: auto;
-            z-index: 5;
         }
 
         .rosters-mode .score2-section {
-            position: absolute;
-            right: 2vw;
-            top: calc(15vh + 120px);
-            transform: none;
-            width: auto;
-            max-width: 45%;
-            margin: 0;
+            grid-column: 2;
+            grid-row: 2;
             display: flex;
             align-items: flex-start;
             justify-content: flex-end;
-            height: auto;
-            z-index: 5;
         }
 
         .rosters-mode .team1-logo,
@@ -882,31 +870,6 @@
 
         .rosters-mode .divider-section {
             display: none !important;
-        }
-
-        .rosters-mode .score1-section,
-        .rosters-mode .score2-section {
-            position: relative;
-            top: 0;
-            left: 0;
-            right: 0;
-            transform: none;
-            margin: 20px 0 0 0;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            width: 100%;
-            height: auto;
-            padding: 0 1vw;
-            box-sizing: border-box;
-        }
-
-        .rosters-mode .score1-section {
-            text-align: right;
-        }
-
-        .rosters-mode .score2-section {
-            text-align: left;
         }
 
         .rosters-mode .score1-section .team1-score,
