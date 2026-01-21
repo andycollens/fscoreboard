@@ -736,22 +736,6 @@
 
         /* Режим "Составы" */
         .rosters-mode .team1-section {
-            top: 20%;
-            flex-direction: row;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 20px;
-        }
-
-        .rosters-mode .team2-section {
-            top: 20%;
-            flex-direction: row-reverse;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 20px;
-        }
-
-        .rosters-mode .team1-section {
             top: 12%;
             flex-direction: row;
             align-items: center;
@@ -791,11 +775,10 @@
             white-space: nowrap;
         }
 
-        .rosters-mode .team1-text,
-        .rosters-mode .team2-text {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+        .rosters-mode .team1-stripe,
+        .rosters-mode .team2-stripe {
+            display: block;
+            margin: 5px 0;
         }
 
         .rosters-mode .score1-section .team1-score,
@@ -1456,11 +1439,9 @@ body.penalty-mode .penalty-score {
                 <div class="team1-section">
                     <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
                     <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
-                    <div class="team1-text">
-                        <div class="team1-name" id="team1Name">Команда 1</div>
-                        <div id="team1Stripe" class="team1-stripe"></div>
-                        <div class="team1-city" id="team1City">Город 1</div>
-                    </div>
+                    <div class="team1-name" id="team1Name">Команда 1</div>
+                    <div id="team1Stripe" class="team1-stripe"></div>
+                    <div class="team1-city" id="team1City">Город 1</div>
                     <div class="team-penalty-track" id="team1PenaltyTrack">
                         <div class="penalty-dots" id="stadiumPenaltyDotsTeam1"></div>
                     </div>
@@ -1487,11 +1468,9 @@ body.penalty-mode .penalty-score {
                 <div class="team2-section">
                     <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
                     <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
-                    <div class="team2-text">
-                        <div class="team2-name" id="team2Name">Команда 2</div>
-                        <div id="team2Stripe" class="team2-stripe"></div>
-                        <div class="team2-city" id="team2City">Город 2</div>
-                    </div>
+                    <div class="team2-name" id="team2Name">Команда 2</div>
+                    <div id="team2Stripe" class="team2-stripe"></div>
+                    <div class="team2-city" id="team2City">Город 2</div>
                     <div class="team-penalty-track" id="team2PenaltyTrack">
                         <div class="penalty-dots" id="stadiumPenaltyDotsTeam2"></div>
                     </div>
