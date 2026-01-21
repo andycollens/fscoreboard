@@ -867,7 +867,9 @@ app.post('/api/tournaments/:id/teams', (req, res) => {
     city: req.body.city || '',
     short: req.body.short || '',
     kitColor: req.body.kitColor || '#2b2b2b',
-    logo: req.body.logo || ''
+    logo: req.body.logo || '',
+    players: Array.isArray(req.body.players) ? req.body.players : [],
+    staff: Array.isArray(req.body.staff) ? req.body.staff : []
   };
   
   tournament.teams.push(newTeam);
@@ -907,7 +909,9 @@ app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
     city: req.body.city || '',
     short: req.body.short || '',
     kitColor: req.body.kitColor || '#2b2b2b',
-    logo: newLogo // Всегда используем newLogo, который уже содержит существующий если новый пустой
+    logo: newLogo, // Всегда используем newLogo, который уже содержит существующий если новый пустой
+    players: Array.isArray(req.body.players) ? req.body.players : (tournament.teams[teamIndex].players || []),
+    staff: Array.isArray(req.body.staff) ? req.body.staff : (tournament.teams[teamIndex].staff || [])
   };
   
   fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));

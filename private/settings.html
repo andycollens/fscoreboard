@@ -1185,7 +1185,9 @@
         city,
         short,
         kitColor,
-        logo: logoUrl
+        logo: logoUrl,
+        players: getRosterFromDOM(`playersList-${tournamentId}-${teamId}`, true),
+        staff: getRosterFromDOM(`staffList-${tournamentId}-${teamId}`, false)
       };
       
       try {
@@ -1239,6 +1241,102 @@
         console.error('Ошибка удаления команды:', error);
         showNotification('Ошибка удаления команды', 'error');
       }
+    }
+    
+    // ==== Helpers for roster parsing ====
+    function normalizeDate(input) {
+      if (!input) return '';
+      const match = input.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
+      if (!match) return input.trim();
+      let [ , d, m, y ] = match;
+      if (y.length === 2) y = '20' + y;
+      const day = d.padStart(2, '0');
+      const mon = m.padStart(2, '0');
+      return `${day}.${mon}.${y}`;
+    }
+    
+    function parseRosterLine(line, withNumber = true) {
+      let birthDate = '';
+      let number = '';
+      let rest = line;
+      
+      const dateMatch = line.match(/(\d{1,2}[.\-\/]\d{1,2}[.\-\/]\d{2,4})/);
+      if (dateMatch) {
+        birthDate = normalizeDate(dateMatch[1]);
+        rest = rest.replace(dateMatch[1], ' ');
+      }
+      
+      if (withNumber) {
+        const numMatch = rest.match(/(?:^|[^\d])(\d{1,3})(?:[^\d]|$)/);
+        if (numMatch) {
+          const numVal = parseInt(numMatch[1], 10);
+          if (!isNaN(numVal) && numVal > 0 && numVal < 200) {
+            number = numVal.toString();
+            rest = rest.replace(numMatch[1], ' ');
+          }
+        }
+      }
+      
+      const name = rest.replace(/\s+/g, ' ').trim();
+      return { name, number, birthDate };
+    }
+    
+    function parseRosterText(text, withNumber = true) {
+      return text
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length)
+        .map(l => parseRosterLine(l, withNumber))
+        .filter(item => item.name);
+    }
+    
+    function renderRosterList(list, containerId, withNumber = true) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const rows = list && Array.isArray(list) ? list : [];
+      if (rows.length === 0) {
+        container.innerHTML = '<div class="empty-state" style="padding: 8px 0;">Список пуст</div>';
+        return;
+      }
+      container.innerHTML = rows.map((row, idx) => `
+        <div class="form-row roster-row" data-index="${idx}">
+          <div class="form-group" style="flex: 2;">
+            <label>ФИО</label>
+            <input type="text" class="roster-name" value="${row.name || ''}" placeholder="Фамилия Имя Отчество">
+          </div>
+          ${withNumber ? `
+          <div class="form-group" style="flex: 0 0 90px;">
+            <label>№</label>
+            <input type="text" class="roster-number" value="${row.number || ''}" placeholder="10">
+          </div>` : ''}
+          <div class="form-group" style="flex: 0 0 150px;">
+            <label>Дата рождения</label>
+            <input type="text" class="roster-birth" value="${row.birthDate || ''}" placeholder="dd.mm.yyyy">
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getRosterFromDOM(containerId, withNumber = true) {
+      const container = document.getElementById(containerId);
+      if (!container) return [];
+      const rows = Array.from(container.querySelectorAll('.roster-row'));
+      return rows.map(row => {
+        const name = row.querySelector('.roster-name')?.value.trim() || '';
+        const number = withNumber ? (row.querySelector('.roster-number')?.value.trim() || '') : '';
+        const birthDate = row.querySelector('.roster-birth')?.value.trim() || '';
+        return { name, number, birthDate };
+      }).filter(r => r.name);
+    }
+    
+    function parseRosterSection(type, tournamentId, teamId) {
+      const isPlayer = type === 'player';
+      const textareaId = isPlayer ? `playersPaste-${tournamentId}-${teamId}` : `staffPaste-${tournamentId}-${teamId}`;
+      const listId = isPlayer ? `playersList-${tournamentId}-${teamId}` : `staffList-${tournamentId}-${teamId}`;
+      const textarea = document.getElementById(textareaId);
+      if (!textarea) return;
+      const parsed = parseRosterText(textarea.value, isPlayer);
+      renderRosterList(parsed, listId, isPlayer);
     }
     
     // Редактирование команды
@@ -1315,6 +1413,28 @@
               <div id="editTeamLogoPreview-${tournamentId}-${teamId}" class="logo-preview">${team.logo ? `<img src="${team.logo}" alt="Превью">` : ''}</div>
             </div>
           </div>
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label>Состав игроков (вставьте списком, каждая строка: ФИО, номер, дата рождения)</label>
+              <textarea id="playersPaste-${tournamentId}-${teamId}" rows="6" placeholder="Иванов Иван Иванович 10 01.01.2000\nПетров Петр 7 12/05/1999"></textarea>
+              <div class="form-buttons" style="margin-top: 8px;">
+                <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterSection('player', '${tournamentId}', '${teamId}')">Парсить игроков</button>
+                <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('playersPaste-${tournamentId}-${teamId}').value=''">Очистить</button>
+              </div>
+              <div id="playersList-${tournamentId}-${teamId}" class="roster-list"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label>Тренерский штаб (вставьте списком, каждая строка: ФИО, дата рождения)</label>
+              <textarea id="staffPaste-${tournamentId}-${teamId}" rows="4" placeholder="Иванов И.И. главный тренер 10.10.1970\nСидоров С.С. ассистент 05-03-1980"></textarea>
+              <div class="form-buttons" style="margin-top: 8px;">
+                <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterSection('staff', '${tournamentId}', '${teamId}')">Парсить штаб</button>
+                <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('staffPaste-${tournamentId}-${teamId}').value=''">Очистить</button>
+              </div>
+              <div id="staffList-${tournamentId}-${teamId}" class="roster-list"></div>
+            </div>
+          </div>
           <div class="form-buttons">
             <button class="btn btn-primary" onclick="saveEditTeamInline('${tournamentId}', '${teamId}')">Сохранить</button>
             <button class="btn btn-secondary" onclick="cancelEditTeamInline('${tournamentId}', '${teamId}')">Отмена</button>
@@ -1323,6 +1443,10 @@
         
         // Сохраняем текущий логотип
         editForm.dataset.currentLogo = team.logo || '';
+        
+        // Отрисовываем текущий состав, если есть
+        renderRosterList(team.players || [], `playersList-${tournamentId}-${teamId}`, true);
+        renderRosterList(team.staff || [], `staffList-${tournamentId}-${teamId}`, false);
       }
     }
     
