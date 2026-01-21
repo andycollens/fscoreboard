@@ -793,6 +793,7 @@
 
         body.rosters-mode .team1-section {
             display: flex;
+            flex-direction: row;
             align-items: center;
             justify-content: flex-start;
             gap: clamp(12px, 2vw, 28px);
@@ -801,6 +802,7 @@
 
         body.rosters-mode .team2-section {
             display: flex;
+            flex-direction: row;
             align-items: center;
             justify-content: flex-end;
             gap: clamp(12px, 2vw, 28px);
@@ -824,9 +826,15 @@
             min-width: 0;
         }
 
+        body.rosters-mode .team1-logo,
+        body.rosters-mode .team1-no-logo {
+            order: 0;
+        }
+
         body.rosters-mode .team1-meta {
             align-items: flex-start;
             text-align: left;
+            order: 1;
         }
 
         body.rosters-mode .team2-meta {
