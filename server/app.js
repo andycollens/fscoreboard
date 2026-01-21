@@ -180,6 +180,10 @@ let state = {
   team2City: "",
   team1Logo: "",
   team2Logo: "",
+  team1Players: [],
+  team1Staff: [],
+  team2Players: [],
+  team2Staff: [],
   penaltyActive: false,
   penaltyMode: "adult",
   penaltyMaxAttempts: 5,
@@ -1093,6 +1097,7 @@ io.on('connection', (socket) => {
       'team1Short', 'team2Short', 'kit1Color', 'kit2Color',
       'team1Name', 'team2Name', 'team1City', 'team2City',
       'team1Logo', 'team2Logo',
+      'team1Players', 'team1Staff', 'team2Players', 'team2Staff',
       'penaltyActive', 'penaltyMode', 'penaltyMaxAttempts', 'penaltySeries'
     ];
     keys.forEach(k => {

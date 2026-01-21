@@ -715,22 +715,54 @@
         }
 
         /* Режим "Составы" */
+        .rosters-mode .team1-section {
+            top: 20%;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+        }
+
+        .rosters-mode .team2-section {
+            top: 20%;
+            flex-direction: row-reverse;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+        }
+
         .rosters-mode .team1-logo,
         .rosters-mode .team2-logo,
         .rosters-mode .team1-no-logo,
         .rosters-mode .team2-no-logo {
             transform: scale(0.75);
             transform-origin: center;
+            margin-bottom: 0;
+            flex-shrink: 0;
         }
 
         .rosters-mode .team1-name,
         .rosters-mode .team2-name {
             font-size: 3vw;
+            margin: 0;
         }
 
         .rosters-mode .team1-city,
         .rosters-mode .team2-city {
             font-size: 1.65vw;
+            margin: 0;
+        }
+
+        .rosters-mode .team1-name-city,
+        .rosters-mode .team2-name-city {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .rosters-mode .team1-stripe,
+        .rosters-mode .team2-stripe {
+            display: none;
         }
 
         .rosters-mode .score1-section,
@@ -750,12 +782,21 @@
             font-size: 2.2vw;
             color: #fff;
             line-height: 1.25;
-            text-align: center;
+            text-align: left;
             white-space: pre-line;
+            padding: 20px;
         }
 
         .rosters-mode .roster-list {
             display: block;
+        }
+
+        .rosters-mode .score1-section .roster-list {
+            text-align: right;
+        }
+
+        .rosters-mode .score2-section .roster-list {
+            text-align: left;
         }
 
         /* Нижняя область (1/4 высоты) */
@@ -1367,9 +1408,11 @@ body.penalty-mode .penalty-score {
                 <div class="team1-section">
                     <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
                     <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
-                    <div class="team1-name" id="team1Name">Команда 1</div>
+                    <div class="team1-name-city">
+                        <div class="team1-name" id="team1Name">Команда 1</div>
+                        <div class="team1-city" id="team1City">Город 1</div>
+                    </div>
                     <div id="team1Stripe" class="team1-stripe"></div>
-                    <div class="team1-city" id="team1City">Город 1</div>
                     <div class="team-penalty-track" id="team1PenaltyTrack">
                         <div class="penalty-dots" id="stadiumPenaltyDotsTeam1"></div>
                     </div>
@@ -1396,9 +1439,11 @@ body.penalty-mode .penalty-score {
                 <div class="team2-section">
                     <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
                     <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
-                    <div class="team2-name" id="team2Name">Команда 2</div>
+                    <div class="team2-name-city">
+                        <div class="team2-name" id="team2Name">Команда 2</div>
+                        <div class="team2-city" id="team2City">Город 2</div>
+                    </div>
                     <div id="team2Stripe" class="team2-stripe"></div>
-                    <div class="team2-city" id="team2City">Город 2</div>
                     <div class="team-penalty-track" id="team2PenaltyTrack">
                         <div class="penalty-dots" id="stadiumPenaltyDotsTeam2"></div>
                     </div>
@@ -1712,21 +1757,54 @@ body.penalty-mode .penalty-score {
         }
 
         // Функция обновления отображения
-        function formatRosterList(value) {
-            if (!value) return '';
-            if (Array.isArray(value)) {
-                return value
-                    .map(item => {
-                        if (!item) return '';
-                        if (typeof item === 'string') return item;
-                        const num = item.number ? `${item.number} ` : '';
-                        return `${num}${item.name || ''}`.trim();
-                    })
-                    .filter(Boolean)
-                    .join('\n');
+        function formatRosterList(players, staff) {
+            const result = [];
+            
+            // Добавляем тренерский штаб
+            if (staff && Array.isArray(staff) && staff.length > 0) {
+                staff.forEach(item => {
+                    if (!item) return;
+                    if (typeof item === 'string') {
+                        result.push(item);
+                    } else if (item.name) {
+                        result.push(item.name);
+                    }
+                });
             }
-            if (typeof value === 'string') return value;
-            return '';
+            
+            // Добавляем игроков
+            if (players && Array.isArray(players) && players.length > 0) {
+                players.forEach(item => {
+                    if (!item) return;
+                    if (typeof item === 'string') {
+                        result.push(item);
+                    } else if (item.name) {
+                        const num = item.number ? `${item.number} ` : '';
+                        result.push(`${num}${item.name}`.trim());
+                    }
+                });
+            }
+            
+            // Если передано как старый формат (одно значение)
+            if (!players && !staff) {
+                const value = arguments[0];
+                if (!value) return '';
+                if (Array.isArray(value)) {
+                    return value
+                        .map(item => {
+                            if (!item) return '';
+                            if (typeof item === 'string') return item;
+                            const num = item.number ? `${item.number} ` : '';
+                            return `${num}${item.name || ''}`.trim();
+                        })
+                        .filter(Boolean)
+                        .join('\n');
+                }
+                if (typeof value === 'string') return value;
+                return '';
+            }
+            
+            return result.join('\n');
         }
 
         function updateDisplay(data) {
@@ -1753,7 +1831,8 @@ body.penalty-mode .penalty-score {
 
             if (team1Roster) {
                 const roster1 = formatRosterList(
-                    data.team1Roster || data.team1Players || data.players1 || data.team1RosterText
+                    data.team1Players || data.players1 || [],
+                    data.team1Staff || data.staff1 || []
                 );
                 team1Roster.textContent = roster1;
             }
@@ -1791,7 +1870,8 @@ body.penalty-mode .penalty-score {
 
             if (team2Roster) {
                 const roster2 = formatRosterList(
-                    data.team2Roster || data.team2Players || data.players2 || data.team2RosterText
+                    data.team2Players || data.players2 || [],
+                    data.team2Staff || data.staff2 || []
                 );
                 team2Roster.textContent = roster2;
             }

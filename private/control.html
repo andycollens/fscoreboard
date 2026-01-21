@@ -5550,6 +5550,12 @@
       stateUpdate.team1Logo = team1Logo;
       stateUpdate.team2Logo = team2Logo;
       
+      // Составы команд
+      if (state.team1Players) stateUpdate.team1Players = state.team1Players;
+      if (state.team1Staff) stateUpdate.team1Staff = state.team1Staff;
+      if (state.team2Players) stateUpdate.team2Players = state.team2Players;
+      if (state.team2Staff) stateUpdate.team2Staff = state.team2Staff;
+      
       // ОТПРАВЛЯЕМ НА СЕРВЕР - это сохранит состояние в state.json
       // Сервер автоматически сохранит все данные и разошлет всем клиентам
       socket.emit('updateScoreboard', stateUpdate);
@@ -7539,6 +7545,12 @@
         updateMainLogoMini(teamKey, '');
         showKitColorCircle(teamKey);
       }
+
+      // Сохраняем составы команд
+      const playersKey = `${teamKey}Players`;
+      const staffKey = `${teamKey}Staff`;
+      state[playersKey] = team.players || [];
+      state[staffKey] = team.staff || [];
 
       ready = wasReady;
 
