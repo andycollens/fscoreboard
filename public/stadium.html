@@ -344,7 +344,7 @@
             position: fixed;
             inset: 0;
             display: grid !important;
-            grid-template-rows: auto 1fr;
+            grid-template-rows: auto auto 1fr;
             height: 100vh;
             width: 100vw;
             background: #000;
@@ -396,8 +396,7 @@
         }
 
         body.rosters-mode .middle-section {
-            flex: 1 1 auto;
-            min-height: 0;
+            flex: 0 0 auto;
             display: flex;
             flex-direction: column;
             width: 100%;
@@ -770,45 +769,37 @@
 
         /* Режим "Составы" */
         body.rosters-mode .middle-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: auto 1fr;
+            display: flex;
+            flex-direction: row;
             width: 100%;
             height: 100%;
-            padding: 0 3vw 3vh;
+            padding: 0 3vw;
             box-sizing: border-box;
-            align-content: stretch;
-            align-items: start;
+            justify-content: space-between;
+            align-items: center;
         }
 
         body.rosters-mode .team1-section,
-        body.rosters-mode .team2-section,
-        body.rosters-mode .score1-section,
-        body.rosters-mode .score2-section {
+        body.rosters-mode .team2-section {
             min-width: 0;
             box-sizing: border-box;
+            flex: 1;
         }
 
         body.rosters-mode .team1-section {
-            grid-column: 1;
-            grid-row: 1;
             display: flex;
             align-items: center;
             justify-content: flex-start;
             gap: clamp(12px, 2vw, 28px);
-            padding: 2vh 2vw 1vh 0;
-            margin-top: -200px;
+            padding: 2vh 2vw;
         }
 
         body.rosters-mode .team2-section {
-            grid-column: 2;
-            grid-row: 1;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: clamp(12px, 2vw, 28px);
-            padding: 2vh 0 1vh 2vw;
-            margin-top: -200px;
+            padding: 2vh 2vw;
         }
 
         body.rosters-mode .team1-logo,
@@ -871,26 +862,27 @@
         }
 
         body.rosters-mode .score1-section {
-            grid-column: 1;
-            grid-row: 2;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
             justify-content: flex-start;
-            padding-right: 2vw;
+            padding: 0 2vw;
             min-height: 0;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         body.rosters-mode .score2-section {
-            grid-column: 2;
-            grid-row: 2;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             justify-content: flex-start;
-            padding-left: 2vw;
+            padding: 0 2vw;
             min-height: 0;
+            width: 100%;
+            box-sizing: border-box;
         }
+
 
         body.rosters-mode .divider-section,
         body.rosters-mode .team1-score,
@@ -898,9 +890,30 @@
         body.rosters-mode .match-score-label,
         body.rosters-mode .penalty-label,
         body.rosters-mode .timer,
-        body.rosters-mode .team-penalty-track,
-        body.rosters-mode .bottom-section {
+        body.rosters-mode .team-penalty-track {
             display: none !important;
+        }
+
+        body.rosters-mode .bottom-section {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: 2vh 3vw;
+            box-sizing: border-box;
+            align-items: flex-start;
+            justify-content: stretch;
+            gap: 0;
+        }
+
+        body.rosters-mode .bottom-section .score1-section {
+            grid-column: 1;
+            overflow-y: auto;
+        }
+
+        body.rosters-mode .bottom-section .score2-section {
+            grid-column: 2;
+            overflow-y: auto;
         }
 
         body.rosters-mode .roster-list {
@@ -2175,6 +2188,46 @@ body.penalty-mode .penalty-score {
             } else {
                 titleEl.style.display = '';
                 subtitleEl.style.display = 'none';
+            }
+        }
+
+        // Перемещаем score-секции в bottom-section для режима "Составы"
+        const middleContent = document.querySelector('.middle-content');
+        const bottomSection = document.querySelector('.bottom-section');
+        const score1Section = document.querySelector('.score1-section');
+        const score2Section = document.querySelector('.score2-section');
+        const team1Section = document.querySelector('.team1-section');
+        const dividerSection = document.querySelector('.divider-section');
+        
+        if (mode === 'rosters' && middleContent && bottomSection && score1Section && score2Section) {
+            // Перемещаем в bottom-section
+            if (score1Section.parentElement !== bottomSection) {
+                bottomSection.appendChild(score1Section);
+            }
+            if (score2Section.parentElement !== bottomSection) {
+                bottomSection.appendChild(score2Section);
+            }
+        } else if (middleContent && score1Section && score2Section) {
+            // Возвращаем обратно в middle-content
+            if (score1Section.parentElement !== middleContent) {
+                // Вставляем score1-section после team1-section
+                if (team1Section && team1Section.nextSibling) {
+                    middleContent.insertBefore(score1Section, team1Section.nextSibling);
+                } else if (team1Section) {
+                    team1Section.insertAdjacentElement('afterend', score1Section);
+                } else {
+                    middleContent.insertBefore(score1Section, middleContent.firstChild);
+                }
+            }
+            if (score2Section.parentElement !== middleContent) {
+                // Вставляем score2-section после divider-section
+                if (dividerSection && dividerSection.nextSibling) {
+                    middleContent.insertBefore(score2Section, dividerSection.nextSibling);
+                } else if (dividerSection) {
+                    dividerSection.insertAdjacentElement('afterend', score2Section);
+                } else {
+                    middleContent.appendChild(score2Section);
+                }
             }
         }
 
