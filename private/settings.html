@@ -800,14 +800,14 @@
 
     .roster-row {
       display: grid;
-      grid-template-columns: 1fr 90px 150px 34px;
+      grid-template-columns: 1fr 90px 34px;
       gap: 8px;
       align-items: end;
       margin-bottom: 10px;
     }
 
     .roster-row.staff {
-      grid-template-columns: 1fr 150px 34px;
+      grid-template-columns: 1fr 34px;
     }
 
     .roster-row label {
@@ -1368,17 +1368,6 @@
     }
     
     // ==== Helpers for roster parsing ====
-    function normalizeDate(input) {
-      if (!input) return '';
-      const match = input.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
-      if (!match) return input.trim();
-      let [ , d, m, y ] = match;
-      if (y.length === 2) y = '20' + y;
-      const day = d.padStart(2, '0');
-      const mon = m.padStart(2, '0');
-      return `${day}.${mon}.${y}`;
-    }
-
     function normalizeName(raw, isPlayer = true) {
       const parts = raw.replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
       if (parts.length === 0) return '';
@@ -1407,16 +1396,9 @@
     }
     
     function parseRosterLine(line, withNumber = true) {
-      let birthDate = '';
       let number = '';
       let rest = line;
-      
-      const dateMatch = line.match(/(\d{1,2}[.\-\/]\d{1,2}[.\-\/]\d{2,4})/);
-      if (dateMatch) {
-        birthDate = normalizeDate(dateMatch[1]);
-        rest = rest.replace(dateMatch[1], ' ');
-      }
-      
+
       if (withNumber) {
         const numMatch = rest.match(/(?:^|[^\d])(\d{1,3})(?:[^\d]|$)/);
         if (numMatch) {
@@ -1429,7 +1411,7 @@
       }
       
       const name = normalizeName(rest, withNumber);
-      return { name, number, birthDate };
+      return { name, number };
     }
     
     function parseRosterText(text, withNumber = true) {
@@ -1460,10 +1442,6 @@
             <label>№</label>
             <input type="text" class="roster-number" value="${row.number || ''}" placeholder="10">
           </div>` : ''}
-          <div>
-            <label>Дата рождения</label>
-            <input type="text" class="roster-birth" value="${row.birthDate || ''}" placeholder="dd.mm.yyyy">
-          </div>
           <div style="display:flex; align-items:flex-end; justify-content:center;">
             <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
           </div>
@@ -1478,8 +1456,7 @@
       return rows.map(row => {
         const name = row.querySelector('.roster-name')?.value.trim() || '';
         const number = withNumber ? (row.querySelector('.roster-number')?.value.trim() || '') : '';
-        const birthDate = row.querySelector('.roster-birth')?.value.trim() || '';
-        return { name, number, birthDate };
+        return { name, number };
       }).filter(r => r.name);
     }
 

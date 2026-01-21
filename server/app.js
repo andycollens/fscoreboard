@@ -861,6 +861,25 @@ app.post('/api/tournaments/:id/teams', (req, res) => {
     tournament.teams = [];
   }
   
+  const sanitizePlayers = (players) => {
+    if (!Array.isArray(players)) return [];
+    return players
+      .map(p => ({
+        name: typeof p?.name === 'string' ? p.name.trim() : '',
+        number: p?.number !== undefined && p?.number !== null ? String(p.number).trim() : ''
+      }))
+      .filter(p => p.name);
+  };
+
+  const sanitizeStaff = (staff) => {
+    if (!Array.isArray(staff)) return [];
+    return staff
+      .map(s => ({
+        name: typeof s?.name === 'string' ? s.name.trim() : ''
+      }))
+      .filter(s => s.name);
+  };
+
   const newTeam = {
     id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
     name: req.body.name,
@@ -868,8 +887,8 @@ app.post('/api/tournaments/:id/teams', (req, res) => {
     short: req.body.short || '',
     kitColor: req.body.kitColor || '#2b2b2b',
     logo: req.body.logo || '',
-    players: Array.isArray(req.body.players) ? req.body.players : [],
-    staff: Array.isArray(req.body.staff) ? req.body.staff : []
+    players: sanitizePlayers(req.body.players),
+    staff: sanitizeStaff(req.body.staff)
   };
   
   tournament.teams.push(newTeam);
@@ -902,6 +921,25 @@ app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
   // Если logo не передан (undefined) - сохраняем существующий (это защита от случайного изменения)
   const existingLogo = tournament.teams[teamIndex].logo || '';
   const newLogo = (req.body.logo !== undefined && req.body.logo !== null) ? req.body.logo : existingLogo;
+
+  const sanitizePlayers = (players) => {
+    if (!Array.isArray(players)) return tournament.teams[teamIndex].players || [];
+    return players
+      .map(p => ({
+        name: typeof p?.name === 'string' ? p.name.trim() : '',
+        number: p?.number !== undefined && p?.number !== null ? String(p.number).trim() : ''
+      }))
+      .filter(p => p.name);
+  };
+
+  const sanitizeStaff = (staff) => {
+    if (!Array.isArray(staff)) return tournament.teams[teamIndex].staff || [];
+    return staff
+      .map(s => ({
+        name: typeof s?.name === 'string' ? s.name.trim() : ''
+      }))
+      .filter(s => s.name);
+  };
   
   tournament.teams[teamIndex] = {
     ...tournament.teams[teamIndex],
@@ -910,8 +948,8 @@ app.put('/api/tournaments/:id/teams/:teamId', (req, res) => {
     short: req.body.short || '',
     kitColor: req.body.kitColor || '#2b2b2b',
     logo: newLogo, // Всегда используем newLogo, который уже содержит существующий если новый пустой
-    players: Array.isArray(req.body.players) ? req.body.players : (tournament.teams[teamIndex].players || []),
-    staff: Array.isArray(req.body.staff) ? req.body.staff : (tournament.teams[teamIndex].staff || [])
+    players: sanitizePlayers(req.body.players),
+    staff: sanitizeStaff(req.body.staff)
   };
   
   fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
