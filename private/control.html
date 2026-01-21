@@ -7316,7 +7316,8 @@
               const value = buildTournamentTeamOptionValue(tournament.id, team.id);
               const option = document.createElement('option');
               option.value = value;
-              option.textContent = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}`;
+              const year = team.birthYear ? ` · ${team.birthYear}` : '';
+              option.textContent = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}${year}`;
               option.dataset.tournamentId = String(tournament.id);
               option.dataset.teamId = String(team.id);
               optgroup.appendChild(option);
