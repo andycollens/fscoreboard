@@ -731,18 +731,20 @@
         /* Режим "Составы" */
         .rosters-mode .team1-section {
             top: 12%;
-            flex-direction: row;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-template-rows: auto auto auto;
+            column-gap: 16px;
             align-items: center;
-            justify-content: flex-start;
-            gap: 20px;
         }
 
         .rosters-mode .team2-section {
             top: 12%;
-            flex-direction: row-reverse;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-rows: auto auto auto;
+            column-gap: 16px;
             align-items: center;
-            justify-content: flex-start;
-            gap: 20px;
         }
 
         .rosters-mode .team1-logo,
@@ -753,6 +755,8 @@
             transform-origin: center;
             margin-bottom: 0;
             flex-shrink: 0;
+            width: 375px;
+            height: 375px;
         }
 
         .rosters-mode .team1-name,
@@ -760,6 +764,7 @@
             font-size: 3vw;
             margin: 0;
             white-space: nowrap;
+            grid-row: 1;
         }
 
         .rosters-mode .team1-city,
@@ -767,13 +772,30 @@
             font-size: 1.65vw;
             margin: 0;
             white-space: nowrap;
+            grid-row: 3;
         }
 
-        .rosters-mode .team1-stripe,
-        .rosters-mode .team2-stripe {
-            display: block;
-            margin: 5px 0;
+        .rosters-mode #team1Logo,
+        .rosters-mode #team1NoLogo {
+            grid-column: 1;
+            grid-row: 1 / span 3;
+            justify-self: center;
         }
+
+        .rosters-mode #team2Logo,
+        .rosters-mode #team2NoLogo {
+            grid-column: 2;
+            grid-row: 1 / span 3;
+            justify-self: center;
+        }
+
+        .rosters-mode #team1Name { grid-column: 2; text-align: left; }
+        .rosters-mode #team1Stripe { grid-column: 2; grid-row: 2; margin: 5px 0; }
+        .rosters-mode #team1City { grid-column: 2; text-align: left; }
+
+        .rosters-mode #team2Name { grid-column: 1; text-align: right; }
+        .rosters-mode #team2Stripe { grid-column: 1; grid-row: 2; margin: 5px 0; justify-self: end; }
+        .rosters-mode #team2City { grid-column: 1; text-align: right; }
 
         .rosters-mode .divider-section {
             display: none !important;
