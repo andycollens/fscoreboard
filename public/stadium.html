@@ -333,11 +333,17 @@
             width: 100%;
         }
 
+        body.rosters-mode,
+        body.rosters-mode #scoreboardMode {
+            width: 100vw;
+            height: 100vh;
+        }
+
         body.rosters-mode .stadium-container {
             position: fixed;
             inset: 0;
             display: grid !important;
-            grid-template-rows: auto 1fr;
+            grid-template-rows: min-content 1fr;
             height: 100vh;
             width: 100vw;
         }
@@ -384,6 +390,7 @@
             justify-content: flex-start;
             padding-top: 20px;
             padding-bottom: 10px;
+            width: 100%;
         }
 
         body.rosters-mode .middle-section {
