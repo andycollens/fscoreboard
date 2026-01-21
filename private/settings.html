@@ -545,14 +545,21 @@
     
     .team-details {
       flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .team-name-city {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
     .team-birth-year {
-      margin-left: auto;
       color: #9aa4b2;
       font-size: 12px;
-      min-width: 48px;
-      text-align: right;
+      white-space: nowrap;
       font-variant-numeric: tabular-nums;
     }
     
@@ -1208,10 +1215,12 @@
                   <div class="team-short">${team.short || ''}</div>
                   <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
                   <div class="team-details">
-                    <div class="team-name">${team.name}</div>
-                    <div class="team-city">${team.city || ''}</div>
+                    <div class="team-name-city">
+                      <div class="team-name">${team.name}</div>
+                      <div class="team-city">${team.city || ''}</div>
+                    </div>
+                    <div class="team-birth-year">${team.birthYear || ''}</div>
                   </div>
-                  <div class="team-birth-year">${team.birthYear || ''}</div>
                 </div>
                 <div class="team-actions">
                   <span class="team-edit-link" onclick="editTeam('${tournament.id}', '${team.id}')">edit</span>
