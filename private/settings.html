@@ -506,13 +506,19 @@
     
     .team-item {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      gap: 8px;
       padding: 10px;
       margin-bottom: 8px;
       background: #f8f9fa;
       border-radius: 6px;
       border: 1px solid #ddd;
+    }
+    
+    .team-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     
     .team-item-info {
@@ -638,15 +644,13 @@
 
     .team-roster-view {
       padding: 10px 12px;
-      border-top: 1px solid #e5e7eb;
-      background: #f8fafc;
-      border-radius: 0 0 8px 8px;
+      margin-top: 6px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      border-radius: 8px;
     }
     .team-roster-box {
-      padding: 8px;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      background: #fff;
+      padding: 6px 4px;
     }
     .team-roster-grid {
       display: grid;
@@ -1110,19 +1114,21 @@
         const teamsHtml = tournament.teams && tournament.teams.length > 0
           ? tournament.teams.map((team, index) => `
             <div class="team-item" data-team-id="${team.id}" data-tournament-id="${tournament.id}" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragend="handleDragEnd(event)">
-              <div class="team-drag-handle" title="Перетащите для изменения порядка"></div>
-              <div class="team-item-info" id="team-info-${tournament.id}-${team.id}" onclick="toggleTeamRoster('${tournament.id}', '${team.id}', event)">
-                ${team.logo ? `<img src="${team.logo}" alt="${team.name}" class="team-logo-mini">` : '<div class="team-logo-mini" style="background: #ddd;"></div>'}
-                <div class="team-short">${team.short || ''}</div>
-                <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
-                <div class="team-details">
-                  <div class="team-name">${team.name}</div>
-                  <div class="team-city">${team.city || ''}</div>
+              <div class="team-row">
+                <div class="team-drag-handle" title="Перетащите для изменения порядка"></div>
+                <div class="team-item-info" id="team-info-${tournament.id}-${team.id}" onclick="toggleTeamRoster('${tournament.id}', '${team.id}', event)">
+                  ${team.logo ? `<img src="${team.logo}" alt="${team.name}" class="team-logo-mini">` : '<div class="team-logo-mini" style="background: #ddd;"></div>'}
+                  <div class="team-short">${team.short || ''}</div>
+                  <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
+                  <div class="team-details">
+                    <div class="team-name">${team.name}</div>
+                    <div class="team-city">${team.city || ''}</div>
+                  </div>
                 </div>
-              </div>
-              <div class="team-actions">
-                <span class="team-edit-link" onclick="editTeam('${tournament.id}', '${team.id}')">edit</span>
-                <span class="team-delete-link" onclick="deleteTeam('${tournament.id}', '${team.id}')">delete</span>
+                <div class="team-actions">
+                  <span class="team-edit-link" onclick="editTeam('${tournament.id}', '${team.id}')">edit</span>
+                  <span class="team-delete-link" onclick="deleteTeam('${tournament.id}', '${team.id}')">delete</span>
+                </div>
               </div>
               <div id="team-edit-form-${tournament.id}-${team.id}" class="team-edit-form-inline hidden"></div>
               <div id="team-roster-${tournament.id}-${team.id}" class="team-roster-view hidden"></div>
@@ -1692,6 +1698,8 @@
       const short = document.getElementById(`editTeamShort-${tournamentId}-${teamId}`).value.trim().toUpperCase();
       const kitColor = document.getElementById(`editTeamKitColor-${tournamentId}-${teamId}`).value;
       const logoFile = document.getElementById(`editTeamLogo-${tournamentId}-${teamId}`).files[0];
+      const players = getRosterFromDOM(`playersList-${tournamentId}-${teamId}`, true);
+      const staff = getRosterFromDOM(`staffList-${tournamentId}-${teamId}`, false);
       
       if (!name) {
         alert('Введите название команды');
@@ -1742,7 +1750,9 @@
         city,
         short,
         kitColor,
-        logo: logoUrl
+        logo: logoUrl,
+        players,
+        staff
       };
       
       try {
