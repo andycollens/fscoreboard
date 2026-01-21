@@ -832,6 +832,28 @@
       overflow-y: auto;
     }
 
+    .roster-table {
+      width: 100%;
+    }
+
+    .roster-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #ffffff;
+      padding: 8px 8px;
+      margin: -10px -10px 10px -10px; /* align with roster-list padding */
+      border-bottom: 1px solid #eef4ff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #61708a;
+      text-transform: uppercase;
+      display: grid;
+      gap: 8px;
+      align-items: center;
+    }
+
     .roster-row {
       display: grid;
       grid-template-columns: 1fr 90px 34px;
@@ -844,15 +866,25 @@
       grid-template-columns: 1fr 34px;
     }
 
-    .roster-row label {
-      font-size: 11px;
-      color: #61708a;
-      margin-bottom: 2px;
-      display: block;
-    }
-
     .roster-row input {
       width: 100%;
+      height: 34px;
+      padding: 6px 8px;
+      border: 1px solid #c5d9ff;
+      border-radius: 8px;
+      font-size: 13px;
+      background: #fff;
+      outline: none;
+    }
+
+    .roster-row input:focus {
+      border-color: #338af3;
+      box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.15);
+    }
+
+    .roster-row .roster-number {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
     }
 
     .roster-empty {
@@ -870,6 +902,10 @@
       font-size: 15px;
       padding: 4px;
       line-height: 1;
+    }
+
+    .btn-ghost:hover {
+      color: #a93226;
     }
     
     .empty-state {
@@ -1465,22 +1501,33 @@
         container.innerHTML = '<div class="roster-empty">Список пуст</div>';
         return;
       }
-      container.innerHTML = rows.map((row, idx) => `
+      const header = withNumber
+        ? `<div class="roster-header" style="grid-template-columns: 1fr 90px 34px;">
+             <div>ФИО</div>
+             <div style="text-align:right;">№</div>
+             <div></div>
+           </div>`
+        : `<div class="roster-header" style="grid-template-columns: 1fr 34px;">
+             <div>ФИО</div>
+             <div></div>
+           </div>`;
+
+      const body = rows.map((row, idx) => `
         <div class="roster-row ${withNumber ? '' : 'staff'}" data-index="${idx}">
           <div>
-            <label>ФИО</label>
-            <input type="text" class="roster-name" value="${row.name || ''}" placeholder="Фамилия Имя Отчество">
+            <input type="text" class="roster-name" value="${row.name || ''}" placeholder="Фамилия Имя">
           </div>
           ${withNumber ? `
           <div>
-            <label>№</label>
-            <input type="text" class="roster-number" value="${row.number || ''}" placeholder="10">
+            <input type="text" class="roster-number" value="${row.number || ''}" placeholder="№">
           </div>` : ''}
-          <div style="display:flex; align-items:flex-end; justify-content:center;">
+          <div style="display:flex; align-items:center; justify-content:center; height: 34px;">
             <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
           </div>
         </div>
       `).join('');
+
+      container.innerHTML = `<div class="roster-table">${header}${body}</div>`;
     }
     
     function getRosterFromDOM(containerId, withNumber = true) {
