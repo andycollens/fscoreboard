@@ -1510,24 +1510,25 @@
       if (!team) return;
       
       const players = team.players && team.players.length
-        ? team.players.map(p => `<div>• ${p.name}${p.number ? ' #' + p.number : ''}${p.birthDate ? ' (' + p.birthDate + ')' : ''}</div>`).join('')
+        ? team.players.map(p => {
+            const num = p.number ? `<strong>${p.number}</strong> ` : '';
+            return `<div>• ${num}${p.name || ''}</div>`;
+          }).join('')
         : '<div class="roster-empty">Список игроков пуст</div>';
       
       const staff = team.staff && team.staff.length
-        ? team.staff.map(p => `<div>• ${p.name}${p.birthDate ? ' (' + p.birthDate + ')' : ''}</div>`).join('')
+        ? team.staff.map(p => `<div>• ${p.name || ''}</div>`).join('')
         : '<div class="roster-empty">Список штаба пуст</div>';
       
       rosterDiv.innerHTML = `
         <div class="team-roster-box">
-          <div class="team-roster-grid">
-            <div>
-              <div class="team-roster-title">Игроки</div>
-              ${players}
-            </div>
-            <div>
-              <div class="team-roster-title">Тренерский штаб</div>
-              ${staff}
-            </div>
+          <div>
+            <div class="team-roster-title">Тренерский штаб</div>
+            ${staff}
+          </div>
+          <div style="margin-top: 12px;">
+            <div class="team-roster-title">Игроки</div>
+            ${players}
           </div>
         </div>
       `;
