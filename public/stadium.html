@@ -2275,13 +2275,18 @@ body.penalty-mode .penalty-score {
                 if (score2Section.parentElement === middleContent) {
                     middleContent.removeChild(score2Section);
                 }
-                // Добавляем в bottom-section, если их там еще нет
-                if (score1Section.parentElement !== bottomSection) {
-                    bottomSection.appendChild(score1Section);
+                // Добавляем в bottom-section в правильном порядке
+                // Сначала удаляем оба элемента, если они уже там
+                if (score1Section.parentElement === bottomSection) {
+                    bottomSection.removeChild(score1Section);
                 }
-                if (score2Section.parentElement !== bottomSection) {
-                    bottomSection.appendChild(score2Section);
+                if (score2Section.parentElement === bottomSection) {
+                    bottomSection.removeChild(score2Section);
                 }
+                // Добавляем score1-section первой
+                bottomSection.appendChild(score1Section);
+                // Добавляем score2-section второй
+                bottomSection.appendChild(score2Section);
             }
         } else {
             // Возвращаем обратно в middle-content
