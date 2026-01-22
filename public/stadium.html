@@ -913,8 +913,8 @@
         }
 
         body.rosters-mode .bottom-section {
-            display: flex !important;
-            flex-direction: row;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
             flex: 1 1 auto;
             min-height: 0;
             max-height: 100%;
@@ -923,13 +923,13 @@
             margin: 0;
             box-sizing: border-box;
             align-items: flex-start;
-            justify-content: flex-start;
             gap: 0;
             overflow: hidden;
             width: 100%;
         }
 
         body.rosters-mode .bottom-section .score1-section {
+            grid-column: 1;
             display: flex !important;
             flex-direction: column;
             align-items: flex-start;
@@ -937,18 +937,17 @@
             overflow-y: auto;
             overflow-x: hidden;
             max-height: 100%;
-            max-width: 50vw;
+            max-width: 100%;
             min-width: 0;
             box-sizing: border-box;
             margin: 100px 0 0 0;
             padding: 0 1.5vw 0 0;
-            flex: 0 0 50%;
-            width: 50%;
-            margin-left: 0;
-            margin-right: auto;
+            width: 100%;
+            justify-self: start;
         }
 
         body.rosters-mode .bottom-section .score2-section {
+            grid-column: 2;
             display: flex !important;
             flex-direction: column;
             align-items: flex-end;
@@ -956,15 +955,13 @@
             overflow-y: auto;
             overflow-x: hidden;
             max-height: 100%;
-            max-width: 50vw;
+            max-width: 100%;
             min-width: 0;
             box-sizing: border-box;
             margin: 100px 0 0 0;
             padding: 0 0 0 1.5vw;
-            flex: 0 0 50%;
-            width: 50%;
-            margin-left: auto;
-            margin-right: 0;
+            width: 100%;
+            justify-self: end;
         }
 
         body.rosters-mode .roster-list {
