@@ -8171,6 +8171,16 @@
       document.querySelectorAll('.team-custom-options.open').forEach(el => el.classList.remove('open'));
       document.querySelectorAll('.team-custom-selected.team-select-open').forEach(el => el.classList.remove('team-select-open'));
       if (!isOpen) {
+        // На мобильных устройствах позиционируем выпадающий список относительно viewport
+        if (window.innerWidth <= 768) {
+          optionsBox.style.position = 'fixed';
+          optionsBox.style.width = '100vw';
+          optionsBox.style.left = '0';
+          optionsBox.style.right = '0';
+          optionsBox.style.top = 'auto';
+          optionsBox.style.bottom = '0';
+          optionsBox.style.borderRadius = '16px 16px 0 0';
+        }
         optionsBox.classList.add('open');
         selected.classList.add('team-select-open');
       }

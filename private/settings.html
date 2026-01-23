@@ -2317,10 +2317,18 @@
         if (saved) {
           try {
             tournamentSelectedTeams[tournament.id] = JSON.parse(saved);
-            updateSelectedTeamsDisplay(tournament.id);
+            // Небольшая задержка для гарантии, что DOM готов
+            setTimeout(() => {
+              updateSelectedTeamsDisplay(tournament.id);
+            }, 100);
           } catch (e) {
             console.error('Ошибка загрузки выбранных команд:', e);
           }
+        } else {
+          // Если нет сохраненных данных, все равно вызываем функцию для скрытия списка
+          setTimeout(() => {
+            updateSelectedTeamsDisplay(tournament.id);
+          }, 100);
         }
       });
     }
