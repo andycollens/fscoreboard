@@ -6148,9 +6148,6 @@
     
     // Обработка выбора команды 1 при редактировании
     function onEditTeam1SelectedInline(tournamentId, presetId, selectElement) {
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament || !tournament.teams) return;
-      
       const teamId = selectElement.value;
       const editForm = selectElement.closest('.preset-edit-form-inline');
       
@@ -6169,7 +6166,8 @@
         return;
       }
       
-      const team = tournament.teams.find(t => t.id === teamId);
+      // Ищем команду в глобальной базе команд
+      const team = teams.find(t => t.id === teamId);
       if (!team) return;
       
       // Обновляем логотип команды
@@ -6193,14 +6191,16 @@
         
         if (!wasManuallyEdited) {
           // Берем цвет из выбранной команды и обновляем
-          colorInput.value = team.kitColor || '#2b2b2b';
+          const teamColor = team.kitColor || '#2b2b2b';
+          colorInput.value = teamColor;
           // Сбрасываем флаг manualEdit, так как цвет взят из команды
           colorInput.dataset.manualEdit = undefined;
           colorInput.dataset.userEdited = undefined;
           // Принудительно обновляем визуальное отображение
-          setTimeout(() => {
-            colorInput.style.backgroundColor = colorInput.value;
-          }, 0);
+          colorInput.style.backgroundColor = teamColor;
+          // Триггерим событие change для обновления других зависимых элементов
+          colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+          colorInput.dispatchEvent(new Event('change', { bubbles: true }));
         }
       }
       
@@ -6209,9 +6209,6 @@
     
     // Обработка выбора команды 2 при редактировании
     function onEditTeam2SelectedInline(tournamentId, presetId, selectElement) {
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament || !tournament.teams) return;
-      
       const teamId = selectElement.value;
       const editForm = selectElement.closest('.preset-edit-form-inline');
       
@@ -6230,7 +6227,8 @@
         return;
       }
       
-      const team = tournament.teams.find(t => t.id === teamId);
+      // Ищем команду в глобальной базе команд
+      const team = teams.find(t => t.id === teamId);
       if (!team) return;
       
       // Обновляем логотип команды
