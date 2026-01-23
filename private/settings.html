@@ -2227,15 +2227,35 @@
     }
     
     // Сохранение выбора команд
-    function saveTeamSelection(tournamentId) {
-      // Сохраняем в localStorage для сохранения между сессиями
-      localStorage.setItem(`tournamentTeams_${tournamentId}`, JSON.stringify(tournamentSelectedTeams[tournamentId] || []));
+    async function saveTeamSelection(tournamentId) {
+      const selectedTeamIds = tournamentSelectedTeams[tournamentId] || [];
       
-      // Обновляем отображение выбранных команд в карточке турнира
-      updateSelectedTeamsDisplay(tournamentId);
-      
-      closeTeamSelectionModal(tournamentId);
-      showNotification('Команды сохранены!', 'success');
+      try {
+        // Сохраняем на сервере
+        const response = await fetch(`/api/tournaments/${tournamentId}/selectedTeams?token=${getToken()}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ selectedTeamIds: selectedTeamIds })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Ошибка сохранения команд');
+        }
+        
+        // Также сохраняем в localStorage для совместимости
+        localStorage.setItem(`tournamentTeams_${tournamentId}`, JSON.stringify(selectedTeamIds));
+        
+        // Обновляем отображение выбранных команд в карточке турнира
+        updateSelectedTeamsDisplay(tournamentId);
+        
+        closeTeamSelectionModal(tournamentId);
+        showNotification('Команды сохранены!', 'success');
+      } catch (error) {
+        console.error('Ошибка сохранения команд:', error);
+        showNotification('Ошибка сохранения команд', 'error');
+      }
     }
     
     // Закрытие модального окна

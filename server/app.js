@@ -819,13 +819,38 @@ app.put('/api/tournaments/:id', (req, res) => {
     ...tournaments[tournamentIndex],
     name: req.body.name,
     startDate: req.body.startDate || null,
-    endDate: req.body.endDate || null
+    endDate: req.body.endDate || null,
+    selectedTeamIds: req.body.selectedTeamIds !== undefined ? req.body.selectedTeamIds : tournaments[tournamentIndex].selectedTeamIds || []
   };
   
   fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
   
   console.log('Tournament updated:', tournamentId);
   res.json(tournaments[tournamentIndex]);
+});
+
+// Обновить выбранные команды турнира
+app.put('/api/tournaments/:id/selectedTeams', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const tournamentId = req.params.id;
+  const tournamentIndex = tournaments.findIndex(t => t.id === tournamentId);
+  
+  if (tournamentIndex === -1) {
+    return res.status(404).json({ error: 'Tournament not found' });
+  }
+  
+  const selectedTeamIds = req.body.selectedTeamIds || [];
+  
+  tournaments[tournamentIndex] = {
+    ...tournaments[tournamentIndex],
+    selectedTeamIds: selectedTeamIds
+  };
+  
+  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+  
+  console.log('Tournament selected teams updated:', tournamentId, selectedTeamIds);
+  res.json({ success: true, selectedTeamIds: selectedTeamIds });
 });
 
 // Удалить турнир
