@@ -5667,8 +5667,10 @@
           return;
         }
         
-        // Добавляем в expandedPresets если еще не добавлен (для сохранения состояния)
-        expandedPresets.add(tournament.id);
+        // Добавляем в expandedPresets только если секция видима (для сохранения состояния)
+        if (presetsDiv && !presetsDiv.classList.contains('hidden')) {
+          expandedPresets.add(tournament.id);
+        }
         
         // Готовим секции дней
         presetsRoot.innerHTML = '';
