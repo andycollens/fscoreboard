@@ -2135,16 +2135,16 @@
           ${teams.length > 0 ? teams.map(team => {
             const isSelected = selectedTeamIds.includes(team.id);
             return `
-              <div data-team-id="${team.id}" style="border: 2px solid ${isSelected ? '#338af3' : '#ddd'}; border-radius: 8px; padding: 10px; cursor: pointer; background: ${isSelected ? '#e3f2fd' : '#fff'}; transition: all 0.2s;" 
+              <div data-team-id="${team.id}" style="position: relative; border: 2px solid ${isSelected ? '#338af3' : '#ddd'}; border-radius: 8px; padding: 10px; cursor: pointer; background: ${isSelected ? '#e3f2fd' : '#fff'}; transition: all 0.2s;" 
                    onclick="toggleTeamSelection('${tournamentId}', '${team.id}')">
+                ${isSelected ? '<div id="checkmark-${tournamentId}-${team.id}" style="position: absolute; top: 8px; right: 8px; color: #338af3; font-size: 20px; font-weight: bold; z-index: 10;">✓</div>' : '<div id="checkmark-${tournamentId}-${team.id}" style="position: absolute; top: 8px; right: 8px; display: none;"></div>'}
                 <div style="display: flex; align-items: center; gap: 10px;">
                   ${team.logo ? `<img src="${team.logo}" style="width: 40px; height: 40px; object-fit: contain;">` : '<div style="width: 40px; height: 40px; background: #ddd; border-radius: 4px;"></div>'}
                   <div style="flex: 1;">
-                    <div style="font-weight: 600; font-size: 14px;">${team.name}</div>
+                    <div style="font-weight: 600; font-size: 14px;">
+                      ${team.name}${team.birthYear ? `<span style="color: #94a3b8; font-weight: 400; font-size: 10px; margin-left: 4px;">${team.birthYear}</span>` : ''}
+                    </div>
                     <div style="font-size: 12px; color: #666;">${team.city || ''}</div>
-                  </div>
-                  <div style="min-width: 24px; text-align: right;">
-                    ${isSelected ? '<div style="color: #338af3; font-size: 20px;">✓</div>' : ''}
                   </div>
                 </div>
               </div>
@@ -2183,12 +2183,15 @@
         teamItem.style.borderColor = isNowSelected ? '#338af3' : '#ddd';
         teamItem.style.background = isNowSelected ? '#e3f2fd' : '#fff';
         
-        // Находим контейнер с галочкой (последний div внутри первого div)
-        const innerContainer = teamItem.querySelector('div:first-child');
-        if (innerContainer) {
-          const checkmarkContainer = innerContainer.querySelector('div:last-child');
-          if (checkmarkContainer) {
-            checkmarkContainer.innerHTML = isNowSelected ? '<div style="color: #338af3; font-size: 20px;">✓</div>' : '';
+        // Обновляем галочку в верхнем правом углу
+        const checkmark = document.getElementById(`checkmark-${tournamentId}-${teamId}`);
+        if (checkmark) {
+          if (isNowSelected) {
+            checkmark.style.display = 'block';
+            checkmark.textContent = '✓';
+          } else {
+            checkmark.style.display = 'none';
+            checkmark.textContent = '';
           }
         }
       }
