@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Members - FSCOREBOARD</title>
+    <style>
+        @font-face {
+            font-family: 'RPL';
+            src: url('/public/fonts/RPL.ttf') format('truetype');
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background: #000;
+            font-family: 'RPL', Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* Контейнер стадиона */
+        .stadium-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            background: #000;
+        }
+
+        /* Верхняя область */
+        .top-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2vh 0;
+            box-sizing: border-box;
+        }
+
+        .tournament-title {
+            font-size: 3.5vw;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .rosters-subtitle {
+            font-size: 2.5vw;
+            font-weight: 500;
+            color: #b0b0b0;
+            text-align: center;
+            margin: 1vh 0 0 0;
+            white-space: nowrap;
+        }
+
+        /* Средняя область */
+        .middle-section {
+            flex: 2;
+            position: relative;
+            background: #000;
+        }
+
+        .middle-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            box-sizing: border-box;
+            gap: 0;
+        }
+
+        .team1-section,
+        .team2-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2vh 2vw;
+            box-sizing: border-box;
+        }
+
+        .team1-logo,
+        .team2-logo {
+            width: clamp(150px, 15vw, 300px);
+            height: clamp(150px, 15vw, 300px);
+            object-fit: contain;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .team1-logo.show,
+        .team2-logo.show {
+            display: block;
+        }
+
+        .team1-no-logo,
+        .team2-no-logo {
+            width: clamp(150px, 15vw, 300px);
+            height: clamp(150px, 15vw, 300px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4vw;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .team1-meta,
+        .team2-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1vh;
+        }
+
+        .team1-name,
+        .team2-name {
+            font-size: 3vw;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .team1-stripe,
+        .team2-stripe {
+            width: clamp(60px, 8vw, 140px);
+            height: clamp(8px, 0.6vw, 14px);
+            margin: 0.5vh 0;
+            opacity: 1;
+        }
+
+        .team1-city,
+        .team2-city {
+            font-size: 2.5vw;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .team1-section {
+            grid-column: 1;
+        }
+
+        .team2-section {
+            grid-column: 2;
+        }
+
+        /* Нижняя область с составами */
+        .bottom-section {
+            flex: 2;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            box-sizing: border-box;
+            gap: 0;
+        }
+
+        .roster-team1,
+        .roster-team2 {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
+            padding: 2vh 2vw;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .roster-team1 {
+            grid-column: 1;
+            align-items: flex-start;
+        }
+
+        .roster-divider {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .roster-colon {
+            width: 8px;
+            height: 80%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 50%, rgba(255, 255, 255, 0) 100%);
+            border-radius: 8px;
+            opacity: 1;
+        }
+
+        .roster-team2 {
+            grid-column: 3;
+            align-items: flex-end;
+        }
+
+        .roster-coach-label,
+        .roster-players-label {
+            font-weight: 700;
+            font-size: 2.1vw;
+            margin: 0 0 0.5vh 0;
+            display: block;
+            color: #b0b0b0;
+        }
+
+        .roster-coach-name {
+            font-size: 2.0vw;
+            font-weight: 500;
+            margin: 0 0 2vh 0;
+            display: block;
+            color: #fff;
+        }
+
+        .roster-players-list {
+            font-size: 1.8vw;
+            font-weight: 500;
+            line-height: 1.5;
+            display: block;
+            column-count: 2;
+            column-gap: 2vw;
+            width: 100%;
+            color: #fff;
+        }
+
+        .roster-players-list.many-players {
+            font-size: 1.6vw;
+        }
+
+        .roster-player-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5vw;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .roster-player-number {
+            text-align: right;
+            min-width: 2.5vw;
+            flex-shrink: 0;
+            font-size: 1.5vw;
+            color: #b0b0b0;
+        }
+
+        .roster-player-name {
+            flex: 1;
+        }
+
+        .roster-team1 .roster-coach-label,
+        .roster-team1 .roster-coach-name,
+        .roster-team1 .roster-players-label,
+        .roster-team1 .roster-players-list {
+            text-align: left;
+        }
+
+        .roster-team2 .roster-coach-label,
+        .roster-team2 .roster-coach-name,
+        .roster-team2 .roster-players-label,
+        .roster-team2 .roster-players-list {
+            text-align: right;
+        }
+
+        .roster-team2 .roster-player-item {
+            flex-direction: row;
+            gap: 0.5vw;
+            justify-content: flex-end;
+        }
+
+        .roster-team2 .roster-player-number {
+            text-align: left;
+            min-width: 2.0vw;
+            flex-shrink: 0;
+        }
+
+        .roster-team2 .roster-player-name {
+            text-align: right;
+            flex: 1;
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .tournament-title {
+                font-size: 35px;
+            }
+
+            .rosters-subtitle {
+                font-size: 25px;
+            }
+
+            .team1-name,
+            .team2-name {
+                font-size: 30px;
+            }
+
+            .team1-city,
+            .team2-city {
+                font-size: 25px;
+            }
+
+            .roster-coach-label,
+            .roster-players-label {
+                font-size: 21px;
+            }
+
+            .roster-coach-name {
+                font-size: 20px;
+            }
+
+            .roster-players-list {
+                font-size: 18px;
+            }
+
+            .roster-players-list.many-players {
+                font-size: 16px;
+            }
+
+            .roster-player-number {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stadium-container">
+        <!-- Верхняя область -->
+        <div class="top-section">
+            <div class="tournament-title" id="tournamentTitle">ISKRA CUP 2025</div>
+            <div class="rosters-subtitle" id="rostersSubtitle">Составы команд</div>
+        </div>
+
+        <!-- Средняя область с логотипами и названиями команд -->
+        <div class="middle-section">
+            <div class="middle-content">
+                <!-- Команда 1 -->
+                <div class="team1-section">
+                    <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
+                    <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
+                    <div class="team1-meta">
+                        <div class="team1-name" id="team1Name">Команда 1</div>
+                        <div id="team1Stripe" class="team1-stripe"></div>
+                        <div class="team1-city" id="team1City">Город 1</div>
+                    </div>
+                </div>
+
+                <!-- Команда 2 -->
+                <div class="team2-section">
+                    <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
+                    <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
+                    <div class="team2-meta">
+                        <div class="team2-name" id="team2Name">Команда 2</div>
+                        <div id="team2Stripe" class="team2-stripe"></div>
+                        <div class="team2-city" id="team2City">Город 2</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Нижняя область с составами -->
+        <div class="bottom-section">
+            <div class="roster-team1" id="rosterTeam1">
+                <div class="roster-coach-label">Тренер:</div>
+                <div class="roster-coach-name" id="rosterTeam1Coach"></div>
+                <div class="roster-players-label">Игроки:</div>
+                <div class="roster-players-list" id="rosterTeam1Players"></div>
+            </div>
+            <div class="roster-divider" id="rosterDivider">
+                <div class="roster-colon"></div>
+            </div>
+            <div class="roster-team2" id="rosterTeam2">
+                <div class="roster-coach-label">Тренер:</div>
+                <div class="roster-coach-name" id="rosterTeam2Coach"></div>
+                <div class="roster-players-label">Игроки:</div>
+                <div class="roster-players-list" id="rosterTeam2Players"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let latestData = null;
+
+        function escapeHtml(str = '') {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderRostersMode(coachEl, playersEl, staff, players, isRightSide = false) {
+            // Заполняем тренера
+            if (coachEl) {
+                if (staff && Array.isArray(staff) && staff.length > 0) {
+                    const coachName = staff
+                        .map(item => {
+                            if (!item) return '';
+                            if (typeof item === 'string') return escapeHtml(item);
+                            return escapeHtml(item.name || '');
+                        })
+                        .filter(Boolean)
+                        .join(' ');
+                    coachEl.textContent = coachName || '';
+                } else {
+                    coachEl.textContent = '';
+                }
+            }
+
+            // Заполняем игроков в две колонки
+            if (playersEl) {
+                if (players && Array.isArray(players) && players.length > 0) {
+                    const playerItems = players
+                        .map(item => {
+                            if (!item) return '';
+                            if (typeof item === 'string') {
+                                // Если строка, пытаемся извлечь номер и имя
+                                const parts = item.trim().split(/\s+/);
+                                const num = parts[0].match(/^\d+$/) ? parts[0] : '';
+                                const name = num ? parts.slice(1).join(' ') : item;
+                                if (isRightSide) {
+                                    return `<div class="roster-player-item">
+                                        <span class="roster-player-name">${escapeHtml(name || '')}</span>
+                                        <span class="roster-player-number">${escapeHtml(num || '')}</span>
+                                    </div>`;
+                                } else {
+                                    return `<div class="roster-player-item">
+                                        <span class="roster-player-number">${escapeHtml(num || '')}</span>
+                                        <span class="roster-player-name">${escapeHtml(name || '')}</span>
+                                    </div>`;
+                                }
+                            }
+                            const num = item.number ? String(item.number) : '';
+                            const name = item.name || '';
+                            if (isRightSide) {
+                                return `<div class="roster-player-item">
+                                    <span class="roster-player-name">${escapeHtml(name)}</span>
+                                    <span class="roster-player-number">${escapeHtml(num)}</span>
+                                </div>`;
+                            } else {
+                                return `<div class="roster-player-item">
+                                    <span class="roster-player-number">${escapeHtml(num)}</span>
+                                    <span class="roster-player-name">${escapeHtml(name)}</span>
+                                </div>`;
+                            }
+                        })
+                        .filter(Boolean);
+                    playersEl.innerHTML = playerItems.join('');
+                } else {
+                    playersEl.innerHTML = '';
+                }
+            }
+        }
+
+        function updateStripe(team, color) {
+            const stripe = team === 'team1' ? team1Stripe : team2Stripe;
+            const direction = team === 'team1' ? 'to left' : 'to right';
+            
+            if (color && color !== '') {
+                stripe.style.background = `linear-gradient(${direction}, transparent, ${color} 70px, ${color} 130px, transparent 200px)`;
+                setTimeout(() => {
+                    stripe.classList.add('active');
+                }, 100);
+            } else {
+                stripe.classList.remove('active');
+                stripe.style.background = `linear-gradient(${direction}, transparent, #2b2b2b 70px, #2b2b2b 130px, transparent 200px)`;
+            }
+        }
+
+        function updateDisplay(data) {
+            console.log('Members обновляет отображение:', data);
+
+            // Команда 1
+            if (data.team1Logo && data.team1Logo !== '') {
+                team1Logo.src = data.team1Logo;
+                team1Logo.classList.add('show');
+                team1NoLogo.style.display = 'none';
+            } else {
+                team1Logo.classList.remove('show');
+                team1NoLogo.style.display = 'flex';
+                if (data.kit1Color) {
+                    team1NoLogo.style.backgroundColor = data.kit1Color;
+                }
+            }
+
+            team1Name.textContent = data.team1Name || 'Команда 1';
+            team1City.textContent = data.team1City || 'Город 1';
+            updateStripe('team1', data.kit1Color);
+
+            // Обновляем составы для команды 1
+            if (rosterTeam1Coach && rosterTeam1Players) {
+                renderRostersMode(
+                    rosterTeam1Coach,
+                    rosterTeam1Players,
+                    data.team1Staff || data.staff1 || [],
+                    data.team1Players || data.players1 || [],
+                    false
+                );
+            }
+
+            // Команда 2
+            if (data.team2Logo && data.team2Logo !== '') {
+                team2Logo.src = data.team2Logo;
+                team2Logo.classList.add('show');
+                team2NoLogo.style.display = 'none';
+            } else {
+                team2Logo.classList.remove('show');
+                team2NoLogo.style.display = 'flex';
+                if (data.kit2Color) {
+                    team2NoLogo.style.backgroundColor = data.kit2Color;
+                }
+            }
+
+            team2Name.textContent = data.team2Name || 'Команда 2';
+            team2City.textContent = data.team2City || 'Город 2';
+            updateStripe('team2', data.kit2Color);
+
+            // Обновляем составы для команды 2
+            if (rosterTeam2Coach && rosterTeam2Players) {
+                renderRostersMode(
+                    rosterTeam2Coach,
+                    rosterTeam2Players,
+                    data.team2Staff || data.staff2 || [],
+                    data.team2Players || data.players2 || [],
+                    true
+                );
+
+                // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков
+                const team1PlayersCount = (data.team1Players || data.players1 || []).length;
+                const team2PlayersCount = (data.team2Players || data.players2 || []).length;
+                const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
+                
+                if (rosterTeam1Players && rosterTeam2Players) {
+                    if (maxPlayersCount > 24) {
+                        rosterTeam1Players.classList.add('many-players');
+                        rosterTeam2Players.classList.add('many-players');
+                    } else {
+                        rosterTeam1Players.classList.remove('many-players');
+                        rosterTeam2Players.classList.remove('many-players');
+                    }
+                }
+            }
+
+            // Название турнира
+            if (data.tournamentTitle && tournamentTitle) {
+                tournamentTitle.textContent = data.tournamentTitle;
+            }
+        }
+
+        // Получение элементов
+        const team1Logo = document.getElementById('team1Logo');
+        const team1NoLogo = document.getElementById('team1NoLogo');
+        const team1Name = document.getElementById('team1Name');
+        const team1City = document.getElementById('team1City');
+        const team1Stripe = document.getElementById('team1Stripe');
+        
+        const team2Logo = document.getElementById('team2Logo');
+        const team2NoLogo = document.getElementById('team2NoLogo');
+        const team2Name = document.getElementById('team2Name');
+        const team2City = document.getElementById('team2City');
+        const team2Stripe = document.getElementById('team2Stripe');
+        
+        const rosterTeam1Coach = document.getElementById('rosterTeam1Coach');
+        const rosterTeam1Players = document.getElementById('rosterTeam1Players');
+        const rosterTeam2Coach = document.getElementById('rosterTeam2Coach');
+        const rosterTeam2Players = document.getElementById('rosterTeam2Players');
+        const tournamentTitle = document.getElementById('tournamentTitle');
+
+        // Подключение к WebSocket
+        socket.on('connect', () => {
+            console.log('Members подключен к серверу');
+            socket.emit('getCurrentState');
+        });
+
+        socket.on('reconnect', () => {
+            console.log('Members переподключен к серверу');
+            socket.emit('getCurrentState');
+        });
+
+        socket.on('disconnect', () => {
+            console.warn('Members отключен от сервера');
+        });
+
+        // Обновление данных
+        socket.on('scoreboardUpdate', (data) => {
+            console.log('Received scoreboardUpdate in members:', data);
+            latestData = data;
+            updateDisplay(data);
+        });
+
+        // Получение начального состояния при загрузке страницы
+        socket.on('currentState', (data) => {
+            console.log('Members получил начальное состояние:', data);
+            latestData = data;
+            updateDisplay(data);
+        });
+    </script>
+</body>
+</html>
