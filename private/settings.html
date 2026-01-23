@@ -1963,22 +1963,26 @@
           const numMatchEnd = rest.match(/^(.+?)[\s\t]+(\d{1,3})$/);
           if (numMatchEnd) {
             const numVal = parseInt(numMatchEnd[2], 10);
-            // Проверяем, что это не часть даты (не содержит точек, слешей, дефисов)
             const beforeNumber = numMatchEnd[1].trim();
-            // Если перед числом есть дата (содержит точки, слеши, дефисы), то это номер
-            // Если перед числом просто текст без даты, то это тоже может быть номер
-            const hasDatePattern = /[\d]{1,2}[.\/\-][\d]{1,2}[.\/\-]?[\d]{0,4}/.test(beforeNumber);
             
             if (!isNaN(numVal) && numVal > 0 && numVal < 200) {
-              // Если есть паттерн даты перед числом, или последнее слово перед числом - это не число
-              const lastWord = beforeNumber.split(/\s+/).pop();
-              const isLastWordNumber = /^\d+$/.test(lastWord);
+              // Проверяем, есть ли паттерн даты перед числом (форматы: 10.01.2010, 10/01/2010, 10-01-2010, 2010-01-10)
+              const hasDatePattern = /[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/.test(beforeNumber);
               
-              // Если последнее слово - число, то это не номер игрока, а часть даты или другое
-              // Номер игрока должен быть отдельным числом в конце
-              if (!isLastWordNumber || hasDatePattern) {
+              // Если есть паттерн даты, то последнее число - это номер игрока
+              if (hasDatePattern) {
                 number = numVal.toString();
                 rest = beforeNumber.trim();
+              } else {
+                // Если нет паттерна даты, проверяем последнее слово перед числом
+                const lastWord = beforeNumber.split(/\s+/).pop();
+                const isLastWordNumber = /^\d+$/.test(lastWord);
+                
+                // Если последнее слово - не число, то последнее число в строке - это номер игрока
+                if (!isLastWordNumber) {
+                  number = numVal.toString();
+                  rest = beforeNumber.trim();
+                }
               }
             }
           }
