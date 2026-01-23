@@ -2318,38 +2318,72 @@
     }
     
     // Удаление команды из выбранных для турнира
-    function removeTeamFromTournament(tournamentId, teamId) {
+    async function removeTeamFromTournament(tournamentId, teamId) {
       if (!tournamentSelectedTeams[tournamentId]) return;
       
       const index = tournamentSelectedTeams[tournamentId].indexOf(teamId);
       if (index > -1) {
         tournamentSelectedTeams[tournamentId].splice(index, 1);
-        localStorage.setItem(`tournamentTeams_${tournamentId}`, JSON.stringify(tournamentSelectedTeams[tournamentId]));
-        updateSelectedTeamsDisplay(tournamentId);
-        showNotification('Команда удалена', 'success');
+        
+        try {
+          // Сохраняем на сервере
+          const response = await fetch(`/api/tournaments/${tournamentId}/selectedTeams?token=${getToken()}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ selectedTeamIds: tournamentSelectedTeams[tournamentId] })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Ошибка сохранения');
+          }
+          
+          // Также сохраняем в localStorage для совместимости
+          localStorage.setItem(`tournamentTeams_${tournamentId}`, JSON.stringify(tournamentSelectedTeams[tournamentId]));
+          
+          updateSelectedTeamsDisplay(tournamentId);
+          showNotification('Команда удалена', 'success');
+        } catch (error) {
+          console.error('Ошибка удаления команды:', error);
+          showNotification('Ошибка удаления команды', 'error');
+        }
       }
     }
     
-    // Загрузка выбранных команд из localStorage
+    // Загрузка выбранных команд с сервера
     function loadTournamentSelectedTeams() {
       tournaments.forEach(tournament => {
-        const saved = localStorage.getItem(`tournamentTeams_${tournament.id}`);
-        if (saved) {
-          try {
-            tournamentSelectedTeams[tournament.id] = JSON.parse(saved);
-            // Небольшая задержка для гарантии, что DOM готов
-            setTimeout(() => {
-              updateSelectedTeamsDisplay(tournament.id);
-            }, 100);
-          } catch (e) {
-            console.error('Ошибка загрузки выбранных команд:', e);
-          }
+        // Загружаем с сервера (из поля selectedTeamIds турнира)
+        if (tournament.selectedTeamIds && Array.isArray(tournament.selectedTeamIds)) {
+          tournamentSelectedTeams[tournament.id] = tournament.selectedTeamIds;
         } else {
-          // Если нет сохраненных данных, все равно вызываем функцию для скрытия списка
-          setTimeout(() => {
-            updateSelectedTeamsDisplay(tournament.id);
-          }, 100);
+          // Fallback: загружаем из localStorage для совместимости
+          const saved = localStorage.getItem(`tournamentTeams_${tournament.id}`);
+          if (saved) {
+            try {
+              tournamentSelectedTeams[tournament.id] = JSON.parse(saved);
+              // Синхронизируем с сервером
+              fetch(`/api/tournaments/${tournament.id}/selectedTeams?token=${getToken()}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selectedTeamIds: tournamentSelectedTeams[tournament.id] })
+              }).catch(err => console.error('Ошибка синхронизации с сервером:', err));
+            } catch (e) {
+              console.error('Ошибка загрузки выбранных команд:', e);
+              tournamentSelectedTeams[tournament.id] = [];
+            }
+          } else {
+            tournamentSelectedTeams[tournament.id] = [];
+          }
         }
+        
+        // Небольшая задержка для гарантии, что DOM готов
+        setTimeout(() => {
+          updateSelectedTeamsDisplay(tournament.id);
+        }, 100);
       });
     }
     

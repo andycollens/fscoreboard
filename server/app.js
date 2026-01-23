@@ -794,7 +794,8 @@ app.post('/api/tournaments', (req, res) => {
     name: req.body.name,
     startDate: req.body.startDate || null,
     endDate: req.body.endDate || null,
-    teams: []
+    teams: [],
+    selectedTeamIds: []
   };
   
   tournaments.push(newTournament);
