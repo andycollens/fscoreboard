@@ -310,6 +310,15 @@
       border-bottom: 1px solid #eef4ff;
     }
     
+    /* Мобильная адаптивность для выбранных команд */
+    .selected-teams-grid {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 10px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
     @media (max-width: 768px) {
       .stadium-mode-wrapper {
         flex-direction: column;
@@ -324,6 +333,28 @@
       
       .stadium-mode-btn {
         flex: 1 1 auto;
+      }
+      
+      /* Выбранные команды в мобильной версии */
+      .selected-teams-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+      
+      [id^="selectedTeamsContent-"] {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      #selectedTeamsContent-${tournament.id} {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
       }
     }
     
@@ -1897,7 +1928,7 @@
             <div style="margin-bottom: 10px;">Команды для пресетов выбираются из базы команд.</div>
             <div id="selectedTeamsList-${tournament.id}" style="display: none;">
               <div style="font-weight: 600; margin-bottom: 12px; color: #163d74; font-size: 14px;">Выбранные команды:</div>
-              <div id="selectedTeamsContent-${tournament.id}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;"></div>
+              <div id="selectedTeamsContent-${tournament.id}" class="selected-teams-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; width: 100%; box-sizing: border-box;"></div>
             </div>
           </div>
         `;

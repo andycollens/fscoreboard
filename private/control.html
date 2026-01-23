@@ -2988,12 +2988,27 @@
       border-color: #338af3;
       box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.1);
     }
+    .team-custom-selected {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+      min-width: 0;
+    }
     .team-custom-selected .sel-label {
       color: #1f2d3d;
+      font-weight: 500;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .team-custom-selected .sel-year {
       color: #9aa4b2;
       white-space: nowrap;
+      flex-shrink: 0;
+      font-size: 0.9em;
     }
     .team-custom-options {
       position: absolute;
@@ -8105,15 +8120,40 @@
     });
 
     function updateSelectedDisplay(label, year) {
-      selectedLabel.textContent = label || '-- Выберите команду --';
-      selectedYear.textContent = year ? ` · ${year}` : '';
+      if (!label || label === '-- Выберите команду --') {
+        selectedLabel.textContent = '-- Выберите команду --';
+        selectedLabel.style.color = '#9aa4b2';
+        selectedLabel.style.fontWeight = '400';
+        selectedYear.textContent = '';
+      } else {
+        selectedLabel.textContent = label;
+        selectedLabel.style.color = '#1f2d3d';
+        selectedLabel.style.fontWeight = '500';
+        selectedYear.textContent = year ? ` · ${year}` : '';
+      }
     }
 
     // Init selected display from current value
-    const currentOpt = nativeSelect.selectedOptions[0] || nativeSelect.options[0];
-    const curLabel = currentOpt ? (currentOpt.dataset.label || currentOpt.textContent || '') : '';
-    const curYear = currentOpt ? (currentOpt.dataset.birthYear || '') : '';
-    updateSelectedDisplay(curLabel, curYear);
+    const currentOpt = nativeSelect.selectedOptions[0];
+    if (currentOpt && currentOpt.value) {
+      const curLabel = currentOpt.dataset.label || currentOpt.textContent || '';
+      const curYear = currentOpt.dataset.birthYear || '';
+      updateSelectedDisplay(curLabel, curYear);
+    } else {
+      updateSelectedDisplay('', '');
+    }
+    
+    // Обновляем отображение при изменении нативного селекта
+    nativeSelect.addEventListener('change', () => {
+      const opt = nativeSelect.options[nativeSelect.selectedIndex];
+      if (opt && opt.value) {
+        const label = opt.dataset.label || opt.textContent || '';
+        const year = opt.dataset.birthYear || '';
+        updateSelectedDisplay(label, year);
+      } else {
+        updateSelectedDisplay('', '');
+      }
+    });
 
     selected.addEventListener('click', () => {
       const isOpen = optionsBox.classList.contains('open');
