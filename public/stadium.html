@@ -399,10 +399,12 @@
         }
 
         body.rosters-mode .bottom-section {
-            display: block !important;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
             width: 100%;
             background: #000;
             overflow: hidden;
+            gap: 0;
         }
 
         body.rosters-mode .tournament-title {
@@ -514,12 +516,71 @@
             display: none !important;
         }
 
-        body.rosters-mode .score1-section,
-        body.rosters-mode .score2-section,
+        body.rosters-mode .bottom-section .score1-section {
+            display: flex !important;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 2vh 2vw;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+            grid-column: 1;
+        }
+
+        body.rosters-mode .bottom-section .score2-section {
+            display: flex !important;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: flex-start;
+            padding: 2vh 2vw;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+            grid-column: 2;
+        }
+
+        body.rosters-mode .team1-score,
+        body.rosters-mode .team2-score {
+            display: none !important;
+        }
+
+        body.rosters-mode .roster-list {
+            display: block !important;
+            width: 100%;
+        }
+
+        body.rosters-mode .roster-title {
+            font-weight: 700;
+            font-size: 2.1vw;
+            margin: 0 0 1vh 0;
+            display: block;
+        }
+
+        body.rosters-mode .roster-lines {
+            font-size: 2.0vw;
+            font-weight: 500;
+            line-height: 1.5;
+            margin: 0 0 2vh 0;
+            display: block;
+        }
+
+        body.rosters-mode .roster-lines + .roster-title {
+            margin-top: 2vh;
+        }
+
+        body.rosters-mode .bottom-section .score1-section .roster-title,
+        body.rosters-mode .bottom-section .score1-section .roster-lines {
+            text-align: left;
+        }
+
+        body.rosters-mode .bottom-section .score2-section .roster-title,
+        body.rosters-mode .bottom-section .score2-section .roster-lines {
+            text-align: right;
+        }
+
         body.rosters-mode .divider-section,
         body.rosters-mode .timer,
-        body.rosters-mode .team1-score,
-        body.rosters-mode .team2-score,
         body.rosters-mode .match-score-label,
         body.rosters-mode .penalty-label,
         body.rosters-mode .penalty-overlay {
