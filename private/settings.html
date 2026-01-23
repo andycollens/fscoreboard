@@ -947,6 +947,61 @@
     <h1>⚙️ Настройки</h1>
   </div>
 
+  <!-- Секция Команды -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Команды</h2>
+      <button class="btn btn-primary" onclick="toggleAddTeamForm()" id="addTeamBtn">+ Создать команду</button>
+    </div>
+    
+    <!-- Форма создания команды -->
+    <div id="addTeamForm" class="add-tournament-form hidden">
+      <h3>Создать новую команду</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Название команды *</label>
+          <input type="text" id="newTeamName" placeholder="Название команды" maxlength="40">
+        </div>
+        <div class="form-group">
+          <label>Город</label>
+          <input type="text" id="newTeamCity" placeholder="Город" maxlength="30">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Шорткод</label>
+          <input type="text" id="newTeamShort" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;">
+        </div>
+        <div class="form-group">
+          <label>Год рождения</label>
+          <input type="text" id="newTeamBirthYear" placeholder="2014" maxlength="4" inputmode="numeric">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Цвет формы</label>
+          <input type="color" id="newTeamKitColor" value="#2b2b2b">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Логотип</label>
+          <input type="file" id="newTeamLogo" accept="image/*" onchange="previewBaseTeamLogo(this)">
+          <div id="baseTeamLogoPreview" class="logo-preview"></div>
+        </div>
+      </div>
+      <div class="form-buttons">
+        <button class="btn btn-primary" onclick="saveNewBaseTeam()">Создать</button>
+        <button class="btn btn-secondary" onclick="cancelAddTeam()">Отмена</button>
+      </div>
+    </div>
+    
+    <!-- Список команд -->
+    <div id="teamsList">
+      <div class="empty-state">Нет созданных команд. Создайте первую команду.</div>
+    </div>
+  </div>
+
   <!-- Секция Пресет турниров -->
   <div class="section">
     <div class="section-header">
@@ -1163,8 +1218,368 @@
       if (backLink) {
         backLink.href = `/private/control.html?token=${getToken()}`;
       }
+      loadTeams();
       loadTournaments();
     });
+    
+    // ====== Работа с командами (база команд) ======
+    let teams = [];
+    
+    // Загрузка команд
+    async function loadTeams() {
+      try {
+        const response = await fetch(`/api/teams?token=${getToken()}`);
+        if (response.ok) {
+          teams = await response.json();
+          renderTeams();
+        } else {
+          console.error('Ошибка загрузки команд');
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки команд:', error);
+      }
+    }
+    
+    // Отображение команд
+    function renderTeams() {
+      const container = document.getElementById('teamsList');
+      
+      if (teams.length === 0) {
+        container.innerHTML = '<div class="empty-state">Нет созданных команд. Создайте первую команду.</div>';
+        return;
+      }
+      
+      container.innerHTML = teams.map(team => {
+        const logoHtml = team.logo 
+          ? `<img src="${team.logo}" alt="${team.name}" class="team-logo-mini">`
+          : '<div class="team-logo-mini" style="background: #ddd;"></div>';
+        
+        return `
+          <div class="team-item" data-team-id="${team.id}">
+            <div class="team-row">
+              <div class="team-item-info" id="team-info-${team.id}" onclick="toggleBaseTeamRoster('${team.id}', event)">
+                ${logoHtml}
+                <div class="team-short">${team.short || ''}</div>
+                <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
+                <div class="team-details">
+                  <div class="team-name">${team.name}</div>
+                  <div class="team-city">${team.city || ''}</div>
+                </div>
+                <div class="team-birth-year">${team.birthYear || ''}</div>
+              </div>
+              <div class="team-actions">
+                <span class="team-edit-link" onclick="editBaseTeam('${team.id}')">edit</span>
+                <span class="team-delete-link" onclick="deleteBaseTeam('${team.id}')">delete</span>
+              </div>
+            </div>
+            <div id="team-edit-form-${team.id}" class="team-edit-form-inline hidden"></div>
+            <div id="team-roster-${team.id}" class="team-roster-view hidden"></div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Переключение формы создания команды
+    function toggleAddTeamForm() {
+      const form = document.getElementById('addTeamForm');
+      form.classList.toggle('hidden');
+    }
+    
+    // Отмена создания команды
+    function cancelAddTeam() {
+      document.getElementById('addTeamForm').classList.add('hidden');
+      document.getElementById('newTeamName').value = '';
+      document.getElementById('newTeamCity').value = '';
+      document.getElementById('newTeamShort').value = '';
+      document.getElementById('newTeamBirthYear').value = '';
+      document.getElementById('newTeamKitColor').value = '#2b2b2b';
+      document.getElementById('newTeamLogo').value = '';
+      document.getElementById('baseTeamLogoPreview').innerHTML = '';
+    }
+    
+    // Превью логотипа команды
+    function previewBaseTeamLogo(fileInput) {
+      const preview = document.getElementById('baseTeamLogoPreview');
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100px; max-height: 100px; margin-top: 10px;">`;
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      }
+    }
+    
+    // Сохранение новой команды
+    async function saveNewBaseTeam() {
+      const name = document.getElementById('newTeamName').value.trim();
+      const city = document.getElementById('newTeamCity').value.trim();
+      const short = document.getElementById('newTeamShort').value.trim().toUpperCase();
+      const birthYear = document.getElementById('newTeamBirthYear').value.trim();
+      const kitColor = document.getElementById('newTeamKitColor').value;
+      const logoFile = document.getElementById('newTeamLogo').files[0];
+      
+      if (!name) {
+        alert('Введите название команды');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('city', city);
+      formData.append('short', short);
+      formData.append('birthYear', birthYear);
+      formData.append('kitColor', kitColor);
+      formData.append('isBaseTeam', 'true');
+      formData.append('players', JSON.stringify([]));
+      formData.append('staff', JSON.stringify([]));
+      
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      }
+      
+      try {
+        const response = await fetch(`/api/teams?token=${getToken()}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          cancelAddTeam();
+          await loadTeams();
+          // Уведомляем другие вкладки об обновлении команд
+          localStorage.setItem('teamsUpdated', Date.now().toString());
+          showNotification('Команда создана!', 'success');
+        } else {
+          throw new Error('Ошибка сохранения команды');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения команды:', error);
+        showNotification('Ошибка сохранения команды', 'error');
+      }
+    }
+    
+    // Редактирование команды
+    function editBaseTeam(teamId) {
+      const team = teams.find(t => t.id === teamId);
+      if (!team) return;
+      
+      // Скрываем все другие формы редактирования
+      document.querySelectorAll('.team-edit-form-inline').forEach(form => {
+        if (!form.classList.contains('hidden')) {
+          form.classList.add('hidden');
+          form.innerHTML = '';
+        }
+      });
+      
+      // Находим элемент команды
+      const teamItem = document.querySelector(`[data-team-id="${teamId}"]`);
+      if (!teamItem) return;
+      
+      // Скрываем информацию команды
+      const teamInfo = document.getElementById(`team-info-${teamId}`);
+      if (teamInfo) {
+        teamInfo.style.display = 'none';
+      }
+      const rosterView = document.getElementById(`team-roster-${teamId}`);
+      if (rosterView) {
+        rosterView.classList.add('hidden');
+      }
+      
+      // Показываем форму редактирования
+      const editForm = document.getElementById(`team-edit-form-${teamId}`);
+      if (editForm) {
+        editForm.classList.remove('hidden');
+        teamItem.classList.add('edit-mode');
+        
+        editForm.innerHTML = `
+          <h4 style="margin-top: 0;">Редактировать команду</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Название команды *</label>
+              <input type="text" id="editTeamName-${teamId}" placeholder="Название команды" maxlength="40" value="${team.name || ''}">
+            </div>
+            <div class="form-group">
+              <label>Город</label>
+              <input type="text" id="editTeamCity-${teamId}" placeholder="Город" maxlength="30" value="${team.city || ''}">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Шорткод</label>
+              <input type="text" id="editTeamShort-${teamId}" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;" value="${team.short || ''}">
+            </div>
+            <div class="form-group">
+              <label>Год рождения</label>
+              <input type="text" id="editTeamBirthYear-${teamId}" placeholder="2014" maxlength="4" inputmode="numeric" value="${team.birthYear || ''}">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Цвет формы</label>
+              <input type="color" id="editTeamKitColor-${teamId}" value="${team.kitColor || '#2b2b2b'}">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Логотип</label>
+              <input type="file" id="editTeamLogo-${teamId}" accept="image/*" onchange="previewEditBaseTeamLogo('${teamId}', this)">
+              ${team.logo ? `<div style="margin-top: 10px;"><img src="${team.logo}" style="max-width: 100px; max-height: 100px;"></div>` : ''}
+              <div id="editTeamLogoPreview-${teamId}" class="logo-preview"></div>
+            </div>
+          </div>
+          <div class="form-buttons">
+            <button class="btn btn-primary" onclick="saveEditBaseTeam('${teamId}')">Сохранить</button>
+            <button class="btn btn-secondary" onclick="cancelEditBaseTeam('${teamId}')">Отмена</button>
+          </div>
+        `;
+      }
+    }
+    
+    // Превью логотипа при редактировании
+    function previewEditBaseTeamLogo(teamId, fileInput) {
+      const preview = document.getElementById(`editTeamLogoPreview-${teamId}`);
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100px; max-height: 100px; margin-top: 10px;">`;
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      }
+    }
+    
+    // Сохранение изменений команды
+    async function saveEditBaseTeam(teamId) {
+      const team = teams.find(t => t.id === teamId);
+      if (!team) return;
+      
+      const name = document.getElementById(`editTeamName-${teamId}`).value.trim();
+      const city = document.getElementById(`editTeamCity-${teamId}`).value.trim();
+      const short = document.getElementById(`editTeamShort-${teamId}`).value.trim().toUpperCase();
+      const birthYear = document.getElementById(`editTeamBirthYear-${teamId}`).value.trim();
+      const kitColor = document.getElementById(`editTeamKitColor-${teamId}`).value;
+      const logoFile = document.getElementById(`editTeamLogo-${teamId}`).files[0];
+      
+      if (!name) {
+        alert('Введите название команды');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('city', city);
+      formData.append('short', short);
+      formData.append('birthYear', birthYear);
+      formData.append('kitColor', kitColor);
+      formData.append('isBaseTeam', 'true');
+      formData.append('players', JSON.stringify(team.players || []));
+      formData.append('staff', JSON.stringify(team.staff || []));
+      
+      if (logoFile) {
+        formData.append('logo', logoFile);
+      } else if (team.logo) {
+        formData.append('logo', team.logo);
+      }
+      
+      try {
+        const response = await fetch(`/api/teams/${teamId}?token=${getToken()}`, {
+          method: 'PUT',
+          body: formData
+        });
+        
+        if (response.ok) {
+          await loadTeams();
+          // Уведомляем другие вкладки об обновлении команд
+          localStorage.setItem('teamsUpdated', Date.now().toString());
+          showNotification('Команда обновлена!', 'success');
+        } else {
+          throw new Error('Ошибка обновления команды');
+        }
+      } catch (error) {
+        console.error('Ошибка обновления команды:', error);
+        showNotification('Ошибка обновления команды', 'error');
+      }
+    }
+    
+    // Отмена редактирования команды
+    function cancelEditBaseTeam(teamId) {
+      const editForm = document.getElementById(`team-edit-form-${teamId}`);
+      if (editForm) {
+        editForm.classList.add('hidden');
+        editForm.innerHTML = '';
+      }
+      
+      const teamItem = document.querySelector(`[data-team-id="${teamId}"]`);
+      if (teamItem) {
+        teamItem.classList.remove('edit-mode');
+      }
+      
+      const teamInfo = document.getElementById(`team-info-${teamId}`);
+      if (teamInfo) {
+        teamInfo.style.display = '';
+      }
+    }
+    
+    // Удаление команды
+    async function deleteBaseTeam(teamId) {
+      if (!confirm('Вы уверены, что хотите удалить эту команду?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/teams/${teamId}?token=${getToken()}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          await loadTeams();
+          // Уведомляем другие вкладки об обновлении команд
+          localStorage.setItem('teamsUpdated', Date.now().toString());
+          showNotification('Команда удалена!', 'success');
+        } else {
+          throw new Error('Ошибка удаления команды');
+        }
+      } catch (error) {
+        console.error('Ошибка удаления команды:', error);
+        showNotification('Ошибка удаления команды', 'error');
+      }
+    }
+    
+    // Переключение отображения состава команды
+    function toggleBaseTeamRoster(teamId, event) {
+      if (event && event.target && event.target.closest('.team-actions')) return;
+      const rosterDiv = document.getElementById(`team-roster-${teamId}`);
+      if (!rosterDiv) return;
+      const isHidden = rosterDiv.classList.contains('hidden');
+      if (isHidden) {
+        renderBaseTeamRosterView(teamId);
+        rosterDiv.classList.remove('hidden');
+      } else {
+        rosterDiv.classList.add('hidden');
+      }
+    }
+    
+    // Отображение состава команды
+    function renderBaseTeamRosterView(teamId) {
+      const team = teams.find(t => t.id === teamId);
+      if (!team) return;
+      
+      const rosterDiv = document.getElementById(`team-roster-${teamId}`);
+      if (!rosterDiv) return;
+      
+      const staff = (team.staff || []).map(s => s.name).join(', ') || 'Не указан';
+      const players = (team.players || []).map(p => `${p.number ? p.number + '. ' : ''}${p.name}`).join(', ') || 'Нет игроков';
+      
+      rosterDiv.innerHTML = `
+        <div class="roster-content">
+          <div class="roster-section">
+            <strong>Тренерский состав:</strong> ${staff}
+          </div>
+          <div class="roster-section">
+            <strong>Игроки:</strong> ${players}
+          </div>
+        </div>
+      `;
+    }
     
     // Загрузка турниров
     async function loadTournaments() {

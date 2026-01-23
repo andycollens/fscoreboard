@@ -16,6 +16,7 @@ const STADIUM_TOKEN = process.env.STADIUM_TOKEN || 'StadiumSecret222';
 const SAVE_PATH = path.join(__dirname, 'state.json');
 const PRESETS_PATH = path.join(__dirname, 'presets.json');
 const TOURNAMENTS_PATH = path.join(__dirname, 'tournaments.json');
+const TEAMS_PATH = path.join(__dirname, 'teams.json');
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const LOGOS_PATH = path.join(__dirname, '..', 'public', 'logos');
 const CUSTOM_STYLES_PATH = path.join(__dirname, 'custom-styles.json');
@@ -122,9 +123,13 @@ const storage = multer.diskStorage({
     // Если передан tournamentId и teamId, используем их для уникальности
     const tournamentId = req.body.tournamentId || req.query.tournamentId || '';
     const teamId = req.body.teamId || req.query.teamId || '';
+    const isBaseTeam = req.body.isBaseTeam === 'true' || req.query.isBaseTeam === 'true';
     
     let filename;
-    if (tournamentId && teamId) {
+    if (isBaseTeam && teamId) {
+      // Для команды из базы команд (без турнира): team_base_teamId_timestamp_random.ext
+      filename = `team_base_${teamId}_${timestamp}_${random}${extension}`;
+    } else if (tournamentId && teamId) {
       // Для редактирования команды в турнире: team_tournamentId_teamId_timestamp_random.ext
       // Имя полностью уникально и не зависит от оригинального имени файла
       // Этот логотип привязан к записи команды и удаляется только с удалением команды
@@ -132,6 +137,9 @@ const storage = multer.diskStorage({
     } else if (tournamentId) {
       // Для новой команды в турнире: team_tournamentId_timestamp_random.ext
       filename = `team_${tournamentId}_${timestamp}_${random}${extension}`;
+    } else if (isBaseTeam) {
+      // Для новой команды в базе (без teamId): team_base_timestamp_random.ext
+      filename = `team_base_${timestamp}_${random}${extension}`;
     } else {
       // Для основной панели управления матчем: main_timestamp_random.ext
       // Логотип главного окна уникален и не связан с записями команд в турнирах
@@ -196,6 +204,9 @@ let matchPresets = [];
 // ====== Турниры ======
 let tournaments = [];
 
+// ====== Команды (база команд) ======
+let teams = [];
+
 // ====== Загрузка состояния ======
 if (fs.existsSync(SAVE_PATH)) {
   try {
@@ -223,6 +234,16 @@ if (fs.existsSync(TOURNAMENTS_PATH)) {
     tournaments = savedTournaments;
   } catch (e) {
     console.error("Ошибка чтения tournaments.json", e);
+  }
+}
+
+// ====== Загрузка команд ======
+if (fs.existsSync(TEAMS_PATH)) {
+  try {
+    const savedTeams = JSON.parse(fs.readFileSync(TEAMS_PATH, 'utf8'));
+    teams = savedTeams;
+  } catch (e) {
+    console.error("Ошибка чтения teams.json", e);
   }
 }
 
@@ -1053,6 +1074,188 @@ app.post('/api/tournaments/:id/teams/reorder', (req, res) => {
   fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
   
   console.log('Teams reordered:', tournamentId);
+  res.json({ success: true });
+});
+
+// ====== API для команд (база команд) ======
+// Получить все команды
+app.get('/api/teams', (req, res) => {
+  // Разрешаем доступ с токеном управления ИЛИ токеном стадиона
+  const token = req.query.token;
+  const actualToken = getActualToken();
+  const actualStadiumToken = getActualStadiumToken();
+  
+  if (token !== actualToken && token !== actualStadiumToken) {
+    return res.status(403).send('Forbidden');
+  }
+  
+  res.json(teams);
+});
+
+// Создать команду
+app.post('/api/teams', upload.single('logo'), (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const sanitizePlayers = (players) => {
+    if (!Array.isArray(players)) return [];
+    return players
+      .map(p => ({
+        name: typeof p?.name === 'string' ? p.name.trim() : '',
+        number: p?.number !== undefined && p?.number !== null ? String(p.number).trim() : ''
+      }))
+      .filter(p => p.name);
+  };
+
+  const sanitizeStaff = (staff) => {
+    if (!Array.isArray(staff)) return [];
+    return staff
+      .map(s => ({
+        name: typeof s?.name === 'string' ? s.name.trim() : ''
+      }))
+      .filter(s => s.name);
+  };
+
+  const sanitizeBirthYear = (value) => {
+    const str = value === undefined || value === null ? '' : String(value).trim();
+    return /^\d{4}$/.test(str) ? str : '';
+  };
+
+  // Обработка логотипа
+  let logoUrl = '';
+  if (req.file) {
+    logoUrl = `/public/logos/${req.file.filename}`;
+  } else if (req.body.logo) {
+    logoUrl = req.body.logo;
+  }
+
+  const newTeam = {
+    id: Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9),
+    name: req.body.name,
+    city: req.body.city || '',
+    short: req.body.short || '',
+    birthYear: sanitizeBirthYear(req.body.birthYear),
+    kitColor: req.body.kitColor || '#2b2b2b',
+    logo: logoUrl,
+    players: sanitizePlayers(req.body.players ? JSON.parse(req.body.players) : []),
+    staff: sanitizeStaff(req.body.staff ? JSON.parse(req.body.staff) : [])
+  };
+  
+  teams.push(newTeam);
+  fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
+  
+  console.log('Team created:', newTeam.id);
+  res.json(newTeam);
+});
+
+// Обновить команду
+app.put('/api/teams/:id', upload.single('logo'), (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const teamId = req.params.id;
+  const teamIndex = teams.findIndex(t => t.id === teamId);
+  
+  if (teamIndex === -1) {
+    return res.status(404).json({ error: 'Team not found' });
+  }
+  
+  const existingTeam = teams[teamIndex];
+  
+  // Обработка логотипа
+  let logoUrl = existingTeam.logo || '';
+  if (req.file) {
+    // Новый файл загружен - удаляем старый если это был team_ логотип
+    if (existingTeam.logo) {
+      const oldFilename = existingTeam.logo.split('/').pop();
+      if (oldFilename && oldFilename.startsWith('team_')) {
+        const oldLogoPath = path.join(LOGOS_PATH, oldFilename);
+        if (fs.existsSync(oldLogoPath)) {
+          try {
+            fs.unlinkSync(oldLogoPath);
+            console.log('Deleted old team logo:', oldLogoPath);
+          } catch (error) {
+            console.error('Error deleting old team logo:', error);
+          }
+        }
+      }
+    }
+    logoUrl = `/public/logos/${req.file.filename}`;
+  } else if (req.body.logo !== undefined) {
+    logoUrl = req.body.logo || '';
+  }
+
+  const sanitizePlayers = (players) => {
+    if (!Array.isArray(players)) return existingTeam.players || [];
+    return players
+      .map(p => ({
+        name: typeof p?.name === 'string' ? p.name.trim() : '',
+        number: p?.number !== undefined && p?.number !== null ? String(p.number).trim() : ''
+      }))
+      .filter(p => p.name);
+  };
+
+  const sanitizeStaff = (staff) => {
+    if (!Array.isArray(staff)) return existingTeam.staff || [];
+    return staff
+      .map(s => ({
+        name: typeof s?.name === 'string' ? s.name.trim() : ''
+      }))
+      .filter(s => s.name);
+  };
+
+  const sanitizeBirthYear = (value) => {
+    const str = value === undefined || value === null ? '' : String(value).trim();
+    return /^\d{4}$/.test(str) ? str : '';
+  };
+  
+  teams[teamIndex] = {
+    ...existingTeam,
+    name: req.body.name,
+    city: req.body.city || '',
+    short: req.body.short || '',
+    birthYear: sanitizeBirthYear(req.body.birthYear),
+    kitColor: req.body.kitColor || '#2b2b2b',
+    logo: logoUrl,
+    players: sanitizePlayers(req.body.players ? JSON.parse(req.body.players) : existingTeam.players),
+    staff: sanitizeStaff(req.body.staff ? JSON.parse(req.body.staff) : existingTeam.staff)
+  };
+  
+  fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
+  
+  console.log('Team updated:', teamId);
+  res.json(teams[teamIndex]);
+});
+
+// Удалить команду
+app.delete('/api/teams/:id', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const teamId = req.params.id;
+  const team = teams.find(t => t.id === teamId);
+  
+  if (!team) {
+    return res.status(404).json({ error: 'Team not found' });
+  }
+  
+  // Удаляем логотип команды если есть (ТОЛЬКО логотипы команд team_, не пресетов preset_)
+  if (team.logo) {
+    const filename = team.logo.split('/').pop();
+    if (filename && filename.startsWith('team_')) {
+      const logoPath = path.join(LOGOS_PATH, filename);
+      if (fs.existsSync(logoPath)) {
+        try {
+          fs.unlinkSync(logoPath);
+          console.log('Deleted team logo:', logoPath);
+        } catch (error) {
+          console.error('Error deleting team logo:', error);
+        }
+      }
+    }
+  }
+  
+  teams = teams.filter(t => t.id !== teamId);
+  fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
+  
+  console.log('Team deleted:', teamId);
   res.json({ success: true });
 });
 

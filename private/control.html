@@ -4079,6 +4079,7 @@
     });
     
     document.addEventListener('DOMContentLoaded', function() {
+      loadTeams();
       loadTournaments();
       setupControls();
       setupPenaltyControls();
@@ -4096,6 +4097,21 @@
     });
     
     // Загрузка турниров
+    // Загрузка команд из базы
+    let teams = [];
+    async function loadTeams() {
+      try {
+        const response = await fetch(`/api/teams?token=${getToken()}`);
+        if (response.ok) {
+          teams = await response.json();
+        } else {
+          console.error('Ошибка загрузки команд');
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки команд:', error);
+      }
+    }
+    
     async function loadTournaments() {
       try {
         const response = await fetch(`/api/tournaments?token=${getToken()}`);
@@ -4238,8 +4254,9 @@
         return;
       }
       
-      if (!tournament.teams || tournament.teams.length < 2) {
-        alert('В турнире должно быть минимум 2 команды для создания пресета');
+      // Проверяем наличие команд в базе
+      if (!teams || teams.length < 2) {
+        alert('В базе команд должно быть минимум 2 команды для создания пресета. Создайте команды в настройках.');
         return;
       }
       
@@ -4287,7 +4304,7 @@
       }
       
       // Заполняем команды турнира в этой форме
-      fillTeamsFromTournamentForForm(tournament, form);
+      fillTeamsFromBaseForForm(form);
       
       // Находим последний созданный пресет из выбранного дня для получения времени по умолчанию
       const tournamentPresets = presets.filter(p => p.tournamentId === tournamentId && (!dayDate || p.matchDate === dayDate));
@@ -4345,9 +4362,9 @@
         team2Select.appendChild(option2);
       });
     }
-    // Заполнение команд из турнира для конкретной формы
-    function fillTeamsFromTournamentForForm(tournament, formContainer) {
-      if (!tournament || !tournament.teams || !formContainer) return;
+    // Заполнение команд из базы команд для конкретной формы
+    function fillTeamsFromBaseForForm(formContainer) {
+      if (!formContainer || !teams || teams.length === 0) return;
       
       // Заполняем селекты команд
       const team1Select = formContainer.querySelector('.addPresetTeam1Select');
@@ -4358,7 +4375,7 @@
       team1Select.innerHTML = '<option value="">-- Выберите команду --</option>';
       team2Select.innerHTML = '<option value="">-- Выберите команду --</option>';
       
-      tournament.teams.forEach(team => {
+      teams.forEach(team => {
         const option1 = document.createElement('option');
         option1.value = team.id;
         option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
@@ -4373,60 +4390,51 @@
       });
     }
     
-    // Обработка выбора турнира
+    // Обработка выбора турнира (теперь только для привязки пресета к турниру, команды выбираются из базы)
     function onTournamentSelected() {
       const tournamentId = document.getElementById('addPresetTournament').value;
       
-      if (!tournamentId) {
-        // Очищаем селекты команд
-        document.getElementById('addPresetTeam1Select').innerHTML = '<option value="">-- Выберите команду --</option>';
-        document.getElementById('addPresetTeam2Select').innerHTML = '<option value="">-- Выберите команду --</option>';
-        return;
-      }
-      
       // Сохраняем выбор в localStorage
-      localStorage.setItem('lastSelectedTournament', tournamentId);
-      
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament || !tournament.teams) {
-        return;
+      if (tournamentId) {
+        localStorage.setItem('lastSelectedTournament', tournamentId);
       }
       
-      // Заполняем селекты команд
+      // Команды теперь всегда загружаются из базы команд, а не из турнира
+      // Заполняем селекты команд из базы
       const team1Select = document.getElementById('addPresetTeam1Select');
       const team2Select = document.getElementById('addPresetTeam2Select');
+      
+      if (!team1Select || !team2Select) return;
       
       team1Select.innerHTML = '<option value="">-- Выберите команду --</option>';
       team2Select.innerHTML = '<option value="">-- Выберите команду --</option>';
       
-      tournament.teams.forEach(team => {
-        const option1 = document.createElement('option');
-        option1.value = team.id;
-        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
-        team1Select.appendChild(option1);
-        
-        const option2 = document.createElement('option');
-        option2.value = team.id;
-        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
-        team2Select.appendChild(option2);
-      });
+      if (teams && teams.length > 0) {
+        teams.forEach(team => {
+          const option1 = document.createElement('option');
+          option1.value = team.id;
+          option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+          team1Select.appendChild(option1);
+          
+          const option2 = document.createElement('option');
+          option2.value = team.id;
+          option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+          team2Select.appendChild(option2);
+        });
+      }
     }
     
-    // Обработка выбора команды 1
+    // Обработка выбора команды 1 (теперь из базы команд)
     function onTeam1Selected() {
-      const tournamentId = document.getElementById('addPresetTournament').value;
       const teamId = document.getElementById('addPresetTeam1Select').value;
       
-      if (!tournamentId || !teamId) {
+      if (!teamId) {
         hideTeam1Details();
         updatePresetName();
         return;
       }
       
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament || !tournament.teams) return;
-      
-      const team = tournament.teams.find(t => t.id === teamId);
+      const team = teams.find(t => t.id === teamId);
       if (!team) return;
       
       selectedTeams.team1 = team;
@@ -4435,21 +4443,17 @@
       updatePresetName(); // Обновляем имя сразу при выборе команды
     }
     
-    // Обработка выбора команды 2
+    // Обработка выбора команды 2 (теперь из базы команд)
     function onTeam2Selected() {
-      const tournamentId = document.getElementById('addPresetTournament').value;
       const teamId = document.getElementById('addPresetTeam2Select').value;
       
-      if (!tournamentId || !teamId) {
+      if (!teamId) {
         hideTeam2Details();
         updatePresetName();
         return;
       }
       
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament || !tournament.teams) return;
-      
-      const team = tournament.teams.find(t => t.id === teamId);
+      const team = teams.find(t => t.id === teamId);
       if (!team) return;
       
       selectedTeams.team2 = team;
@@ -4533,20 +4537,14 @@
       let team1Name = 'Команда 1';
       let team2Name = 'Команда 2';
       
-      if (team1Select && team1Select.value && tournamentId) {
-        const tournament = tournaments.find(t => t.id === tournamentId);
-        if (tournament && tournament.teams) {
-          const team = tournament.teams.find(t => t.id === team1Select.value);
-          if (team) team1Name = team.name;
-        }
+      if (team1Select && team1Select.value) {
+        const team = teams.find(t => t.id === team1Select.value);
+        if (team) team1Name = team.name;
       }
       
-      if (team2Select && team2Select.value && tournamentId) {
-        const tournament = tournaments.find(t => t.id === tournamentId);
-        if (tournament && tournament.teams) {
-          const team = tournament.teams.find(t => t.id === team2Select.value);
-          if (team) team2Name = team.name;
-        }
+      if (team2Select && team2Select.value) {
+        const team = teams.find(t => t.id === team2Select.value);
+        if (team) team2Name = team.name;
       }
       
       titleElement.textContent = `${matchTime} / ${team1Name} - ${team2Name}`;
@@ -4613,7 +4611,7 @@
         return;
       }
       
-      const team = tournament.teams.find(t => t.id === teamId);
+      const team = teams.find(t => t.id === teamId);
       if (!team) {
         console.error('Team not found:', teamId);
         return;
@@ -4751,7 +4749,7 @@
         return;
       }
       
-      const team = tournament.teams.find(t => t.id === teamId);
+      const team = teams.find(t => t.id === teamId);
       if (!team) {
         console.error('Team not found:', teamId);
         return;
@@ -5715,11 +5713,11 @@
           // Находим команды из турнира для получения актуальных логотипов
           let team1 = null;
           let team2 = null;
-          if (preset.team1Id && tournament.teams) {
-            team1 = tournament.teams.find(t => t.id === preset.team1Id);
+          if (preset.team1Id && teams) {
+            team1 = teams.find(t => t.id === preset.team1Id);
           }
-          if (preset.team2Id && tournament.teams) {
-            team2 = tournament.teams.find(t => t.id === preset.team2Id);
+          if (preset.team2Id && teams) {
+            team2 = teams.find(t => t.id === preset.team2Id);
           }
           
           // Используем актуальные логотипы из команд турнира, если команды найдены
@@ -5912,12 +5910,12 @@
       
       // Если ID не сохранены, пытаемся найти по именам
       if (!currentTeam1Id && preset.team1Name) {
-        const team = tournament.teams.find(t => t.name === preset.team1Name);
+        const team = teams.find(t => t.name === preset.team1Name);
         if (team) currentTeam1Id = team.id;
       }
       
       if (!currentTeam2Id && preset.team2Name) {
-        const team = tournament.teams.find(t => t.name === preset.team2Name);
+        const team = teams.find(t => t.name === preset.team2Name);
         if (team) currentTeam2Id = team.id;
       }
       
@@ -6004,7 +6002,7 @@
       // Устанавливаем начальные значения для логотипов и цветов
       // Показываем логотип пресета, если он есть, иначе логотип команды
       if (currentTeam1Id) {
-        selectedTeam1 = tournament.teams.find(t => t.id === currentTeam1Id);
+        selectedTeam1 = teams.find(t => t.id === currentTeam1Id);
         if (team1LogoPreview) {
           // Сначала проверяем, есть ли у пресета свой preset_ логотип
           if (preset.team1Logo && preset.team1Logo.includes('preset_')) {
@@ -6016,7 +6014,7 @@
       }
       
       if (currentTeam2Id) {
-        selectedTeam2 = tournament.teams.find(t => t.id === currentTeam2Id);
+        selectedTeam2 = teams.find(t => t.id === currentTeam2Id);
         if (team2LogoPreview) {
           // Сначала проверяем, есть ли у пресета свой preset_ логотип
           if (preset.team2Logo && preset.team2Logo.includes('preset_')) {
@@ -6096,7 +6094,7 @@
       const team1Select = editForm.querySelector('.editPresetTeam1SelectInline');
       const team2Select = editForm.querySelector('.editPresetTeam2SelectInline');
       
-      tournament.teams.forEach(team => {
+      teams.forEach(team => {
         const option1 = document.createElement('option');
         option1.value = team.id;
         option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
@@ -6136,19 +6134,13 @@
       let team2Name = 'Команда 2';
       
       if (team1Select.value) {
-        const tournament = tournaments.find(t => t.id === tournamentId);
-        if (tournament && tournament.teams) {
-          const team = tournament.teams.find(t => t.id === team1Select.value);
-          if (team) team1Name = team.name;
-        }
+        const team = teams.find(t => t.id === team1Select.value);
+        if (team) team1Name = team.name;
       }
       
       if (team2Select.value) {
-        const tournament = tournaments.find(t => t.id === tournamentId);
-        if (tournament && tournament.teams) {
-          const team = tournament.teams.find(t => t.id === team2Select.value);
-          if (team) team2Name = team.name;
-        }
+        const team = teams.find(t => t.id === team2Select.value);
+        if (team) team2Name = team.name;
       }
       
       titleElement.textContent = `${matchTime} / ${team1Name} - ${team2Name}`;
@@ -6308,8 +6300,8 @@
       const team1Id = team1Select.value;
       const team2Id = team2Select.value;
       
-      const team1 = tournament.teams.find(t => t.id === team1Id);
-      const team2 = tournament.teams.find(t => t.id === team2Id);
+      const team1 = teams.find(t => t.id === team1Id);
+      const team2 = teams.find(t => t.id === team2Id);
       
       if (!team1 || !team2) {
         alert('Команды не найдены');
@@ -6570,15 +6562,15 @@
       
       if (preset.tournamentId) {
         const tournament = tournaments.find(t => t.id === preset.tournamentId);
-        if (tournament && tournament.teams) {
+        if (teams) {
           if (preset.team1Id) {
-            const team1 = tournament.teams.find(t => t.id === preset.team1Id);
+            const team1 = teams.find(t => t.id === preset.team1Id);
             if (team1 && team1.logo) {
               team1Logo = team1.logo;
             }
           }
           if (preset.team2Id) {
-            const team2 = tournament.teams.find(t => t.id === preset.team2Id);
+            const team2 = teams.find(t => t.id === preset.team2Id);
             if (team2 && team2.logo) {
               team2Logo = team2.logo;
             }
@@ -6762,8 +6754,8 @@
         return;
       }
       
-      const team1 = tournament.teams.find(t => t.id === team1Id);
-      const team2 = tournament.teams.find(t => t.id === team2Id);
+      const team1 = teams.find(t => t.id === team1Id);
+      const team2 = teams.find(t => t.id === team2Id);
       
       if (!team1 || !team2) {
         alert('Команды не найдены');
@@ -7493,7 +7485,7 @@
         return;
       }
 
-      const team = tournament.teams.find(t => String(t.id) === parsed.teamId);
+      const team = teams.find(t => String(t.id) === parsed.teamId);
       if (!team) {
         console.warn('Команда не найдена в выбранном турнире:', parsed.teamId);
         return;
@@ -7618,20 +7610,18 @@
       const normalizedName = name.trim().toLowerCase();
       const normalizedCity = city ? city.trim().toLowerCase() : '';
 
-      for (const tournament of tournaments) {
-        if (!tournament || !Array.isArray(tournament.teams)) continue;
-        const team = tournament.teams.find(t => {
-          if (!t || !t.name) return false;
-          const teamName = t.name.trim().toLowerCase();
-          if (teamName !== normalizedName) return false;
-          if (!normalizedCity) return true;
-          const teamCity = t.city ? t.city.trim().toLowerCase() : '';
-          return teamCity === normalizedCity;
-        });
+      // Ищем команду в базе команд
+      const team = teams.find(t => {
+        if (!t || !t.name) return false;
+        const teamName = t.name.trim().toLowerCase();
+        if (teamName !== normalizedName) return false;
+        if (!normalizedCity) return true;
+        const teamCity = t.city ? t.city.trim().toLowerCase() : '';
+        return teamCity === normalizedCity;
+      });
 
-        if (team) {
-          return { tournamentId: String(tournament.id), team };
-        }
+      if (team) {
+        return { team };
       }
 
       return null;
