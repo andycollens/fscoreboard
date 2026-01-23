@@ -2277,8 +2277,11 @@
         return;
       }
       
+      console.log(`Updating display for tournament ${tournamentId}, selected teams:`, selectedTeamIds.length);
+      
       if (selectedTeamIds.length === 0) {
         listContainer.style.display = 'none';
+        listContainer.style.visibility = 'hidden';
         return;
       }
       
