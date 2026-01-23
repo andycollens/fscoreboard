@@ -4079,21 +4079,22 @@
     });
     
     document.addEventListener('DOMContentLoaded', function() {
-      loadTeams();
-      loadTournaments();
-      setupControls();
-      setupPenaltyControls();
-      setupEditFormHandlers();
-      setupTeamUpdateListener(); // Слушаем обновления команд из настроек
-      
-      // Простая проверка - если данные не пришли, запрашиваем через небольшую задержку
-      setTimeout(() => {
-        const team1NameEl = document.getElementById('team1Name');
-        if (team1NameEl && !team1NameEl.value) {
-          console.log('Fields are empty, requesting initial state from server...');
-          socket.emit('getCurrentState');
-        }
-      }, 500);
+      loadTeams().then(() => {
+        loadTournaments();
+        setupControls();
+        setupPenaltyControls();
+        setupEditFormHandlers();
+        setupTeamUpdateListener(); // Слушаем обновления команд из настроек
+        
+        // Простая проверка - если данные не пришли, запрашиваем через небольшую задержку
+        setTimeout(() => {
+          const team1NameEl = document.getElementById('team1Name');
+          if (team1NameEl && !team1NameEl.value) {
+            console.log('Fields are empty, requesting initial state from server...');
+            socket.emit('getCurrentState');
+          }
+        }, 500);
+      });
     });
     
     // Загрузка турниров
@@ -4139,54 +4140,68 @@
     
     // Слушаем обновления команд из настроек (через localStorage)
     function setupTeamUpdateListener() {
+      let lastTeamsUpdateTime = localStorage.getItem('lastTeamsUpdateTime') || '0';
+      
+      // Проверяем обновления при загрузке страницы
+      checkTeamsUpdate();
+      
       window.addEventListener('storage', (e) => {
-        if (e.key === 'teamUpdated' && e.newValue) {
-          try {
-            const data = JSON.parse(e.newValue);
-            console.log('Team updated in settings, reloading presets:', data);
-            // Перезагружаем турниры и пресеты для обновления логотипов
-            loadTournaments().then(() => {
-              loadPresets().then(() => {
-                renderTournamentPresets();
-                ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
-                  const select = document.getElementById(id);
-                  if (select) enhanceCustomTeamSelect(select);
-                });
-              });
-            });
-          } catch (error) {
-            console.error('Error parsing team update event:', error);
-          }
+        if (e.key === 'teamsUpdated' && e.newValue) {
+          console.log('Teams updated in settings (storage event), reloading teams and presets');
+          reloadTeamsAndPresets();
         }
       });
       
       // Также проверяем при фокусе страницы (для обновления в той же вкладке)
       window.addEventListener('focus', () => {
-        const teamUpdated = localStorage.getItem('teamUpdated');
-        if (teamUpdated) {
-          try {
-            const data = JSON.parse(teamUpdated);
-            // Проверяем, не слишком ли старое обновление (больше 5 секунд назад)
-            if (data.timestamp && (Date.now() - data.timestamp) < 5000) {
-              console.log('Team updated recently, reloading presets');
-              loadTournaments().then(() => {
-                loadPresets().then(() => {
-                  renderTournamentPresets();
-                  // После перезагрузки пресетов нужно обновить кастомные селекты
-                  ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
-                    const select = document.getElementById(id);
-                    if (select) enhanceCustomTeamSelect(select);
-                  });
-                });
-              });
-              // Очищаем флаг обновления
-              localStorage.removeItem('teamUpdated');
-            }
-          } catch (error) {
-            console.error('Error checking team update:', error);
-          }
-        }
+        checkTeamsUpdate();
       });
+      
+      // Периодическая проверка (каждые 2 секунды)
+      setInterval(() => {
+        checkTeamsUpdate();
+      }, 2000);
+      
+      function checkTeamsUpdate() {
+        const teamsUpdated = localStorage.getItem('teamsUpdated');
+        if (teamsUpdated && teamsUpdated !== lastTeamsUpdateTime) {
+          console.log('Teams updated in settings, reloading teams and presets');
+          lastTeamsUpdateTime = teamsUpdated;
+          localStorage.setItem('lastTeamsUpdateTime', lastTeamsUpdateTime);
+          reloadTeamsAndPresets();
+        }
+      }
+      
+      function reloadTeamsAndPresets() {
+        // Перезагружаем команды
+        loadTeams().then(() => {
+          // Обновляем выпадающие списки команд
+          populateMainTeamPresetSelects();
+          // Обновляем формы создания пресетов
+          updateAllPresetForms();
+          // Перезагружаем турниры и пресеты
+          loadTournaments().then(() => {
+            loadPresets().then(() => {
+              renderTournamentPresets();
+              // Обновляем кастомные селекты
+              ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
+                const select = document.getElementById(id);
+                if (select) enhanceCustomTeamSelect(select);
+              });
+            });
+          });
+        });
+      }
+      
+      function updateAllPresetForms() {
+        // Обновляем все формы создания пресетов
+        document.querySelectorAll('.add-preset-form').forEach(form => {
+          const tournamentId = form.dataset.tournamentId;
+          if (tournamentId) {
+            fillTeamsFromBaseForForm(form);
+          }
+        });
+      }
     }
     
     // Отображение турниров для создания пресетов
