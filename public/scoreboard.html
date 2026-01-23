@@ -36,6 +36,21 @@
       background: transparent !important;
       font-size: 24px;
       gap: 0;
+      clip-path: inset(0 100% 0 0);
+      animation: none;
+    }
+
+    body.background-loaded .scoreboard-row {
+      animation: slideRightBackground 0.5s ease-out forwards;
+    }
+
+    @keyframes slideRightBackground {
+      from {
+        clip-path: inset(0 100% 0 0);
+      }
+      to {
+        clip-path: inset(0 0 0 0);
+      }
     }
     .section {
       display: flex;
@@ -224,6 +239,26 @@
       padding: 0 !important;
       border: none !important;
     }
+
+    .scoreboard-row span,
+    .scoreboard-row .divider-logo {
+      opacity: 0;
+      animation: none;
+    }
+
+    body.content-ready .scoreboard-row span,
+    body.content-ready .scoreboard-row .divider-logo {
+      animation: fadeInContent 0.4s ease-in 0.5s forwards;
+    }
+
+    @keyframes fadeInContent {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -249,6 +284,46 @@
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    // Ждем загрузки всех изображений перед началом анимации
+    function waitForImages() {
+      const images = [];
+      const logoImg = document.getElementById('dividerLogoImg');
+      
+      if (logoImg && logoImg.src) {
+        const img = new Image();
+        img.src = logoImg.src;
+        images.push(new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = resolve; // Продолжаем даже если изображение не загрузилось
+        }));
+      }
+      
+      // Также проверяем возможные логотипы из стилей
+      const possibleLogos = [
+        '/public/img/iskracup_scoreboard_logo.png',
+        '/public/img/winterleague_scoreboard_logo.png'
+      ];
+      
+      possibleLogos.forEach(src => {
+        const img = new Image();
+        img.src = src;
+        images.push(new Promise((resolve) => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        }));
+      });
+      
+      Promise.all(images).then(() => {
+        // Все изображения загружены, начинаем анимацию фона
+        document.body.classList.add('background-loaded');
+        
+        // После завершения анимации фона начинаем анимацию контента
+        setTimeout(() => {
+          document.body.classList.add('content-ready');
+        }, 500); // 0.5 секунды - время анимации фона
+      });
+    }
+
     // Default colors and team names for the scoreboard
     const defaultKitColor = "#2b2b2b";
     const defaultTeamShort = "???";
@@ -394,9 +469,13 @@
 
     // Load style on page load
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', loadGraphicStyle);
+      document.addEventListener('DOMContentLoaded', () => {
+        loadGraphicStyle();
+        waitForImages();
+      });
     } else {
       loadGraphicStyle();
+      waitForImages();
     }
   </script>
 </body>
