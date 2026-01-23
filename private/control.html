@@ -7800,11 +7800,6 @@
       }
       return 0;
     }
-
-    function getToken() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('token') || 'MySecret111';
-    }
     
     // Функция показа уведомлений
     function showNotification(message, type = 'info') {
