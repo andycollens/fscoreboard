@@ -36,21 +36,40 @@
       background: transparent !important;
       font-size: 24px;
       gap: 0;
-      clip-path: inset(0 100% 0 0);
-      animation: none;
+      position: relative;
+      overflow: visible;
     }
 
-    body.background-loaded .scoreboard-row {
+    .scoreboard-row::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+      transform-origin: left center;
+      transform: scaleX(0);
+      animation: none;
+      z-index: -1;
+    }
+
+    body.background-loaded .scoreboard-row::before {
       animation: slideRightBackground 0.5s ease-out forwards;
     }
 
     @keyframes slideRightBackground {
       from {
-        clip-path: inset(0 100% 0 0);
+        transform: scaleX(0);
       }
       to {
-        clip-path: inset(0 0 0 0);
+        transform: scaleX(1);
       }
+    }
+
+    .divider-section {
+      overflow: visible !important;
+      z-index: 1;
     }
     .section {
       display: flex;
@@ -248,7 +267,7 @@
 
     body.content-ready .scoreboard-row span,
     body.content-ready .scoreboard-row .divider-logo {
-      animation: fadeInContent 0.4s ease-in 0.5s forwards;
+      animation: fadeInContent 0.2s ease-in 0.5s forwards;
     }
 
     @keyframes fadeInContent {
