@@ -818,26 +818,29 @@
     .main-mode-switcher {
       display: flex;
       justify-content: center;
-      margin-bottom: 8px;
+      margin: 10px 0;
+      padding: 0;
+      position: relative;
+      z-index: 1;
     }
     
     .main-mode-buttons {
       display: inline-flex;
       gap: 0;
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
-      border: 1px solid #d0d0d0;
-      background: #f5f5f5;
+      border: 1px solid #d8e3f6;
+      background: #f8fbff;
     }
     
     .main-mode-btn {
       border: none;
       border-radius: 0;
-      background: #f5f5f5;
-      color: #888;
+      background: #f8fbff;
+      color: #61708a;
       font-weight: 400;
       font-size: 11px;
-      padding: 4px 10px;
+      padding: 5px 12px;
       cursor: pointer;
       box-shadow: none;
       transition: all 0.15s;
@@ -846,25 +849,25 @@
     }
     
     .main-mode-btn:first-child {
-      border-top-left-radius: 6px;
-      border-bottom-left-radius: 6px;
-      border-right: 1px solid #d0d0d0;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
     }
     
     .main-mode-btn:last-child {
-      border-top-right-radius: 6px;
-      border-bottom-right-radius: 6px;
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
     }
     
     .main-mode-btn.active {
-      background: #d0d0d0;
-      color: #666;
-      font-weight: 500;
+      background: #338af3;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
     }
     
     .main-mode-btn:not(.active):hover {
-      background: #e8e8e8;
-      color: #777;
+      background: #eef4ff;
+      color: #4c5d7a;
     }
     
     .timer-row { 
@@ -2971,12 +2974,6 @@
 
   <!-- Управление табло -->
   <div class="camera-content">
-    <div class="main-mode-switcher">
-      <div class="main-mode-buttons">
-        <button type="button" class="main-mode-btn" data-mode="scoreboard" id="mainModeScoreboardBtn">Табло</button>
-        <button type="button" class="main-mode-btn" data-mode="rosters" id="mainModeRostersBtn">Составы</button>
-      </div>
-    </div>
     <div class="timer-row">
       <button id="playPauseBtn" class="playpause-btn" title="Пуск/Пауза">
         <svg id="playPauseIcon" width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -3108,6 +3105,14 @@
         </div>
         <div id="penaltySeriesRows"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Переключатель режимов табло (на фоне между блоками) -->
+  <div class="main-mode-switcher">
+    <div class="main-mode-buttons">
+      <button type="button" class="main-mode-btn" data-mode="scoreboard" id="mainModeScoreboardBtn">Табло</button>
+      <button type="button" class="main-mode-btn" data-mode="rosters" id="mainModeRostersBtn">Составы</button>
     </div>
   </div>
 
