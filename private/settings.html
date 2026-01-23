@@ -1758,7 +1758,7 @@
           ${teams.length > 0 ? teams.map(team => {
             const isSelected = selectedTeamIds.includes(team.id);
             return `
-              <div style="border: 2px solid ${isSelected ? '#338af3' : '#ddd'}; border-radius: 8px; padding: 10px; cursor: pointer; background: ${isSelected ? '#e3f2fd' : '#fff'};" 
+              <div data-team-id="${team.id}" style="border: 2px solid ${isSelected ? '#338af3' : '#ddd'}; border-radius: 8px; padding: 10px; cursor: pointer; background: ${isSelected ? '#e3f2fd' : '#fff'}; transition: all 0.2s;" 
                    onclick="toggleTeamSelection('${tournamentId}', '${team.id}')">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   ${team.logo ? `<img src="${team.logo}" style="width: 40px; height: 40px; object-fit: contain;">` : '<div style="width: 40px; height: 40px; background: #ddd; border-radius: 4px;"></div>'}
@@ -1766,7 +1766,9 @@
                     <div style="font-weight: 600; font-size: 14px;">${team.name}</div>
                     <div style="font-size: 12px; color: #666;">${team.city || ''}</div>
                   </div>
-                  ${isSelected ? '<div style="color: #338af3; font-size: 20px;">✓</div>' : ''}
+                  <div style="min-width: 24px; text-align: right;">
+                    ${isSelected ? '<div style="color: #338af3; font-size: 20px;">✓</div>' : ''}
+                  </div>
                 </div>
               </div>
             `;
@@ -1789,21 +1791,28 @@
       }
       
       const index = tournamentSelectedTeams[tournamentId].indexOf(teamId);
-      if (index > -1) {
+      const wasSelected = index > -1;
+      
+      if (wasSelected) {
         tournamentSelectedTeams[tournamentId].splice(index, 1);
       } else {
         tournamentSelectedTeams[tournamentId].push(teamId);
       }
       
-      // Обновляем отображение
-      const teamItem = document.querySelector(`#teamSelectionList-${tournamentId} [onclick*="'${teamId}'"]`);
+      // Обновляем отображение - находим элемент команды по data-атрибуту
+      const teamItem = document.querySelector(`#teamSelectionList-${tournamentId} [data-team-id="${teamId}"]`);
       if (teamItem) {
-        const isSelected = tournamentSelectedTeams[tournamentId].includes(teamId);
-        teamItem.style.borderColor = isSelected ? '#338af3' : '#ddd';
-        teamItem.style.background = isSelected ? '#e3f2fd' : '#fff';
-        const checkmark = teamItem.querySelector('div:last-child');
-        if (checkmark) {
-          checkmark.innerHTML = isSelected ? '<div style="color: #338af3; font-size: 20px;">✓</div>' : '';
+        const isNowSelected = tournamentSelectedTeams[tournamentId].includes(teamId);
+        teamItem.style.borderColor = isNowSelected ? '#338af3' : '#ddd';
+        teamItem.style.background = isNowSelected ? '#e3f2fd' : '#fff';
+        
+        // Находим контейнер с галочкой (последний div внутри первого div)
+        const innerContainer = teamItem.querySelector('div:first-child');
+        if (innerContainer) {
+          const checkmarkContainer = innerContainer.querySelector('div:last-child');
+          if (checkmarkContainer) {
+            checkmarkContainer.innerHTML = isNowSelected ? '<div style="color: #338af3; font-size: 20px;">✓</div>' : '';
+          }
         }
       }
     }
