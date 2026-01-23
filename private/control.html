@@ -6252,14 +6252,16 @@
         
         if (!wasManuallyEdited) {
           // Берем цвет из выбранной команды и обновляем
-          colorInput.value = team.kitColor || '#2b2b2b';
+          const teamColor = team.kitColor || '#2b2b2b';
+          colorInput.value = teamColor;
           // Сбрасываем флаг manualEdit, так как цвет взят из команды
           colorInput.dataset.manualEdit = undefined;
           colorInput.dataset.userEdited = undefined;
           // Принудительно обновляем визуальное отображение
-          setTimeout(() => {
-            colorInput.style.backgroundColor = colorInput.value;
-          }, 0);
+          colorInput.style.backgroundColor = teamColor;
+          // Триггерим событие change для обновления других зависимых элементов
+          colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+          colorInput.dispatchEvent(new Event('change', { bubbles: true }));
         }
       }
       
