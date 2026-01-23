@@ -549,6 +549,9 @@
         body.rosters-mode .roster-team1,
         body.rosters-mode .roster-team2 {
             display: flex !important;
+            position: relative !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
             flex-direction: column;
             width: 100%;
             height: 100%;
@@ -1041,16 +1044,16 @@
             box-sizing: border-box;
         }
 
-        .rosters-mode .roster-list {
+        body.rosters-mode .roster-list {
             display: block;
             width: 100%;
         }
 
-        .rosters-mode .score1-section .roster-list {
+        body.rosters-mode .score1-section .roster-list {
             text-align: left;
         }
 
-        .rosters-mode .score2-section .roster-list {
+        body.rosters-mode .score2-section .roster-list {
             text-align: right;
         }
 
@@ -1063,11 +1066,11 @@
             page-break-inside: avoid;
         }
 
-        .rosters-mode .score1-section .roster-title {
+        body.rosters-mode .score1-section .roster-title {
             text-align: left;
         }
 
-        .rosters-mode .score2-section .roster-title {
+        body.rosters-mode .score2-section .roster-title {
             text-align: right;
         }
 
@@ -1081,11 +1084,11 @@
             page-break-inside: avoid;
         }
 
-        .rosters-mode .score1-section .roster-lines {
+        body.rosters-mode .score1-section .roster-lines {
             text-align: left;
         }
 
-        .rosters-mode .score2-section .roster-lines {
+        body.rosters-mode .score2-section .roster-lines {
             text-align: right;
         }
 
@@ -1101,7 +1104,10 @@
 
         .roster-team1,
         .roster-team2 {
-            display: none;
+            display: none !important;
+            position: absolute;
+            visibility: hidden;
+            pointer-events: none;
         }
 
         .timer {
@@ -2214,14 +2220,16 @@ body.penalty-mode .penalty-score {
                 );
             }
 
-            // Обновляем списки для режима "Составы"
-            renderRostersMode(
-                rosterTeam1Coach,
-                rosterTeam1Players,
-                data.team1Staff || data.staff1 || [],
-                data.team1Players || data.players1 || [],
-                false
-            );
+            // Обновляем списки для режима "Составы" (только в режиме rosters)
+            if (currentMode === 'rosters' && rosterTeam1Coach && rosterTeam1Players) {
+                renderRostersMode(
+                    rosterTeam1Coach,
+                    rosterTeam1Players,
+                    data.team1Staff || data.staff1 || [],
+                    data.team1Players || data.players1 || [],
+                    false
+                );
+            }
 
             const stadiumTeam1Short = document.getElementById('stadiumTeam1');
             const stadiumTeam2Short = document.getElementById('stadiumTeam2');
@@ -2263,27 +2271,29 @@ body.penalty-mode .penalty-score {
                 );
             }
 
-            // Обновляем списки для режима "Составы"
-            renderRostersMode(
-                rosterTeam2Coach,
-                rosterTeam2Players,
-                data.team2Staff || data.staff2 || [],
-                data.team2Players || data.players2 || [],
-                true
-            );
+            // Обновляем списки для режима "Составы" (только в режиме rosters)
+            if (currentMode === 'rosters' && rosterTeam2Coach && rosterTeam2Players) {
+                renderRostersMode(
+                    rosterTeam2Coach,
+                    rosterTeam2Players,
+                    data.team2Staff || data.staff2 || [],
+                    data.team2Players || data.players2 || [],
+                    true
+                );
 
-            // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков
-            const team1PlayersCount = (data.team1Players || data.players1 || []).length;
-            const team2PlayersCount = (data.team2Players || data.players2 || []).length;
-            const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
-            
-            if (rosterTeam1Players && rosterTeam2Players) {
-                if (maxPlayersCount > 26) {
-                    rosterTeam1Players.classList.add('many-players');
-                    rosterTeam2Players.classList.add('many-players');
-                } else {
-                    rosterTeam1Players.classList.remove('many-players');
-                    rosterTeam2Players.classList.remove('many-players');
+                // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков
+                const team1PlayersCount = (data.team1Players || data.players1 || []).length;
+                const team2PlayersCount = (data.team2Players || data.players2 || []).length;
+                const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
+                
+                if (rosterTeam1Players && rosterTeam2Players) {
+                    if (maxPlayersCount > 26) {
+                        rosterTeam1Players.classList.add('many-players');
+                        rosterTeam2Players.classList.add('many-players');
+                    } else {
+                        rosterTeam1Players.classList.remove('many-players');
+                        rosterTeam2Players.classList.remove('many-players');
+                    }
                 }
             }
 
