@@ -2225,6 +2225,123 @@
         box-sizing: border-box;
       }
       
+      /* Исправление для выпадающих списков команд - чтобы не выходили за экран */
+      .team-custom-options {
+        position: fixed !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: calc(100vw - 20px) !important;
+        max-width: 400px !important;
+        box-sizing: border-box !important;
+        margin: 0 10px !important;
+      }
+      
+      /* Улучшение для карточек команд в главном блоке */
+      .team-block {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 10px !important;
+      }
+      
+      /* Улучшение для логотипов команд */
+      .team-logo-section-upper {
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+      }
+      
+      .team-logo-mini {
+        width: 32px !important;
+        height: 32px !important;
+        flex-shrink: 0 !important;
+      }
+      
+      /* Улучшение для кнопок действий */
+      .btn {
+        padding: 10px 16px !important;
+        font-size: 14px !important;
+        min-height: 44px !important; /* Минимальная высота для удобного нажатия */
+        box-sizing: border-box !important;
+      }
+      
+      /* Улучшение для заголовков */
+      h1, h2, h3 {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+      }
+      
+      /* Улучшение для всех контейнеров */
+      * {
+        box-sizing: border-box !important;
+      }
+      
+      /* Исправление для модальных окон на мобильных */
+      .confirmation-modal {
+        padding: 10px !important;
+      }
+      
+      .confirmation-content {
+        max-width: calc(100vw - 20px) !important;
+        padding: 20px !important;
+      }
+      
+      /* Улучшение для форм редактирования пресетов */
+      .preset-edit-form-inline {
+        padding: 10px !important;
+        box-sizing: border-box !important;
+      }
+      
+      .preset-edit-form-inline .form-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      .preset-edit-form-inline .form-group {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      /* Улучшение для списков пресетов */
+      .presets-list {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
+      }
+      
+      .preset-item-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      .preset-item {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8px !important;
+      }
+      
+      .preset-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        flex-wrap: wrap !important;
+      }
+      
+      .preset-left {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+      }
+      
+      .preset-right {
+        flex-shrink: 0 !important;
+        min-width: auto !important;
+      }
+      
       .score-btn {
         width: 32px;
         height: 44px;
