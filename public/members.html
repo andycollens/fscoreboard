@@ -73,23 +73,35 @@
             gap: 0;
         }
 
+        .team-penalty-track {
+            display: none !important;
+        }
+
+        .score1-section,
+        .score2-section {
+            display: none !important;
+        }
+
+        .team1-score,
+        .team2-score {
+            display: none !important;
+        }
+
         .team1-section {
-            grid-column: 1;
             display: flex !important;
             flex-direction: row;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             gap: clamp(12px, 2vw, 28px);
             padding: 0 2vw;
             box-sizing: border-box;
         }
 
         .team2-section {
-            grid-column: 2;
             display: flex !important;
             flex-direction: row;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: center;
             gap: clamp(12px, 2vw, 28px);
             padding: 0 2vw;
             box-sizing: border-box;
@@ -342,6 +354,17 @@
             flex: 1;
         }
 
+        .divider-section,
+        .timer {
+            display: none !important;
+        }
+
+        .match-score-label,
+        .penalty-label,
+        .penalty-overlay {
+            display: none !important;
+        }
+
         /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
             .team1-name,
@@ -385,7 +408,7 @@
             <div class="rosters-subtitle" id="rostersSubtitle">Составы команд</div>
         </div>
 
-        <!-- Средняя область с логотипами и названиями команд -->
+        <!-- Средняя область -->
         <div class="middle-section">
             <div class="middle-content">
                 <!-- Команда 1 -->
@@ -412,7 +435,7 @@
             </div>
         </div>
 
-        <!-- Нижняя область с составами -->
+        <!-- Нижняя область -->
         <div class="bottom-section">
             <div class="roster-team1" id="rosterTeam1">
                 <div class="roster-coach-label">Тренер:</div>
