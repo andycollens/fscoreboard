@@ -2252,14 +2252,20 @@
       const container = document.getElementById(`selectedTeamsContent-${tournamentId}`);
       const listContainer = document.getElementById(`selectedTeamsList-${tournamentId}`);
       
-      if (!container || !listContainer) return;
+      if (!container || !listContainer) {
+        console.warn(`Не найдены элементы для турнира ${tournamentId}`);
+        return;
+      }
       
       if (selectedTeamIds.length === 0) {
         listContainer.style.display = 'none';
         return;
       }
       
+      // Принудительно показываем список на всех устройствах
       listContainer.style.display = 'block';
+      listContainer.style.visibility = 'visible';
+      listContainer.style.opacity = '1';
       
       container.innerHTML = selectedTeamIds.map(teamId => {
         const team = teams.find(t => t.id === teamId);
