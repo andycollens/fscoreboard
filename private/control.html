@@ -3401,35 +3401,25 @@
     
     // Переключение режима табло из основного блока управления
     async function switchMainStadiumMode(mode) {
+      const modeName = mode === 'scoreboard' ? 'Табло' : 'Составы';
+      
+      // Первое подтверждение - что табло переключится моментально
+      if (!confirm(`Переключить табло стадиона на режим "${modeName}"? Табло обновится моментально.`)) {
+        return;
+      }
+      
+      // Проверяем состояние табло
       const snapshot = getCurrentScoreboardSnapshot();
       const hasActiveScoreboard = snapshot.score1 !== 0 || snapshot.score2 !== 0 || snapshot.timerSeconds !== 0;
       
-      // Создание модального окна подтверждения
-      const modal = document.createElement('div');
-      modal.className = 'confirmation-modal';
+      // Если на табло есть счет или время - показываем дополнительное предупреждение
+      if (hasActiveScoreboard) {
+        if (!confirm('На табло уже выставлены счёт или время. Табло не сброшено — возможно, вы ошиблись? Продолжить переключение режима?')) {
+          return;
+        }
+      }
       
-      const modeName = mode === 'scoreboard' ? 'Табло' : 'Составы';
-      
-      modal.innerHTML = `
-        <div class="confirmation-content">
-          <h3>Переключить режим?</h3>
-          <p>Вы уверены, что хотите переключить табло стадиона на режим "<strong>${modeName}</strong>"?</p>
-          <p><small>Табло обновится моментально.</small></p>
-          ${hasActiveScoreboard ? `<p style="margin-top: 10px; padding: 10px; background: #fff8e1; border: 1px solid #f0c36d; border-radius: 6px; color: #8a5a0a; font-size: 13px;">
-            На табло уже выставлены счёт или время. Похоже, сейчас идёт перерыв — переключение режима может привести к ошибкам трансляции.
-          </p>` : ''}
-          <div class="confirmation-buttons">
-            <button class="confirmation-btn confirm" onclick="confirmMainModeSwitch('${mode}'); closeConfirmation()">Да, переключить</button>
-            <button class="confirmation-btn cancel" onclick="closeConfirmation()">Отмена</button>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-    }
-    
-    // Подтверждение переключения режима
-    async function confirmMainModeSwitch(mode) {
+      // Переключаем режим
       try {
         const response = await fetch(`/api/config?token=${getToken()}`, {
           method: 'PUT',
@@ -3438,7 +3428,6 @@
         });
         
         if (response.ok) {
-          const modeName = mode === 'scoreboard' ? 'Табло' : 'Составы';
           showNotification(`Табло стадиона переключено на режим "${modeName}"!`, 'success');
           updateMainModeButtons();
         } else {
