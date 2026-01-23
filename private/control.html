@@ -1979,17 +1979,11 @@
       }
       
       .score-block {
-        width: 100% !important;
-        max-width: 100% !important;
+        width: calc(50% - 3px);
+        max-width: none;
         padding: 6px;
         gap: 7px;
         box-sizing: border-box;
-        margin-bottom: 10px !important;
-      }
-      
-      .score-blocks-container {
-        flex-direction: column !important;
-        gap: 0 !important;
       }
       
       body {
@@ -1998,8 +1992,8 @@
         max-width: 100%;
       }
       
-      /* Кастомные селекты команд - мобильная версия */
-      .team-custom-select {
+      /* Стили для выпадающих списков команд в главном блоке */
+      .team-preset-row select {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -2241,21 +2235,6 @@
       }
       
       /* Убеждаемся что контейнеры тоже на всю ширину */
-      .score-blocks-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      
-      .score-block {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 6px !important;
-        margin: 0 !important;
-      }
       
       .team-preset-row {
         width: 100% !important;
@@ -4643,20 +4622,20 @@
       }
       
       loadTeams().then(() => {
-        loadTournaments();
-        setupControls();
-        setupPenaltyControls();
-        setupEditFormHandlers();
-        setupTeamUpdateListener(); // Слушаем обновления команд из настроек
-        
-        // Простая проверка - если данные не пришли, запрашиваем через небольшую задержку
-        setTimeout(() => {
-          const team1NameEl = document.getElementById('team1Name');
-          if (team1NameEl && !team1NameEl.value) {
-            console.log('Fields are empty, requesting initial state from server...');
-            socket.emit('getCurrentState');
-          }
-        }, 500);
+      loadTournaments();
+      setupControls();
+      setupPenaltyControls();
+      setupEditFormHandlers();
+      setupTeamUpdateListener(); // Слушаем обновления команд из настроек
+      
+      // Простая проверка - если данные не пришли, запрашиваем через небольшую задержку
+      setTimeout(() => {
+        const team1NameEl = document.getElementById('team1Name');
+        if (team1NameEl && !team1NameEl.value) {
+          console.log('Fields are empty, requesting initial state from server...');
+          socket.emit('getCurrentState');
+        }
+      }, 500);
       });
     });
     
@@ -4745,12 +4724,12 @@
           // Обновляем формы создания пресетов
           updateAllPresetForms();
           // Перезагружаем турниры и пресеты
-          loadTournaments().then(() => {
-            loadPresets().then(() => {
-              renderTournamentPresets();
+              loadTournaments().then(() => {
+                loadPresets().then(() => {
+                  renderTournamentPresets();
               // Селекты теперь обычные, не кастомные
-            });
-          });
+                });
+              });
         });
       }
       
@@ -4778,10 +4757,10 @@
       console.log('renderTournamentsForPresets called, tournaments count:', tournaments ? tournaments.length : 0);
       
       // Всегда обновляем ссылку на настройки
-      const settingsLink = document.getElementById('settingsLinkInPresets');
-      if (settingsLink) {
-        settingsLink.href = `/private/settings.html?token=${getToken()}`;
-      }
+          const settingsLink = document.getElementById('settingsLinkInPresets');
+          if (settingsLink) {
+            settingsLink.href = `/private/settings.html?token=${getToken()}`;
+          }
       
       if (!tournaments || tournaments.length === 0) {
         container.style.display = 'none';
@@ -5015,7 +4994,7 @@
       
       // Сохраняем выбор в localStorage
       if (tournamentId) {
-        localStorage.setItem('lastSelectedTournament', tournamentId);
+      localStorage.setItem('lastSelectedTournament', tournamentId);
       }
       
       // Команды теперь всегда загружаются из базы команд, а не из турнира
@@ -5030,18 +5009,18 @@
       
       if (teams && teams.length > 0) {
         teams.forEach(team => {
-          const option1 = document.createElement('option');
-          option1.value = team.id;
+        const option1 = document.createElement('option');
+        option1.value = team.id;
           option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
           option1.dataset.birthYear = team.birthYear || '';
-          team1Select.appendChild(option1);
-          
-          const option2 = document.createElement('option');
-          option2.value = team.id;
+        team1Select.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = team.id;
           option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
           option2.dataset.birthYear = team.birthYear || '';
-          team2Select.appendChild(option2);
-        });
+        team2Select.appendChild(option2);
+      });
       }
     }
     
@@ -5160,12 +5139,12 @@
       
       if (team1Select && team1Select.value) {
         const team = teams.find(t => t.id === team1Select.value);
-        if (team) team1Name = team.name;
+          if (team) team1Name = team.name;
       }
       
       if (team2Select && team2Select.value) {
         const team = teams.find(t => t.id === team2Select.value);
-        if (team) team2Name = team.name;
+          if (team) team2Name = team.name;
       }
       
       titleElement.textContent = `${matchTime} / ${team1Name} - ${team2Name}`;
@@ -6275,7 +6254,7 @@
         
         // Добавляем в expandedPresets только если секция видима (для сохранения состояния)
         if (presetsDiv && !presetsDiv.classList.contains('hidden')) {
-          expandedPresets.add(tournament.id);
+        expandedPresets.add(tournament.id);
         }
         
         // Готовим секции дней
@@ -6770,12 +6749,12 @@
       
       if (team1Select.value) {
         const team = teams.find(t => t.id === team1Select.value);
-        if (team) team1Name = team.name;
+          if (team) team1Name = team.name;
       }
       
       if (team2Select.value) {
         const team = teams.find(t => t.id === team2Select.value);
-        if (team) team2Name = team.name;
+          if (team) team2Name = team.name;
       }
       
       titleElement.textContent = `${matchTime} / ${team1Name} - ${team2Name}`;
@@ -8052,7 +8031,7 @@
     configs.forEach(({ id }) => {
       const select = document.getElementById(id);
       if (select) enhanceCustomTeamSelect(select);
-    });
+      });
     }
 
     function populateMainTeamPresetSelects() {
@@ -8081,13 +8060,13 @@
 
         // Заполняем командами из глобальной базы
         teams.forEach(team => {
-          if (!team) return;
-          const option = document.createElement('option');
+              if (!team) return;
+              const option = document.createElement('option');
           option.value = team.id;
           const year = team.birthYear ? String(team.birthYear) : '';
           const label = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}`;
           option.textContent = year ? `${label} · ${year}` : label;
-          option.dataset.teamId = String(team.id);
+              option.dataset.teamId = String(team.id);
           option.dataset.label = label;
           if (year) {
             option.dataset.birthYear = year;
@@ -8272,15 +8251,15 @@
 
       // Ищем команду в базе команд
       const team = teams.find(t => {
-        if (!t || !t.name) return false;
-        const teamName = t.name.trim().toLowerCase();
-        if (teamName !== normalizedName) return false;
-        if (!normalizedCity) return true;
-        const teamCity = t.city ? t.city.trim().toLowerCase() : '';
-        return teamCity === normalizedCity;
-      });
+          if (!t || !t.name) return false;
+          const teamName = t.name.trim().toLowerCase();
+          if (teamName !== normalizedName) return false;
+          if (!normalizedCity) return true;
+          const teamCity = t.city ? t.city.trim().toLowerCase() : '';
+          return teamCity === normalizedCity;
+        });
 
-      if (team) {
+        if (team) {
         return { team };
       }
 
@@ -8420,7 +8399,7 @@
     wrapper.appendChild(selected);
     wrapper.appendChild(optionsBox);
     nativeSelect.parentElement.appendChild(wrapper);
-  }
+    }
 
     function buildTournamentTeamOptionValue(tournamentId, teamId) {
       return `${String(tournamentId)}__${String(teamId)}`;
