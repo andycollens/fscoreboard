@@ -588,7 +588,7 @@
         }
 
         body.rosters-mode .roster-players-list {
-            font-size: 1.7vw;
+            font-size: 1.9vw;
             font-weight: 500;
             line-height: 1.5;
             display: block;
@@ -596,6 +596,10 @@
             column-gap: 2vw;
             width: 100%;
             color: #fff;
+        }
+
+        body.rosters-mode .roster-players-list.many-players {
+            font-size: 1.6vw;
         }
 
         body.rosters-mode .roster-player-item {
@@ -2261,6 +2265,21 @@ body.penalty-mode .penalty-score {
                 data.team2Players || data.players2 || [],
                 true
             );
+
+            // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков
+            const team1PlayersCount = (data.team1Players || data.players1 || []).length;
+            const team2PlayersCount = (data.team2Players || data.players2 || []).length;
+            const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
+            
+            if (rosterTeam1Players && rosterTeam2Players) {
+                if (maxPlayersCount > 26) {
+                    rosterTeam1Players.classList.add('many-players');
+                    rosterTeam2Players.classList.add('many-players');
+                } else {
+                    rosterTeam1Players.classList.remove('many-players');
+                    rosterTeam2Players.classList.remove('many-players');
+                }
+            }
 
             // Обновляем полоску для команды 2
             updateStripe('team2', data.kit2Color);
