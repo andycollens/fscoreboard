@@ -40,22 +40,31 @@
       overflow: visible;
     }
 
-    .scoreboard-row::before {
+    .section {
+      position: relative;
+      overflow: visible;
+    }
+
+    .section::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: transparent;
+      background: inherit;
       transform-origin: left center;
       transform: scaleX(0);
       animation: none;
       z-index: -1;
     }
 
-    body.background-loaded .scoreboard-row::before {
+    body.background-loaded .section::before {
       animation: slideRightBackground 0.5s ease-out forwards;
+    }
+
+    .divider-section::before {
+      display: none;
     }
 
     @keyframes slideRightBackground {
