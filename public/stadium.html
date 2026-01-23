@@ -1099,6 +1099,11 @@
             padding-top: 20px;
         }
 
+        .roster-team1,
+        .roster-team2 {
+            display: none;
+        }
+
         .timer {
             position: relative;
             width: 100%;
@@ -2023,6 +2028,7 @@ body.penalty-mode .penalty-score {
         function updateStripe(team, color) {
             const stripe = team === 'team1' ? team1Stripe : team2Stripe;
             const isRostersMode = document.body.classList.contains('rosters-mode');
+            // Для режима "Табло" всегда используем 'to right', для режима rosters - team1 использует 'to left'
             const direction = (isRostersMode && team === 'team1') ? 'to left' : 'to right';
             
             if (color && color !== '') {
