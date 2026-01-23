@@ -60,7 +60,7 @@
     }
 
     body.background-loaded .section::before {
-      animation: slideRightBackground 0.5s ease-out forwards;
+      animation: slideRightBackground 0.25s ease-out forwards;
     }
 
     .divider-section::before {
@@ -276,7 +276,7 @@
 
     body.content-ready .scoreboard-row span,
     body.content-ready .scoreboard-row .divider-logo {
-      animation: fadeInContent 0.2s ease-in 0.5s forwards;
+      animation: fadeInContent 0.2s ease-in 0.25s forwards;
     }
 
     @keyframes fadeInContent {
@@ -348,7 +348,7 @@
         // После завершения анимации фона начинаем анимацию контента
         setTimeout(() => {
           document.body.classList.add('content-ready');
-        }, 500); // 0.5 секунды - время анимации фона
+        }, 250); // 0.25 секунды - время анимации фона
       });
     }
 
