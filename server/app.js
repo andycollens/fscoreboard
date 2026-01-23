@@ -231,7 +231,15 @@ if (fs.existsSync(PRESETS_PATH)) {
 if (fs.existsSync(TOURNAMENTS_PATH)) {
   try {
     const savedTournaments = JSON.parse(fs.readFileSync(TOURNAMENTS_PATH, 'utf8'));
-    tournaments = savedTournaments;
+    // Миграция: добавляем selectedTeamIds для существующих турниров
+    tournaments = savedTournaments.map(t => ({
+      ...t,
+      selectedTeamIds: t.selectedTeamIds || []
+    }));
+    // Сохраняем обновленные данные, если были изменения
+    if (savedTournaments.some(t => !t.selectedTeamIds)) {
+      fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+    }
   } catch (e) {
     console.error("Ошибка чтения tournaments.json", e);
   }
