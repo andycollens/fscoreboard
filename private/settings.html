@@ -696,27 +696,18 @@
     .roster-staff-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      padding: 12px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      gap: 4px;
+      font-size: 13px;
+      color: #1e293b;
     }
     
     .roster-staff-item {
-      padding: 6px 12px;
-      background: #f1f5f9;
-      border-radius: 6px;
       font-size: 13px;
       color: #1e293b;
-      font-weight: 500;
     }
     
+    
     .roster-staff-empty {
-      padding: 12px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
       color: #94a3b8;
       font-size: 13px;
       font-style: italic;
@@ -725,26 +716,15 @@
     .roster-players-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 8px;
-      padding: 12px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      gap: 4px 16px;
+      font-size: 13px;
     }
     
     .roster-player-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 10px;
-      background: #f8fafc;
-      border-radius: 6px;
       font-size: 13px;
-      transition: background 0.2s;
-    }
-    
-    .roster-player-item:hover {
-      background: #f1f5f9;
     }
     
     .roster-player-number {
@@ -761,14 +741,9 @@
     }
     
     .roster-players-empty {
-      padding: 12px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
       color: #94a3b8;
       font-size: 13px;
       font-style: italic;
-      text-align: center;
     }
     .team-roster-box {
       padding: 6px 4px;
@@ -1829,7 +1804,7 @@
         staffHtml = `
           <div class="roster-staff-list">
             ${staffList.map(s => `
-              <div class="roster-staff-item">${s.name || ''}</div>
+              <span class="roster-staff-item">${s.name || ''}</span>
             `).join('')}
           </div>
         `;
