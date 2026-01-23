@@ -504,7 +504,7 @@
 
         function updateStripe(team, color) {
             const stripe = team === 'team1' ? team1Stripe : team2Stripe;
-            const direction = team === 'team1' ? 'to left' : 'to right';
+            const direction = team === 'team1' ? 'to right' : 'to left';
             
             if (color && color !== '') {
                 stripe.style.background = `linear-gradient(${direction}, transparent, ${color} 70px, ${color} 130px, transparent 200px)`;
