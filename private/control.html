@@ -3434,6 +3434,12 @@
     let timerRunning = false;
     let editingPresetId = null;
     let originalPresetData = null;
+    
+    // Функция получения токена (должна быть определена до использования)
+    function getToken() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('token') || 'MySecret111';
+    }
     let selectedTeams = {
       team1: null,
       team2: null
