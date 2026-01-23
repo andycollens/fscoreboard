@@ -1869,9 +1869,12 @@ body.penalty-mode .penalty-score {
         // Функция обновления полоски
         function updateStripe(team, color) {
             const stripe = team === 'team1' ? team1Stripe : team2Stripe;
+            const isRostersMode = document.body.classList.contains('rosters-mode');
+            const direction = (isRostersMode && team === 'team1') ? 'to left' : 'to right';
+            
             if (color && color !== '') {
                 // Создаем градиент: прозрачный -> цвет команды (70px) -> цвет команды (130px) -> прозрачный (200px)
-                stripe.style.background = `linear-gradient(to right, transparent, ${color} 70px, ${color} 130px, transparent 200px)`;
+                stripe.style.background = `linear-gradient(${direction}, transparent, ${color} 70px, ${color} 130px, transparent 200px)`;
                 // Добавляем небольшую задержку для эффекта появления
                 setTimeout(() => {
                     stripe.classList.add('active');
@@ -1879,7 +1882,7 @@ body.penalty-mode .penalty-score {
             } else {
                 stripe.classList.remove('active');
                 // Сбрасываем фон, если нет цвета
-                stripe.style.background = `linear-gradient(to right, transparent, #2b2b2b 70px, #2b2b2b 130px, transparent 200px)`;
+                stripe.style.background = `linear-gradient(${direction}, transparent, #2b2b2b 70px, #2b2b2b 130px, transparent 200px)`;
             }
         }
 
