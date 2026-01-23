@@ -3272,7 +3272,7 @@
         <!-- Список турниров будет загружен динамически -->
       </div>
       <div id="tournamentsEmptyState" class="empty-state" style="padding: 20px; text-align: center; color: #999;">
-        Нет созданных турниров. Создайте турнир в <a href="/private/settings.html?token=" id="settingsLinkInPresets" style="color: #338af3;">настройках</a>, чтобы добавить пресеты.
+        Нет созданных турниров. Создайте турнир в <a href="#" id="settingsLinkInPresets" style="color: #338af3;">настройках</a>, чтобы добавить пресеты.
       </div>
     </div>
     
@@ -4467,6 +4467,12 @@
     });
     
     document.addEventListener('DOMContentLoaded', function() {
+      // Устанавливаем ссылку на настройки сразу при загрузке
+      const settingsLinkInPresets = document.getElementById('settingsLinkInPresets');
+      if (settingsLinkInPresets) {
+        settingsLinkInPresets.href = `/private/settings.html?token=${getToken()}`;
+      }
+      
       loadTeams().then(() => {
         loadTournaments();
         setupControls();
