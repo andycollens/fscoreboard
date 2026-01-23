@@ -457,6 +457,7 @@ print_results() {
     echo -e "  ${GREEN}http://$current_domain/penalti.html${NC}  (табло пенальти)"
     echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (табло для vMix)"
     echo -e "  ${GREEN}http://$current_domain/stadium.html?token=$current_stadium_token${NC}  (стадион)"
+    echo -e "  ${GREEN}http://$current_domain/members.html${NC}  (составы команд)"
     echo -e "  ${GREEN}http://$current_domain/prematch.html${NC}  (прематч)"
     echo -e "  ${GREEN}http://$current_domain/break.html${NC}  (перерыв)"
     echo -e "  ${GREEN}http://$current_domain/preloader.html${NC}  (заглушка для стримов)"
