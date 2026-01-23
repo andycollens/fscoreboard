@@ -2353,24 +2353,32 @@
     
     // Загрузка выбранных команд с сервера
     function loadTournamentSelectedTeams() {
+      console.log('Loading tournament selected teams, tournaments count:', tournaments.length);
       tournaments.forEach(tournament => {
         // Загружаем с сервера (из поля selectedTeamIds турнира)
-        if (tournament.selectedTeamIds && Array.isArray(tournament.selectedTeamIds)) {
+        if (tournament.selectedTeamIds && Array.isArray(tournament.selectedTeamIds) && tournament.selectedTeamIds.length > 0) {
           tournamentSelectedTeams[tournament.id] = tournament.selectedTeamIds;
+          console.log(`Tournament ${tournament.id} has ${tournament.selectedTeamIds.length} selected teams from server`);
         } else {
           // Fallback: загружаем из localStorage для совместимости
           const saved = localStorage.getItem(`tournamentTeams_${tournament.id}`);
           if (saved) {
             try {
-              tournamentSelectedTeams[tournament.id] = JSON.parse(saved);
-              // Синхронизируем с сервером
-              fetch(`/api/tournaments/${tournament.id}/selectedTeams?token=${getToken()}`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ selectedTeamIds: tournamentSelectedTeams[tournament.id] })
-              }).catch(err => console.error('Ошибка синхронизации с сервером:', err));
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                tournamentSelectedTeams[tournament.id] = parsed;
+                console.log(`Tournament ${tournament.id} has ${parsed.length} selected teams from localStorage, syncing to server`);
+                // Синхронизируем с сервером
+                fetch(`/api/tournaments/${tournament.id}/selectedTeams?token=${getToken()}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ selectedTeamIds: parsed })
+                }).catch(err => console.error('Ошибка синхронизации с сервером:', err));
+              } else {
+                tournamentSelectedTeams[tournament.id] = [];
+              }
             } catch (e) {
               console.error('Ошибка загрузки выбранных команд:', e);
               tournamentSelectedTeams[tournament.id] = [];
