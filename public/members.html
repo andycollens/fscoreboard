@@ -20,56 +20,51 @@
             overflow: hidden;
         }
 
-        /* Контейнер стадиона */
-        .stadium-container {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
+        body.rosters-mode,
+        body.rosters-mode #scoreboardMode {
+            width: 100vw;
             height: 100vh;
-            position: relative;
+            overflow: hidden;
+        }
+
+        .stadium-container {
+            position: fixed;
+            inset: 0;
+            display: grid !important;
+            grid-template-rows: 30px 230px 1fr;
+            height: 100vh;
+            width: 100vw;
             background: #000;
         }
 
         /* Верхняя область */
         .top-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2vh 0;
-            box-sizing: border-box;
+            display: block !important;
+            height: 30px;
+            width: 100%;
+            background: #000;
         }
 
         .tournament-title {
-            font-size: 3.5vw;
-            font-weight: 700;
-            color: #fff;
-            text-align: center;
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            display: none !important;
         }
 
         .rosters-subtitle {
-            font-size: 2.5vw;
-            font-weight: 500;
-            color: #b0b0b0;
-            text-align: center;
-            margin: 1vh 0 0 0;
-            white-space: nowrap;
+            display: none !important;
         }
 
         /* Средняя область */
         .middle-section {
-            flex: 2;
-            position: relative;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            height: 230px;
+            width: 100%;
             background: #000;
+            gap: 0;
         }
 
         .middle-content {
-            display: grid;
+            display: grid !important;
             grid-template-columns: 1fr 1fr;
             width: 100%;
             height: 100%;
@@ -78,23 +73,49 @@
             gap: 0;
         }
 
-        .team1-section,
-        .team2-section {
-            display: flex;
-            flex-direction: column;
+        .team1-section {
+            display: flex !important;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
-            padding: 2vh 2vw;
+            gap: clamp(12px, 2vw, 28px);
+            padding: 0 2vw;
             box-sizing: border-box;
+        }
+
+        .team2-section {
+            display: flex !important;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(12px, 2vw, 28px);
+            padding: 0 2vw;
+            box-sizing: border-box;
+        }
+
+        .team2-logo,
+        .team2-no-logo {
+            order: 2;
+        }
+
+        .team2-meta {
+            order: 1;
+        }
+
+        .team1-logo,
+        .team2-logo,
+        .team1-no-logo,
+        .team2-no-logo {
+            width: 200px;
+            height: 200px;
+            flex-shrink: 0;
         }
 
         .team1-logo,
         .team2-logo {
-            width: clamp(150px, 15vw, 300px);
-            height: clamp(150px, 15vw, 300px);
             object-fit: contain;
-            border-radius: 50%;
             display: none;
+            border-radius: 50%;
         }
 
         .team1-logo.show,
@@ -104,8 +125,6 @@
 
         .team1-no-logo,
         .team2-no-logo {
-            width: clamp(150px, 15vw, 300px);
-            height: clamp(150px, 15vw, 300px);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -115,68 +134,87 @@
             font-weight: bold;
         }
 
-        .team1-meta,
+        .team1-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0;
+            min-width: 0;
+        }
+
+        .team1-meta .team1-name {
+            margin-bottom: 1vh;
+        }
+
+        .team1-meta .team1-city {
+            margin-top: 0;
+            align-self: flex-start;
+        }
+
         .team2-meta {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            margin-top: 1vh;
+            align-items: flex-end;
+            gap: 0;
+            min-width: 0;
+            text-align: right;
+        }
+
+        .team2-meta .team2-name {
+            margin-bottom: 1vh;
+        }
+
+        .team2-meta .team2-city {
+            margin-top: 0;
+            align-self: flex-end;
         }
 
         .team1-name,
         .team2-name {
             font-size: 3vw;
-            font-weight: 700;
-            color: #fff;
-            text-align: center;
             margin: 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #fff;
+            font-weight: 700;
         }
 
         .team1-stripe,
         .team2-stripe {
             width: clamp(60px, 8vw, 140px);
             height: clamp(8px, 0.6vw, 14px);
-            margin: 0.5vh 0;
-            opacity: 1;
+            margin: 0;
+            opacity: 1 !important;
         }
 
         .team1-city,
         .team2-city {
             font-size: 2.5vw;
-            color: #fff;
-            text-align: center;
             margin: 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #fff;
         }
 
-        .team1-section {
-            grid-column: 1;
-        }
-
-        .team2-section {
-            grid-column: 2;
-        }
-
-        /* Нижняя область с составами */
+        /* Нижняя область */
         .bottom-section {
-            flex: 2;
-            display: grid;
+            display: grid !important;
             grid-template-columns: 1fr auto 1fr;
             width: 100%;
             height: 100%;
-            padding: 0;
-            box-sizing: border-box;
+            background: #000;
+            overflow: hidden;
             gap: 0;
         }
 
         .roster-team1,
         .roster-team2 {
-            display: flex;
+            display: flex !important;
+            position: relative !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
             flex-direction: column;
             width: 100%;
             height: 100%;
@@ -195,7 +233,10 @@
 
         .roster-divider {
             grid-column: 2;
-            display: flex;
+            display: flex !important;
+            position: relative !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
             align-items: center;
             justify-content: center;
             width: 60px;
@@ -301,14 +342,6 @@
 
         /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
-            .tournament-title {
-                font-size: 35px;
-            }
-
-            .rosters-subtitle {
-                font-size: 25px;
-            }
-
             .team1-name,
             .team2-name {
                 font-size: 30px;
@@ -342,8 +375,8 @@
         }
     </style>
 </head>
-<body>
-    <div class="stadium-container">
+<body class="rosters-mode">
+    <div class="stadium-container" id="scoreboardMode">
         <!-- Верхняя область -->
         <div class="top-section">
             <div class="tournament-title" id="tournamentTitle">ISKRA CUP 2025</div>
@@ -366,13 +399,13 @@
 
                 <!-- Команда 2 -->
                 <div class="team2-section">
-                    <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
-                    <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
                     <div class="team2-meta">
                         <div class="team2-name" id="team2Name">Команда 2</div>
                         <div id="team2Stripe" class="team2-stripe"></div>
                         <div class="team2-city" id="team2City">Город 2</div>
                     </div>
+                    <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
+                    <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
                 </div>
             </div>
         </div>
