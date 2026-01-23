@@ -1823,17 +1823,22 @@
     
     function parseRosterLine(line, withNumber = true) {
       let number = '';
-      let rest = line;
+      let rest = line.trim();
 
       if (withNumber) {
-        const numMatch = rest.match(/(?:^|[^\d])(\d{1,3})(?:[^\d]|$)/);
+        // Парсим номер только если он в начале строки, отделен пробелом/табуляцией от имени
+        // Формат: "10 Иванов Иван" или "10\tИванов Иван"
+        const numMatch = rest.match(/^(\d{1,3})[\s\t]+(.+)$/);
         if (numMatch) {
           const numVal = parseInt(numMatch[1], 10);
+          // Номер должен быть в разумных пределах (1-199)
           if (!isNaN(numVal) && numVal > 0 && numVal < 200) {
             number = numVal.toString();
-            rest = rest.replace(numMatch[1], ' ');
+            rest = numMatch[2].trim(); // Остаток строки после номера
           }
         }
+        // Если номер не найден в начале, оставляем поле номера пустым
+        // Не ищем цифры внутри строки (например, даты рождения)
       }
       
       const name = normalizeName(rest, withNumber);
@@ -1841,6 +1846,7 @@
     }
     
     function parseRosterText(text, withNumber = true) {
+      if (!text || typeof text !== 'string') return [];
       return text
         .split('\n')
         .map(l => l.trim())
