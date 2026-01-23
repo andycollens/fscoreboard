@@ -2226,14 +2226,33 @@
       }
       
       /* Исправление для выпадающих списков команд - чтобы не выходили за экран */
+      .team-custom-select {
+        position: relative !important;
+      }
+      
       .team-custom-options {
-        position: fixed !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: calc(100vw - 20px) !important;
-        max-width: 400px !important;
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
-        margin: 0 10px !important;
+        z-index: 1000 !important;
+      }
+      
+      /* Исправление для клика на мобильных устройствах */
+      .team-custom-selected {
+        -webkit-tap-highlight-color: transparent !important;
+        touch-action: manipulation !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+      }
+      
+      .team-custom-option {
+        -webkit-tap-highlight-color: rgba(51, 138, 243, 0.2) !important;
+        touch-action: manipulation !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
       }
       
       /* Улучшение для карточек команд в главном блоке */
@@ -4566,7 +4585,8 @@
         return;
       }
       
-      container.style.display = 'flex';
+      container.style.display = 'block';
+      container.style.flexDirection = 'column';
       if (emptyState) {
         emptyState.style.display = 'none';
       }
@@ -4577,7 +4597,7 @@
         const teamCount = tournament.teams ? tournament.teams.length : 0;
         const card = document.createElement('div');
         card.className = 'preset-card';
-        card.style.cssText = 'padding: 15px; margin-bottom: 10px; cursor: default; display: block; width: 100%; box-sizing: border-box;';
+        card.style.cssText = 'padding: 15px; margin-bottom: 10px; cursor: default; display: block; width: 100%; max-width: 100%; box-sizing: border-box;';
         
         const startDate = tournament.startDate ? new Date(tournament.startDate).toLocaleDateString('ru-RU') : '';
         const endDate = tournament.endDate ? new Date(tournament.endDate).toLocaleDateString('ru-RU') : '';
@@ -8066,7 +8086,9 @@
 
       if (opt.selected) optDiv.classList.add('selected');
 
-      optDiv.addEventListener('click', () => {
+      const handleOptionClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         nativeSelect.value = opt.value;
         nativeSelect.dispatchEvent(new Event('change'));
         updateSelectedDisplay(label, year);
@@ -8074,7 +8096,10 @@
         selected.classList.remove('team-select-open');
         optionsBox.querySelectorAll('.team-custom-option').forEach(o => o.classList.remove('selected'));
         optDiv.classList.add('selected');
-      });
+      };
+      
+      optDiv.addEventListener('click', handleOptionClick);
+      optDiv.addEventListener('touchend', handleOptionClick);
 
       optionsBox.appendChild(optDiv);
     });
