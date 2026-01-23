@@ -390,10 +390,12 @@
         }
 
         body.rosters-mode .middle-section {
-            display: block !important;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
             height: 200px;
             width: 100%;
             background: #000;
+            gap: 0;
         }
 
         body.rosters-mode .bottom-section {
@@ -417,8 +419,101 @@
             margin: 0;
         }
 
-        body.rosters-mode .team1-section,
-        body.rosters-mode .team2-section,
+        body.rosters-mode .team1-section {
+            display: flex !important;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(12px, 2vw, 28px);
+            padding: 0 2vw;
+            box-sizing: border-box;
+        }
+
+        body.rosters-mode .team2-section {
+            display: flex !important;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(12px, 2vw, 28px);
+            padding: 0 2vw;
+            box-sizing: border-box;
+        }
+
+        body.rosters-mode .team2-logo,
+        body.rosters-mode .team2-no-logo {
+            order: 2;
+        }
+
+        body.rosters-mode .team2-meta {
+            order: 1;
+        }
+
+        body.rosters-mode .team1-logo,
+        body.rosters-mode .team2-logo,
+        body.rosters-mode .team1-no-logo,
+        body.rosters-mode .team2-no-logo {
+            width: clamp(80px, 8vw, 140px);
+            height: clamp(80px, 8vw, 140px);
+            flex-shrink: 0;
+        }
+
+        body.rosters-mode .team1-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.4vh;
+            min-width: 0;
+        }
+
+        body.rosters-mode .team2-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.4vh;
+            min-width: 0;
+            text-align: right;
+        }
+
+        body.rosters-mode .team1-name,
+        body.rosters-mode .team2-name {
+            font-size: 3vw;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.rosters-mode .team1-stripe,
+        body.rosters-mode .team2-stripe {
+            width: clamp(60px, 8vw, 140px);
+            height: clamp(8px, 0.6vw, 14px);
+            margin: 2px 0 0 0;
+            opacity: 1 !important;
+        }
+
+        body.rosters-mode .team1-city,
+        body.rosters-mode .team2-city {
+            font-size: 1.65vw;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.rosters-mode .middle-content {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            box-sizing: border-box;
+            gap: 0;
+        }
+
+        body.rosters-mode .team-penalty-track {
+            display: none !important;
+        }
+
         body.rosters-mode .score1-section,
         body.rosters-mode .score2-section,
         body.rosters-mode .divider-section,
@@ -427,9 +522,7 @@
         body.rosters-mode .team2-score,
         body.rosters-mode .match-score-label,
         body.rosters-mode .penalty-label,
-        body.rosters-mode .team-penalty-track,
-        body.rosters-mode .penalty-overlay,
-        body.rosters-mode .middle-content {
+        body.rosters-mode .penalty-overlay {
             display: none !important;
         }
 
