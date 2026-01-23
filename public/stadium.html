@@ -569,7 +569,7 @@
         }
 
         body.rosters-mode .roster-players-list {
-            font-size: 2.0vw;
+            font-size: 1.7vw;
             font-weight: 500;
             line-height: 1.5;
             display: block;
@@ -577,6 +577,22 @@
             column-gap: 2vw;
             width: 100%;
             color: #fff;
+        }
+
+        body.rosters-mode .roster-player-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5vw;
+        }
+
+        body.rosters-mode .roster-player-number {
+            text-align: right;
+            min-width: 2.5vw;
+            flex-shrink: 0;
+        }
+
+        body.rosters-mode .roster-player-name {
+            flex: 1;
         }
 
         body.rosters-mode .roster-team1 .roster-coach-label,
@@ -2077,19 +2093,28 @@ body.penalty-mode .penalty-score {
             // Заполняем игроков в две колонки
             if (playersEl) {
                 if (players && Array.isArray(players) && players.length > 0) {
-                    const playerLines = players
+                    const playerItems = players
                         .map(item => {
                             if (!item) return '';
-                            if (typeof item === 'string') return escapeHtml(item);
+                            if (typeof item === 'string') {
+                                // Если строка, пытаемся извлечь номер и имя
+                                const parts = item.trim().split(/\s+/);
+                                const num = parts[0].match(/^\d+$/) ? parts[0] : '';
+                                const name = num ? parts.slice(1).join(' ') : item;
+                                return `<div class="roster-player-item">
+                                    <span class="roster-player-number">${escapeHtml(num || '')}</span>
+                                    <span class="roster-player-name">${escapeHtml(name || '')}</span>
+                                </div>`;
+                            }
                             const num = item.number ? String(item.number) : '';
                             const name = item.name || '';
-                            const line = isRightSide
-                                ? `${name}${num ? ' ' + num : ''}`   // ФИО №
-                                : `${num ? num + ' ' : ''}${name}`;   // № ФИО
-                            return escapeHtml(line.trim());
+                            return `<div class="roster-player-item">
+                                <span class="roster-player-number">${escapeHtml(num)}</span>
+                                <span class="roster-player-name">${escapeHtml(name)}</span>
+                            </div>`;
                         })
                         .filter(Boolean);
-                    playersEl.innerHTML = playerLines.join('<br>');
+                    playersEl.innerHTML = playerItems.join('');
                 } else {
                     playersEl.innerHTML = '';
                 }
