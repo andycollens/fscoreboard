@@ -4850,7 +4850,10 @@
         console.log('Set tournament ID:', tournamentId, 'in form:', form.id);
       }
       
-      // Заполняем команды турнира в этой форме
+      // Устанавливаем tournamentId в data-атрибут формы для fillTeamsFromBaseForForm
+      form.dataset.tournamentId = tournamentId;
+      
+      // Заполняем команды турнира в этой форме (только выбранные в турнире)
       fillTeamsFromBaseForForm(form);
       
       // Находим последний созданный пресет из выбранного дня для получения времени по умолчанию
