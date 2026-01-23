@@ -263,15 +263,15 @@
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    // Ждем загрузки всех изображений перед началом анимации
-    function waitForImages() {
+    // Ждем загрузки всех изображений перед показом элементов
+    function waitForElements() {
       const images = [];
       const logoImg = document.getElementById('dividerLogoImg');
       
       if (logoImg && logoImg.src) {
         const img = new Image();
         img.src = logoImg.src;
-        images.push(new Promise((resolve, reject) => {
+        images.push(new Promise((resolve) => {
           img.onload = resolve;
           img.onerror = resolve; // Продолжаем даже если изображение не загрузилось
         }));
@@ -293,13 +293,8 @@
       });
       
       Promise.all(images).then(() => {
-        // Все изображения загружены, начинаем анимацию фона
-        document.body.classList.add('background-loaded');
-        
-        // После завершения анимации фона начинаем анимацию контента
-        setTimeout(() => {
-          document.body.classList.add('content-ready');
-        }, 250); // 0.25 секунды - время анимации фона
+        // Все элементы загружены, показываем все разом
+        document.body.classList.add('elements-loaded');
       });
     }
 
