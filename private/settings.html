@@ -990,6 +990,31 @@
           <div id="baseTeamLogoPreview" class="logo-preview"></div>
         </div>
       </div>
+      <div class="roster-grid">
+        <div class="roster-card" style="grid-column: 1 / -1;">
+          <div class="roster-switch">
+            <div class="stadium-mode-buttons">
+              <button type="button" class="stadium-mode-btn active" id="rosterTogglePlayers-new" onclick="setRosterMode('new', 'player', true)">Игроки</button>
+              <button type="button" class="stadium-mode-btn" id="rosterToggleStaff-new" onclick="setRosterMode('new', 'staff', true)">Тренерский состав</button>
+            </div>
+          </div>
+          <textarea id="rosterPaste-new" rows="5" placeholder="Пример:&#10;10 Иванов Иван&#10;Петров Петр"></textarea>
+          <div class="roster-actions">
+            <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterUnified('new', true)">Парсить</button>
+            <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('rosterPaste-new').value=''">Очистить</button>
+          </div>
+          <div class="team-roster-box" style="padding: 6px 0 0 0;">
+            <div>
+              <div class="team-roster-title">Тренерский состав</div>
+              <div id="staffList-new" class="roster-list"></div>
+            </div>
+            <div style="margin-top: 12px;">
+              <div class="team-roster-title">Игроки</div>
+              <div id="playersList-new" class="roster-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="form-buttons">
         <button class="btn btn-primary" onclick="saveNewBaseTeam()">Создать</button>
         <button class="btn btn-secondary" onclick="cancelAddTeam()">Отмена</button>
@@ -1221,6 +1246,12 @@
       loadTeams().then(() => {
         loadTournaments().then(() => {
           loadTournamentSelectedTeams();
+          // Инициализируем режим составов для новой команды
+          setTimeout(() => {
+            if (document.getElementById('rosterPaste-new')) {
+              setRosterMode('new', 'player', true);
+            }
+          }, 100);
         });
       });
     });
@@ -1243,7 +1274,9 @@
       }
     }
     
-    // Отображение команд
+    // Отображение команд с группировкой по году рождения
+    let expandedBirthYears = new Set(); // Храним развернутые группы по году рождения
+    
     function renderTeams() {
       const container = document.getElementById('teamsList');
       
@@ -1252,34 +1285,91 @@
         return;
       }
       
-      container.innerHTML = teams.map(team => {
-        const logoHtml = team.logo 
-          ? `<img src="${team.logo}" alt="${team.name}" class="team-logo-mini">`
-          : '<div class="team-logo-mini" style="background: #ddd;"></div>';
+      // Группируем команды по году рождения
+      const teamsByYear = {};
+      teams.forEach(team => {
+        const year = team.birthYear || 'Без года';
+        if (!teamsByYear[year]) {
+          teamsByYear[year] = [];
+        }
+        teamsByYear[year].push(team);
+      });
+      
+      // Сортируем годы (Без года в конец)
+      const sortedYears = Object.keys(teamsByYear).sort((a, b) => {
+        if (a === 'Без года') return 1;
+        if (b === 'Без года') return -1;
+        return b.localeCompare(a); // Новые годы первыми
+      });
+      
+      container.innerHTML = sortedYears.map(year => {
+        const yearTeams = teamsByYear[year];
+        const isExpanded = expandedBirthYears.has(year);
+        
+        const teamsHtml = yearTeams.map(team => {
+          const logoHtml = team.logo 
+            ? `<img src="${team.logo}" alt="${team.name}" class="team-logo-mini">`
+            : '<div class="team-logo-mini" style="background: #ddd;"></div>';
+          
+          return `
+            <div class="team-item" data-team-id="${team.id}">
+              <div class="team-row">
+                <div class="team-item-info" id="team-info-${team.id}" onclick="toggleBaseTeamRoster('${team.id}', event)">
+                  ${logoHtml}
+                  <div class="team-short">${team.short || ''}</div>
+                  <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
+                  <div class="team-details">
+                    <div class="team-name">${team.name}</div>
+                    <div class="team-city">${team.city || ''}</div>
+                  </div>
+                </div>
+                <div class="team-actions">
+                  <span class="team-edit-link" onclick="editBaseTeam('${team.id}')">edit</span>
+                  <span class="team-delete-link" onclick="deleteBaseTeam('${team.id}')">delete</span>
+                </div>
+              </div>
+              <div id="team-edit-form-${team.id}" class="team-edit-form-inline hidden"></div>
+              <div id="team-roster-${team.id}" class="team-roster-view hidden"></div>
+            </div>
+          `;
+        }).join('');
         
         return `
-          <div class="team-item" data-team-id="${team.id}">
-            <div class="team-row">
-              <div class="team-item-info" id="team-info-${team.id}" onclick="toggleBaseTeamRoster('${team.id}', event)">
-                ${logoHtml}
-                <div class="team-short">${team.short || ''}</div>
-                <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
-                <div class="team-details">
-                  <div class="team-name">${team.name}</div>
-                  <div class="team-city">${team.city || ''}</div>
-                </div>
-                <div class="team-birth-year">${team.birthYear || ''}</div>
-              </div>
-              <div class="team-actions">
-                <span class="team-edit-link" onclick="editBaseTeam('${team.id}')">edit</span>
-                <span class="team-delete-link" onclick="deleteBaseTeam('${team.id}')">delete</span>
-              </div>
+          <div class="birth-year-group" style="margin-bottom: 15px;">
+            <div class="birth-year-header" onclick="toggleBirthYearGroup('${year}')" style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f0f4f8; border-radius: 8px; cursor: pointer; margin-bottom: 8px;">
+              <span style="font-size: 18px; transition: transform 0.2s; transform: rotate(${isExpanded ? '90deg' : '0deg'});">▶</span>
+              <span style="font-weight: 600; font-size: 16px; color: #163d74;">Год рождения: ${year}</span>
+              <span style="margin-left: auto; color: #666; font-size: 14px;">(${yearTeams.length} ${yearTeams.length === 1 ? 'команда' : yearTeams.length < 5 ? 'команды' : 'команд'})</span>
             </div>
-            <div id="team-edit-form-${team.id}" class="team-edit-form-inline hidden"></div>
-            <div id="team-roster-${team.id}" class="team-roster-view hidden"></div>
+            <div class="birth-year-teams" id="teams-year-${year}" style="display: ${isExpanded ? 'block' : 'none'}; padding-left: 20px;">
+              ${teamsHtml}
+            </div>
           </div>
         `;
       }).join('');
+    }
+    
+    // Переключение группы по году рождения
+    function toggleBirthYearGroup(year) {
+      const isExpanded = expandedBirthYears.has(year);
+      const teamsDiv = document.getElementById(`teams-year-${year}`);
+      
+      if (isExpanded) {
+        expandedBirthYears.delete(year);
+        if (teamsDiv) teamsDiv.style.display = 'none';
+      } else {
+        expandedBirthYears.add(year);
+        if (teamsDiv) teamsDiv.style.display = 'block';
+      }
+      
+      // Обновляем иконку
+      const header = document.querySelector(`.birth-year-header[onclick*="'${year}'"]`);
+      if (header) {
+        const icon = header.querySelector('span:first-child');
+        if (icon) {
+          icon.style.transform = expandedBirthYears.has(year) ? 'rotate(90deg)' : 'rotate(0deg)';
+        }
+      }
     }
     
     // Переключение формы создания команды
@@ -1298,6 +1388,10 @@
       document.getElementById('newTeamKitColor').value = '#2b2b2b';
       document.getElementById('newTeamLogo').value = '';
       document.getElementById('baseTeamLogoPreview').innerHTML = '';
+      document.getElementById('rosterPaste-new').value = '';
+      renderRosterList([], 'playersList-new', true);
+      renderRosterList([], 'staffList-new', false);
+      setRosterMode('new', 'player', true);
     }
     
     // Превью логотипа команды
@@ -1326,6 +1420,10 @@
         return;
       }
       
+      // Получаем составы из формы
+      const players = getRosterFromDOM('playersList-new', true);
+      const staff = getRosterFromDOM('staffList-new', false);
+      
       const formData = new FormData();
       formData.append('name', name);
       formData.append('city', city);
@@ -1333,8 +1431,8 @@
       formData.append('birthYear', birthYear);
       formData.append('kitColor', kitColor);
       formData.append('isBaseTeam', 'true');
-      formData.append('players', JSON.stringify([]));
-      formData.append('staff', JSON.stringify([]));
+      formData.append('players', JSON.stringify(players));
+      formData.append('staff', JSON.stringify(staff));
       
       if (logoFile) {
           formData.append('logo', logoFile);
@@ -1394,6 +1492,9 @@
         editForm.classList.remove('hidden');
         teamItem.classList.add('edit-mode');
         
+        // Сохраняем текущий логотип
+        editForm.dataset.currentLogo = team.logo || '';
+        
         editForm.innerHTML = `
           <h4 style="margin-top: 0;">Редактировать команду</h4>
           <div class="form-row">
@@ -1430,11 +1531,41 @@
               <div id="editTeamLogoPreview-${teamId}" class="logo-preview"></div>
             </div>
           </div>
+          <div class="roster-grid">
+            <div class="roster-card" style="grid-column: 1 / -1;">
+              <div class="roster-switch">
+                <div class="stadium-mode-buttons">
+                  <button type="button" class="stadium-mode-btn active" id="rosterTogglePlayers-edit-${teamId}" onclick="setRosterMode('${teamId}', 'player', false)">Игроки</button>
+                  <button type="button" class="stadium-mode-btn" id="rosterToggleStaff-edit-${teamId}" onclick="setRosterMode('${teamId}', 'staff', false)">Тренерский состав</button>
+                </div>
+              </div>
+              <textarea id="rosterPaste-edit-${teamId}" rows="5" placeholder="Пример:&#10;10 Иванов Иван&#10;Петров Петр"></textarea>
+              <div class="roster-actions">
+                <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterUnified('${teamId}', false)">Парсить</button>
+                <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('rosterPaste-edit-${teamId}').value=''">Очистить</button>
+              </div>
+              <div class="team-roster-box" style="padding: 6px 0 0 0;">
+                <div>
+                  <div class="team-roster-title">Тренерский состав</div>
+                  <div id="staffList-edit-${teamId}" class="roster-list"></div>
+                </div>
+                <div style="margin-top: 12px;">
+                  <div class="team-roster-title">Игроки</div>
+                  <div id="playersList-edit-${teamId}" class="roster-list"></div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="form-buttons">
             <button class="btn btn-primary" onclick="saveEditBaseTeam('${teamId}')">Сохранить</button>
             <button class="btn btn-secondary" onclick="cancelEditBaseTeam('${teamId}')">Отмена</button>
           </div>
         `;
+        
+        // Отрисовываем текущий состав, если есть
+        renderRosterList(team.players || [], `playersList-edit-${teamId}`, true);
+        renderRosterList(team.staff || [], `staffList-edit-${teamId}`, false);
+        setRosterMode(teamId, 'player', false);
       }
     }
     
@@ -1467,6 +1598,10 @@
         return;
       }
       
+      // Получаем составы из формы
+      const players = getRosterFromDOM(`playersList-edit-${teamId}`, true);
+      const staff = getRosterFromDOM(`staffList-edit-${teamId}`, false);
+      
       const formData = new FormData();
       formData.append('name', name);
       formData.append('city', city);
@@ -1474,8 +1609,8 @@
       formData.append('birthYear', birthYear);
       formData.append('kitColor', kitColor);
       formData.append('isBaseTeam', 'true');
-      formData.append('players', JSON.stringify(team.players || []));
-      formData.append('staff', JSON.stringify(team.staff || []));
+      formData.append('players', JSON.stringify(players));
+      formData.append('staff', JSON.stringify(staff));
       
       if (logoFile) {
           formData.append('logo', logoFile);
@@ -1520,6 +1655,10 @@
       if (teamInfo) {
         teamInfo.style.display = '';
       }
+      
+      // Очищаем составы
+      renderRosterList([], `playersList-edit-${teamId}`, true);
+      renderRosterList([], `staffList-edit-${teamId}`, false);
     }
     
     // Удаление команды
@@ -1721,8 +1860,92 @@
         .filter(Boolean)
         .join('\n');
     }
+    
+    // Функции для работы с составами команд
+    function renderRosterList(list, containerId, withNumber = true) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const rows = list && Array.isArray(list) ? list : [];
+      if (rows.length === 0) {
+        container.innerHTML = '<div class="roster-empty">Список пуст</div>';
+        return;
+      }
+      const header = withNumber
+        ? `<div class="roster-header" style="grid-template-columns: 1fr 90px 34px;">
+             <div>ФИО</div>
+             <div style="text-align:right;">№</div>
+             <div></div>
+           </div>`
+        : `<div class="roster-header" style="grid-template-columns: 1fr 34px;">
+             <div>ФИО</div>
+             <div></div>
+           </div>`;
 
-    // Функции для работы с составом команд в турнирах удалены - команды теперь в базе команд
+      const body = rows.map((row, idx) => `
+        <div class="roster-row ${withNumber ? '' : 'staff'}" data-index="${idx}">
+          <div>
+            <input type="text" class="roster-name" value="${(row.name || '').replace(/"/g, '&quot;')}" placeholder="Фамилия Имя">
+          </div>
+          ${withNumber ? `
+          <div>
+            <input type="text" class="roster-number" value="${(row.number || '').replace(/"/g, '&quot;')}" placeholder="№">
+          </div>` : ''}
+          <div style="display:flex; align-items:center; justify-content:center; height: 34px;">
+            <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
+          </div>
+        </div>
+      `).join('');
+
+      container.innerHTML = `<div class="roster-table">${header}${body}</div>`;
+    }
+    
+    function getRosterFromDOM(containerId, withNumber = true) {
+      const container = document.getElementById(containerId);
+      if (!container) return [];
+      const rows = Array.from(container.querySelectorAll('.roster-row'));
+      return rows.map(row => {
+        const name = row.querySelector('.roster-name')?.value.trim() || '';
+        const number = withNumber ? (row.querySelector('.roster-number')?.value.trim() || '') : '';
+        return { name, number };
+      }).filter(r => r.name);
+    }
+
+    function removeRosterRow(containerId, idx, withNumber = true) {
+      const current = getRosterFromDOM(containerId, withNumber);
+      if (idx >= 0 && idx < current.length) {
+        current.splice(idx, 1);
+      }
+      renderRosterList(current, containerId, withNumber);
+    }
+    
+    function setRosterMode(teamId, type, isNew = false) {
+      const prefix = isNew ? 'new' : `edit-${teamId}`;
+      const textarea = document.getElementById(`rosterPaste-${prefix}`);
+      if (!textarea) return;
+      textarea.dataset.activeType = type;
+      const btnPlayers = document.getElementById(`rosterTogglePlayers-${prefix}`);
+      const btnStaff = document.getElementById(`rosterToggleStaff-${prefix}`);
+      [btnPlayers, btnStaff].forEach(b => b && b.classList.remove('active'));
+      if (type === 'player' && btnPlayers) btnPlayers.classList.add('active');
+      if (type === 'staff' && btnStaff) btnStaff.classList.add('active');
+      const list = type === 'player'
+        ? getRosterFromDOM(`playersList-${prefix}`, true)
+        : getRosterFromDOM(`staffList-${prefix}`, false);
+      textarea.value = listToText(list, type);
+    }
+
+    function parseRosterUnified(teamId, isNew = false) {
+      const prefix = isNew ? 'new' : `edit-${teamId}`;
+      const textarea = document.getElementById(`rosterPaste-${prefix}`);
+      if (!textarea) return;
+      const type = textarea.dataset.activeType === 'staff' ? 'staff' : 'player';
+      const parsed = parseRosterText(textarea.value, type === 'player');
+      if (type === 'player') {
+        renderRosterList(parsed, `playersList-${prefix}`, true);
+      } else {
+        renderRosterList(parsed, `staffList-${prefix}`, false);
+      }
+    }
 
     // Все функции для работы с командами в турнирах удалены - команды теперь создаются и редактируются только в базе команд
     // Но можно выбрать команды из базы для удобства работы с пресетами
