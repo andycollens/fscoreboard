@@ -3023,16 +3023,23 @@
     
     .team-preset-row select {
       width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
       padding: 8px 12px;
-      border: 1px solid #c5d9ff;
-      border-radius: 10px;
+      padding-right: 30px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
       font-size: 14px;
       background-color: #fff;
       color: #1f2d3d;
-      font-weight: 500;
-      box-shadow: 0 1px 3px rgba(22, 61, 116, 0.1);
+      font-weight: 400;
       transition: border-color 0.2s, box-shadow 0.2s;
       cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
     }
     
     .team-preset-row select:focus {
@@ -4647,11 +4654,7 @@
             renderTournamentPresets();
           }
           syncMainTeamPresetSelectsFromState();
-          // Обновляем кастомные селекты после загрузки
-          ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
-            const select = document.getElementById(id);
-            if (select) enhanceCustomTeamSelect(select);
-          });
+          // Убираем кастомные селекты - используем обычные select как в формах пресетов
         } else {
           console.error('Failed to load tournaments, status:', response.status, response.statusText);
           const text = await response.text();
@@ -4707,11 +4710,7 @@
           loadTournaments().then(() => {
             loadPresets().then(() => {
               renderTournamentPresets();
-              // Обновляем кастомные селекты
-              ['team1TournamentTeamSelect', 'team2TournamentTeamSelect'].forEach(id => {
-                const select = document.getElementById(id);
-                if (select) enhanceCustomTeamSelect(select);
-              });
+              // Селекты теперь обычные, не кастомные
             });
           });
         });
@@ -4910,9 +4909,33 @@
         team2Select.appendChild(option2);
       });
     }
-    // Заполнение команд из базы команд для конкретной формы
+    // Заполнение команд из базы команд для конкретной формы (только команды выбранные в турнире)
     function fillTeamsFromBaseForForm(formContainer) {
       if (!formContainer || !teams || teams.length === 0) return;
+      
+      // Получаем tournamentId из формы
+      const tournamentId = formContainer.dataset.tournamentId || formContainer.closest('[data-tournament-id]')?.dataset.tournamentId || 
+                           formContainer.id?.replace('presetFormContent_', '') || 
+                           formContainer.querySelector('.addPresetTournament')?.value;
+      
+      // Находим турнир и получаем список выбранных команд
+      let selectedTeamIds = [];
+      if (tournamentId) {
+        const tournament = tournaments.find(t => t.id === tournamentId);
+        if (tournament && tournament.selectedTeamIds && Array.isArray(tournament.selectedTeamIds)) {
+          selectedTeamIds = tournament.selectedTeamIds;
+        }
+      }
+      
+      // Если нет выбранных команд в турнире, не заполняем список
+      if (selectedTeamIds.length === 0) {
+        console.warn('No selected teams in tournament:', tournamentId);
+        const team1Select = formContainer.querySelector('.addPresetTeam1Select');
+        const team2Select = formContainer.querySelector('.addPresetTeam2Select');
+        if (team1Select) team1Select.innerHTML = '<option value="">-- Выберите команды в настройках турнира --</option>';
+        if (team2Select) team2Select.innerHTML = '<option value="">-- Выберите команды в настройках турнира --</option>';
+        return;
+      }
       
       // Заполняем селекты команд
       const team1Select = formContainer.querySelector('.addPresetTeam1Select');
@@ -4923,7 +4946,10 @@
       team1Select.innerHTML = '<option value="">-- Выберите команду --</option>';
       team2Select.innerHTML = '<option value="">-- Выберите команду --</option>';
       
-      teams.forEach(team => {
+      // Фильтруем команды только из выбранных в турнире
+      const tournamentTeams = teams.filter(team => selectedTeamIds.includes(team.id));
+      
+      tournamentTeams.forEach(team => {
         const option1 = document.createElement('option');
         option1.value = team.id;
         const team1Text = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
