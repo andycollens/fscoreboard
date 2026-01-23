@@ -494,6 +494,26 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Ждем загрузки фонового изображения перед началом анимации
+        const bgImage = new Image();
+        bgImage.onload = function() {
+            // Изображение загружено, начинаем анимацию фона
+            document.body.classList.add('background-loaded');
+            
+            // После завершения анимации фона начинаем анимацию контента
+            setTimeout(() => {
+                document.body.classList.add('content-ready');
+            }, 500); // 0.5 секунды - время анимации фона
+        };
+        bgImage.onerror = function() {
+            // Если изображение не загрузилось, все равно показываем контент
+            document.body.classList.add('background-loaded');
+            setTimeout(() => {
+                document.body.classList.add('content-ready');
+            }, 500);
+        };
+        bgImage.src = '/public/img/memberspage_bg.jpg';
+
         const socket = io();
         let latestData = null;
 
