@@ -33,7 +33,7 @@
             opacity: 0.75;
             z-index: -2;
             clip-path: inset(0 0 100% 0);
-            animation: slideDownBackground 1s ease-out forwards;
+            animation: none;
         }
 
         body::after {
@@ -43,7 +43,12 @@
             background: rgba(0, 0, 0, 0.3);
             z-index: -1;
             clip-path: inset(0 0 100% 0);
-            animation: slideDownBackground 1s ease-out forwards;
+            animation: none;
+        }
+
+        body.background-loaded::before,
+        body.background-loaded::after {
+            animation: slideDownBackground 0.5s ease-out forwards;
         }
 
         @keyframes slideDownBackground {
@@ -79,7 +84,11 @@
             width: 100vw;
             background: transparent;
             opacity: 0;
-            animation: fadeInContent 0.8s ease-in 1s forwards;
+            animation: none;
+        }
+
+        body.content-ready .stadium-container {
+            animation: fadeInContent 0.4s ease-in 0.5s forwards;
         }
 
         @keyframes fadeInContent {
