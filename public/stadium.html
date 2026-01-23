@@ -343,7 +343,8 @@
         body.rosters-mode .stadium-container {
             position: fixed;
             inset: 0;
-            display: block !important;
+            display: grid !important;
+            grid-template-rows: 200px 200px 1fr;
             height: 100vh;
             width: 100vw;
             background: #000;
@@ -376,16 +377,49 @@
             letter-spacing: 0.02em;
         }
 
-        body.rosters-mode .top-section,
-        body.rosters-mode .middle-section,
-        body.rosters-mode .bottom-section,
+        body.rosters-mode .top-section {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            width: 100%;
+            background: #000;
+        }
+
+        body.rosters-mode .middle-section {
+            display: block !important;
+            height: 200px;
+            width: 100%;
+            background: #000;
+        }
+
+        body.rosters-mode .bottom-section {
+            display: block !important;
+            width: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+
+        body.rosters-mode .tournament-title {
+            display: none !important;
+        }
+
+        body.rosters-mode .rosters-subtitle {
+            display: block !important;
+            font-size: 3vw;
+            font-weight: 600;
+            color: #dfe6f5;
+            text-align: center;
+            letter-spacing: 0.02em;
+            margin: 0;
+        }
+
         body.rosters-mode .team1-section,
         body.rosters-mode .team2-section,
         body.rosters-mode .score1-section,
         body.rosters-mode .score2-section,
-        body.rosters-mode .divider-section,
-        body.rosters-mode .tournament-title,
-        body.rosters-mode .rosters-subtitle {
+        body.rosters-mode .divider-section {
             display: none !important;
         }
 
