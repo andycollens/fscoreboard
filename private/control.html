@@ -7388,7 +7388,8 @@
 
         select.innerHTML = '<option value="">-- Выберите команду --</option>';
 
-        if (!Array.isArray(tournaments) || tournaments.length === 0) {
+        // Используем команды из глобальной базы команд
+        if (!Array.isArray(teams) || teams.length === 0) {
           select.disabled = true;
           select.classList.add('disabled-field');
           return;
@@ -7397,31 +7398,21 @@
         select.disabled = false;
         select.classList.remove('disabled-field');
 
-        tournaments
-          .filter(tournament => tournament && Array.isArray(tournament.teams) && tournament.teams.length > 0)
-          .forEach(tournament => {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = tournament.name || `Турнир ${tournament.id}`;
-
-            tournament.teams.forEach(team => {
-              if (!team) return;
-              const value = buildTournamentTeamOptionValue(tournament.id, team.id);
-              const option = document.createElement('option');
-              option.value = value;
-              const year = team.birthYear ? String(team.birthYear) : '';
-              const label = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}`;
-              option.textContent = year ? `${label} · ${year}` : label;
-              option.dataset.tournamentId = String(tournament.id);
-              option.dataset.teamId = String(team.id);
-              option.dataset.label = label;
-              if (year) {
-                option.dataset.birthYear = year;
-              }
-              optgroup.appendChild(option);
-            });
-
-            select.appendChild(optgroup);
-          });
+        // Заполняем командами из глобальной базы
+        teams.forEach(team => {
+          if (!team) return;
+          const option = document.createElement('option');
+          option.value = team.id;
+          const year = team.birthYear ? String(team.birthYear) : '';
+          const label = `${team.name || 'Без названия'}${team.city ? ' (' + team.city + ')' : ''}`;
+          option.textContent = year ? `${label} · ${year}` : label;
+          option.dataset.teamId = String(team.id);
+          option.dataset.label = label;
+          if (year) {
+            option.dataset.birthYear = year;
+          }
+          select.appendChild(option);
+        });
 
         // Обновляем кастомный селект
         enhanceCustomTeamSelect(select);
@@ -7473,26 +7464,14 @@
         return;
       }
 
-      const parsed = parseTournamentTeamOptionValue(value);
-      if (!parsed) {
-        console.warn('Не удалось разобрать значение выбора команды:', value);
-        return;
-      }
-
-      const tournament = (tournaments || []).find(t => String(t.id) === parsed.tournamentId);
-      if (!tournament || !Array.isArray(tournament.teams)) {
-        console.warn('Турнир не найден для выбора команды:', parsed.tournamentId);
-        return;
-      }
-
-      const team = teams.find(t => String(t.id) === parsed.teamId);
+      // Теперь value - это просто teamId из глобальной базы команд
+      const team = teams.find(t => String(t.id) === value);
       if (!team) {
-        console.warn('Команда не найдена в выбранном турнире:', parsed.teamId);
+        console.warn('Команда не найдена в базе команд:', value);
         return;
       }
 
       mainTeamSelection[teamKey] = {
-        tournamentId: String(tournament.id),
         teamId: String(team.id)
       };
       selectedTeams[teamKey] = team;
@@ -7564,10 +7543,10 @@
         const select = document.getElementById(id);
         if (!select) return;
 
-        if (mainTeamSelection[key]) {
-          const value = buildTournamentTeamOptionValue(mainTeamSelection[key].tournamentId, mainTeamSelection[key].teamId);
-          const exists = Array.from(select.options).some(opt => opt.value === value);
-          select.value = exists ? value : '';
+        if (mainTeamSelection[key] && mainTeamSelection[key].teamId) {
+          const teamId = String(mainTeamSelection[key].teamId);
+          const exists = Array.from(select.options).some(opt => opt.value === teamId);
+          select.value = exists ? teamId : '';
           if (!exists) {
             mainTeamSelection[key] = null;
           }
@@ -7584,15 +7563,15 @@
           return;
         }
 
+        // Ищем команду в глобальной базе команд
         const found = findTournamentTeamByNameCity(name, city);
-        if (found) {
-          const value = buildTournamentTeamOptionValue(found.tournamentId, found.team.id);
-          const exists = Array.from(select.options).some(opt => opt.value === value);
+        if (found && found.team) {
+          const teamId = String(found.team.id);
+          const exists = Array.from(select.options).some(opt => opt.value === teamId);
           if (exists) {
-            select.value = value;
+            select.value = teamId;
             mainTeamSelection[key] = {
-              tournamentId: String(found.tournamentId),
-              teamId: String(found.team.id)
+              teamId: teamId
             };
           } else {
             select.value = '';
