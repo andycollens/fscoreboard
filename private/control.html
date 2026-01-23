@@ -1987,7 +1987,233 @@
       }
       
       body {
-        padding: 20px;
+        padding: 10px;
+        margin: 0;
+        max-width: 100%;
+      }
+      
+      /* Кастомные селекты команд - мобильная версия */
+      .team-custom-select {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      .team-custom-selected {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+      }
+      
+      .team-custom-selected .sel-label {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+      
+      .team-custom-selected .sel-year {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+      }
+      
+      .team-custom-options {
+        width: 100% !important;
+        max-width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        box-sizing: border-box !important;
+        max-height: 200px !important;
+        z-index: 1000 !important;
+      }
+      
+      .team-custom-option {
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+        overflow: hidden !important;
+      }
+      
+      .team-custom-option .opt-label {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+      
+      .team-custom-option .opt-year {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+      }
+      
+      /* Карточки команд в главном блоке управления */
+      /* Кастомные селекты команд - мобильная версия */
+      .team-custom-select {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+      }
+      
+      .team-custom-selected {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+      }
+      
+      .team-custom-selected .sel-label {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+      
+      .team-custom-selected .sel-year {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+      }
+      
+      .team-custom-options {
+        width: 100% !important;
+        max-width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        box-sizing: border-box !important;
+        max-height: 200px !important;
+        z-index: 1000 !important;
+        position: fixed !important;
+        transform: translateX(0) !important;
+      }
+      
+      .team-custom-option {
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+      }
+      
+      .team-custom-option .opt-label {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+      }
+      
+      .team-custom-option .opt-year {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+      }
+      
+      .team-preset-row {
+        flex-direction: column !important;
+        gap: 10px !important;
+        padding: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      .team-preset-row > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      .team-preset-row select {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        font-size: 14px !important;
+        padding: 10px !important;
+      }
+      
+      /* Информация о командах */
+      .team-display-info {
+        width: 100% !important;
+        padding: 8px !important;
+        box-sizing: border-box !important;
+      }
+      
+      .team-name-display {
+        font-size: 14px !important;
+        height: auto !important;
+        min-height: 2.4em !important;
+      }
+      
+      .team-city-display {
+        font-size: 12px !important;
+      }
+      
+      /* Главный блок управления - компактная версия */
+      .header {
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+      }
+      
+      .header h1 {
+        font-size: 20px !important;
+      }
+      
+      /* Секция пресетов */
+      .presets-section {
+        padding: 10px !important;
+        margin-bottom: 10px !important;
+      }
+      
+      .presets-grid {
+        gap: 8px !important;
+      }
+      
+      .preset-card {
+        padding: 10px !important;
+      }
+      
+      .preset-name {
+        font-size: 14px !important;
+      }
+      
+      .preset-shortcodes {
+        font-size: 12px !important;
+      }
+      
+      /* Карточки турниров - улучшенная верстка */
+      .preset-card {
+        padding: 10px !important;
+        margin-bottom: 8px !important;
+      }
+      
+      .preset-card > div:first-child {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+      }
+      
+      .preset-card > div:first-child > div:first-child {
+        min-width: 0 !important;
+        flex: 1 1 100% !important;
+      }
+      
+      /* Заголовок секции пресетов */
+      .presets-header {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+      }
+      
+      .presets-header h2 {
+        font-size: 18px !important;
       }
       
       .score-controls {
