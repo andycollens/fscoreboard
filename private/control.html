@@ -4821,12 +4821,14 @@
         teams.forEach(team => {
           const option1 = document.createElement('option');
           option1.value = team.id;
-          option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+          option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
+          option1.dataset.birthYear = team.birthYear || '';
           team1Select.appendChild(option1);
           
           const option2 = document.createElement('option');
           option2.value = team.id;
-          option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+          option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
+          option2.dataset.birthYear = team.birthYear || '';
           team2Select.appendChild(option2);
         });
       }
@@ -6261,8 +6263,15 @@
       }
       
       const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament || !tournament.teams) {
+      if (!tournament) {
         alert('Турнир не найден');
+        return;
+      }
+      
+      // Проверяем, есть ли выбранные команды в турнире
+      const selectedTeamIds = tournament.selectedTeamIds || [];
+      if (selectedTeamIds.length === 0) {
+        alert('В этом турнире не выбраны команды. Выберите команды в настройках турнира.');
         return;
       }
       
