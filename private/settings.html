@@ -1232,7 +1232,7 @@
         if (response.ok) {
           teams = await response.json();
           renderTeams();
-        } else {
+      } else {
           console.error('Ошибка загрузки команд');
         }
       } catch (error) {
@@ -1301,11 +1301,11 @@
     function previewBaseTeamLogo(fileInput) {
       const preview = document.getElementById('baseTeamLogoPreview');
       if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
           preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100px; max-height: 100px; margin-top: 10px;">`;
-        };
-        reader.readAsDataURL(fileInput.files[0]);
+      };
+      reader.readAsDataURL(fileInput.files[0]);
       }
     }
     
@@ -1334,7 +1334,7 @@
       formData.append('staff', JSON.stringify([]));
       
       if (logoFile) {
-        formData.append('logo', logoFile);
+          formData.append('logo', logoFile);
       }
       
       try {
@@ -1439,11 +1439,11 @@
     function previewEditBaseTeamLogo(teamId, fileInput) {
       const preview = document.getElementById(`editTeamLogoPreview-${teamId}`);
       if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
           preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100px; max-height: 100px; margin-top: 10px;">`;
-        };
-        reader.readAsDataURL(fileInput.files[0]);
+      };
+      reader.readAsDataURL(fileInput.files[0]);
       }
     }
     
@@ -1475,17 +1475,17 @@
       formData.append('staff', JSON.stringify(team.staff || []));
       
       if (logoFile) {
-        formData.append('logo', logoFile);
+          formData.append('logo', logoFile);
       } else if (team.logo) {
         formData.append('logo', team.logo);
       }
-      
+          
       try {
         const response = await fetch(`/api/teams/${teamId}?token=${getToken()}`, {
           method: 'PUT',
-          body: formData
-        });
-        
+            body: formData
+          });
+          
         if (response.ok) {
           await loadTeams();
           // Уведомляем другие вкладки об обновлении команд
@@ -1493,8 +1493,8 @@
           showNotification('Команда обновлена!', 'success');
         } else {
           throw new Error('Ошибка обновления команды');
-        }
-      } catch (error) {
+          }
+            } catch (error) {
         console.error('Ошибка обновления команды:', error);
         showNotification('Ошибка обновления команды', 'error');
       }
@@ -1603,7 +1603,7 @@
       const container = document.getElementById('tournamentsList');
       
       if (tournaments.length === 0) {
-        container.innerHTML = '<div class="empty-state">Нет созданных турниров. Создайте первый турнир, чтобы начать добавлять команды.</div>';
+        container.innerHTML = '<div class="empty-state">Нет созданных турниров. Создайте первый турнир.</div>';
         return;
       }
       
@@ -1614,270 +1614,34 @@
         card.className = 'tournament-card';
         card.setAttribute('data-tournament-id', tournament.id);
         
-        const teamsHtml = tournament.teams && tournament.teams.length > 0
-          ? tournament.teams.map((team, index) => `
-            <div class="team-item" data-team-id="${team.id}" data-tournament-id="${tournament.id}" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragend="handleDragEnd(event)">
-              <div class="team-row">
-                <div class="team-drag-handle" title="Перетащите для изменения порядка"></div>
-                <div class="team-item-info" id="team-info-${tournament.id}-${team.id}" onclick="toggleTeamRoster('${tournament.id}', '${team.id}', event)">
-                  ${team.logo ? `<img src="${team.logo}" alt="${team.name}" class="team-logo-mini">` : '<div class="team-logo-mini" style="background: #ddd;"></div>'}
-                  <div class="team-short">${team.short || ''}</div>
-                  <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
-                  <div class="team-details">
-                    <div class="team-name">${team.name}</div>
-                    <div class="team-city">${team.city || ''}</div>
-                  </div>
-                  <div class="team-birth-year">${team.birthYear || ''}</div>
-                </div>
-                <div class="team-actions">
-                  <span class="team-edit-link" onclick="editTeam('${tournament.id}', '${team.id}')">edit</span>
-                  <span class="team-delete-link" onclick="deleteTeam('${tournament.id}', '${team.id}')">delete</span>
-                </div>
-              </div>
-              <div id="team-edit-form-${tournament.id}-${team.id}" class="team-edit-form-inline hidden"></div>
-              <div id="team-roster-${tournament.id}-${team.id}" class="team-roster-view hidden"></div>
-            </div>
-          `).join('')
-          : '<div class="empty-state" style="padding: 20px;">Команд пока нет. Добавьте первую команду.</div>';
+        // Команды больше не хранятся в турнирах, они в базе команд
         
         const startDate = tournament.startDate ? new Date(tournament.startDate).toLocaleDateString('ru-RU') : 'Не указана';
         const endDate = tournament.endDate ? new Date(tournament.endDate).toLocaleDateString('ru-RU') : 'Не указана';
         
         card.innerHTML = `
-          <div class="tournament-header" onclick="toggleTournamentTeams('${tournament.id}')">
+          <div class="tournament-header">
             <div class="tournament-info">
               <div class="tournament-name">${tournament.name}</div>
               <div class="tournament-dates">${startDate} - ${endDate}</div>
             </div>
             <div class="tournament-actions" onclick="event.stopPropagation()">
-              <button class="btn btn-primary btn-small" onclick="showAddTeamForm('${tournament.id}')">+ Команда</button>
               <span class="team-edit-link" onclick="editTournament('${tournament.id}')">edit</span>
               <span class="team-delete-link" onclick="deleteTournament('${tournament.id}')">delete</span>
             </div>
           </div>
-          <div id="addTeamForm-${tournament.id}" class="add-team-form hidden">
-            <h4>Добавить команду в турнир</h4>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Название команды *</label>
-                <input type="text" id="newTeamName-${tournament.id}" placeholder="Название команды" maxlength="40">
-              </div>
-              <div class="form-group">
-                <label>Город</label>
-                <input type="text" id="newTeamCity-${tournament.id}" placeholder="Город" maxlength="30">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Шорткод</label>
-                <input type="text" id="newTeamShort-${tournament.id}" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;">
-              </div>
-              <div class="form-group">
-                <label>Год рождения</label>
-                <input type="text" id="newTeamBirthYear-${tournament.id}" placeholder="2014" maxlength="4" inputmode="numeric">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Цвет формы</label>
-                <input type="color" id="newTeamKitColor-${tournament.id}" value="#2b2b2b">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label>Логотип</label>
-                <input type="file" id="newTeamLogo-${tournament.id}" accept="image/*" onchange="previewTeamLogo('${tournament.id}', this)">
-                <div id="teamLogoPreview-${tournament.id}" class="logo-preview"></div>
-              </div>
-            </div>
-            <div class="form-buttons">
-              <button class="btn btn-primary" onclick="saveNewTeam('${tournament.id}')">Добавить</button>
-              <button class="btn btn-secondary" onclick="cancelAddTeam('${tournament.id}')">Отмена</button>
-            </div>
-          </div>
-          <div class="tournament-teams" id="teams-${tournament.id}">
-            <div class="team-list">
-              ${teamsHtml}
-            </div>
+          <div style="padding: 15px; color: #666; font-size: 14px;">
+            Команды для пресетов выбираются из базы команд в разделе "Команды" выше.
           </div>
         `;
         
         container.appendChild(card);
       });
       
-      // Восстанавливаем состояние раскрытия после рендера
-      restoreExpandedState();
+      // Команды больше не отображаются в турнирах
     }
     
-    // Переключение отображения команд турнира
-    function toggleTournamentTeams(tournamentId) {
-      const teamsDiv = document.getElementById(`teams-${tournamentId}`);
-      if (teamsDiv) {
-        const isExpanded = teamsDiv.classList.contains('expanded');
-        if (isExpanded) {
-          teamsDiv.classList.remove('expanded');
-          expandedTournaments.delete(tournamentId);
-        } else {
-          teamsDiv.classList.add('expanded');
-          expandedTournaments.add(tournamentId);
-        }
-      }
-    }
-    
-    // Восстановление состояния раскрытия турниров после рендера
-    function restoreExpandedState() {
-      expandedTournaments.forEach(tournamentId => {
-        const teamsDiv = document.getElementById(`teams-${tournamentId}`);
-        if (teamsDiv) {
-          teamsDiv.classList.add('expanded');
-        }
-      });
-    }
-    
-    // Показать форму добавления команды
-    function showAddTeamForm(tournamentId) {
-      const form = document.getElementById(`addTeamForm-${tournamentId}`);
-      if (form) {
-        form.classList.remove('hidden');
-        // Разворачиваем список команд и сохраняем состояние
-        const teamsDiv = document.getElementById(`teams-${tournamentId}`);
-        if (teamsDiv) {
-          teamsDiv.classList.add('expanded');
-          expandedTournaments.add(tournamentId);
-        }
-        // Прокручиваем к форме для удобства
-        form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    }
-    
-    // Отмена добавления команды
-    function cancelAddTeam(tournamentId) {
-      const form = document.getElementById(`addTeamForm-${tournamentId}`);
-      if (form) {
-        form.classList.add('hidden');
-        // Очищаем поля
-        document.getElementById(`newTeamName-${tournamentId}`).value = '';
-        document.getElementById(`newTeamCity-${tournamentId}`).value = '';
-        document.getElementById(`newTeamShort-${tournamentId}`).value = '';
-        const birthYearEl = document.getElementById(`newTeamBirthYear-${tournamentId}`);
-        if (birthYearEl) birthYearEl.value = '';
-        document.getElementById(`newTeamKitColor-${tournamentId}`).value = '#2b2b2b';
-        document.getElementById(`newTeamLogo-${tournamentId}`).value = '';
-        document.getElementById(`teamLogoPreview-${tournamentId}`).innerHTML = '';
-      }
-    }
-    
-    // Превью логотипа команды
-    function previewTeamLogo(tournamentId, fileInput) {
-      if (!fileInput.files[0]) return;
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const preview = document.getElementById(`teamLogoPreview-${tournamentId}`);
-        preview.innerHTML = `<img src="${e.target.result}" alt="Превью">`;
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-    }
-    
-    // Сохранение новой команды
-    async function saveNewTeam(tournamentId) {
-      const name = document.getElementById(`newTeamName-${tournamentId}`).value.trim();
-      const city = document.getElementById(`newTeamCity-${tournamentId}`).value.trim();
-      const short = document.getElementById(`newTeamShort-${tournamentId}`).value.trim().toUpperCase();
-      const birthYear = (document.getElementById(`newTeamBirthYear-${tournamentId}`)?.value || '').trim();
-      const kitColor = document.getElementById(`newTeamKitColor-${tournamentId}`).value;
-      const logoFile = document.getElementById(`newTeamLogo-${tournamentId}`).files[0];
-      
-      if (!name) {
-        alert('Введите название команды');
-        return;
-      }
-      
-      let logoUrl = '';
-      
-      // Загружаем логотип если есть
-      if (logoFile) {
-        try {
-          const formData = new FormData();
-          formData.append('logo', logoFile);
-          formData.append('tournamentId', tournamentId);
-          // Для новой команды teamId еще нет, будет создан уникальный файл
-          
-          const uploadResponse = await fetch(`/api/upload-logo?token=${getToken()}`, {
-            method: 'POST',
-            body: formData
-          });
-          
-          if (uploadResponse.ok) {
-            const result = await uploadResponse.json();
-            logoUrl = result.url;
-          }
-        } catch (error) {
-          console.error('Ошибка загрузки логотипа:', error);
-        }
-      }
-      
-      const team = {
-        name,
-        city,
-        short,
-        birthYear,
-        kitColor,
-        logo: logoUrl
-      };
-      
-      try {
-        const response = await fetch(`/api/tournaments/${tournamentId}/teams?token=${getToken()}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(team)
-        });
-        
-        if (response.ok) {
-          cancelAddTeam(tournamentId);
-          // Сохраняем состояние раскрытия перед перезагрузкой
-          const wasExpanded = expandedTournaments.has(tournamentId);
-          await loadTournaments();
-          if (wasExpanded) {
-            expandedTournaments.add(tournamentId);
-            restoreExpandedState();
-          }
-          showNotification('Команда добавлена!', 'success');
-        } else {
-          throw new Error('Ошибка сохранения команды');
-        }
-      } catch (error) {
-        console.error('Ошибка сохранения команды:', error);
-        showNotification('Ошибка сохранения команды', 'error');
-      }
-    }
-    
-    // Удаление команды
-    async function deleteTeam(tournamentId, teamId) {
-      if (!confirm('Удалить эту команду?')) return;
-      
-      try {
-        const response = await fetch(`/api/tournaments/${tournamentId}/teams/${teamId}?token=${getToken()}`, {
-          method: 'DELETE'
-        });
-        
-        if (response.ok) {
-          // Сохраняем состояние раскрытия перед перезагрузкой
-          const wasExpanded = expandedTournaments.has(tournamentId);
-          await loadTournaments();
-          if (wasExpanded) {
-            expandedTournaments.add(tournamentId);
-            restoreExpandedState();
-          }
-          showNotification('Команда удалена!', 'success');
-        } else {
-          throw new Error('Ошибка удаления команды');
-        }
-      } catch (error) {
-        console.error('Ошибка удаления команды:', error);
-        showNotification('Ошибка удаления команды', 'error');
-      }
-    }
+    // Команды больше не хранятся в турнирах, они в базе команд
     
     // ==== Helpers for roster parsing ====
     function normalizeName(raw, isPlayer = true) {
@@ -1949,486 +1713,9 @@
         .join('\n');
     }
 
-    function setRosterMode(tournamentId, teamId, type) {
-      const textarea = document.getElementById(`rosterPaste-${tournamentId}-${teamId}`);
-      if (!textarea) return;
-      textarea.dataset.activeType = type;
-      const btnPlayers = document.getElementById(`rosterTogglePlayers-${tournamentId}-${teamId}`);
-      const btnStaff = document.getElementById(`rosterToggleStaff-${tournamentId}-${teamId}`);
-      [btnPlayers, btnStaff].forEach(b => b && b.classList.remove('active'));
-      if (type === 'player' && btnPlayers) btnPlayers.classList.add('active');
-      if (type === 'staff' && btnStaff) btnStaff.classList.add('active');
-      const list = type === 'player'
-        ? getRosterFromDOM(`playersList-${tournamentId}-${teamId}`, true)
-        : getRosterFromDOM(`staffList-${tournamentId}-${teamId}`, false);
-      textarea.value = listToText(list, type);
-    }
+    // Функции для работы с составом команд в турнирах удалены - команды теперь в базе команд
 
-    function parseRosterUnified(tournamentId, teamId) {
-      const textarea = document.getElementById(`rosterPaste-${tournamentId}-${teamId}`);
-      if (!textarea) return;
-      const type = textarea.dataset.activeType === 'staff' ? 'staff' : 'player';
-      const parsed = parseRosterText(textarea.value, type === 'player');
-      if (type === 'player') {
-        renderRosterList(parsed, `playersList-${tournamentId}-${teamId}`, true);
-      } else {
-        renderRosterList(parsed, `staffList-${tournamentId}-${teamId}`, false);
-      }
-    }
-    
-    function renderRosterList(list, containerId, withNumber = true) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      const rows = list && Array.isArray(list) ? list : [];
-      if (rows.length === 0) {
-        container.innerHTML = '<div class="roster-empty">Список пуст</div>';
-        return;
-      }
-      const header = withNumber
-        ? `<div class="roster-header" style="grid-template-columns: 1fr 90px 34px;">
-             <div>ФИО</div>
-             <div style="text-align:right;">№</div>
-             <div></div>
-           </div>`
-        : `<div class="roster-header" style="grid-template-columns: 1fr 34px;">
-             <div>ФИО</div>
-             <div></div>
-           </div>`;
-
-      const body = rows.map((row, idx) => `
-        <div class="roster-row ${withNumber ? '' : 'staff'}" data-index="${idx}">
-          <div>
-            <input type="text" class="roster-name" value="${row.name || ''}" placeholder="Фамилия Имя">
-          </div>
-          ${withNumber ? `
-          <div>
-            <input type="text" class="roster-number" value="${row.number || ''}" placeholder="№">
-          </div>` : ''}
-          <div style="display:flex; align-items:center; justify-content:center; height: 34px;">
-            <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
-          </div>
-        </div>
-      `).join('');
-
-      container.innerHTML = `<div class="roster-table">${header}${body}</div>`;
-    }
-    
-    function getRosterFromDOM(containerId, withNumber = true) {
-      const container = document.getElementById(containerId);
-      if (!container) return [];
-      const rows = Array.from(container.querySelectorAll('.roster-row'));
-      return rows.map(row => {
-        const name = row.querySelector('.roster-name')?.value.trim() || '';
-        const number = withNumber ? (row.querySelector('.roster-number')?.value.trim() || '') : '';
-        return { name, number };
-      }).filter(r => r.name);
-    }
-
-    function removeRosterRow(containerId, idx, withNumber = true) {
-      const current = getRosterFromDOM(containerId, withNumber);
-      if (idx >= 0 && idx < current.length) {
-        current.splice(idx, 1);
-      }
-      renderRosterList(current, containerId, withNumber);
-    }
-    
-    function parseRosterSection(type, tournamentId, teamId) {
-      const isPlayer = type === 'player';
-      const textareaId = isPlayer ? `playersPaste-${tournamentId}-${teamId}` : `staffPaste-${tournamentId}-${teamId}`;
-      const listId = isPlayer ? `playersList-${tournamentId}-${teamId}` : `staffList-${tournamentId}-${teamId}`;
-      const textarea = document.getElementById(textareaId);
-      if (!textarea) return;
-      const parsed = parseRosterText(textarea.value, isPlayer);
-      renderRosterList(parsed, listId, isPlayer);
-    }
-
-    function renderTeamRosterView(tournamentId, teamId) {
-      const rosterDiv = document.getElementById(`team-roster-${tournamentId}-${teamId}`);
-      if (!rosterDiv) return;
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament) return;
-      const team = tournament.teams.find(t => t.id === teamId);
-      if (!team) return;
-      
-      const players = team.players && team.players.length
-        ? `<div class="players-grid">${team.players.map(p => `
-            <div class="player-line">
-              <div class="player-num">${p.number ? String(p.number) : ''}</div>
-              <div class="player-name">${p.name || ''}</div>
-            </div>
-          `).join('')}</div>`
-        : '<div class="roster-empty">Список игроков пуст</div>';
-      
-      const staff = team.staff && team.staff.length
-        ? `<div class="roster-people-list">${team.staff.map(p => `<div>${p.name || ''}</div>`).join('')}</div>`
-        : '<div class="roster-empty">Список штаба пуст</div>';
-      
-      rosterDiv.innerHTML = `
-        <div class="team-roster-box">
-          <div>
-            <div class="team-roster-title">Тренерский состав</div>
-            ${staff}
-          </div>
-          <div style="margin-top: 12px;">
-            <div class="team-roster-title">Игроки</div>
-            ${players}
-          </div>
-        </div>
-      `;
-    }
-
-    function toggleTeamRoster(tournamentId, teamId, event) {
-      if (event && event.target && event.target.closest('.team-actions')) return;
-      const rosterDiv = document.getElementById(`team-roster-${tournamentId}-${teamId}`);
-      if (!rosterDiv) return;
-      const isHidden = rosterDiv.classList.contains('hidden');
-      if (isHidden) {
-        renderTeamRosterView(tournamentId, teamId);
-        rosterDiv.classList.remove('hidden');
-      } else {
-        rosterDiv.classList.add('hidden');
-      }
-    }
-    
-    // Редактирование команды
-    function editTeam(tournamentId, teamId) {
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament) return;
-      
-      const team = tournament.teams.find(t => t.id === teamId);
-      if (!team) return;
-      
-      // Скрываем все другие формы редактирования
-      document.querySelectorAll('.team-edit-form-inline').forEach(form => {
-        if (!form.classList.contains('hidden')) {
-          form.classList.add('hidden');
-          form.innerHTML = '';
-        }
-      });
-      
-      // Скрываем форму добавления если открыта
-      const addForm = document.getElementById(`addTeamForm-${tournamentId}`);
-      if (addForm) {
-        addForm.classList.add('hidden');
-      }
-      
-      // Убеждаемся что список команд раскрыт
-      const teamsDiv = document.getElementById(`teams-${tournamentId}`);
-      if (teamsDiv) {
-        teamsDiv.classList.add('expanded');
-        expandedTournaments.add(tournamentId);
-      }
-      
-      // Находим элемент команды
-      const teamItem = document.querySelector(`[data-team-id="${teamId}"][data-tournament-id="${tournamentId}"]`);
-      if (!teamItem) return;
-      
-      // Скрываем информацию команды
-      const teamInfo = document.getElementById(`team-info-${tournamentId}-${teamId}`);
-      if (teamInfo) {
-        teamInfo.style.display = 'none';
-      }
-      const rosterView = document.getElementById(`team-roster-${tournamentId}-${teamId}`);
-      if (rosterView) {
-        rosterView.classList.add('hidden');
-      }
-      
-      // Показываем форму редактирования на месте команды
-      const editForm = document.getElementById(`team-edit-form-${tournamentId}-${teamId}`);
-      if (editForm) {
-        editForm.classList.remove('hidden');
-        teamItem.classList.add('edit-mode');
-        
-        editForm.innerHTML = `
-          <h4 style="margin-top: 0;">Редактировать команду</h4>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Название команды *</label>
-              <input type="text" id="editTeamName-${tournamentId}-${teamId}" placeholder="Название команды" maxlength="40" value="${team.name || ''}">
-            </div>
-            <div class="form-group">
-              <label>Город</label>
-              <input type="text" id="editTeamCity-${tournamentId}-${teamId}" placeholder="Город" maxlength="30" value="${team.city || ''}">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Шорткод</label>
-              <input type="text" id="editTeamShort-${tournamentId}-${teamId}" placeholder="АБВ" maxlength="3" style="text-transform: uppercase;" value="${team.short || ''}">
-            </div>
-            <div class="form-group">
-              <label>Год рождения</label>
-              <input type="text" id="editTeamBirthYear-${tournamentId}-${teamId}" placeholder="2014" maxlength="4" inputmode="numeric" value="${team.birthYear || ''}">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Цвет формы</label>
-              <input type="color" id="editTeamKitColor-${tournamentId}-${teamId}" value="${team.kitColor || '#2b2b2b'}">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Логотип</label>
-              <input type="file" id="editTeamLogo-${tournamentId}-${teamId}" accept="image/*" onchange="previewEditTeamLogoInline('${tournamentId}', '${teamId}', this)">
-              <div id="editTeamLogoPreview-${tournamentId}-${teamId}" class="logo-preview">${team.logo ? `<img src="${team.logo}" alt="Превью">` : ''}</div>
-            </div>
-          </div>
-          <div class="roster-grid">
-            <div class="roster-card" style="grid-column: 1 / -1;">
-              <div class="roster-switch">
-                <div class="stadium-mode-buttons">
-                  <button type="button" class="stadium-mode-btn active" id="rosterTogglePlayers-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','player')">Игроки</button>
-                  <button type="button" class="stadium-mode-btn" id="rosterToggleStaff-${tournamentId}-${teamId}" onclick="setRosterMode('${tournamentId}','${teamId}','staff')">Тренерский состав</button>
-                </div>
-              </div>
-              <textarea id="rosterPaste-${tournamentId}-${teamId}" rows="5" placeholder="Пример:&#10;10 Иванов Иван&#10;Петров Петр"></textarea>
-              <div class="roster-actions">
-                <button class="btn btn-secondary btn-small" type="button" onclick="parseRosterUnified('${tournamentId}', '${teamId}')">Парсить</button>
-                <button class="btn btn-secondary btn-small" type="button" onclick="document.getElementById('rosterPaste-${tournamentId}-${teamId}').value=''">Очистить</button>
-              </div>
-              <div class="team-roster-box" style="padding: 6px 0 0 0;">
-                <div>
-                  <div class="team-roster-title">Тренерский состав</div>
-                  <div id="staffList-${tournamentId}-${teamId}" class="roster-list"></div>
-                </div>
-                <div style="margin-top: 12px;">
-                  <div class="team-roster-title">Игроки</div>
-                  <div id="playersList-${tournamentId}-${teamId}" class="roster-list"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="form-buttons">
-            <button class="btn btn-primary" onclick="saveEditTeamInline('${tournamentId}', '${teamId}')">Сохранить</button>
-            <button class="btn btn-secondary" onclick="cancelEditTeamInline('${tournamentId}', '${teamId}')">Отмена</button>
-          </div>
-        `;
-        
-        // Сохраняем текущий логотип
-        editForm.dataset.currentLogo = team.logo || '';
-        
-        // Отрисовываем текущий состав, если есть
-        renderRosterList(team.players || [], `playersList-${tournamentId}-${teamId}`, true);
-        renderRosterList(team.staff || [], `staffList-${tournamentId}-${teamId}`, false);
-        setRosterMode(tournamentId, teamId, 'player');
-      }
-    }
-    
-    // Отмена редактирования команды (inline)
-    function cancelEditTeamInline(tournamentId, teamId) {
-      const teamItem = document.querySelector(`[data-team-id="${teamId}"][data-tournament-id="${tournamentId}"]`);
-      if (teamItem) {
-        teamItem.classList.remove('edit-mode');
-      }
-      
-      const editForm = document.getElementById(`team-edit-form-${tournamentId}-${teamId}`);
-      if (editForm) {
-        editForm.classList.add('hidden');
-        editForm.innerHTML = '';
-      }
-      
-      const teamInfo = document.getElementById(`team-info-${tournamentId}-${teamId}`);
-      if (teamInfo) {
-        teamInfo.style.display = 'flex';
-      }
-    }
-    
-    // Превью логотипа при редактировании (inline)
-    function previewEditTeamLogoInline(tournamentId, teamId, fileInput) {
-      if (!fileInput.files[0]) return;
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const preview = document.getElementById(`editTeamLogoPreview-${tournamentId}-${teamId}`);
-        preview.innerHTML = `<img src="${e.target.result}" alt="Превью">`;
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-    }
-    
-    // Сохранение редактируемой команды (inline)
-    async function saveEditTeamInline(tournamentId, teamId) {
-      const name = document.getElementById(`editTeamName-${tournamentId}-${teamId}`).value.trim();
-      const city = document.getElementById(`editTeamCity-${tournamentId}-${teamId}`).value.trim();
-      const short = document.getElementById(`editTeamShort-${tournamentId}-${teamId}`).value.trim().toUpperCase();
-      const birthYear = (document.getElementById(`editTeamBirthYear-${tournamentId}-${teamId}`)?.value || '').trim();
-      const kitColor = document.getElementById(`editTeamKitColor-${tournamentId}-${teamId}`).value;
-      const logoFile = document.getElementById(`editTeamLogo-${tournamentId}-${teamId}`).files[0];
-      const players = getRosterFromDOM(`playersList-${tournamentId}-${teamId}`, true);
-      const staff = getRosterFromDOM(`staffList-${tournamentId}-${teamId}`, false);
-      
-      if (!name) {
-        alert('Введите название команды');
-        return;
-      }
-      
-      // Получаем текущий логотип
-      const editForm = document.getElementById(`team-edit-form-${tournamentId}-${teamId}`);
-      let logoUrl = editForm.dataset.currentLogo || '';
-      
-      // Загружаем новый логотип если выбран
-      if (logoFile) {
-        try {
-          // Удаляем старый логотип если он был
-          const oldLogoUrl = editForm.dataset.currentLogo || '';
-          if (oldLogoUrl) {
-            try {
-              const oldFilename = oldLogoUrl.split('/').pop();
-              await fetch(`/api/logo/${oldFilename}?token=${getToken()}`, {
-                method: 'DELETE'
-              });
-            } catch (error) {
-              console.error('Ошибка удаления старого логотипа:', error);
-            }
-          }
-          
-          const formData = new FormData();
-          formData.append('logo', logoFile);
-          formData.append('tournamentId', tournamentId);
-          formData.append('teamId', teamId);
-          
-          const uploadResponse = await fetch(`/api/upload-logo?token=${getToken()}`, {
-            method: 'POST',
-            body: formData
-          });
-          
-          if (uploadResponse.ok) {
-            const result = await uploadResponse.json();
-            logoUrl = result.url;
-          }
-        } catch (error) {
-          console.error('Ошибка загрузки логотипа:', error);
-        }
-      }
-      
-      const team = {
-        name,
-        city,
-        short,
-        birthYear,
-        kitColor,
-        logo: logoUrl,
-        players,
-        staff
-      };
-      
-      try {
-        const response = await fetch(`/api/tournaments/${tournamentId}/teams/${teamId}?token=${getToken()}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(team)
-        });
-        
-        if (response.ok) {
-          // Сохраняем состояние раскрытия перед перезагрузкой
-          const wasExpanded = expandedTournaments.has(tournamentId);
-          await loadTournaments();
-          if (wasExpanded) {
-            expandedTournaments.add(tournamentId);
-            restoreExpandedState();
-          }
-          showNotification('Команда обновлена!', 'success');
-          
-          // Обновляем пресеты, если страница control.html открыта
-          // Отправляем событие в localStorage для синхронизации между вкладками
-          window.localStorage.setItem('teamUpdated', JSON.stringify({
-            tournamentId: tournamentId,
-            teamId: teamId,
-            timestamp: Date.now()
-          }));
-        } else {
-          throw new Error('Ошибка обновления команды');
-        }
-      } catch (error) {
-        console.error('Ошибка обновления команды:', error);
-        showNotification('Ошибка обновления команды', 'error');
-      }
-    }
-    
-    // Drag & Drop функции
-    function handleDragStart(e) {
-      draggedTeamElement = e.currentTarget;
-      e.currentTarget.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/html', e.currentTarget.outerHTML);
-    }
-    
-    function handleDragOver(e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      
-      const teamItem = e.currentTarget.closest('.team-item');
-      if (teamItem && teamItem !== draggedTeamElement) {
-        teamItem.classList.add('drag-over');
-      }
-    }
-    
-    function handleDragEnd(e) {
-      e.currentTarget.classList.remove('dragging');
-      document.querySelectorAll('.team-item').forEach(item => {
-        item.classList.remove('drag-over');
-      });
-    }
-    
-    async function handleDrop(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const targetTeamItem = e.currentTarget.closest('.team-item');
-      if (!targetTeamItem || !draggedTeamElement) return;
-      
-      if (targetTeamItem === draggedTeamElement) return;
-      
-      const tournamentId = targetTeamItem.dataset.tournamentId;
-      const draggedTeamId = draggedTeamElement.dataset.teamId;
-      const targetTeamId = targetTeamItem.dataset.teamId;
-      
-      const tournament = tournaments.find(t => t.id === tournamentId);
-      if (!tournament || !tournament.teams) return;
-      
-      const draggedIndex = tournament.teams.findIndex(t => t.id === draggedTeamId);
-      const targetIndex = tournament.teams.findIndex(t => t.id === targetTeamId);
-      
-      if (draggedIndex === -1 || targetIndex === -1) return;
-      
-      // Перемещаем команду в новую позицию
-      const [movedTeam] = tournament.teams.splice(draggedIndex, 1);
-      tournament.teams.splice(targetIndex, 0, movedTeam);
-      
-      // Сохраняем состояние раскрытия
-      const wasExpanded = expandedTournaments.has(tournamentId);
-      
-      // Сохраняем новый порядок на сервере
-      try {
-        const response = await fetch(`/api/tournaments/${tournamentId}/teams/reorder?token=${getToken()}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ teamIds: tournament.teams.map(t => t.id) })
-        });
-        
-        if (response.ok) {
-          await loadTournaments();
-          if (wasExpanded) {
-            expandedTournaments.add(tournamentId);
-            restoreExpandedState();
-          }
-        } else {
-          // Откатываем изменение если ошибка
-          tournament.teams.splice(targetIndex, 1);
-          tournament.teams.splice(draggedIndex, 0, movedTeam);
-          throw new Error('Ошибка сохранения порядка');
-        }
-      } catch (error) {
-        console.error('Ошибка перемещения команды:', error);
-        showNotification('Ошибка перемещения команды', 'error');
-        // Перезагружаем список чтобы вернуть исходный порядок
-        await loadTournaments();
-        if (wasExpanded) {
-          expandedTournaments.add(tournamentId);
-          restoreExpandedState();
-        }
-      }
-    }
+    // Все функции для работы с командами в турнирах удалены - команды теперь создаются и редактируются только в базе команд
     
     // Переключение формы создания турнира
     function toggleAddTournamentForm() {
