@@ -344,7 +344,7 @@
             position: fixed;
             inset: 0;
             display: grid !important;
-            grid-template-rows: 100px 200px 1fr;
+            grid-template-rows: 100px 150px 1fr;
             height: 100vh;
             width: 100vw;
             background: #000;
@@ -392,7 +392,7 @@
         body.rosters-mode .middle-section {
             display: grid !important;
             grid-template-columns: 1fr 1fr;
-            height: 200px;
+            height: 150px;
             width: 100%;
             background: #000;
             gap: 0;
@@ -589,6 +589,8 @@
             text-align: right;
             min-width: 2.5vw;
             flex-shrink: 0;
+            font-size: 1.5vw;
+            color: #b0b0b0;
         }
 
         body.rosters-mode .roster-player-name {
@@ -607,6 +609,14 @@
         body.rosters-mode .roster-team2 .roster-players-label,
         body.rosters-mode .roster-team2 .roster-players-list {
             text-align: right;
+        }
+
+        body.rosters-mode .roster-team2 .roster-player-item {
+            flex-direction: row-reverse;
+        }
+
+        body.rosters-mode .roster-team2 .roster-player-number {
+            text-align: left;
         }
 
         body.rosters-mode .divider-section,
@@ -2101,17 +2111,31 @@ body.penalty-mode .penalty-score {
                                 const parts = item.trim().split(/\s+/);
                                 const num = parts[0].match(/^\d+$/) ? parts[0] : '';
                                 const name = num ? parts.slice(1).join(' ') : item;
-                                return `<div class="roster-player-item">
-                                    <span class="roster-player-number">${escapeHtml(num || '')}</span>
-                                    <span class="roster-player-name">${escapeHtml(name || '')}</span>
-                                </div>`;
+                                if (isRightSide) {
+                                    return `<div class="roster-player-item">
+                                        <span class="roster-player-name">${escapeHtml(name || '')}</span>
+                                        <span class="roster-player-number">${escapeHtml(num || '')}</span>
+                                    </div>`;
+                                } else {
+                                    return `<div class="roster-player-item">
+                                        <span class="roster-player-number">${escapeHtml(num || '')}</span>
+                                        <span class="roster-player-name">${escapeHtml(name || '')}</span>
+                                    </div>`;
+                                }
                             }
                             const num = item.number ? String(item.number) : '';
                             const name = item.name || '';
-                            return `<div class="roster-player-item">
-                                <span class="roster-player-number">${escapeHtml(num)}</span>
-                                <span class="roster-player-name">${escapeHtml(name)}</span>
-                            </div>`;
+                            if (isRightSide) {
+                                return `<div class="roster-player-item">
+                                    <span class="roster-player-name">${escapeHtml(name)}</span>
+                                    <span class="roster-player-number">${escapeHtml(num)}</span>
+                                </div>`;
+                            } else {
+                                return `<div class="roster-player-item">
+                                    <span class="roster-player-number">${escapeHtml(num)}</span>
+                                    <span class="roster-player-name">${escapeHtml(name)}</span>
+                                </div>`;
+                            }
                         })
                         .filter(Boolean);
                     playersEl.innerHTML = playerItems.join('');
