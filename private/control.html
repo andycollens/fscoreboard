@@ -6539,10 +6539,7 @@
       const team1Select = editForm.querySelector('.editPresetTeam1SelectInline');
       const team2Select = editForm.querySelector('.editPresetTeam2SelectInline');
       
-      // Получаем список выбранных команд для турнира
-      const selectedTeamIds = tournament.selectedTeamIds || [];
-      
-      // Фильтруем команды только из выбранных в турнире
+      // Фильтруем команды только из выбранных в турнире (selectedTeamIds уже объявлен выше)
       const tournamentTeams = teams.filter(team => selectedTeamIds.includes(team.id));
       
       tournamentTeams.forEach(team => {
@@ -8279,11 +8276,16 @@
   </div>
   
   <script>
-    // Устанавливаем ссылку на настройки с токеном
+    // Устанавливаем ссылку на настройки с токеном (используем функцию из основного скрипта)
     document.addEventListener('DOMContentLoaded', function() {
       const settingsLink = document.getElementById('settingsLink');
-      if (settingsLink) {
+      if (settingsLink && typeof getToken === 'function') {
         settingsLink.href = `/private/settings.html?token=${getToken()}`;
+      } else if (settingsLink) {
+        // Fallback: получаем токен из URL напрямую
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || 'MySecret111';
+        settingsLink.href = `/private/settings.html?token=${token}`;
       }
     });
   </script>
