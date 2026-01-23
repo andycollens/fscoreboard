@@ -465,17 +465,35 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            gap: 1vh;
+            gap: 0;
             min-width: 0;
+        }
+
+        body.rosters-mode .team1-meta .team1-name {
+            margin-bottom: 1vh;
+        }
+
+        body.rosters-mode .team1-meta .team1-city {
+            margin-top: 0;
+            align-self: flex-start;
         }
 
         body.rosters-mode .team2-meta {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 1vh;
+            gap: 0;
             min-width: 0;
             text-align: right;
+        }
+
+        body.rosters-mode .team2-meta .team2-name {
+            margin-bottom: 1vh;
+        }
+
+        body.rosters-mode .team2-meta .team2-city {
+            margin-top: 0;
+            align-self: flex-end;
         }
 
         body.rosters-mode .team1-name,
