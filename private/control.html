@@ -4782,14 +4782,18 @@
       teams.forEach(team => {
         const option1 = document.createElement('option');
         option1.value = team.id;
-        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        const team1Text = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
+        option1.textContent = team1Text;
         option1.dataset.logo = team.logo || '';
+        option1.dataset.birthYear = team.birthYear || '';
         team1Select.appendChild(option1);
         
         const option2 = document.createElement('option');
         option2.value = team.id;
-        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        const team2Text = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
+        option2.textContent = team2Text;
         option2.dataset.logo = team.logo || '';
+        option2.dataset.birthYear = team.birthYear || '';
         team2Select.appendChild(option2);
       });
     }
@@ -6496,14 +6500,21 @@
       editForm.classList.remove('hidden');
       presetItem.classList.add('edit-mode');
       
-      // Заполняем селекты команд
+      // Заполняем селекты команд только командами, выбранными в турнире
       const team1Select = editForm.querySelector('.editPresetTeam1SelectInline');
       const team2Select = editForm.querySelector('.editPresetTeam2SelectInline');
       
-      teams.forEach(team => {
+      // Получаем список выбранных команд для турнира
+      const selectedTeamIds = tournament.selectedTeamIds || [];
+      
+      // Фильтруем команды только из выбранных в турнире
+      const tournamentTeams = teams.filter(team => selectedTeamIds.includes(team.id));
+      
+      tournamentTeams.forEach(team => {
         const option1 = document.createElement('option');
         option1.value = team.id;
-        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        option1.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
+        option1.dataset.birthYear = team.birthYear || '';
         if (currentTeam1Id && team.id === currentTeam1Id) {
           option1.selected = true;
           selectedTeam1 = team;
@@ -6513,7 +6524,8 @@
         
         const option2 = document.createElement('option');
         option2.value = team.id;
-        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}`;
+        option2.textContent = `${team.name}${team.city ? ' (' + team.city + ')' : ''}${team.birthYear ? ' · ' + team.birthYear : ''}`;
+        option2.dataset.birthYear = team.birthYear || '';
         if (currentTeam2Id && team.id === currentTeam2Id) {
           option2.selected = true;
           selectedTeam2 = team;
