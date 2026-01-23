@@ -38,42 +38,12 @@
       gap: 0;
       position: relative;
       overflow: visible;
+      opacity: 0;
+      transition: opacity 0.1s ease-in;
     }
 
-    .section {
-      position: relative;
-      overflow: visible;
-    }
-
-    .section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: inherit;
-      transform-origin: left center;
-      transform: scaleX(0);
-      animation: none;
-      z-index: -1;
-    }
-
-    body.background-loaded .section::before {
-      animation: slideRightBackground 0.25s ease-out forwards;
-    }
-
-    .divider-section::before {
-      display: none;
-    }
-
-    @keyframes slideRightBackground {
-      from {
-        transform: scaleX(0);
-      }
-      to {
-        transform: scaleX(1);
-      }
+    body.elements-loaded .scoreboard-row {
+      opacity: 1;
     }
 
     .divider-section {
@@ -268,25 +238,6 @@
       border: none !important;
     }
 
-    .scoreboard-row span,
-    .scoreboard-row .divider-logo {
-      opacity: 0;
-      animation: none;
-    }
-
-    body.content-ready .scoreboard-row span,
-    body.content-ready .scoreboard-row .divider-logo {
-      animation: fadeInContent 0.2s ease-in 0.25s forwards;
-    }
-
-    @keyframes fadeInContent {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
-    }
   </style>
 </head>
 <body>
@@ -499,11 +450,11 @@
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         loadGraphicStyle();
-        waitForImages();
+        waitForElements();
       });
     } else {
       loadGraphicStyle();
-      waitForImages();
+      waitForElements();
     }
   </script>
 </body>
