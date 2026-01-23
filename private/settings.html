@@ -1896,8 +1896,8 @@
           <div id="selectedTeams-${tournament.id}" style="padding: 15px; color: #666; font-size: 14px;">
             <div style="margin-bottom: 10px;">Команды для пресетов выбираются из базы команд.</div>
             <div id="selectedTeamsList-${tournament.id}" style="display: none;">
-              <div style="font-weight: 600; margin-bottom: 8px; color: #163d74;">Выбранные команды:</div>
-              <div id="selectedTeamsContent-${tournament.id}" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+              <div style="font-weight: 600; margin-bottom: 12px; color: #163d74; font-size: 14px;">Выбранные команды:</div>
+              <div id="selectedTeamsContent-${tournament.id}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;"></div>
             </div>
           </div>
         `;
@@ -2205,11 +2205,26 @@
         const team = teams.find(t => t.id === teamId);
         if (!team) return '';
         
+        const logoHtml = team.logo 
+          ? `<img src="${team.logo}" alt="${team.name}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px;">`
+          : '<div style="width: 32px; height: 32px; background: #ddd; border-radius: 4px;"></div>';
+        
         return `
-          <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: #e3f2fd; border-radius: 6px; border: 1px solid #338af3;">
-            ${team.logo ? `<img src="${team.logo}" style="width: 24px; height: 24px; object-fit: contain;">` : '<div style="width: 24px; height: 24px; background: #ddd; border-radius: 4px;"></div>'}
-            <span style="font-size: 13px; font-weight: 500;">${team.name}</span>
-            <span style="cursor: pointer; color: #666; font-size: 16px; margin-left: 4px;" onclick="removeTeamFromTournament('${tournamentId}', '${teamId}')" title="Удалить">×</span>
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            ${logoHtml}
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 600; color: #1e293b; text-transform: uppercase;">${team.short || ''}</span>
+              <div style="width: 16px; height: 16px; background-color: ${team.kitColor || '#2b2b2b'}; border-radius: 3px; border: 1px solid #cbd5e1;"></div>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 14px; font-weight: 600; color: #163d74; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${team.name}</div>
+              <div style="font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${team.city || ''}</div>
+            </div>
+            <span style="cursor: pointer; color: #cbd5e1; font-size: 18px; font-weight: 300; margin-left: 8px; transition: color 0.2s;" 
+                  onclick="removeTeamFromTournament('${tournamentId}', '${teamId}')" 
+                  onmouseover="this.style.color='#ef4444'" 
+                  onmouseout="this.style.color='#cbd5e1'"
+                  title="Удалить">×</span>
           </div>
         `;
       }).join('');
