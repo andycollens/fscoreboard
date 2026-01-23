@@ -516,28 +516,9 @@
             display: none !important;
         }
 
-        body.rosters-mode .bottom-section .score1-section {
-            display: flex !important;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: flex-start;
-            padding: 2vh 2vw;
-            box-sizing: border-box;
-            overflow-y: auto;
-            overflow-x: hidden;
-            grid-column: 1;
-        }
-
-        body.rosters-mode .bottom-section .score2-section {
-            display: flex !important;
-            flex-direction: column;
-            align-items: flex-end;
-            justify-content: flex-start;
-            padding: 2vh 2vw;
-            box-sizing: border-box;
-            overflow-y: auto;
-            overflow-x: hidden;
-            grid-column: 2;
+        body.rosters-mode .score1-section,
+        body.rosters-mode .score2-section {
+            display: none !important;
         }
 
         body.rosters-mode .team1-score,
@@ -545,37 +526,62 @@
             display: none !important;
         }
 
-        body.rosters-mode .roster-list {
-            display: block !important;
-            width: 100%;
+        body.rosters-mode .roster-team1,
+        body.rosters-mode .roster-team2 {
+            display: flex !important;
+            flex-direction: column;
+            padding: 2vh 2vw;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
-        body.rosters-mode .roster-title {
+        body.rosters-mode .roster-team1 {
+            grid-column: 1;
+            align-items: flex-start;
+        }
+
+        body.rosters-mode .roster-team2 {
+            grid-column: 2;
+            align-items: flex-end;
+        }
+
+        body.rosters-mode .roster-coach-label,
+        body.rosters-mode .roster-players-label {
             font-weight: 700;
             font-size: 2.1vw;
-            margin: 0 0 1vh 0;
+            margin: 0 0 0.5vh 0;
             display: block;
         }
 
-        body.rosters-mode .roster-lines {
+        body.rosters-mode .roster-coach-name {
             font-size: 2.0vw;
             font-weight: 500;
-            line-height: 1.5;
             margin: 0 0 2vh 0;
             display: block;
         }
 
-        body.rosters-mode .roster-lines + .roster-title {
-            margin-top: 2vh;
+        body.rosters-mode .roster-players-list {
+            font-size: 2.0vw;
+            font-weight: 500;
+            line-height: 1.5;
+            display: block;
+            column-count: 2;
+            column-gap: 2vw;
+            width: 100%;
         }
 
-        body.rosters-mode .bottom-section .score1-section .roster-title,
-        body.rosters-mode .bottom-section .score1-section .roster-lines {
+        body.rosters-mode .roster-team1 .roster-coach-label,
+        body.rosters-mode .roster-team1 .roster-coach-name,
+        body.rosters-mode .roster-team1 .roster-players-label,
+        body.rosters-mode .roster-team1 .roster-players-list {
             text-align: left;
         }
 
-        body.rosters-mode .bottom-section .score2-section .roster-title,
-        body.rosters-mode .bottom-section .score2-section .roster-lines {
+        body.rosters-mode .roster-team2 .roster-coach-label,
+        body.rosters-mode .roster-team2 .roster-coach-name,
+        body.rosters-mode .roster-team2 .roster-players-label,
+        body.rosters-mode .roster-team2 .roster-players-list {
             text-align: right;
         }
 
@@ -1677,6 +1683,18 @@ body.penalty-mode .penalty-score {
                 <span class="timer-separator">:</span>
                 <span class="timer-seconds" id="timerSeconds">00</span>
             </div>
+            <div class="roster-team1" id="rosterTeam1">
+                <div class="roster-coach-label">Тренер:</div>
+                <div class="roster-coach-name" id="rosterTeam1Coach"></div>
+                <div class="roster-players-label">Игроки:</div>
+                <div class="roster-players-list" id="rosterTeam1Players"></div>
+            </div>
+            <div class="roster-team2" id="rosterTeam2">
+                <div class="roster-coach-label">Тренер:</div>
+                <div class="roster-coach-name" id="rosterTeam2Coach"></div>
+                <div class="roster-players-label">Игроки:</div>
+                <div class="roster-players-list" id="rosterTeam2Players"></div>
+            </div>
         </div>
     </div>
 
@@ -1859,6 +1877,11 @@ body.penalty-mode .penalty-score {
         const team2Score = document.getElementById('team2Score');
         const team2Roster = document.getElementById('team2Roster');
         
+        const rosterTeam1Coach = document.getElementById('rosterTeam1Coach');
+        const rosterTeam1Players = document.getElementById('rosterTeam1Players');
+        const rosterTeam2Coach = document.getElementById('rosterTeam2Coach');
+        const rosterTeam2Players = document.getElementById('rosterTeam2Players');
+        
         const timer = document.getElementById('timer');
         const timerMinutes = document.getElementById('timerMinutes');
         const timerSeconds = document.getElementById('timerSeconds');
@@ -2022,6 +2045,46 @@ body.penalty-mode .penalty-score {
             el.innerHTML = parts.join('');
         }
 
+        function renderRostersMode(coachEl, playersEl, staff, players, isRightSide = false) {
+            // Заполняем тренера
+            if (coachEl) {
+                if (staff && Array.isArray(staff) && staff.length > 0) {
+                    const coachName = staff
+                        .map(item => {
+                            if (!item) return '';
+                            if (typeof item === 'string') return escapeHtml(item);
+                            return escapeHtml(item.name || '');
+                        })
+                        .filter(Boolean)
+                        .join(' ');
+                    coachEl.textContent = coachName || '';
+                } else {
+                    coachEl.textContent = '';
+                }
+            }
+
+            // Заполняем игроков в две колонки
+            if (playersEl) {
+                if (players && Array.isArray(players) && players.length > 0) {
+                    const playerLines = players
+                        .map(item => {
+                            if (!item) return '';
+                            if (typeof item === 'string') return escapeHtml(item);
+                            const num = item.number ? String(item.number) : '';
+                            const name = item.name || '';
+                            const line = isRightSide
+                                ? `${name}${num ? ' ' + num : ''}`   // ФИО №
+                                : `${num ? num + ' ' : ''}${name}`;   // № ФИО
+                            return escapeHtml(line.trim());
+                        })
+                        .filter(Boolean);
+                    playersEl.innerHTML = playerLines.join('<br>');
+                } else {
+                    playersEl.innerHTML = '';
+                }
+            }
+        }
+
         function updateDisplay(data) {
             console.log('Stadium обновляет отображение:', data);
  
@@ -2052,6 +2115,15 @@ body.penalty-mode .penalty-score {
                     false
                 );
             }
+
+            // Обновляем списки для режима "Составы"
+            renderRostersMode(
+                rosterTeam1Coach,
+                rosterTeam1Players,
+                data.team1Staff || data.staff1 || [],
+                data.team1Players || data.players1 || [],
+                false
+            );
 
             const stadiumTeam1Short = document.getElementById('stadiumTeam1');
             const stadiumTeam2Short = document.getElementById('stadiumTeam2');
@@ -2092,6 +2164,15 @@ body.penalty-mode .penalty-score {
                     true
                 );
             }
+
+            // Обновляем списки для режима "Составы"
+            renderRostersMode(
+                rosterTeam2Coach,
+                rosterTeam2Players,
+                data.team2Staff || data.staff2 || [],
+                data.team2Players || data.players2 || [],
+                true
+            );
 
             // Обновляем полоску для команды 2
             updateStripe('team2', data.kit2Color);
@@ -2200,70 +2281,6 @@ body.penalty-mode .penalty-score {
             }
         }
 
-        // Перемещаем score-секции в bottom-section для режима "Составы"
-        const middleContent = document.querySelector('.middle-content');
-        const bottomSection = document.querySelector('.bottom-section');
-        const score1Section = document.querySelector('.score1-section');
-        const score2Section = document.querySelector('.score2-section');
-        const team1Section = document.querySelector('.team1-section');
-        const dividerSection = document.querySelector('.divider-section');
-        
-        if (mode === 'rosters') {
-            // Перемещаем в bottom-section
-            if (middleContent && bottomSection && score1Section && score2Section) {
-                // Убеждаемся, что элементы не находятся в middle-content
-                if (score1Section.parentElement === middleContent) {
-                    middleContent.removeChild(score1Section);
-                }
-                if (score2Section.parentElement === middleContent) {
-                    middleContent.removeChild(score2Section);
-                }
-                // Добавляем в bottom-section в правильном порядке
-                // Сначала удаляем оба элемента, если они уже там
-                if (score1Section.parentElement === bottomSection) {
-                    bottomSection.removeChild(score1Section);
-                }
-                if (score2Section.parentElement === bottomSection) {
-                    bottomSection.removeChild(score2Section);
-                }
-                // Добавляем score1-section первой
-                bottomSection.appendChild(score1Section);
-                // Добавляем score2-section второй
-                bottomSection.appendChild(score2Section);
-            }
-        } else {
-            // Возвращаем обратно в middle-content
-            if (middleContent && score1Section && score2Section) {
-                // Удаляем из bottom-section, если они там
-                if (score1Section.parentElement === bottomSection) {
-                    bottomSection.removeChild(score1Section);
-                }
-                if (score2Section.parentElement === bottomSection) {
-                    bottomSection.removeChild(score2Section);
-                }
-                // Вставляем обратно в middle-content
-                if (score1Section.parentElement !== middleContent) {
-                    // Вставляем score1-section после team1-section
-                    if (team1Section && team1Section.nextSibling) {
-                        middleContent.insertBefore(score1Section, team1Section.nextSibling);
-                    } else if (team1Section) {
-                        team1Section.insertAdjacentElement('afterend', score1Section);
-                    } else {
-                        middleContent.insertBefore(score1Section, middleContent.firstChild);
-                    }
-                }
-                if (score2Section.parentElement !== middleContent) {
-                    // Вставляем score2-section после divider-section
-                    if (dividerSection && dividerSection.nextSibling) {
-                        middleContent.insertBefore(score2Section, dividerSection.nextSibling);
-                    } else if (dividerSection) {
-                        dividerSection.insertAdjacentElement('afterend', score2Section);
-                    } else {
-                        middleContent.appendChild(score2Section);
-                    }
-                }
-            }
-        }
 
         refreshDisplayForMode(mode, window.lastScoreboardData || latestData || {});
     }
