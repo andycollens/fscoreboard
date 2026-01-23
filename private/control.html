@@ -4509,9 +4509,11 @@
     
     async function loadTournaments() {
       try {
+        console.log('Loading tournaments...');
         const response = await fetch(`/api/tournaments?token=${getToken()}`);
         if (response.ok) {
           tournaments = await response.json();
+          console.log('Tournaments loaded:', tournaments ? tournaments.length : 0, tournaments);
           renderTournamentsForPresets();
           populateMainTeamPresetSelects();
           // Загружаем пресеты после загрузки турниров
@@ -4526,6 +4528,10 @@
             const select = document.getElementById(id);
             if (select) enhanceCustomTeamSelect(select);
           });
+        } else {
+          console.error('Failed to load tournaments, status:', response.status, response.statusText);
+          const text = await response.text();
+          console.error('Response text:', text);
         }
       } catch (error) {
         console.error('Ошибка загрузки турниров:', error);
