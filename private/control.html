@@ -862,6 +862,8 @@
     
     .timer-inputs input[type="text"] {
       width: 80px; 
+      max-width: 80px;
+      min-width: 80px;
       font-size: 1.2em; 
       text-align: center; 
       border: none; 
@@ -870,6 +872,8 @@
       letter-spacing: 2px;
       color: #163d74;
       font-weight: 600;
+      box-sizing: border-box;
+      padding: 0;
     }
     
     .score-row { 
@@ -1950,11 +1954,21 @@
         font-size: 16px;
       }
       
+      .timer-inputs {
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        min-width: 0 !important;
+      }
+      
       .timer-inputs input {
-        font-size: 18px;
-        padding: 8px 12px;
-        width: 80px;
-        text-align: center;
+        font-size: 18px !important;
+        padding: 0 !important;
+        width: 80px !important;
+        max-width: 80px !important;
+        min-width: 80px !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        letter-spacing: 2px !important;
       }
       
       .score-row {
