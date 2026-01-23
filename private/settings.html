@@ -652,11 +652,123 @@
     }
 
     .team-roster-view {
-      padding: 10px 12px;
-      margin-top: 6px;
-      border: 1px solid #e5e7eb;
+      padding: 0;
+      margin-top: 12px;
+      border: none;
+      background: transparent;
+    }
+    
+    .roster-content {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .roster-section {
+      margin-bottom: 24px;
+    }
+    
+    .roster-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .roster-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .roster-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, #e2e8f0, transparent);
+    }
+    
+    .roster-staff-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
       background: #fff;
       border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .roster-staff-item {
+      padding: 6px 12px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #1e293b;
+      font-weight: 500;
+    }
+    
+    .roster-staff-empty {
+      padding: 12px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      color: #94a3b8;
+      font-size: 13px;
+      font-style: italic;
+    }
+    
+    .roster-players-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+      padding: 12px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .roster-player-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    
+    .roster-player-item:hover {
+      background: #f1f5f9;
+    }
+    
+    .roster-player-number {
+      min-width: 28px;
+      text-align: right;
+      font-weight: 600;
+      color: #475569;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .roster-player-name {
+      flex: 1;
+      color: #1e293b;
+    }
+    
+    .roster-players-empty {
+      padding: 12px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      color: #94a3b8;
+      font-size: 13px;
+      font-style: italic;
+      text-align: center;
     }
     .team-roster-box {
       padding: 6px 4px;
@@ -1708,16 +1820,49 @@
       const rosterDiv = document.getElementById(`team-roster-${teamId}`);
       if (!rosterDiv) return;
       
-      const staff = (team.staff || []).map(s => s.name).join(', ') || 'Не указан';
-      const players = (team.players || []).map(p => `${p.number ? p.number + '. ' : ''}${p.name}`).join(', ') || 'Нет игроков';
+      const staffList = team.staff || [];
+      const playersList = team.players || [];
+      
+      // Формируем HTML для тренерского состава
+      let staffHtml = '';
+      if (staffList.length > 0) {
+        staffHtml = `
+          <div class="roster-staff-list">
+            ${staffList.map(s => `
+              <div class="roster-staff-item">${s.name || ''}</div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        staffHtml = '<div class="roster-staff-empty">Тренерский состав не указан</div>';
+      }
+      
+      // Формируем HTML для игроков
+      let playersHtml = '';
+      if (playersList.length > 0) {
+        playersHtml = `
+          <div class="roster-players-grid">
+            ${playersList.map(p => `
+              <div class="roster-player-item">
+                ${p.number ? `<span class="roster-player-number">${p.number}</span>` : '<span class="roster-player-number" style="opacity: 0.3;">—</span>'}
+                <span class="roster-player-name">${p.name || ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        playersHtml = '<div class="roster-players-empty">Игроки не добавлены</div>';
+      }
       
       rosterDiv.innerHTML = `
         <div class="roster-content">
           <div class="roster-section">
-            <strong>Тренерский состав:</strong> ${staff}
+            <div class="roster-section-title">Тренерский состав</div>
+            ${staffHtml}
           </div>
           <div class="roster-section">
-            <strong>Игроки:</strong> ${players}
+            <div class="roster-section-title">Игроки</div>
+            ${playersHtml}
           </div>
         </div>
       `;
