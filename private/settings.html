@@ -1889,6 +1889,35 @@
       }
     }
     
+    // Переключение сворачивания/разворачивания пресетов турнира
+    function toggleTournamentPresets(tournamentId) {
+      const isExpanded = expandedTournaments.has(tournamentId);
+      const selectedTeamsDiv = document.getElementById(`selectedTeams-${tournamentId}`);
+      const card = document.querySelector(`[data-tournament-id="${tournamentId}"]`);
+      const header = card ? card.querySelector('.tournament-header') : null;
+      const button = document.getElementById(`teamSelectBtn-${tournamentId}`);
+      
+      if (isExpanded) {
+        expandedTournaments.delete(tournamentId);
+        if (selectedTeamsDiv) selectedTeamsDiv.style.display = 'none';
+        if (button) button.textContent = '+';
+        // Обновляем стрелку
+        if (header) {
+          const arrow = header.querySelector('span:first-child');
+          if (arrow) arrow.style.transform = 'rotate(0deg)';
+        }
+      } else {
+        expandedTournaments.add(tournamentId);
+        if (selectedTeamsDiv) selectedTeamsDiv.style.display = 'block';
+        if (button) button.textContent = 'Выбрать команды';
+        // Обновляем стрелку
+        if (header) {
+          const arrow = header.querySelector('span:first-child');
+          if (arrow) arrow.style.transform = 'rotate(90deg)';
+        }
+      }
+    }
+    
     // Отображение турниров
     function renderTournaments() {
       const container = document.getElementById('tournamentsList');
@@ -1910,19 +1939,25 @@
         const startDate = tournament.startDate ? new Date(tournament.startDate).toLocaleDateString('ru-RU') : 'Не указана';
         const endDate = tournament.endDate ? new Date(tournament.endDate).toLocaleDateString('ru-RU') : 'Не указана';
         
+        const isExpanded = expandedTournaments.has(tournament.id);
+        const buttonText = isExpanded ? 'Выбрать команды' : '+';
+        
         card.innerHTML = `
-          <div class="tournament-header">
-            <div class="tournament-info">
-              <div class="tournament-name">${tournament.name}</div>
-              <div class="tournament-dates">${startDate} - ${endDate}</div>
+          <div class="tournament-header" onclick="toggleTournamentPresets('${tournament.id}')">
+            <div class="tournament-info" style="display: flex; align-items: center; gap: 10px; flex: 1;">
+              <span style="font-size: 18px; transition: transform 0.2s; transform: rotate(${isExpanded ? '90deg' : '0deg'}); user-select: none;">▶</span>
+              <div>
+                <div class="tournament-name">${tournament.name}</div>
+                <div class="tournament-dates">${startDate} - ${endDate}</div>
+              </div>
             </div>
             <div class="tournament-actions" onclick="event.stopPropagation()">
-              <button class="btn btn-primary btn-small" onclick="showTeamSelectionModal('${tournament.id}')" style="margin-right: 10px;">Выбрать команды</button>
+              <button class="btn btn-primary btn-small" id="teamSelectBtn-${tournament.id}" onclick="showTeamSelectionModal('${tournament.id}')" style="margin-right: 10px;">${buttonText}</button>
               <span class="team-edit-link" onclick="editTournament('${tournament.id}')">edit</span>
               <span class="team-delete-link" onclick="deleteTournament('${tournament.id}')">delete</span>
             </div>
           </div>
-          <div id="selectedTeams-${tournament.id}" style="padding: 15px; color: #666; font-size: 14px;">
+          <div id="selectedTeams-${tournament.id}" style="display: ${isExpanded ? 'block' : 'none'}; padding: 15px; color: #666; font-size: 14px;">
             <div id="selectedTeamsList-${tournament.id}" style="display: none;">
               <div style="font-weight: 600; margin-bottom: 12px; color: #163d74; font-size: 14px;">Выбранные команды:</div>
               <div id="selectedTeamsContent-${tournament.id}" class="selected-teams-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; width: 100%; box-sizing: border-box;"></div>
