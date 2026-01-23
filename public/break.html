@@ -23,10 +23,10 @@
         /* Скрываем все элементы до полной загрузки */
         .break-container {
             opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity 0.1s ease-in;
         }
 
-        .break-container.loaded {
+        body.elements-loaded .break-container {
             opacity: 1;
         }
 
@@ -387,21 +387,63 @@
             updateDisplay(data);
         });
 
+        // Ждем загрузки всех изображений перед показом элементов
+        function waitForElements() {
+            const images = [];
+            
+            // Проверяем stripe изображение
+            if (stripeImage && stripeImage.src) {
+                const img = new Image();
+                img.src = stripeImage.src;
+                images.push(new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                }));
+            }
+            
+            // Проверяем возможные stripe изображения из стилей
+            const possibleStripes = [
+                '/public/img/stripe_default.png',
+                '/public/img/iskracup_stripe_break.png',
+                '/public/img/winterleague_stripe_break.png'
+            ];
+            
+            possibleStripes.forEach(src => {
+                const img = new Image();
+                img.src = src;
+                images.push(new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                }));
+            });
+            
+            Promise.all(images).then(() => {
+                // Все элементы загружены, показываем все разом
+                document.body.classList.add('elements-loaded');
+                // Позиционируем логотипы после показа
+                positionLogos();
+            });
+        }
+
         // Позиционируем логотипы после загрузки изображения
         if (stripeImage) {
             stripeImage.addEventListener('load', function() {
                 console.log('Stripe image loaded, positioning logos...');
                 positionLogos();
-                // Показываем страницу после полной загрузки
-                document.querySelector('.break-container').classList.add('loaded');
+                waitForElements();
             });
             
             // Если изображение уже загружено
             if (stripeImage.complete) {
                 console.log('Stripe image already loaded, positioning logos...');
                 positionLogos();
-                document.querySelector('.break-container').classList.add('loaded');
+                waitForElements();
+            } else {
+                // Если изображение еще не загружено, ждем его
+                waitForElements();
             }
+        } else {
+            waitForElements();
         }
 
         // Позиционируем логотипы при изменении размера окна
