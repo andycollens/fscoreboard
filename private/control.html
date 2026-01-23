@@ -3229,6 +3229,40 @@
     let tournaments = [];
     let expandedPresets = new Set(); // Храним ID турниров с раскрытыми пресетами
     let expandedDays = new Set(); // Храним ключи дней с раскрытыми пресетами (формат: tournamentId-isoDate)
+    
+    // Функции для сохранения/загрузки состояния сворачивания
+    function saveExpandedState() {
+      localStorage.setItem('expandedPresets', JSON.stringify(Array.from(expandedPresets)));
+      localStorage.setItem('expandedDays', JSON.stringify(Array.from(expandedDays)));
+    }
+    
+    function loadExpandedState() {
+      const savedPresets = localStorage.getItem('expandedPresets');
+      const savedDays = localStorage.getItem('expandedDays');
+      
+      if (savedPresets) {
+        try {
+          const parsed = JSON.parse(savedPresets);
+          expandedPresets = new Set(parsed);
+        } catch (e) {
+          console.error('Error loading expandedPresets:', e);
+          expandedPresets = new Set();
+        }
+      }
+      
+      if (savedDays) {
+        try {
+          const parsed = JSON.parse(savedDays);
+          expandedDays = new Set(parsed);
+        } catch (e) {
+          console.error('Error loading expandedDays:', e);
+          expandedDays = new Set();
+        }
+      }
+    }
+    
+    // Загружаем сохраненное состояние при инициализации
+    loadExpandedState();
     let ready = false;
     let timerRunning = false;
     let editingPresetId = null;
@@ -5851,6 +5885,8 @@
           presetsDiv.classList.add('hidden');
           expandedPresets.delete(tournamentId);
         }
+        // Сохраняем состояние
+        saveExpandedState();
       }
     }
     
@@ -5883,6 +5919,9 @@
           }
         }
       }
+      
+      // Сохраняем состояние
+      saveExpandedState();
     }
     
     // Отображение пресетов для турниров
@@ -5939,12 +5978,16 @@
         days.forEach(({ iso, label }) => {
           const dayKey = iso || 'nodate';
           const dayKeyFull = `${tournament.id}-${dayKey}`;
-          // По умолчанию все дни развернуты при первой загрузке
-          if (!expandedDays.has(dayKeyFull)) {
+          // Используем сохраненное состояние, если его нет - по умолчанию развернуто
+          let isExpanded = expandedDays.has(dayKeyFull);
+          // Если состояние не сохранено (первая загрузка), разворачиваем по умолчанию
+          // Проверяем, есть ли вообще сохраненное состояние в localStorage
+          const hasSavedState = localStorage.getItem('expandedDays') !== null;
+          if (!hasSavedState) {
+            // Первая загрузка - разворачиваем по умолчанию
+            isExpanded = true;
             expandedDays.add(dayKeyFull);
           }
-          
-          const isExpanded = expandedDays.has(dayKeyFull);
           const arrowClass = isExpanded ? 'expanded' : '';
           
           const section = document.createElement('div');
@@ -7148,23 +7191,23 @@
             formWrapper.innerHTML = '';
           }
           
-          // Сохраняем состояние видимости пресетов
-          const presetsDiv = document.getElementById(`presets-${tournamentId}`);
-          const wasHidden = presetsDiv ? presetsDiv.classList.contains('hidden') : false;
+          // Сохраняем состояние видимости пресетов из сохраненного состояния
+          const wasExpanded = expandedPresets.has(tournamentId);
           
           // Перезагружаем пресеты и турниры
           await loadPresets();
           await loadTournaments();
           
-          // Восстанавливаем состояние видимости (по умолчанию пресеты видны)
+          // Восстанавливаем состояние видимости из сохраненного состояния
+          const presetsDiv = document.getElementById(`presets-${tournamentId}`);
           if (presetsDiv) {
-            if (wasHidden) {
-              presetsDiv.classList.add('hidden');
-              expandedPresets.delete(tournamentId);
-            } else {
+            if (wasExpanded) {
               presetsDiv.classList.remove('hidden');
               expandedPresets.add(tournamentId);
               renderTournamentPresets(); // Рендерим если видим
+            } else {
+              presetsDiv.classList.add('hidden');
+              expandedPresets.delete(tournamentId);
             }
           }
           
