@@ -6645,9 +6645,52 @@
         state.team2Logo = '';
       }
       
+      // Находим команды в глобальной базе для обновления выпадающих списков
+      let team1 = null;
+      let team2 = null;
+      
+      if (preset.team1Id && teams) {
+        team1 = teams.find(t => t.id === preset.team1Id);
+      }
+      if (preset.team2Id && teams) {
+        team2 = teams.find(t => t.id === preset.team2Id);
+      }
+      
+      // Обновляем selectedTeams и mainTeamSelection
+      if (team1) {
+        selectedTeams.team1 = team1;
+        mainTeamSelection.team1 = { teamId: String(team1.id) };
+        // Загружаем составы команды
+        state.team1Players = team1.players || [];
+        state.team1Staff = team1.staff || [];
+      }
+      if (team2) {
+        selectedTeams.team2 = team2;
+        mainTeamSelection.team2 = { teamId: String(team2.id) };
+        // Загружаем составы команды
+        state.team2Players = team2.players || [];
+        state.team2Staff = team2.staff || [];
+      }
+      
+      // Обновляем выпадающие списки команд
+      const team1Select = document.getElementById('team1TournamentTeamSelect');
+      const team2Select = document.getElementById('team2TournamentTeamSelect');
+      
+      if (team1Select && team1) {
+        team1Select.value = team1.id;
+        enhanceCustomTeamSelect(team1Select);
+      }
+      if (team2Select && team2) {
+        team2Select.value = team2.id;
+        enhanceCustomTeamSelect(team2Select);
+      }
+      
+      // Синхронизируем состояние выпадающих списков
+      syncMainTeamPresetSelectsFromState();
+      
       // СРАЗУ отправляем полное состояние на сервер для сохранения
       // Это критично для сохранения данных при перезагрузке
-      socket.emit('updateScoreboard', {
+      const stateUpdate = {
         team1Name: preset.team1Name || '',
         team1City: preset.team1City || '',
         team1Short: preset.team1Short || '',
@@ -6658,7 +6701,15 @@
         kit2Color: preset.kit2Color || '#2b2b2b',
         team1Logo: state.team1Logo || '',
         team2Logo: state.team2Logo || ''
-      });
+      };
+      
+      // Добавляем составы команд
+      if (state.team1Players) stateUpdate.team1Players = state.team1Players;
+      if (state.team1Staff) stateUpdate.team1Staff = state.team1Staff;
+      if (state.team2Players) stateUpdate.team2Players = state.team2Players;
+      if (state.team2Staff) stateUpdate.team2Staff = state.team2Staff;
+      
+      socket.emit('updateScoreboard', stateUpdate);
       
       // Показ уведомления
       showNotification(`Применена предустановка: ${preset.name}`, 'success');
