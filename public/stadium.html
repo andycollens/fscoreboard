@@ -344,7 +344,7 @@
             position: fixed;
             inset: 0;
             display: grid !important;
-            grid-template-rows: 100px 150px 1fr;
+            grid-template-rows: 150px 1fr;
             height: 100vh;
             width: 100vw;
             background: #000;
@@ -408,18 +408,16 @@
             gap: 0;
         }
 
+        body.rosters-mode .top-section {
+            display: none !important;
+        }
+
         body.rosters-mode .tournament-title {
             display: none !important;
         }
 
         body.rosters-mode .rosters-subtitle {
-            display: block !important;
-            font-size: 3vw;
-            font-weight: 600;
-            color: #dfe6f5;
-            text-align: center;
-            letter-spacing: 0.02em;
-            margin: 0;
+            display: none !important;
         }
 
         body.rosters-mode .team1-section {
