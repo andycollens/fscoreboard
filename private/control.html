@@ -4479,6 +4479,12 @@
         settingsLinkInPresets.href = `/private/settings.html?token=${getToken()}`;
       }
       
+      // Также устанавливаем ссылку в нижней части страницы
+      const settingsLink = document.getElementById('settingsLink');
+      if (settingsLink) {
+        settingsLink.href = `/private/settings.html?token=${getToken()}`;
+      }
+      
       loadTeams().then(() => {
         loadTournaments();
         setupControls();
