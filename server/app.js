@@ -370,6 +370,10 @@ app.get('/stadium.html', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'stadium.html'));
 });
 
+app.get('/members.html', (_, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'members.html'));
+});
+
 app.get('/control', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../private', 'control.html'));
@@ -1431,6 +1435,7 @@ server.listen(PORT, () => {
   console.log(`Flag: http://localhost:${PORT}/flag.html`);
   console.log(`Logo: http://localhost:${PORT}/logo.html`);
   console.log(`Stadium: http://localhost:${PORT}/stadium.html?token=${getActualStadiumToken()}`);
+  console.log(`Members: http://localhost:${PORT}/members.html`);
 });
 
 // ====== Custom Styles Functions ======

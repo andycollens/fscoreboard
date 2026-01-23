@@ -144,6 +144,7 @@ print_links() {
     echo -e "  ${GREEN}http://$DOMAIN/preloader.html${NC}  (заглушка для стримов)"
     echo -e "  ${GREEN}http://$DOMAIN/flag.html${NC}  (флаг)"
     echo -e "  ${GREEN}http://$DOMAIN/logo.html${NC}  (лого)"
+    echo -e "  ${GREEN}http://$DOMAIN/members.html${NC}  (составы команд)"
     
     echo -e "\n${YELLOW}⚙️  КОНФИГУРАЦИЯ:${NC}"
     echo -e "  ${CYAN}IP/Домен:${NC}        $DOMAIN"
