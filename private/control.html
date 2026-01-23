@@ -4603,17 +4603,25 @@
       const container = document.getElementById('tournamentsListForPresets');
       const emptyState = document.getElementById('tournamentsEmptyState');
       
-      if (!container) return;
+      if (!container) {
+        console.warn('Container tournamentsListForPresets not found');
+        return;
+      }
       
-      if (tournaments.length === 0) {
+      console.log('renderTournamentsForPresets called, tournaments count:', tournaments ? tournaments.length : 0);
+      
+      // Всегда обновляем ссылку на настройки
+      const settingsLink = document.getElementById('settingsLinkInPresets');
+      if (settingsLink) {
+        settingsLink.href = `/private/settings.html?token=${getToken()}`;
+      }
+      
+      if (!tournaments || tournaments.length === 0) {
         container.style.display = 'none';
         if (emptyState) {
-          const settingsLink = document.getElementById('settingsLinkInPresets');
-          if (settingsLink) {
-            settingsLink.href = `/private/settings.html?token=${getToken()}`;
-          }
           emptyState.style.display = 'block';
         }
+        console.log('No tournaments found, showing empty state');
         return;
       }
       
