@@ -106,13 +106,22 @@
             box-sizing: border-box;
         }
 
-        .team2-logo,
-        .team2-no-logo {
+        .team1-logo,
+        .team1-no-logo {
             order: 2;
         }
 
-        .team2-meta {
+        .team1-meta {
             order: 1;
+        }
+
+        .team2-logo,
+        .team2-no-logo {
+            order: 1;
+        }
+
+        .team2-meta {
+            order: 2;
         }
 
         .team1-logo,
@@ -149,9 +158,10 @@
         .team1-meta {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: flex-end;
             gap: 0;
             min-width: 0;
+            text-align: right;
         }
 
         .team1-meta .team1-name {
@@ -160,16 +170,16 @@
 
         .team1-meta .team1-city {
             margin-top: 0;
-            align-self: flex-start;
+            align-self: flex-end;
         }
 
         .team2-meta {
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
+            align-items: flex-start;
             gap: 0;
             min-width: 0;
-            text-align: right;
+            text-align: left;
         }
 
         .team2-meta .team2-name {
@@ -178,7 +188,7 @@
 
         .team2-meta .team2-city {
             margin-top: 0;
-            align-self: flex-end;
+            align-self: flex-start;
         }
 
         .team1-name,
