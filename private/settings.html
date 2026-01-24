@@ -326,6 +326,10 @@
         gap: 12px;
       }
       
+      .stadium-mode-wrapper > div {
+        width: 100%;
+      }
+      
       .stadium-mode-buttons {
         width: 100%;
         flex-wrap: nowrap;
@@ -1188,15 +1192,22 @@
     </div>
     
     <div style="margin-bottom: 20px;">
-      <div class="stadium-mode-wrapper" style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-        <span style="font-size: 12px; color: #61708a; font-weight: 500; white-space: nowrap;">Режим:</span>
-        <div class="stadium-mode-buttons">
-          <button type="button" class="stadium-mode-btn" data-mode="scoreboard" id="modeScoreboardBtn">Табло</button>
-          <button type="button" class="stadium-mode-btn" data-mode="rosters" id="modeRostersBtn">Составы</button>
-          <button type="button" class="stadium-mode-btn" data-mode="flag" id="modeFlagBtn">Флаг</button>
-          <button type="button" class="stadium-mode-btn" data-mode="winners" id="modeWinnersBtn">Победители</button>
-          <button type="button" class="stadium-mode-btn" data-mode="logo" id="modeLogoBtn">Лого</button>
-          <button type="button" class="stadium-mode-btn" data-mode="penalty" id="modePenaltyBtn">Пенальти</button>
+      <div class="stadium-mode-wrapper" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 12px; color: #61708a; font-weight: 500; white-space: nowrap;">Режим:</span>
+          <div class="stadium-mode-buttons">
+            <button type="button" class="stadium-mode-btn" data-mode="scoreboard" id="modeScoreboardBtn">Табло</button>
+            <button type="button" class="stadium-mode-btn" data-mode="rosters" id="modeRostersBtn">Составы</button>
+            <button type="button" class="stadium-mode-btn" data-mode="logo" id="modeLogoBtn">Лого</button>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-left: 0;">
+          <span style="font-size: 12px; color: #61708a; font-weight: 500; white-space: nowrap; visibility: hidden;">Режим:</span>
+          <div class="stadium-mode-buttons">
+            <button type="button" class="stadium-mode-btn" data-mode="flag" id="modeFlagBtn">Флаг</button>
+            <button type="button" class="stadium-mode-btn" data-mode="winners" id="modeWinnersBtn">Победители</button>
+            <button type="button" class="stadium-mode-btn" data-mode="penalty" id="modePenaltyBtn">Пенальти</button>
+          </div>
         </div>
       </div>
       <button class="btn btn-primary" onclick="saveStadiumMode()">Применить режим</button>

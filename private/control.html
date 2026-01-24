@@ -3113,6 +3113,7 @@
     <div class="main-mode-buttons">
       <button type="button" class="main-mode-btn" data-mode="scoreboard" id="mainModeScoreboardBtn">Табло</button>
       <button type="button" class="main-mode-btn" data-mode="rosters" id="mainModeRostersBtn">Составы</button>
+      <button type="button" class="main-mode-btn" data-mode="logo" id="mainModeLogoBtn">Лого</button>
     </div>
   </div>
 
@@ -3401,7 +3402,12 @@
     
     // Переключение режима табло из основного блока управления
     async function switchMainStadiumMode(mode) {
-      const modeName = mode === 'scoreboard' ? 'Табло' : 'Составы';
+      const modeNames = {
+        'scoreboard': 'Табло',
+        'rosters': 'Составы',
+        'logo': 'Лого'
+      };
+      const modeName = modeNames[mode] || 'Табло';
       
       // Первое подтверждение - что табло переключится моментально
       if (!confirm(`Переключить табло стадиона на режим "${modeName}"? Табло обновится моментально.`)) {
@@ -3447,15 +3453,19 @@
           const currentMode = config.stadiumMode || 'scoreboard';
           const scoreboardBtn = document.getElementById('mainModeScoreboardBtn');
           const rostersBtn = document.getElementById('mainModeRostersBtn');
+          const logoBtn = document.getElementById('mainModeLogoBtn');
           
-          if (scoreboardBtn && rostersBtn) {
+          if (scoreboardBtn && rostersBtn && logoBtn) {
             scoreboardBtn.classList.remove('active');
             rostersBtn.classList.remove('active');
+            logoBtn.classList.remove('active');
             
             if (currentMode === 'scoreboard') {
               scoreboardBtn.classList.add('active');
             } else if (currentMode === 'rosters') {
               rostersBtn.classList.add('active');
+            } else if (currentMode === 'logo') {
+              logoBtn.classList.add('active');
             }
           }
         })
@@ -4449,6 +4459,7 @@
       // Инициализация кнопок переключения режимов
       const scoreboardBtn = document.getElementById('mainModeScoreboardBtn');
       const rostersBtn = document.getElementById('mainModeRostersBtn');
+      const logoBtn = document.getElementById('mainModeLogoBtn');
       
       if (scoreboardBtn) {
         scoreboardBtn.addEventListener('click', () => {
@@ -4462,6 +4473,14 @@
         rostersBtn.addEventListener('click', () => {
           if (!rostersBtn.classList.contains('active')) {
             switchMainStadiumMode('rosters');
+          }
+        });
+      }
+      
+      if (logoBtn) {
+        logoBtn.addEventListener('click', () => {
+          if (!logoBtn.classList.contains('active')) {
+            switchMainStadiumMode('logo');
           }
         });
       }
