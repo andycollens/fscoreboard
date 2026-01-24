@@ -135,6 +135,11 @@
       color: #fff;
       font-size: 1.6em;
       font-weight: normal;
+      transition: font-size 0.2s ease;
+    }
+    
+    .score1-section.small-score, .score2-section.small-score {
+      font-size: 1.4em;
     }
     
     /* Winterleague style - background color #212536 */
@@ -428,8 +433,21 @@
       document.getElementById('team1').textContent = data.team1Short || defaultTeamShort;
       document.getElementById('team2').textContent = data.team2Short || defaultTeamShort;
       // Update scores, ensuring they are numbers
-      document.getElementById('score1').textContent = typeof data.score1 === 'number' ? data.score1 : "0";
-      document.getElementById('score2').textContent = typeof data.score2 === 'number' ? data.score2 : "0";
+      const score1 = typeof data.score1 === 'number' ? data.score1 : 0;
+      const score2 = typeof data.score2 === 'number' ? data.score2 : 0;
+      document.getElementById('score1').textContent = score1;
+      document.getElementById('score2').textContent = score2;
+      
+      // Уменьшаем размер шрифта если хотя бы один счет двузначный
+      const score1Section = document.querySelector('.score1-section');
+      const score2Section = document.querySelector('.score2-section');
+      if (score1 >= 10 || score2 >= 10) {
+        score1Section.classList.add('small-score');
+        score2Section.classList.add('small-score');
+      } else {
+        score1Section.classList.remove('small-score');
+        score2Section.classList.remove('small-score');
+      }
     });
 
     // Listen for config updates
