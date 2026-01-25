@@ -254,10 +254,24 @@ if (fs.existsSync(TOURNAMENTS_PATH)) {
 if (fs.existsSync(TEAMS_PATH)) {
   try {
     const savedTeams = JSON.parse(fs.readFileSync(TEAMS_PATH, 'utf8'));
-    teams = savedTeams;
+    // Миграция: добавляем useAltNumbers для существующих команд
+    teams = savedTeams.map(t => ({
+      ...t,
+      useAltNumbers: t.useAltNumbers !== undefined ? t.useAltNumbers : false
+    }));
+    // Сохраняем обновленные данные, если были изменения
+    if (savedTeams.some(t => t.useAltNumbers === undefined)) {
+      fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
+      console.log('Миграция: добавлено поле useAltNumbers для существующих команд');
+    }
   } catch (e) {
     console.error("Ошибка чтения teams.json", e);
+    teams = []; // Инициализируем пустым массивом при ошибке
   }
+} else {
+  // Файл не существует - инициализируем пустым массивом
+  teams = [];
+  console.log('Файл teams.json не найден, инициализирован пустой массив');
 }
 
 function resolveWinnerTeamById(compositeId) {
@@ -816,9 +830,13 @@ app.post('/api/tournaments', (req, res) => {
   };
   
   tournaments.push(newTournament);
-  fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
-  
-  console.log('Tournament created:', newTournament.id);
+  try {
+    fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
+    console.log('Tournament created:', newTournament.id);
+  } catch (error) {
+    console.error('Ошибка записи tournaments.json:', error);
+    return res.status(500).json({ error: 'Ошибка сохранения турнира' });
+  }
   res.json(newTournament);
 });
 
@@ -1185,9 +1203,13 @@ app.post('/api/teams', upload.single('logo'), (req, res) => {
   };
   
   teams.push(newTeam);
-  fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
-  
-  console.log('Team created:', newTeam.id);
+  try {
+    fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
+    console.log('Team created:', newTeam.id);
+  } catch (error) {
+    console.error('Ошибка записи teams.json:', error);
+    return res.status(500).json({ error: 'Ошибка сохранения команды' });
+  }
   res.json(newTeam);
 });
 
