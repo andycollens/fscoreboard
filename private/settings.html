@@ -1677,7 +1677,13 @@
                   <div id="staffList-edit-${teamId}" class="roster-list"></div>
                 </div>
                 <div style="margin-top: 12px;">
-                  <div class="team-roster-title">Игроки</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div class="team-roster-title">Игроки</div>
+                    <label id="altNumbersToggleLabel-edit-${teamId}" style="display: none; align-items: center; gap: 8px; cursor: pointer;">
+                      <input type="checkbox" id="altNumbersToggle-edit-${teamId}" onchange="toggleAltNumbersInEdit('${teamId}')" style="cursor: pointer;">
+                      <span style="font-size: 12px; color: #61708a; font-weight: 500;">Альтернативные номера</span>
+                    </label>
+                  </div>
                   <div id="playersList-edit-${teamId}" class="roster-list"></div>
                 </div>
               </div>
@@ -2111,31 +2117,57 @@
               }
             }
           } else {
-            // Если номер не найден в начале, проверяем в конце строки
-            // Формат: "Иванов Иван 10.01.2010 10" или "Иванов Иван 10"
-            // Номер в конце должен быть отдельным числом (не частью даты)
-            const numMatchEnd = rest.match(/^(.+?)[\s\t]+(\d{1,3})$/);
-            if (numMatchEnd) {
-              const numVal = parseInt(numMatchEnd[2], 10);
-              const beforeNumber = numMatchEnd[1].trim();
+            // Если номер не найден в начале, проверяем формат: "ФИО дата номер1 номер2"
+            // Сначала пытаемся найти два номера в конце через табуляцию/пробелы
+            // Формат: "Иванов Иван 15.06.2014 1 4" или "Иванов Иван 15.06.2014 1\t4"
+            const twoNumsAtEnd = rest.match(/^(.+?)[\s\t]+(\d{1,3})[\s\t]+(\d{1,3})$/);
+            if (twoNumsAtEnd) {
+              const beforeNums = twoNumsAtEnd[1].trim();
+              const num1Val = parseInt(twoNumsAtEnd[2], 10);
+              const num2Val = parseInt(twoNumsAtEnd[3], 10);
               
-              if (!isNaN(numVal) && numVal > 0 && numVal < 200) {
-                // Проверяем, есть ли паттерн даты перед числом (форматы: 10.01.2010, 10/01/2010, 10-01-2010, 2010-01-10)
-                const hasDatePattern = /[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/.test(beforeNumber);
+              if (!isNaN(num1Val) && num1Val > 0 && num1Val < 200 &&
+                  !isNaN(num2Val) && num2Val > 0 && num2Val < 200) {
+                // Проверяем, есть ли паттерн даты перед номерами
+                const hasDatePattern = /[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/.test(beforeNums);
                 
-                // Если есть паттерн даты, то последнее число - это номер игрока
+                // Если есть паттерн даты, то это формат "ФИО дата номер1 номер2"
                 if (hasDatePattern) {
-                  number = numVal.toString();
-                  rest = beforeNumber.trim();
-                } else {
-                  // Если нет паттерна даты, проверяем последнее слово перед числом
-                  const lastWord = beforeNumber.split(/\s+/).pop();
-                  const isLastWordNumber = /^\d+$/.test(lastWord);
+                  number = num1Val.toString();
+                  altNumber = num2Val.toString();
+                  // Удаляем дату из имени
+                  rest = beforeNums.replace(/[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/g, '').trim();
+                }
+              }
+            }
+            
+            // Если не нашли два номера, проверяем один номер в конце
+            // Формат: "Иванов Иван 10.01.2010 10" или "Иванов Иван 10"
+            if (!number && !altNumber) {
+              const numMatchEnd = rest.match(/^(.+?)[\s\t]+(\d{1,3})$/);
+              if (numMatchEnd) {
+                const numVal = parseInt(numMatchEnd[2], 10);
+                const beforeNumber = numMatchEnd[1].trim();
+                
+                if (!isNaN(numVal) && numVal > 0 && numVal < 200) {
+                  // Проверяем, есть ли паттерн даты перед числом (форматы: 10.01.2010, 10/01/2010, 10-01-2010, 2010-01-10)
+                  const hasDatePattern = /[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/.test(beforeNumber);
                   
-                  // Если последнее слово - не число, то последнее число в строке - это номер игрока
-                  if (!isLastWordNumber) {
+                  // Если есть паттерн даты, то последнее число - это номер игрока
+                  if (hasDatePattern) {
                     number = numVal.toString();
-                    rest = beforeNumber.trim();
+                    // Удаляем дату из имени
+                    rest = beforeNumber.replace(/[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/g, '').trim();
+                  } else {
+                    // Если нет паттерна даты, проверяем последнее слово перед числом
+                    const lastWord = beforeNumber.split(/\s+/).pop();
+                    const isLastWordNumber = /^\d+$/.test(lastWord);
+                    
+                    // Если последнее слово - не число, то последнее число в строке - это номер игрока
+                    if (!isLastWordNumber) {
+                      number = numVal.toString();
+                      rest = beforeNumber.trim();
+                    }
                   }
                 }
               }
@@ -2209,20 +2241,43 @@
              <div></div>
            </div>`;
 
-      const body = rows.map((row, idx) => `
+      // Определяем, нужно ли применять переключатель альтернативных номеров
+      let useAltNumbers = false;
+      if (withNumber && containerId.includes('edit-')) {
+        const teamIdMatch = containerId.match(/edit-(.+)/);
+        if (teamIdMatch) {
+          const teamId = teamIdMatch[1];
+          useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
+        }
+      }
+      
+      const body = rows.map((row, idx) => {
+        let displayNumber = row.number || '';
+        // Если номер содержит "/" и переключатель включен, показываем второй номер
+        if (displayNumber && displayNumber.includes('/') && useAltNumbers) {
+          const parts = displayNumber.split('/');
+          displayNumber = parts[1] || parts[0];
+        } else if (displayNumber && displayNumber.includes('/') && !useAltNumbers) {
+          // Если переключатель выключен, показываем первый номер
+          const parts = displayNumber.split('/');
+          displayNumber = parts[0];
+        }
+        
+        return `
         <div class="roster-row ${withNumber ? '' : 'staff'}" data-index="${idx}">
           <div>
             <input type="text" class="roster-name" value="${(row.name || '').replace(/"/g, '&quot;')}" placeholder="Фамилия Имя">
           </div>
           ${withNumber ? `
           <div>
-            <input type="text" class="roster-number" value="${(row.number || '').replace(/"/g, '&quot;')}" placeholder="№">
+            <input type="text" class="roster-number" value="${displayNumber.replace(/"/g, '&quot;')}" placeholder="№" data-original-number="${(row.number || '').replace(/"/g, '&quot;')}">
           </div>` : ''}
           <div style="display:flex; align-items:center; justify-content:center; height: 34px;">
             <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
 
       container.innerHTML = `<div class="roster-table">${header}${body}</div>`;
     }
@@ -2265,14 +2320,61 @@
     function parseRosterUnified(teamId, isNew = false) {
       const prefix = isNew ? 'new' : `edit-${teamId}`;
       const textarea = document.getElementById(`rosterPaste-${prefix}`);
-      if (!textarea) return;
+      if (!textarea) {
+        console.error('Textarea not found:', `rosterPaste-${prefix}`);
+        return;
+      }
       const type = textarea.dataset.activeType === 'staff' ? 'staff' : 'player';
+      console.log('Parsing roster:', { teamId, isNew, prefix, type, text: textarea.value.substring(0, 100) });
       const parsed = parseRosterText(textarea.value, type === 'player');
+      console.log('Parsed result:', parsed);
       if (type === 'player') {
         renderRosterList(parsed, `playersList-${prefix}`, true);
+        
+        // Проверяем, есть ли альтернативные номера, и показываем переключатель
+        if (!isNew) {
+          const hasAltNumbers = parsed.some(p => p.number && p.number.includes('/'));
+          const toggleLabel = document.getElementById(`altNumbersToggleLabel-edit-${teamId}`);
+          const toggleCheckbox = document.getElementById(`altNumbersToggle-edit-${teamId}`);
+          
+          if (toggleLabel && toggleCheckbox) {
+            if (hasAltNumbers) {
+              toggleLabel.style.display = 'flex';
+              const useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
+              toggleCheckbox.checked = useAltNumbers;
+            } else {
+              toggleLabel.style.display = 'none';
+            }
+          }
+        }
       } else {
         renderRosterList(parsed, `staffList-${prefix}`, false);
       }
+    }
+    
+    // Переключение альтернативных номеров в форме редактирования
+    function toggleAltNumbersInEdit(teamId) {
+      const checkbox = document.getElementById(`altNumbersToggle-edit-${teamId}`);
+      if (!checkbox) return;
+      
+      const useAltNumbers = checkbox.checked;
+      localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
+      
+      // Обновляем отображение списка игроков
+      const playersList = getRosterFromDOM(`playersList-edit-${teamId}`, true);
+      renderRosterList(playersList, `playersList-edit-${teamId}`, true);
+      
+      // Обновляем переключатель, если он был показан
+      const hasAltNumbers = playersList.some(p => p.number && p.number.includes('/'));
+      if (hasAltNumbers) {
+        const toggleLabel = document.getElementById(`altNumbersToggleLabel-edit-${teamId}`);
+        if (toggleLabel) {
+          toggleLabel.style.display = 'flex';
+        }
+      }
+      
+      // Отправляем событие для обновления на других страницах
+      localStorage.setItem('altNumbersUpdated', Date.now().toString());
     }
 
     // Все функции для работы с командами в турнирах удалены - команды теперь создаются и редактируются только в базе команд
