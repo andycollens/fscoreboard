@@ -2041,6 +2041,25 @@ body.penalty-mode .penalty-score {
             refreshDisplayForMode(currentMode, data);
         });
         
+        // Слушаем обновления useAltNumbers с других устройств
+        socket.on('teamUseAltNumbersUpdated', (data) => {
+            const { teamId, useAltNumbers } = data;
+            console.log('Stadium: Получено обновление useAltNumbers для команды:', teamId, useAltNumbers);
+            
+            // Синхронизируем с localStorage
+            localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
+            
+            // Обновляем отображение, если команда отображается
+            if (currentMode === 'rosters' && latestData) {
+                const team1Id = latestData.team1Id || null;
+                const team2Id = latestData.team2Id || null;
+                
+                if ((team1Id && String(team1Id) === String(teamId)) || (team2Id && String(team2Id) === String(teamId))) {
+                    checkAltNumbersUpdate();
+                }
+            }
+        });
+        
         // Обработчик обновления альтернативных номеров
         let lastAltNumbersUpdate = localStorage.getItem('altNumbersUpdated') || '';
         
