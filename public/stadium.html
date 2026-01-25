@@ -2046,22 +2046,23 @@ body.penalty-mode .penalty-score {
         
         function checkAltNumbersUpdate() {
             const currentUpdate = localStorage.getItem('altNumbersUpdated');
-            if (currentUpdate && currentUpdate !== lastAltNumbersUpdate && latestData) {
+            if (currentUpdate && currentUpdate !== lastAltNumbersUpdate) {
                 lastAltNumbersUpdate = currentUpdate;
                 try {
                     const updateData = JSON.parse(currentUpdate || '{}');
                     const changedTeamId = updateData.teamId;
                     
                     console.log('Stadium: Обнаружено обновление альтернативных номеров для teamId:', changedTeamId);
-                    console.log('Stadium: latestData.team1Id =', latestData.team1Id, 'latestData.team2Id =', latestData.team2Id);
                     
                     // Обновляем отображение при изменении переключателя
                     // Обновляем для режима "Составы", если он активен
-                    if (currentMode === 'rosters') {
-                        // Обновляем только ту команду, у которой изменился переключатель
+                    if (currentMode === 'rosters' && latestData) {
                         const team1Id = latestData.team1Id || null;
                         const team2Id = latestData.team2Id || null;
                         
+                        console.log('Stadium: latestData.team1Id =', team1Id, 'latestData.team2Id =', team2Id);
+                        
+                        // Обновляем команду 1, если teamId совпадает
                         if (team1Id && String(team1Id) === String(changedTeamId) && rosterTeam1Coach && rosterTeam1Players) {
                             console.log('Stadium: Обновляем команду 1, teamId:', team1Id);
                             renderRostersMode(
@@ -2072,10 +2073,9 @@ body.penalty-mode .penalty-score {
                                 false,
                                 team1Id
                             );
-                        } else if (team1Id && String(team1Id) === String(changedTeamId)) {
-                            console.warn('Stadium: Команда 1 найдена, но элементы DOM отсутствуют');
                         }
                         
+                        // Обновляем команду 2, если teamId совпадает
                         if (team2Id && String(team2Id) === String(changedTeamId) && rosterTeam2Coach && rosterTeam2Players) {
                             console.log('Stadium: Обновляем команду 2, teamId:', team2Id);
                             renderRostersMode(
@@ -2086,22 +2086,22 @@ body.penalty-mode .penalty-score {
                                 true,
                                 team2Id
                             );
-                        } else if (team2Id && String(team2Id) === String(changedTeamId)) {
-                            console.warn('Stadium: Команда 2 найдена, но элементы DOM отсутствуют');
                         }
                         
-                        // Если teamId не совпадает, но команда есть на табло, все равно обновляем
-                        if (!team1Id || String(team1Id) !== String(changedTeamId)) {
-                            if (!team2Id || String(team2Id) !== String(changedTeamId)) {
-                                console.log('Stadium: teamId не совпадает, обновляем все команды');
-                                refreshDisplayForMode(currentMode, latestData);
-                            }
+                        // Если teamId не совпадает, обновляем все команды (fallback)
+                        const team1Matches = team1Id && String(team1Id) === String(changedTeamId);
+                        const team2Matches = team2Id && String(team2Id) === String(changedTeamId);
+                        if (!team1Matches && !team2Matches) {
+                            console.log('Stadium: teamId не совпадает, обновляем все команды');
+                            refreshDisplayForMode(currentMode, latestData);
                         }
+                    } else if (currentMode === 'rosters' && !latestData) {
+                        console.warn('Stadium: latestData отсутствует, но режим rosters активен');
                     }
                 } catch (err) {
                     console.error('Ошибка при обновлении альтернативных номеров:', err);
                     // Если не JSON, просто обновляем все
-                    if (currentMode === 'rosters') {
+                    if (currentMode === 'rosters' && latestData) {
                         refreshDisplayForMode(currentMode, latestData);
                     }
                 }

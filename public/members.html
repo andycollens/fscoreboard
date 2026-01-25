@@ -765,59 +765,63 @@
         
         function checkAltNumbersUpdate() {
             const currentUpdate = localStorage.getItem('altNumbersUpdated');
-            if (currentUpdate && currentUpdate !== lastAltNumbersUpdate && latestData) {
+            if (currentUpdate && currentUpdate !== lastAltNumbersUpdate) {
                 lastAltNumbersUpdate = currentUpdate;
                 try {
                     const updateData = JSON.parse(currentUpdate || '{}');
                     const changedTeamId = updateData.teamId;
                     
                     console.log('Members: Обнаружено обновление альтернативных номеров для teamId:', changedTeamId);
-                    console.log('Members: latestData.team1Id =', latestData.team1Id, 'latestData.team2Id =', latestData.team2Id);
                     
                     // Обновляем отображение при изменении переключателя
-                    // Обновляем только ту команду, у которой изменился переключатель
-                    const team1Id = latestData.team1Id || null;
-                    const team2Id = latestData.team2Id || null;
-                    
-                    if (team1Id && String(team1Id) === String(changedTeamId) && rosterTeam1Coach && rosterTeam1Players) {
-                        console.log('Members: Обновляем команду 1, teamId:', team1Id);
-                        renderRostersMode(
-                            rosterTeam1Coach,
-                            rosterTeam1Players,
-                            latestData.team1Staff || latestData.staff1 || [],
-                            latestData.team1Players || latestData.players1 || [],
-                            false,
-                            team1Id
-                        );
-                    } else if (team1Id && String(team1Id) === String(changedTeamId)) {
-                        console.warn('Members: Команда 1 найдена, но элементы DOM отсутствуют');
-                    }
-                    
-                    if (team2Id && String(team2Id) === String(changedTeamId) && rosterTeam2Coach && rosterTeam2Players) {
-                        console.log('Members: Обновляем команду 2, teamId:', team2Id);
-                        renderRostersMode(
-                            rosterTeam2Coach,
-                            rosterTeam2Players,
-                            latestData.team2Staff || latestData.staff2 || [],
-                            latestData.team2Players || latestData.players2 || [],
-                            true,
-                            team2Id
-                        );
-                    } else if (team2Id && String(team2Id) === String(changedTeamId)) {
-                        console.warn('Members: Команда 2 найдена, но элементы DOM отсутствуют');
-                    }
-                    
-                    // Если teamId не совпадает, но команда есть на табло, все равно обновляем
-                    if (!team1Id || String(team1Id) !== String(changedTeamId)) {
-                        if (!team2Id || String(team2Id) !== String(changedTeamId)) {
+                    if (latestData) {
+                        const team1Id = latestData.team1Id || null;
+                        const team2Id = latestData.team2Id || null;
+                        
+                        console.log('Members: latestData.team1Id =', team1Id, 'latestData.team2Id =', team2Id);
+                        
+                        // Обновляем команду 1, если teamId совпадает
+                        if (team1Id && String(team1Id) === String(changedTeamId) && rosterTeam1Coach && rosterTeam1Players) {
+                            console.log('Members: Обновляем команду 1, teamId:', team1Id);
+                            renderRostersMode(
+                                rosterTeam1Coach,
+                                rosterTeam1Players,
+                                latestData.team1Staff || latestData.staff1 || [],
+                                latestData.team1Players || latestData.players1 || [],
+                                false,
+                                team1Id
+                            );
+                        }
+                        
+                        // Обновляем команду 2, если teamId совпадает
+                        if (team2Id && String(team2Id) === String(changedTeamId) && rosterTeam2Coach && rosterTeam2Players) {
+                            console.log('Members: Обновляем команду 2, teamId:', team2Id);
+                            renderRostersMode(
+                                rosterTeam2Coach,
+                                rosterTeam2Players,
+                                latestData.team2Staff || latestData.staff2 || [],
+                                latestData.team2Players || latestData.players2 || [],
+                                true,
+                                team2Id
+                            );
+                        }
+                        
+                        // Если teamId не совпадает, обновляем все команды (fallback)
+                        const team1Matches = team1Id && String(team1Id) === String(changedTeamId);
+                        const team2Matches = team2Id && String(team2Id) === String(changedTeamId);
+                        if (!team1Matches && !team2Matches) {
                             console.log('Members: teamId не совпадает, обновляем все команды');
                             updateDisplay(latestData);
                         }
+                    } else {
+                        console.warn('Members: latestData отсутствует');
                     }
                 } catch (err) {
                     console.error('Ошибка при обновлении альтернативных номеров:', err);
                     // Если не JSON, просто обновляем все
-                    updateDisplay(latestData);
+                    if (latestData) {
+                        updateDisplay(latestData);
+                    }
                 }
             }
         }
