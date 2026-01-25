@@ -1904,11 +1904,16 @@
       renderBaseTeamRosterView(teamId);
       
       // Отправляем событие для обновления на других страницах с teamId
-      localStorage.setItem('altNumbersUpdated', JSON.stringify({
+      const updateData = {
         teamId: teamId,
         useAltNumbers: useAltNumbers,
         timestamp: Date.now()
-      }));
+      };
+      localStorage.setItem('altNumbersUpdated', JSON.stringify(updateData));
+      
+      // Немедленно отправляем кастомное событие для обновления в той же вкладке
+      // Это работает даже если страница управления открыта на мобильном
+      window.dispatchEvent(new CustomEvent('altNumbersUpdated', { detail: updateData }));
     }
     
     // Отображение состава команды
@@ -2551,11 +2556,16 @@
       }
       
       // Отправляем событие для обновления на других страницах с teamId
-      localStorage.setItem('altNumbersUpdated', JSON.stringify({
-            teamId: teamId,
+      const updateData = {
+        teamId: teamId,
         useAltNumbers: useAltNumbers,
-            timestamp: Date.now()
-          }));
+        timestamp: Date.now()
+      };
+      localStorage.setItem('altNumbersUpdated', JSON.stringify(updateData));
+      
+      // Немедленно отправляем кастомное событие для обновления в той же вкладке
+      // Это работает даже если страница управления открыта на мобильном
+      window.dispatchEvent(new CustomEvent('altNumbersUpdated', { detail: updateData }));
     }
 
     // Все функции для работы с командами в турнирах удалены - команды теперь создаются и редактируются только в базе команд

@@ -2115,19 +2115,13 @@ body.penalty-mode .penalty-score {
             }
         });
         
-        // Немедленная проверка при изменении localStorage в той же вкладке
-        // Используем кастомное событие для синхронизации в той же вкладке
-        const originalSetItem = Storage.prototype.setItem;
-        Storage.prototype.setItem = function(key, value) {
-            originalSetItem.apply(this, arguments);
-            if (key === 'altNumbersUpdated') {
-                // Отправляем кастомное событие для той же вкладки
-                window.dispatchEvent(new Event('localStorageAltNumbersUpdated'));
+        // Немедленная проверка при изменении через кастомное событие из settings.html
+        window.addEventListener('altNumbersUpdated', (e) => {
+            if (e.detail) {
+                // Обновляем lastAltNumbersUpdate чтобы не пропустить обновление
+                lastAltNumbersUpdate = JSON.stringify(e.detail);
+                checkAltNumbersUpdate();
             }
-        };
-        
-        window.addEventListener('localStorageAltNumbersUpdated', () => {
-            checkAltNumbersUpdate();
         });
         
         // Периодическая проверка (каждые 50ms) для обновления в той же вкладке и на мобильных
