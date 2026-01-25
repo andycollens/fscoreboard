@@ -2288,7 +2288,19 @@
       const rows = Array.from(container.querySelectorAll('.roster-row'));
       return rows.map(row => {
         const name = row.querySelector('.roster-name')?.value.trim() || '';
-        const number = withNumber ? (row.querySelector('.roster-number')?.value.trim() || '') : '';
+        let number = '';
+        if (withNumber) {
+          const numberInput = row.querySelector('.roster-number');
+          if (numberInput) {
+            // Используем оригинальный номер, если он есть (для сохранения формата "10/15")
+            const originalNumber = numberInput.dataset.originalNumber;
+            if (originalNumber && originalNumber.includes('/')) {
+              number = originalNumber;
+            } else {
+              number = numberInput.value.trim() || '';
+            }
+          }
+        }
         return { name, number };
       }).filter(r => r.name);
     }
