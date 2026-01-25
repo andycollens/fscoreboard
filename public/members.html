@@ -759,10 +759,14 @@
         });
         
         // Обработчик обновления альтернативных номеров
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'altNumbersUpdated' && latestData) {
+        let lastAltNumbersUpdate = localStorage.getItem('altNumbersUpdated') || '';
+        
+        function checkAltNumbersUpdate() {
+            const currentUpdate = localStorage.getItem('altNumbersUpdated');
+            if (currentUpdate && currentUpdate !== lastAltNumbersUpdate && latestData) {
+                lastAltNumbersUpdate = currentUpdate;
                 try {
-                    const updateData = JSON.parse(e.newValue || '{}');
+                    const updateData = JSON.parse(currentUpdate || '{}');
                     const teamId = updateData.teamId;
                     
                     // Обновляем отображение при изменении переключателя
@@ -794,12 +798,23 @@
                     updateDisplay(latestData);
                 }
             }
+        }
+        
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'altNumbersUpdated' && latestData) {
+                checkAltNumbersUpdate();
+            }
         });
+        
+        // Периодическая проверка (каждые 500ms) для обновления в той же вкладке
+        setInterval(() => {
+            checkAltNumbersUpdate();
+        }, 500);
         
         // Также проверяем при фокусе окна
         window.addEventListener('focus', () => {
             if (latestData) {
-                updateDisplay(latestData);
+                checkAltNumbersUpdate();
             }
         });
     </script>

@@ -1951,8 +1951,15 @@
               let numberHtml = '';
               if (p.number && p.number.includes('/')) {
                 const [num1, num2] = p.number.split('/');
-                // Показываем оба номера: первый черным, второй серым
-                numberHtml = `<span class="roster-player-number">${num1}</span><span style="color: #9ca3af; margin: 0 2px;">/</span><span style="color: #9ca3af; font-weight: 500;">${num2}</span>`;
+                // Используем переключатель номеров в серых тонах
+                const num1Active = !useAltNumbers ? 'active' : '';
+                const num2Active = useAltNumbers ? 'active' : '';
+                numberHtml = `
+                  <div class="roster-number-switcher" style="display: inline-flex;">
+                    <input type="text" class="roster-number ${num1Active}" value="${num1}" readonly style="width: 50px; text-align: center; padding: 4px 8px; font-size: 12px;">
+                    <input type="text" class="roster-number-alt ${num2Active}" value="${num2}" readonly style="width: 50px; text-align: center; padding: 4px 8px; font-size: 12px;">
+                  </div>
+                `;
               } else if (p.number) {
                 numberHtml = `<span class="roster-player-number">${p.number}</span>`;
               } else {
