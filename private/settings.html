@@ -2152,12 +2152,29 @@
     
     function parseRosterText(text, withNumber = true) {
       if (!text || typeof text !== 'string') return [];
-      return text
+      const parsed = text
         .split('\n')
         .map(l => l.trim())
         .filter(l => l.length)
         .map(l => parseRosterLine(l, withNumber))
         .filter(item => item.name);
+      
+      // Если у команды есть хотя бы один игрок с альтернативными номерами (формат "10/15"),
+      // то для всех игроков с одним номером дублируем его в альтернативные
+      if (withNumber && parsed.length > 0) {
+        const hasAltNumbers = parsed.some(item => item.number && item.number.includes('/'));
+        
+        if (hasAltNumbers) {
+          // Для всех игроков без альтернативных номеров дублируем номер
+          parsed.forEach(item => {
+            if (item.number && !item.number.includes('/')) {
+              item.number = `${item.number}/${item.number}`;
+            }
+          });
+        }
+      }
+      
+      return parsed;
     }
 
     function listToText(list, type) {
