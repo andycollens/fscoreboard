@@ -4376,6 +4376,32 @@
       if (data.team1Name) scoreboardState.team1Name = data.team1Name;
       if (data.team2Name) scoreboardState.team2Name = data.team2Name;
       
+      // Восстанавливаем выбранные команды из данных сервера
+      if (data.team1Id && teams && teams.length > 0) {
+        const team1 = teams.find(t => String(t.id) === String(data.team1Id));
+        if (team1) {
+          selectedTeams.team1 = team1;
+          mainTeamSelection.team1 = { teamId: String(team1.id) };
+          state.team1Id = team1.id;
+          scoreboardState.team1Id = team1.id;
+        }
+      }
+      if (data.team2Id && teams && teams.length > 0) {
+        const team2 = teams.find(t => String(t.id) === String(data.team2Id));
+        if (team2) {
+          selectedTeams.team2 = team2;
+          mainTeamSelection.team2 = { teamId: String(team2.id) };
+          state.team2Id = team2.id;
+          scoreboardState.team2Id = team2.id;
+        }
+      }
+      
+      // Сохраняем составы команд из данных сервера
+      if (data.team1Players) state.team1Players = data.team1Players;
+      if (data.team1Staff) state.team1Staff = data.team1Staff;
+      if (data.team2Players) state.team2Players = data.team2Players;
+      if (data.team2Staff) state.team2Staff = data.team2Staff;
+      
       // Перерисовка предустановок только если изменились данные команд
       const teamDataChanged = 
         previousTeam1Logo !== (data.team1Logo || '') ||
@@ -4389,7 +4415,11 @@
         renderTournamentPresets();
       }
       
-      syncMainTeamPresetSelectsFromState();
+      // Синхронизируем выпадающие списки после восстановления команд
+      // Но только если команды уже загружены
+      if (teams && teams.length > 0) {
+        syncMainTeamPresetSelectsFromState();
+      }
       
       // Обновление режима пенальти после обновления команд и логотипов
       if ('penaltyActive' in data || 'penaltyMode' in data || 'penaltyMaxAttempts' in data || 'penaltySeries' in data) {
@@ -4494,6 +4524,31 @@
       setupPenaltyControls();
       setupEditFormHandlers();
       setupTeamUpdateListener(); // Слушаем обновления команд из настроек
+      
+      // Загружаем сохраненное состояние выбранных команд из localStorage
+      try {
+        const savedSelection = JSON.parse(localStorage.getItem('mainTeamSelection') || '{}');
+        if (savedSelection.team1 && savedSelection.team1.teamId) {
+          const team1 = teams.find(t => String(t.id) === String(savedSelection.team1.teamId));
+          if (team1) {
+            mainTeamSelection.team1 = { teamId: String(team1.id) };
+            selectedTeams.team1 = team1;
+          }
+        }
+        if (savedSelection.team2 && savedSelection.team2.teamId) {
+          const team2 = teams.find(t => String(t.id) === String(savedSelection.team2.teamId));
+          if (team2) {
+            mainTeamSelection.team2 = { teamId: String(team2.id) };
+            selectedTeams.team2 = team2;
+          }
+        }
+        // Синхронизируем выпадающие списки после загрузки команд
+        if (teams && teams.length > 0) {
+          syncMainTeamPresetSelectsFromState();
+        }
+      } catch (e) {
+        console.error('Ошибка загрузки сохраненного состояния команд из localStorage:', e);
+      }
       
       // Простая проверка - если данные не пришли, запрашиваем через небольшую задержку
       setTimeout(() => {
@@ -8020,6 +8075,15 @@
         teamId: String(team.id)
       };
       selectedTeams[teamKey] = team;
+      
+      // Сохраняем выбранную команду в localStorage для восстановления после перезагрузки
+      try {
+        const savedSelection = JSON.parse(localStorage.getItem('mainTeamSelection') || '{}');
+        savedSelection[teamKey] = { teamId: String(team.id) };
+        localStorage.setItem('mainTeamSelection', JSON.stringify(savedSelection));
+      } catch (e) {
+        console.error('Ошибка сохранения выбранной команды в localStorage:', e);
+      }
 
       applyMainTeamData(teamKey, team);
       syncMainTeamPresetSelectsFromState();
