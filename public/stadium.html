@@ -2044,14 +2044,49 @@ body.penalty-mode .penalty-score {
         // Обработчик обновления альтернативных номеров
         window.addEventListener('storage', (e) => {
             if (e.key === 'altNumbersUpdated' && latestData) {
-                // Обновляем отображение при изменении переключателя
-                refreshDisplayForMode(currentMode, latestData);
+                try {
+                    const updateData = JSON.parse(e.newValue || '{}');
+                    const teamId = updateData.teamId;
+                    
+                    // Обновляем отображение при изменении переключателя
+                    // Обновляем для режима "Составы", если он активен
+                    if (currentMode === 'rosters') {
+                        // Обновляем обе команды, так как не знаем точно, какая изменилась
+                        if (rosterTeam1Coach && rosterTeam1Players) {
+                            const team1Id = latestData.team1Id || null;
+                            renderRostersMode(
+                                rosterTeam1Coach,
+                                rosterTeam1Players,
+                                latestData.team1Staff || latestData.staff1 || [],
+                                latestData.team1Players || latestData.players1 || [],
+                                false,
+                                team1Id
+                            );
+                        }
+                        if (rosterTeam2Coach && rosterTeam2Players) {
+                            const team2Id = latestData.team2Id || null;
+                            renderRostersMode(
+                                rosterTeam2Coach,
+                                rosterTeam2Players,
+                                latestData.team2Staff || latestData.staff2 || [],
+                                latestData.team2Players || latestData.players2 || [],
+                                true,
+                                team2Id
+                            );
+                        }
+                    }
+                } catch (err) {
+                    // Если не JSON, просто обновляем все
+                    if (currentMode === 'rosters') {
+                        refreshDisplayForMode(currentMode, latestData);
+                    }
+                }
             }
         });
         
         // Также проверяем при фокусе окна
         window.addEventListener('focus', () => {
-            if (latestData) {
+            if (latestData && currentMode === 'rosters') {
                 refreshDisplayForMode(currentMode, latestData);
             }
         });
