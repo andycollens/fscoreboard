@@ -4575,6 +4575,12 @@
         const response = await fetch(`/api/teams?token=${getToken()}`);
         if (response.ok) {
           teams = await response.json();
+          // Синхронизируем useAltNumbers с сервера в localStorage
+          teams.forEach(team => {
+            if (team.useAltNumbers !== undefined) {
+              localStorage.setItem(`team-${team.id}-useAltNumbers`, team.useAltNumbers.toString());
+            }
+          });
         } else {
           console.error('Ошибка загрузки команд');
         }
