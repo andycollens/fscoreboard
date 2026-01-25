@@ -2491,17 +2491,31 @@
       const useAltNumbers = checkbox.checked;
       localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
       
-      // Обновляем отображение списка игроков
-      const playersList = getRosterFromDOM(`playersList-edit-${teamId}`, true);
-      renderRosterList(playersList, `playersList-edit-${teamId}`, true);
-      
-      // Обновляем переключатель, если он был показан
-      const hasAltNumbers = playersList.some(p => p.number && p.number.includes('/'));
-      if (hasAltNumbers) {
-        const toggleLabel = document.getElementById(`altNumbersToggleLabel-edit-${teamId}`);
-        if (toggleLabel) {
-          toggleLabel.style.display = 'flex';
-        }
+      // Обновляем классы active для переключателя номеров без полной перерисовки
+      const container = document.getElementById(`playersList-edit-${teamId}`);
+      if (container) {
+        const primaryInputs = container.querySelectorAll('.roster-number[data-number-type="primary"]');
+        const altInputs = container.querySelectorAll('.roster-number-alt[data-number-type="alt"]');
+        
+        primaryInputs.forEach(input => {
+          if (useAltNumbers) {
+            input.classList.remove('active');
+          } else {
+            input.classList.add('active');
+          }
+        });
+        
+        altInputs.forEach(input => {
+          if (useAltNumbers) {
+            input.classList.add('active');
+          } else {
+            input.classList.remove('active');
+          }
+        });
+      } else {
+        // Если контейнер не найден, перерисовываем полностью
+        const playersList = getRosterFromDOM(`playersList-edit-${teamId}`, true);
+        renderRosterList(playersList, `playersList-edit-${teamId}`, true);
       }
       
       // Отправляем событие для обновления на других страницах с teamId
