@@ -2473,6 +2473,31 @@
               toggleLabel.style.display = 'flex';
               const useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
               toggleCheckbox.checked = useAltNumbers;
+              
+              // Обновляем классы active для переключателя номеров после парсинга
+              setTimeout(() => {
+                const container = document.getElementById(`playersList-edit-${teamId}`);
+                if (container) {
+                  const primaryInputs = container.querySelectorAll('.roster-number[data-number-type="primary"]');
+                  const altInputs = container.querySelectorAll('.roster-number-alt[data-number-type="alt"]');
+                  
+                  primaryInputs.forEach(input => {
+                    if (useAltNumbers) {
+                      input.classList.remove('active');
+                    } else {
+                      input.classList.add('active');
+                    }
+                  });
+                  
+                  altInputs.forEach(input => {
+                    if (useAltNumbers) {
+                      input.classList.add('active');
+                    } else {
+                      input.classList.remove('active');
+                    }
+                  });
+                }
+              }, 0);
             } else {
               toggleLabel.style.display = 'none';
             }
