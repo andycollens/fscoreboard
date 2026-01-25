@@ -4417,8 +4417,11 @@
       
       // Синхронизируем выпадающие списки после восстановления команд
       // Но только если команды уже загружены
+      // Используем setTimeout чтобы убедиться, что выпадающие списки уже заполнены
       if (teams && teams.length > 0) {
-        syncMainTeamPresetSelectsFromState();
+        setTimeout(() => {
+          syncMainTeamPresetSelectsFromState();
+        }, 100);
       }
       
       // Обновление режима пенальти после обновления команд и логотипов
@@ -4526,29 +4529,32 @@
       setupTeamUpdateListener(); // Слушаем обновления команд из настроек
       
       // Загружаем сохраненное состояние выбранных команд из localStorage
-      try {
-        const savedSelection = JSON.parse(localStorage.getItem('mainTeamSelection') || '{}');
-        if (savedSelection.team1 && savedSelection.team1.teamId) {
-          const team1 = teams.find(t => String(t.id) === String(savedSelection.team1.teamId));
-          if (team1) {
-            mainTeamSelection.team1 = { teamId: String(team1.id) };
-            selectedTeams.team1 = team1;
+      // Но только после того, как команды загружены и выпадающие списки заполнены
+      setTimeout(() => {
+        try {
+          const savedSelection = JSON.parse(localStorage.getItem('mainTeamSelection') || '{}');
+          if (savedSelection.team1 && savedSelection.team1.teamId) {
+            const team1 = teams.find(t => String(t.id) === String(savedSelection.team1.teamId));
+            if (team1) {
+              mainTeamSelection.team1 = { teamId: String(team1.id) };
+              selectedTeams.team1 = team1;
+            }
           }
-        }
-        if (savedSelection.team2 && savedSelection.team2.teamId) {
-          const team2 = teams.find(t => String(t.id) === String(savedSelection.team2.teamId));
-          if (team2) {
-            mainTeamSelection.team2 = { teamId: String(team2.id) };
-            selectedTeams.team2 = team2;
+          if (savedSelection.team2 && savedSelection.team2.teamId) {
+            const team2 = teams.find(t => String(t.id) === String(savedSelection.team2.teamId));
+            if (team2) {
+              mainTeamSelection.team2 = { teamId: String(team2.id) };
+              selectedTeams.team2 = team2;
+            }
           }
+          // Синхронизируем выпадающие списки после загрузки команд и восстановления состояния
+          if (teams && teams.length > 0) {
+            syncMainTeamPresetSelectsFromState();
+          }
+        } catch (e) {
+          console.error('Ошибка загрузки сохраненного состояния команд из localStorage:', e);
         }
-        // Синхронизируем выпадающие списки после загрузки команд
-        if (teams && teams.length > 0) {
-          syncMainTeamPresetSelectsFromState();
-        }
-      } catch (e) {
-        console.error('Ошибка загрузки сохраненного состояния команд из localStorage:', e);
-      }
+      }, 100);
       
       // Простая проверка - если данные не пришли, запрашиваем через небольшую задержку
       setTimeout(() => {

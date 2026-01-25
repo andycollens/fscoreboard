@@ -771,6 +771,9 @@
                     const updateData = JSON.parse(currentUpdate || '{}');
                     const changedTeamId = updateData.teamId;
                     
+                    console.log('Members: Обнаружено обновление альтернативных номеров для teamId:', changedTeamId);
+                    console.log('Members: latestData.team1Id =', latestData.team1Id, 'latestData.team2Id =', latestData.team2Id);
+                    
                     // Обновляем отображение при изменении переключателя
                     // Обновляем только ту команду, у которой изменился переключатель
                     const team1Id = latestData.team1Id || null;
@@ -786,7 +789,10 @@
                             false,
                             team1Id
                         );
+                    } else if (team1Id && String(team1Id) === String(changedTeamId)) {
+                        console.warn('Members: Команда 1 найдена, но элементы DOM отсутствуют');
                     }
+                    
                     if (team2Id && String(team2Id) === String(changedTeamId) && rosterTeam2Coach && rosterTeam2Players) {
                         console.log('Members: Обновляем команду 2, teamId:', team2Id);
                         renderRostersMode(
@@ -797,6 +803,16 @@
                             true,
                             team2Id
                         );
+                    } else if (team2Id && String(team2Id) === String(changedTeamId)) {
+                        console.warn('Members: Команда 2 найдена, но элементы DOM отсутствуют');
+                    }
+                    
+                    // Если teamId не совпадает, но команда есть на табло, все равно обновляем
+                    if (!team1Id || String(team1Id) !== String(changedTeamId)) {
+                        if (!team2Id || String(team2Id) !== String(changedTeamId)) {
+                            console.log('Members: teamId не совпадает, обновляем все команды');
+                            updateDisplay(latestData);
+                        }
                     }
                 } catch (err) {
                     console.error('Ошибка при обновлении альтернативных номеров:', err);

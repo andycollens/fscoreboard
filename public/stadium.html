@@ -2052,6 +2052,9 @@ body.penalty-mode .penalty-score {
                     const updateData = JSON.parse(currentUpdate || '{}');
                     const changedTeamId = updateData.teamId;
                     
+                    console.log('Stadium: Обнаружено обновление альтернативных номеров для teamId:', changedTeamId);
+                    console.log('Stadium: latestData.team1Id =', latestData.team1Id, 'latestData.team2Id =', latestData.team2Id);
+                    
                     // Обновляем отображение при изменении переключателя
                     // Обновляем для режима "Составы", если он активен
                     if (currentMode === 'rosters') {
@@ -2060,7 +2063,7 @@ body.penalty-mode .penalty-score {
                         const team2Id = latestData.team2Id || null;
                         
                         if (team1Id && String(team1Id) === String(changedTeamId) && rosterTeam1Coach && rosterTeam1Players) {
-                            console.log('Обновляем команду 1, teamId:', team1Id);
+                            console.log('Stadium: Обновляем команду 1, teamId:', team1Id);
                             renderRostersMode(
                                 rosterTeam1Coach,
                                 rosterTeam1Players,
@@ -2069,9 +2072,12 @@ body.penalty-mode .penalty-score {
                                 false,
                                 team1Id
                             );
+                        } else if (team1Id && String(team1Id) === String(changedTeamId)) {
+                            console.warn('Stadium: Команда 1 найдена, но элементы DOM отсутствуют');
                         }
+                        
                         if (team2Id && String(team2Id) === String(changedTeamId) && rosterTeam2Coach && rosterTeam2Players) {
-                            console.log('Обновляем команду 2, teamId:', team2Id);
+                            console.log('Stadium: Обновляем команду 2, teamId:', team2Id);
                             renderRostersMode(
                                 rosterTeam2Coach,
                                 rosterTeam2Players,
@@ -2080,6 +2086,16 @@ body.penalty-mode .penalty-score {
                                 true,
                                 team2Id
                             );
+                        } else if (team2Id && String(team2Id) === String(changedTeamId)) {
+                            console.warn('Stadium: Команда 2 найдена, но элементы DOM отсутствуют');
+                        }
+                        
+                        // Если teamId не совпадает, но команда есть на табло, все равно обновляем
+                        if (!team1Id || String(team1Id) !== String(changedTeamId)) {
+                            if (!team2Id || String(team2Id) !== String(changedTeamId)) {
+                                console.log('Stadium: teamId не совпадает, обновляем все команды');
+                                refreshDisplayForMode(currentMode, latestData);
+                            }
                         }
                     }
                 } catch (err) {
