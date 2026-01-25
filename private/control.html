@@ -6083,11 +6083,18 @@
       if (state.team2Staff) stateUpdate.team2Staff = state.team2Staff;
       
       // Добавляем ID команд для правильного отображения альтернативных номеров
-      if (scoreboardState.team1Id) stateUpdate.team1Id = scoreboardState.team1Id;
-      if (scoreboardState.team2Id) stateUpdate.team2Id = scoreboardState.team2Id;
+      if (scoreboardState.team1Id) {
+        stateUpdate.team1Id = scoreboardState.team1Id;
+        console.log('Control: Отправляем team1Id на сервер:', scoreboardState.team1Id);
+      }
+      if (scoreboardState.team2Id) {
+        stateUpdate.team2Id = scoreboardState.team2Id;
+        console.log('Control: Отправляем team2Id на сервер:', scoreboardState.team2Id);
+      }
       
       // ОТПРАВЛЯЕМ НА СЕРВЕР - это сохранит состояние в state.json
       // Сервер автоматически сохранит все данные и разошлет всем клиентам
+      console.log('Control: Отправляем stateUpdate на сервер:', stateUpdate);
       socket.emit('updateScoreboard', stateUpdate);
     }
 
