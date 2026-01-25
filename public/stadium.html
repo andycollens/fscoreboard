@@ -2151,7 +2151,7 @@ body.penalty-mode .penalty-score {
             el.innerHTML = parts.join('');
         }
 
-        function renderRostersMode(coachEl, playersEl, staff, players, isRightSide = false) {
+        function renderRostersMode(coachEl, playersEl, staff, players, isRightSide = false, teamId = null) {
             // Заполняем тренера
             if (coachEl) {
                 if (staff && Array.isArray(staff) && staff.length > 0) {
@@ -2172,28 +2172,45 @@ body.penalty-mode .penalty-score {
             // Заполняем игроков в две колонки
             if (playersEl) {
                 if (players && Array.isArray(players) && players.length > 0) {
+                    // Получаем состояние переключателя альтернативных номеров
+                    // Проверяем, есть ли у игроков альтернативные номера
+                    const hasAltNumbers = players.some(p => {
+                        if (typeof p === 'string') return false;
+                        return p.number && p.number.includes('/');
+                    });
+                    
+                    let useAltNumbers = false;
+                    if (hasAltNumbers) {
+                        if (teamId) {
+                            useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
+                        } else {
+                            // Если teamId нет, используем глобальное состояние для всех команд
+                            useAltNumbers = localStorage.getItem('globalUseAltNumbers') === 'true';
+                        }
+                    }
+                    
                     const playerItems = players
                         .map(item => {
                             if (!item) return '';
+                            let num = '';
+                            let name = '';
+                            
                             if (typeof item === 'string') {
                                 // Если строка, пытаемся извлечь номер и имя
                                 const parts = item.trim().split(/\s+/);
-                                const num = parts[0].match(/^\d+$/) ? parts[0] : '';
-                                const name = num ? parts.slice(1).join(' ') : item;
-                                if (isRightSide) {
-                                    return `<div class="roster-player-item">
-                                        <span class="roster-player-name">${escapeHtml(name || '')}</span>
-                                        <span class="roster-player-number">${escapeHtml(num || '')}</span>
-                                    </div>`;
-                                } else {
-                                    return `<div class="roster-player-item">
-                                        <span class="roster-player-number">${escapeHtml(num || '')}</span>
-                                        <span class="roster-player-name">${escapeHtml(name || '')}</span>
-                                    </div>`;
+                                num = parts[0].match(/^\d+$/) ? parts[0] : '';
+                                name = num ? parts.slice(1).join(' ') : item;
+                            } else {
+                                num = item.number ? String(item.number) : '';
+                                name = item.name || '';
+                                
+                                // Если номер содержит "/", обрабатываем альтернативные номера
+                                if (num && num.includes('/')) {
+                                    const [num1, num2] = num.split('/');
+                                    num = useAltNumbers ? (num2 || num1) : (num1 || '');
                                 }
                             }
-                            const num = item.number ? String(item.number) : '';
-                            const name = item.name || '';
+                            
                             if (isRightSide) {
                                 return `<div class="roster-player-item">
                                     <span class="roster-player-name">${escapeHtml(name)}</span>
@@ -2247,12 +2264,15 @@ body.penalty-mode .penalty-score {
 
             // Обновляем списки для режима "Составы" (только в режиме rosters)
             if (currentMode === 'rosters' && rosterTeam1Coach && rosterTeam1Players) {
+                // Пытаемся найти teamId из данных или используем глобальное состояние
+                const team1Id = data.team1Id || null;
                 renderRostersMode(
                     rosterTeam1Coach,
                     rosterTeam1Players,
                     data.team1Staff || data.staff1 || [],
                     data.team1Players || data.players1 || [],
-                    false
+                    false,
+                    team1Id
                 );
             }
 
@@ -2298,12 +2318,15 @@ body.penalty-mode .penalty-score {
 
             // Обновляем списки для режима "Составы" (только в режиме rosters)
             if (currentMode === 'rosters' && rosterTeam2Coach && rosterTeam2Players) {
+                // Пытаемся найти teamId из данных или используем глобальное состояние
+                const team2Id = data.team2Id || null;
                 renderRostersMode(
                     rosterTeam2Coach,
                     rosterTeam2Players,
                     data.team2Staff || data.staff2 || [],
                     data.team2Players || data.players2 || [],
-                    true
+                    true,
+                    team2Id
                 );
 
                 // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков

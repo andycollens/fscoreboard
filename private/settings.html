@@ -1827,6 +1827,21 @@
       }
     }
     
+    // Переключение альтернативных номеров
+    function toggleAltNumbers(teamId) {
+      const checkbox = document.getElementById(`altNumbersToggle-${teamId}`);
+      if (!checkbox) return;
+      
+      const useAltNumbers = checkbox.checked;
+      localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
+      
+      // Обновляем отображение состава
+      renderBaseTeamRosterView(teamId);
+      
+      // Отправляем событие для обновления на других страницах
+      localStorage.setItem('altNumbersUpdated', Date.now().toString());
+    }
+    
     // Отображение состава команды
     function renderBaseTeamRosterView(teamId) {
       const team = teams.find(t => t.id === teamId);
@@ -1852,17 +1867,30 @@
         staffHtml = '<div class="roster-staff-empty">Тренерский состав не указан</div>';
       }
       
+      // Проверяем, есть ли у команды игроки с альтернативными номерами
+      const hasAltNumbers = playersList.some(p => p.number && p.number.includes('/'));
+      
+      // Получаем состояние переключателя из localStorage
+      const useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
+      
       // Формируем HTML для игроков
       let playersHtml = '';
       if (playersList.length > 0) {
         playersHtml = `
           <div class="roster-players-grid">
-            ${playersList.map(p => `
+            ${playersList.map(p => {
+              let displayNumber = p.number || '';
+              if (displayNumber && displayNumber.includes('/')) {
+                const [num1, num2] = displayNumber.split('/');
+                displayNumber = useAltNumbers ? num2 : num1;
+              }
+              return `
               <div class="roster-player-item">
-                ${p.number ? `<span class="roster-player-number">${p.number}</span>` : '<span class="roster-player-number" style="opacity: 0.3;">—</span>'}
+                ${displayNumber ? `<span class="roster-player-number">${displayNumber}</span>` : '<span class="roster-player-number" style="opacity: 0.3;">—</span>'}
                 <span class="roster-player-name">${p.name || ''}</span>
               </div>
-            `).join('')}
+            `;
+            }).join('')}
           </div>
         `;
       } else {
@@ -1876,7 +1904,15 @@
             ${staffHtml}
           </div>
           <div class="roster-section">
-            <div class="roster-section-title">Игроки</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div class="roster-section-title">Игроки</div>
+              ${hasAltNumbers ? `
+                <label style="display: flex; align-items: center; gap: 8px; cursor: ${hasAltNumbers ? 'pointer' : 'not-allowed'}; opacity: ${hasAltNumbers ? '1' : '0.5'};">
+                  <input type="checkbox" id="altNumbersToggle-${teamId}" ${useAltNumbers ? 'checked' : ''} ${hasAltNumbers ? '' : 'disabled'} onchange="toggleAltNumbers('${teamId}')" style="cursor: ${hasAltNumbers ? 'pointer' : 'not-allowed'};">
+                  <span style="font-size: 12px; color: #61708a; font-weight: 500;">Альтернативные номера</span>
+                </label>
+              ` : ''}
+            </div>
             ${playersHtml}
           </div>
         </div>
@@ -2017,45 +2053,90 @@
     
     function parseRosterLine(line, withNumber = true) {
       let number = '';
+      let altNumber = '';
       let rest = line.trim();
 
       if (withNumber) {
-        // Сначала проверяем, есть ли номер в начале строки
-        // Формат: "10 Иванов Иван" или "10\tИванов Иван"
-        const numMatchStart = rest.match(/^(\d{1,3})[\s\t]+(.+)$/);
-        if (numMatchStart) {
-          const numVal = parseInt(numMatchStart[1], 10);
-          // Номер должен быть в разумных пределах (1-199)
-          if (!isNaN(numVal) && numVal > 0 && numVal < 200) {
-            number = numVal.toString();
-            rest = numMatchStart[2].trim(); // Остаток строки после номера
+        // Сначала проверяем, есть ли два номера в начале строки
+        // Формат: "10 15 Иванов Иван" или "10\t15\tИванов Иван"
+        const twoNumsMatchStart = rest.match(/^(\d{1,3})[\s\t]+(\d{1,3})[\s\t]+(.+)$/);
+        if (twoNumsMatchStart) {
+          const num1Val = parseInt(twoNumsMatchStart[1], 10);
+          const num2Val = parseInt(twoNumsMatchStart[2], 10);
+          // Оба номера должны быть в разумных пределах (1-199)
+          if (!isNaN(num1Val) && num1Val > 0 && num1Val < 200 &&
+              !isNaN(num2Val) && num2Val > 0 && num2Val < 200) {
+            number = num1Val.toString();
+            altNumber = num2Val.toString();
+            rest = twoNumsMatchStart[3].trim(); // Остаток строки после номеров
           }
         } else {
-          // Если номер не найден в начале, проверяем в конце строки
-          // Формат: "Иванов Иван 10.01.2010 10" или "Иванов Иван 10"
-          // Номер в конце должен быть отдельным числом (не частью даты)
-          const numMatchEnd = rest.match(/^(.+?)[\s\t]+(\d{1,3})$/);
-          if (numMatchEnd) {
-            const numVal = parseInt(numMatchEnd[2], 10);
-            const beforeNumber = numMatchEnd[1].trim();
-            
+          // Проверяем, есть ли номер в начале строки
+          // Формат: "10 Иванов Иван" или "10\tИванов Иван"
+          const numMatchStart = rest.match(/^(\d{1,3})[\s\t]+(.+)$/);
+          if (numMatchStart) {
+            const numVal = parseInt(numMatchStart[1], 10);
+            // Номер должен быть в разумных пределах (1-199)
             if (!isNaN(numVal) && numVal > 0 && numVal < 200) {
-              // Проверяем, есть ли паттерн даты перед числом (форматы: 10.01.2010, 10/01/2010, 10-01-2010, 2010-01-10)
-              const hasDatePattern = /[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/.test(beforeNumber);
+              number = numVal.toString();
+              rest = numMatchStart[2].trim(); // Остаток строки после номера
               
-              // Если есть паттерн даты, то последнее число - это номер игрока
-              if (hasDatePattern) {
-                number = numVal.toString();
-                rest = beforeNumber.trim();
-              } else {
-                // Если нет паттерна даты, проверяем последнее слово перед числом
-                const lastWord = beforeNumber.split(/\s+/).pop();
-                const isLastWordNumber = /^\d+$/.test(lastWord);
+              // Проверяем, есть ли второй номер в конце строки
+              // Формат: "10 Иванов Иван 15"
+              const numMatchEnd = rest.match(/^(.+?)[\s\t]+(\d{1,3})$/);
+              if (numMatchEnd) {
+                const num2Val = parseInt(numMatchEnd[2], 10);
+                const beforeNumber = numMatchEnd[1].trim();
                 
-                // Если последнее слово - не число, то последнее число в строке - это номер игрока
-                if (!isLastWordNumber) {
+                if (!isNaN(num2Val) && num2Val > 0 && num2Val < 200) {
+                  // Проверяем, есть ли паттерн даты перед числом
+                  const hasDatePattern = /[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/.test(beforeNumber);
+                  
+                  // Если есть паттерн даты, то последнее число - это альтернативный номер игрока
+                  if (hasDatePattern) {
+                    altNumber = num2Val.toString();
+                    rest = beforeNumber.trim();
+                  } else {
+                    // Если нет паттерна даты, проверяем последнее слово перед числом
+                    const lastWord = beforeNumber.split(/\s+/).pop();
+                    const isLastWordNumber = /^\d+$/.test(lastWord);
+                    
+                    // Если последнее слово - не число, то последнее число в строке - это альтернативный номер игрока
+                    if (!isLastWordNumber) {
+                      altNumber = num2Val.toString();
+                      rest = beforeNumber.trim();
+                    }
+                  }
+                }
+              }
+            }
+          } else {
+            // Если номер не найден в начале, проверяем в конце строки
+            // Формат: "Иванов Иван 10.01.2010 10" или "Иванов Иван 10"
+            // Номер в конце должен быть отдельным числом (не частью даты)
+            const numMatchEnd = rest.match(/^(.+?)[\s\t]+(\d{1,3})$/);
+            if (numMatchEnd) {
+              const numVal = parseInt(numMatchEnd[2], 10);
+              const beforeNumber = numMatchEnd[1].trim();
+              
+              if (!isNaN(numVal) && numVal > 0 && numVal < 200) {
+                // Проверяем, есть ли паттерн даты перед числом (форматы: 10.01.2010, 10/01/2010, 10-01-2010, 2010-01-10)
+                const hasDatePattern = /[\d]{1,2}[.\/\-][\d]{1,2}([.\/\-][\d]{0,4})?/.test(beforeNumber);
+                
+                // Если есть паттерн даты, то последнее число - это номер игрока
+                if (hasDatePattern) {
                   number = numVal.toString();
                   rest = beforeNumber.trim();
+                } else {
+                  // Если нет паттерна даты, проверяем последнее слово перед числом
+                  const lastWord = beforeNumber.split(/\s+/).pop();
+                  const isLastWordNumber = /^\d+$/.test(lastWord);
+                  
+                  // Если последнее слово - не число, то последнее число в строке - это номер игрока
+                  if (!isLastWordNumber) {
+                    number = numVal.toString();
+                    rest = beforeNumber.trim();
+                  }
                 }
               }
             }
@@ -2064,7 +2145,9 @@
       }
       
       const name = normalizeName(rest, withNumber);
-      return { name, number };
+      // Если есть альтернативный номер, объединяем через "/"
+      const finalNumber = altNumber ? `${number}/${altNumber}` : number;
+      return { name, number: finalNumber };
     }
     
     function parseRosterText(text, withNumber = true) {
