@@ -214,6 +214,9 @@ if (fs.existsSync(SAVE_PATH)) {
   try {
     const savedData = JSON.parse(fs.readFileSync(SAVE_PATH, 'utf8'));
     state = { ...state, ...savedData };
+    // Убеждаемся, что teamId поля инициализированы (для старых файлов)
+    if (state.team1Id === undefined) state.team1Id = null;
+    if (state.team2Id === undefined) state.team2Id = null;
   } catch (e) {
     console.error("Ошибка чтения state.json", e);
   }
