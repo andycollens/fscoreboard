@@ -2050,14 +2050,17 @@ body.penalty-mode .penalty-score {
                 lastAltNumbersUpdate = currentUpdate;
                 try {
                     const updateData = JSON.parse(currentUpdate || '{}');
-                    const teamId = updateData.teamId;
+                    const changedTeamId = updateData.teamId;
                     
                     // Обновляем отображение при изменении переключателя
                     // Обновляем для режима "Составы", если он активен
                     if (currentMode === 'rosters') {
-                        // Обновляем обе команды, так как не знаем точно, какая изменилась
-                        if (rosterTeam1Coach && rosterTeam1Players) {
-                            const team1Id = latestData.team1Id || null;
+                        // Обновляем только ту команду, у которой изменился переключатель
+                        const team1Id = latestData.team1Id || null;
+                        const team2Id = latestData.team2Id || null;
+                        
+                        if (team1Id && String(team1Id) === String(changedTeamId) && rosterTeam1Coach && rosterTeam1Players) {
+                            console.log('Обновляем команду 1, teamId:', team1Id);
                             renderRostersMode(
                                 rosterTeam1Coach,
                                 rosterTeam1Players,
@@ -2067,8 +2070,8 @@ body.penalty-mode .penalty-score {
                                 team1Id
                             );
                         }
-                        if (rosterTeam2Coach && rosterTeam2Players) {
-                            const team2Id = latestData.team2Id || null;
+                        if (team2Id && String(team2Id) === String(changedTeamId) && rosterTeam2Coach && rosterTeam2Players) {
+                            console.log('Обновляем команду 2, teamId:', team2Id);
                             renderRostersMode(
                                 rosterTeam2Coach,
                                 rosterTeam2Players,
@@ -2080,6 +2083,7 @@ body.penalty-mode .penalty-score {
                         }
                     }
                 } catch (err) {
+                    console.error('Ошибка при обновлении альтернативных номеров:', err);
                     // Если не JSON, просто обновляем все
                     if (currentMode === 'rosters') {
                         refreshDisplayForMode(currentMode, latestData);
@@ -2094,10 +2098,10 @@ body.penalty-mode .penalty-score {
             }
         });
         
-        // Периодическая проверка (каждые 500ms) для обновления в той же вкладке
+        // Периодическая проверка (каждые 200ms) для обновления в той же вкладке
         setInterval(() => {
             checkAltNumbersUpdate();
-        }, 500);
+        }, 200);
         
         // Также проверяем при фокусе окна
         window.addEventListener('focus', () => {
