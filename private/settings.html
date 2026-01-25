@@ -2253,14 +2253,26 @@
       
       const body = rows.map((row, idx) => {
         let displayNumber = row.number || '';
-        // Если номер содержит "/" и переключатель включен, показываем второй номер
-        if (displayNumber && displayNumber.includes('/') && useAltNumbers) {
-          const parts = displayNumber.split('/');
-          displayNumber = parts[1] || parts[0];
-        } else if (displayNumber && displayNumber.includes('/') && !useAltNumbers) {
-          // Если переключатель выключен, показываем первый номер
-          const parts = displayNumber.split('/');
-          displayNumber = parts[0];
+        let numberHtml = '';
+        
+        if (withNumber) {
+          // Если номер содержит "/", показываем оба номера с разными цветами
+          if (displayNumber && displayNumber.includes('/')) {
+            const parts = displayNumber.split('/');
+            const num1 = parts[0] || '';
+            const num2 = parts[1] || '';
+            
+            if (useAltNumbers) {
+              // Альтернативные включены: первый серый, второй черный
+              numberHtml = `<input type="text" class="roster-number" value="${num2.replace(/"/g, '&quot;')}" placeholder="№" data-original-number="${displayNumber.replace(/"/g, '&quot;')}" style="color: #000;"><span style="color: #999; margin: 0 2px;">/</span><span style="color: #999;">${num1}</span>`;
+            } else {
+              // Альтернативные выключены: первый черный, второй серый
+              numberHtml = `<input type="text" class="roster-number" value="${num1.replace(/"/g, '&quot;')}" placeholder="№" data-original-number="${displayNumber.replace(/"/g, '&quot;')}" style="color: #000;"><span style="color: #999; margin: 0 2px;">/</span><span style="color: #999;">${num2}</span>`;
+            }
+          } else {
+            // Один номер - обычное отображение
+            numberHtml = `<input type="text" class="roster-number" value="${displayNumber.replace(/"/g, '&quot;')}" placeholder="№" data-original-number="${displayNumber.replace(/"/g, '&quot;')}">`;
+          }
         }
         
         return `
@@ -2269,8 +2281,8 @@
             <input type="text" class="roster-name" value="${(row.name || '').replace(/"/g, '&quot;')}" placeholder="Фамилия Имя">
           </div>
           ${withNumber ? `
-          <div>
-            <input type="text" class="roster-number" value="${displayNumber.replace(/"/g, '&quot;')}" placeholder="№" data-original-number="${(row.number || '').replace(/"/g, '&quot;')}">
+          <div style="display: flex; align-items: center; gap: 2px;">
+            ${numberHtml}
           </div>` : ''}
           <div style="display:flex; align-items:center; justify-content:center; height: 34px;">
             <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
