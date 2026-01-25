@@ -1180,7 +1180,8 @@ app.post('/api/teams', upload.single('logo'), (req, res) => {
     kitColor: req.body.kitColor || '#2b2b2b',
     logo: logoUrl,
     players: sanitizePlayers(req.body.players ? JSON.parse(req.body.players) : []),
-    staff: sanitizeStaff(req.body.staff ? JSON.parse(req.body.staff) : [])
+    staff: sanitizeStaff(req.body.staff ? JSON.parse(req.body.staff) : []),
+    useAltNumbers: false // По умолчанию выключено
   };
   
   teams.push(newTeam);
@@ -1250,6 +1251,12 @@ app.put('/api/teams/:id', upload.single('logo'), (req, res) => {
     return /^\d{4}$/.test(str) ? str : '';
   };
   
+  // Обработка useAltNumbers (состояние галочки альтернативных номеров)
+  let useAltNumbers = existingTeam.useAltNumbers || false;
+  if (req.body.useAltNumbers !== undefined) {
+    useAltNumbers = req.body.useAltNumbers === true || req.body.useAltNumbers === 'true';
+  }
+  
   teams[teamIndex] = {
     ...existingTeam,
     name: req.body.name,
@@ -1259,13 +1266,34 @@ app.put('/api/teams/:id', upload.single('logo'), (req, res) => {
     kitColor: req.body.kitColor || '#2b2b2b',
     logo: logoUrl,
     players: sanitizePlayers(req.body.players ? JSON.parse(req.body.players) : existingTeam.players),
-    staff: sanitizeStaff(req.body.staff ? JSON.parse(req.body.staff) : existingTeam.staff)
+    staff: sanitizeStaff(req.body.staff ? JSON.parse(req.body.staff) : existingTeam.staff),
+    useAltNumbers: useAltNumbers
   };
   
   fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
   
   console.log('Team updated:', teamId);
   res.json(teams[teamIndex]);
+});
+
+// Обновить только состояние альтернативных номеров команды
+app.put('/api/teams/:id/useAltNumbers', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  
+  const teamId = req.params.id;
+  const teamIndex = teams.findIndex(t => t.id === teamId);
+  
+  if (teamIndex === -1) {
+    return res.status(404).json({ error: 'Team not found' });
+  }
+  
+  const useAltNumbers = req.body.useAltNumbers === true || req.body.useAltNumbers === 'true';
+  teams[teamIndex].useAltNumbers = useAltNumbers;
+  
+  fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
+  
+  console.log('Team useAltNumbers updated:', teamId, useAltNumbers);
+  res.json({ success: true, useAltNumbers: useAltNumbers });
 });
 
 // Удалить команду

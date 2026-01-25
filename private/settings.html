@@ -1451,6 +1451,12 @@
         const response = await fetch(`/api/teams?token=${getToken()}`);
         if (response.ok) {
           teams = await response.json();
+          // Синхронизируем useAltNumbers с сервера в localStorage
+          teams.forEach(team => {
+            if (team.useAltNumbers !== undefined) {
+              localStorage.setItem(`team-${team.id}-useAltNumbers`, team.useAltNumbers.toString());
+            }
+          });
           renderTeams();
       } else {
           console.error('Ошибка загрузки команд');
@@ -1893,12 +1899,37 @@
     }
     
     // Переключение альтернативных номеров
-    function toggleAltNumbers(teamId) {
+    async function toggleAltNumbers(teamId) {
       const checkbox = document.getElementById(`altNumbersToggle-${teamId}`);
       if (!checkbox) return;
       
       const useAltNumbers = checkbox.checked;
+      
+      // Сохраняем в localStorage для быстрого доступа
       localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
+      
+      // Сохраняем на сервере для синхронизации между устройствами
+      try {
+        const response = await fetch(`/api/teams/${teamId}/useAltNumbers?token=${getToken()}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ useAltNumbers: useAltNumbers })
+        });
+        
+        if (response.ok) {
+          // Обновляем команду в локальном массиве
+          const team = teams.find(t => t.id === teamId);
+          if (team) {
+            team.useAltNumbers = useAltNumbers;
+          }
+        } else {
+          console.error('Ошибка сохранения useAltNumbers на сервере:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения useAltNumbers на сервере:', error);
+      }
       
       // Обновляем отображение состава
       renderBaseTeamRosterView(teamId);
@@ -2521,12 +2552,37 @@
     }
     
     // Переключение альтернативных номеров в форме редактирования
-    function toggleAltNumbersInEdit(teamId) {
+    async function toggleAltNumbersInEdit(teamId) {
       const checkbox = document.getElementById(`altNumbersToggle-edit-${teamId}`);
       if (!checkbox) return;
       
       const useAltNumbers = checkbox.checked;
+      
+      // Сохраняем в localStorage для быстрого доступа
       localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
+      
+      // Сохраняем на сервере для синхронизации между устройствами
+      try {
+        const response = await fetch(`/api/teams/${teamId}/useAltNumbers?token=${getToken()}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ useAltNumbers: useAltNumbers })
+        });
+        
+        if (response.ok) {
+          // Обновляем команду в локальном массиве
+          const team = teams.find(t => t.id === teamId);
+          if (team) {
+            team.useAltNumbers = useAltNumbers;
+          }
+        } else {
+          console.error('Ошибка сохранения useAltNumbers на сервере:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения useAltNumbers на сервере:', error);
+      }
       
       // Обновляем классы active для переключателя номеров без полной перерисовки
       const container = document.getElementById(`playersList-edit-${teamId}`);
