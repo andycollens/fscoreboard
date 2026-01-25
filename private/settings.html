@@ -1413,6 +1413,36 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+    
+    // Слушаем обновления useAltNumbers с других устройств
+    socket.on('teamUseAltNumbersUpdated', (data) => {
+      const { teamId, useAltNumbers } = data;
+      console.log('Settings: Получено обновление useAltNumbers для команды:', teamId, useAltNumbers);
+      
+      // Обновляем команду в локальном массиве
+      const team = teams.find(t => t.id === teamId);
+      if (team) {
+        team.useAltNumbers = useAltNumbers;
+        // Синхронизируем с localStorage
+        localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
+        
+        // Обновляем отображение, если команда развернута
+        const rosterDiv = document.getElementById(`team-roster-${teamId}`);
+        if (rosterDiv && rosterDiv.style.display !== 'none') {
+          renderBaseTeamRosterView(teamId);
+        }
+        
+        // Отправляем событие для обновления на других страницах
+        const updateData = {
+          teamId: teamId,
+          useAltNumbers: useAltNumbers,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('altNumbersUpdated', JSON.stringify(updateData));
+        window.dispatchEvent(new CustomEvent('altNumbersUpdated', { detail: updateData }));
+      }
+    });
+    const socket = io();
     let tournaments = [];
     let editingTeamId = null;
     let expandedTournaments = new Set(); // Храним ID раскрытых турниров

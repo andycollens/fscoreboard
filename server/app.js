@@ -1292,6 +1292,12 @@ app.put('/api/teams/:id/useAltNumbers', (req, res) => {
   
   fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
   
+  // Отправляем событие всем подключенным клиентам для синхронизации
+  io.emit('teamUseAltNumbersUpdated', {
+    teamId: teamId,
+    useAltNumbers: useAltNumbers
+  });
+  
   console.log('Team useAltNumbers updated:', teamId, useAltNumbers);
   res.json({ success: true, useAltNumbers: useAltNumbers });
 });
