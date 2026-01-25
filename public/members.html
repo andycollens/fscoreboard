@@ -648,6 +648,7 @@
             if (rosterTeam1Coach && rosterTeam1Players) {
                 // Пытаемся найти teamId из данных или используем глобальное состояние
                 const team1Id = data.team1Id || null;
+                console.log('Members updateDisplay: team1Id =', team1Id, 'data.team1Id =', data.team1Id);
                 renderRostersMode(
                     rosterTeam1Coach,
                     rosterTeam1Players,
@@ -679,6 +680,7 @@
             if (rosterTeam2Coach && rosterTeam2Players) {
                 // Пытаемся найти teamId из данных или используем глобальное состояние
                 const team2Id = data.team2Id || null;
+                console.log('Members updateDisplay: team2Id =', team2Id, 'data.team2Id =', data.team2Id);
                 renderRostersMode(
                     rosterTeam2Coach,
                     rosterTeam2Players,
