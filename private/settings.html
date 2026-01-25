@@ -1442,7 +1442,7 @@
         window.dispatchEvent(new CustomEvent('altNumbersUpdated', { detail: updateData }));
       }
     });
-    const socket = io();
+    
     let tournaments = [];
     let editingTeamId = null;
     let expandedTournaments = new Set(); // Храним ID раскрытых турниров
