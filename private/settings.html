@@ -1022,14 +1022,56 @@
       box-shadow: 0 0 0 2px rgba(51, 138, 243, 0.1);
     }
 
-    .roster-row .roster-number,
-    .roster-row .roster-number-alt {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-      font-weight: 500;
+    .roster-number-switcher {
+      display: inline-flex;
+      gap: 0;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #d1d5db;
+      background: #f3f4f6;
+      height: 36px;
     }
 
-    .roster-row .roster-number-alt {
+    .roster-number-switcher input {
+      border: none;
+      border-radius: 0;
+      background: #f3f4f6;
+      color: #6b7280;
+      font-weight: 400;
+      font-size: 13px;
+      padding: 8px 12px;
+      text-align: center;
+      box-shadow: none;
+      transition: all 0.15s;
+      position: relative;
+      font-variant-numeric: tabular-nums;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .roster-number-switcher input:first-child {
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+      border-right: 1px solid #d1d5db;
+    }
+
+    .roster-number-switcher input:last-child {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+
+    .roster-number-switcher input.active {
+      background: #9ca3af;
+      color: #fff;
+      font-weight: 600;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .roster-number-switcher input:not(.active) {
+      background: #f3f4f6;
       color: #6b7280;
     }
 
@@ -2313,8 +2355,22 @@
         
         const rowClass = withNumber ? (hasAltNumbers ? 'roster-row-with-alt' : '') : 'staff';
         const gridCols = withNumber 
-          ? (hasAltNumbers ? '1fr 80px 80px 34px' : '1fr 90px 34px')
+          ? (hasAltNumbers ? '1fr 160px 34px' : '1fr 90px 34px')
           : '1fr 34px';
+        
+        // Формируем переключатель номеров, если есть альтернативные
+        let numberInputHtml = '';
+        if (withNumber && hasAltNumbers) {
+          const num1Active = !useAltNumbers ? 'active' : '';
+          const num2Active = useAltNumbers ? 'active' : '';
+          numberInputHtml = `
+          <div class="roster-number-switcher">
+            <input type="text" class="roster-number ${num1Active}" value="${num1.replace(/"/g, '&quot;')}" placeholder="№" data-number-type="primary" data-original-number="${row.number ? row.number.replace(/"/g, '&quot;') : ''}">
+            <input type="text" class="roster-number-alt ${num2Active}" value="${num2.replace(/"/g, '&quot;')}" placeholder="№ альт." data-number-type="alt" data-original-number="${row.number ? row.number.replace(/"/g, '&quot;') : ''}">
+          </div>`;
+        } else if (withNumber) {
+          numberInputHtml = `<input type="text" class="roster-number" value="${num1.replace(/"/g, '&quot;')}" placeholder="№" data-number-type="primary" style="width: 100%;">`;
+        }
         
         return `
         <div class="roster-row ${rowClass}" data-index="${idx}" style="grid-template-columns: ${gridCols};">
@@ -2323,12 +2379,8 @@
           </div>
           ${withNumber ? `
           <div>
-            <input type="text" class="roster-number" value="${num1.replace(/"/g, '&quot;')}" placeholder="№" data-number-type="primary" style="width: 100%;">
-          </div>
-          ${hasAltNumbers ? `
-          <div>
-            <input type="text" class="roster-number-alt" value="${num2.replace(/"/g, '&quot;')}" placeholder="№ альт." data-number-type="alt" style="width: 100%; ${useAltNumbers ? 'color: #000;' : 'color: #999;'}">
-          </div>` : ''}` : ''}
+            ${numberInputHtml}
+          </div>` : ''}
           <div style="display:flex; align-items:center; justify-content:center; height: 34px;">
             <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
           </div>
