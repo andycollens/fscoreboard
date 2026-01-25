@@ -6021,6 +6021,10 @@
       if (state.team2Players) stateUpdate.team2Players = state.team2Players;
       if (state.team2Staff) stateUpdate.team2Staff = state.team2Staff;
       
+      // Добавляем ID команд для правильного отображения альтернативных номеров
+      if (scoreboardState.team1Id) stateUpdate.team1Id = scoreboardState.team1Id;
+      if (scoreboardState.team2Id) stateUpdate.team2Id = scoreboardState.team2Id;
+      
       // ОТПРАВЛЯЕМ НА СЕРВЕР - это сохранит состояние в state.json
       // Сервер автоматически сохранит все данные и разошлет всем клиентам
       socket.emit('updateScoreboard', stateUpdate);
@@ -7138,6 +7142,9 @@
         // Загружаем составы команды
         state.team1Players = team1.players || [];
         state.team1Staff = team1.staff || [];
+        // Сохраняем ID команды для правильного отображения альтернативных номеров
+        state.team1Id = team1.id;
+        scoreboardState.team1Id = team1.id;
       }
       if (team2) {
         selectedTeams.team2 = team2;
@@ -7145,6 +7152,9 @@
         // Загружаем составы команды
         state.team2Players = team2.players || [];
         state.team2Staff = team2.staff || [];
+        // Сохраняем ID команды для правильного отображения альтернативных номеров
+        state.team2Id = team2.id;
+        scoreboardState.team2Id = team2.id;
       }
       
       // Обновляем выпадающие списки команд
@@ -7175,6 +7185,10 @@
         team1Logo: state.team1Logo || '',
         team2Logo: state.team2Logo || ''
       };
+      
+      // Добавляем ID команд для правильного отображения альтернативных номеров
+      if (preset.team1Id) stateUpdate.team1Id = preset.team1Id;
+      if (preset.team2Id) stateUpdate.team2Id = preset.team2Id;
       
       // Добавляем составы команд
       if (state.team1Players) stateUpdate.team1Players = state.team1Players;
@@ -8053,6 +8067,13 @@
       const staffKey = `${teamKey}Staff`;
       state[playersKey] = team.players || [];
       state[staffKey] = team.staff || [];
+      
+      // Сохраняем ID команды для правильного отображения альтернативных номеров
+      const teamIdKey = `${teamKey}Id`;
+      if (team.id) {
+        state[teamIdKey] = team.id;
+        scoreboardState[teamIdKey] = team.id;
+      }
 
       ready = wasReady;
 

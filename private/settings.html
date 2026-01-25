@@ -1253,9 +1253,9 @@
     <div style="margin-bottom: 20px;">
       <div class="stadium-mode-wrapper" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 12px; color: #61708a; font-weight: 500; white-space: nowrap;">Режим:</span>
-          <div class="stadium-mode-buttons">
-            <button type="button" class="stadium-mode-btn" data-mode="scoreboard" id="modeScoreboardBtn">Табло</button>
+        <span style="font-size: 12px; color: #61708a; font-weight: 500; white-space: nowrap;">Режим:</span>
+        <div class="stadium-mode-buttons">
+          <button type="button" class="stadium-mode-btn" data-mode="scoreboard" id="modeScoreboardBtn">Табло</button>
             <button type="button" class="stadium-mode-btn" data-mode="rosters" id="modeRostersBtn">Составы</button>
             <button type="button" class="stadium-mode-btn" data-mode="logo" id="modeLogoBtn">Лого</button>
           </div>
@@ -1263,9 +1263,9 @@
         <div style="display: flex; align-items: center; gap: 8px; margin-left: 0;">
           <span style="font-size: 12px; color: #61708a; font-weight: 500; white-space: nowrap; visibility: hidden;">Режим:</span>
           <div class="stadium-mode-buttons">
-            <button type="button" class="stadium-mode-btn" data-mode="flag" id="modeFlagBtn">Флаг</button>
-            <button type="button" class="stadium-mode-btn" data-mode="winners" id="modeWinnersBtn">Победители</button>
-            <button type="button" class="stadium-mode-btn" data-mode="penalty" id="modePenaltyBtn">Пенальти</button>
+          <button type="button" class="stadium-mode-btn" data-mode="flag" id="modeFlagBtn">Флаг</button>
+          <button type="button" class="stadium-mode-btn" data-mode="winners" id="modeWinnersBtn">Победители</button>
+          <button type="button" class="stadium-mode-btn" data-mode="penalty" id="modePenaltyBtn">Пенальти</button>
           </div>
         </div>
       </div>
@@ -1502,18 +1502,18 @@
               <div class="team-row">
                 <div class="team-item-info" id="team-info-${team.id}" onclick="toggleBaseTeamRoster('${team.id}', event)">
                   ${logoHtml}
-                  <div class="team-short">${team.short || ''}</div>
-                  <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
-                  <div class="team-details">
-                    <div class="team-name">${team.name}</div>
-                    <div class="team-city">${team.city || ''}</div>
-                  </div>
-                </div>
-                <div class="team-actions">
-                  <span class="team-edit-link" onclick="editBaseTeam('${team.id}')">edit</span>
-                  <span class="team-delete-link" onclick="deleteBaseTeam('${team.id}')">delete</span>
+                <div class="team-short">${team.short || ''}</div>
+                <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
+                <div class="team-details">
+                  <div class="team-name">${team.name}</div>
+                  <div class="team-city">${team.city || ''}</div>
                 </div>
               </div>
+              <div class="team-actions">
+                  <span class="team-edit-link" onclick="editBaseTeam('${team.id}')">edit</span>
+                  <span class="team-delete-link" onclick="deleteBaseTeam('${team.id}')">delete</span>
+              </div>
+            </div>
               <div id="team-edit-form-${team.id}" class="team-edit-form-inline hidden"></div>
               <div id="team-roster-${team.id}" class="team-roster-view hidden"></div>
             </div>
@@ -1540,10 +1540,10 @@
       const isExpanded = expandedBirthYears.has(year);
       const teamsDiv = document.getElementById(`teams-year-${year}`);
       
-      if (isExpanded) {
+        if (isExpanded) {
         expandedBirthYears.delete(year);
         if (teamsDiv) teamsDiv.style.display = 'none';
-      } else {
+        } else {
         expandedBirthYears.add(year);
         if (teamsDiv) teamsDiv.style.display = 'block';
       }
@@ -1610,7 +1610,7 @@
       const players = getRosterFromDOM('playersList-new', true);
       const staff = getRosterFromDOM('staffList-new', false);
       
-      const formData = new FormData();
+          const formData = new FormData();
       formData.append('name', name);
       formData.append('city', city);
       formData.append('short', short);
@@ -1955,9 +1955,9 @@
                 const num1Active = !useAltNumbers ? 'active' : '';
                 const num2Active = useAltNumbers ? 'active' : '';
                 numberHtml = `
-                  <div class="roster-number-switcher" style="display: inline-flex;">
-                    <input type="text" class="roster-number ${num1Active}" value="${num1}" readonly style="width: 50px; text-align: center; padding: 4px 8px; font-size: 12px;">
-                    <input type="text" class="roster-number-alt ${num2Active}" value="${num2}" readonly style="width: 50px; text-align: center; padding: 4px 8px; font-size: 12px;">
+                  <div class="roster-number-switcher" style="display: inline-flex; height: 22px; border-radius: 4px;">
+                    <input type="text" class="roster-number ${num1Active}" value="${num1}" readonly style="width: 32px; text-align: center; padding: 2px 4px; font-size: 10px; height: 22px; line-height: 18px;">
+                    <input type="text" class="roster-number-alt ${num2Active}" value="${num2}" readonly style="width: 32px; text-align: center; padding: 2px 4px; font-size: 10px; height: 22px; line-height: 18px;">
                   </div>
                 `;
               } else if (p.number) {
@@ -2012,7 +2012,7 @@
       } else {
           console.error('Ошибка загрузки турниров');
         }
-      } catch (error) {
+            } catch (error) {
         console.error('Ошибка загрузки турниров:', error);
       }
     }
@@ -2552,10 +2552,10 @@
       
       // Отправляем событие для обновления на других страницах с teamId
       localStorage.setItem('altNumbersUpdated', JSON.stringify({
-        teamId: teamId,
+            teamId: teamId,
         useAltNumbers: useAltNumbers,
-        timestamp: Date.now()
-      }));
+            timestamp: Date.now()
+          }));
     }
 
     // Все функции для работы с командами в турнирах удалены - команды теперь создаются и редактируются только в базе команд
