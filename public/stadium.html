@@ -2040,6 +2040,21 @@ body.penalty-mode .penalty-score {
             updateWinners(data); // обновляем структуру победителей, если пришли
             refreshDisplayForMode(currentMode, data);
         });
+        
+        // Обработчик обновления альтернативных номеров
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'altNumbersUpdated' && latestData) {
+                // Обновляем отображение при изменении переключателя
+                refreshDisplayForMode(currentMode, latestData);
+            }
+        });
+        
+        // Также проверяем при фокусе окна
+        window.addEventListener('focus', () => {
+            if (latestData) {
+                refreshDisplayForMode(currentMode, latestData);
+            }
+        });
 
         // Получение начального состояния при загрузке страницы
         socket.on('currentState', (data) => {
