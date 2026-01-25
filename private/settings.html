@@ -1001,23 +1001,36 @@
 
     .roster-row input {
       width: 100%;
-      height: 34px;
-      padding: 6px 8px;
-      border: 1px solid #c5d9ff;
-      border-radius: 8px;
+      height: 36px;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
       font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       background: #fff;
       outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      box-sizing: border-box;
+    }
+
+    .roster-row input:hover {
+      border-color: #9ca3af;
     }
 
     .roster-row input:focus {
       border-color: #338af3;
-      box-shadow: 0 0 0 3px rgba(51, 138, 243, 0.15);
+      box-shadow: 0 0 0 2px rgba(51, 138, 243, 0.1);
     }
 
-    .roster-row .roster-number {
+    .roster-row .roster-number,
+    .roster-row .roster-number-alt {
       text-align: right;
       font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+
+    .roster-row .roster-number-alt {
+      color: #6b7280;
     }
 
     .roster-empty {
@@ -1889,14 +1902,19 @@
         playersHtml = `
           <div class="roster-players-grid">
             ${playersList.map(p => {
-              let displayNumber = p.number || '';
-              if (displayNumber && displayNumber.includes('/')) {
-                const [num1, num2] = displayNumber.split('/');
-                displayNumber = useAltNumbers ? num2 : num1;
+              let numberHtml = '';
+              if (p.number && p.number.includes('/')) {
+                const [num1, num2] = p.number.split('/');
+                // Показываем оба номера: первый черным, второй серым
+                numberHtml = `<span class="roster-player-number">${num1}</span><span style="color: #9ca3af; margin: 0 2px;">/</span><span style="color: #9ca3af; font-weight: 500;">${num2}</span>`;
+              } else if (p.number) {
+                numberHtml = `<span class="roster-player-number">${p.number}</span>`;
+              } else {
+                numberHtml = '<span class="roster-player-number" style="opacity: 0.3;">—</span>';
               }
               return `
               <div class="roster-player-item">
-                ${displayNumber ? `<span class="roster-player-number">${displayNumber}</span>` : '<span class="roster-player-number" style="opacity: 0.3;">—</span>'}
+                ${numberHtml}
                 <span class="roster-player-name">${p.name || ''}</span>
               </div>
             `;
