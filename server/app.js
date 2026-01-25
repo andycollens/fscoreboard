@@ -188,6 +188,8 @@ let state = {
   team2City: "",
   team1Logo: "",
   team2Logo: "",
+  team1Id: null,
+  team2Id: null,
   team1Players: [],
   team1Staff: [],
   team2Players: [],
