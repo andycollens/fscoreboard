@@ -991,6 +991,10 @@
       margin-bottom: 10px;
     }
 
+    .roster-row.roster-row-with-alt {
+      grid-template-columns: 1fr 80px 80px 34px;
+    }
+
     .roster-row.staff {
       grid-template-columns: 1fr 34px;
     }
@@ -2230,12 +2234,22 @@
         container.innerHTML = '<div class="roster-empty">Список пуст</div>';
         return;
       }
+      // Проверяем, есть ли альтернативные номера в списке
+      const hasAltNumbers = withNumber && rows.some(row => row.number && row.number.includes('/'));
+      
       const header = withNumber
-        ? `<div class="roster-header" style="grid-template-columns: 1fr 90px 34px;">
-             <div>ФИО</div>
-             <div style="text-align:right;">№</div>
-             <div></div>
-           </div>`
+        ? (hasAltNumbers
+          ? `<div class="roster-header" style="grid-template-columns: 1fr 80px 80px 34px;">
+               <div>ФИО</div>
+               <div style="text-align:right;">№</div>
+               <div style="text-align:right;">№ альт.</div>
+               <div></div>
+             </div>`
+          : `<div class="roster-header" style="grid-template-columns: 1fr 90px 34px;">
+               <div>ФИО</div>
+               <div style="text-align:right;">№</div>
+               <div></div>
+             </div>`)
         : `<div class="roster-header" style="grid-template-columns: 1fr 34px;">
              <div>ФИО</div>
              <div></div>
@@ -2252,38 +2266,47 @@
       }
       
       const body = rows.map((row, idx) => {
-        let displayNumber = row.number || '';
-        let numberHtml = '';
+        let num1 = '';
+        let num2 = '';
+        let hasAlt = false;
         
-        if (withNumber) {
-          // Если номер содержит "/", показываем оба номера с разными цветами
-          if (displayNumber && displayNumber.includes('/')) {
-            const parts = displayNumber.split('/');
-            const num1 = parts[0] || '';
-            const num2 = parts[1] || '';
-            
-            if (useAltNumbers) {
-              // Альтернативные включены: первый серый, второй черный
-              numberHtml = `<input type="text" class="roster-number" value="${num2.replace(/"/g, '&quot;')}" placeholder="№" data-original-number="${displayNumber.replace(/"/g, '&quot;')}" style="color: #000;"><span style="color: #999; margin: 0 2px;">/</span><span style="color: #999;">${num1}</span>`;
-            } else {
-              // Альтернативные выключены: первый черный, второй серый
-              numberHtml = `<input type="text" class="roster-number" value="${num1.replace(/"/g, '&quot;')}" placeholder="№" data-original-number="${displayNumber.replace(/"/g, '&quot;')}" style="color: #000;"><span style="color: #999; margin: 0 2px;">/</span><span style="color: #999;">${num2}</span>`;
-            }
+        if (withNumber && row.number) {
+          if (row.number.includes('/')) {
+            const parts = row.number.split('/');
+            num1 = parts[0] || '';
+            num2 = parts[1] || '';
+            hasAlt = true;
           } else {
-            // Один номер - обычное отображение
-            numberHtml = `<input type="text" class="roster-number" value="${displayNumber.replace(/"/g, '&quot;')}" placeholder="№" data-original-number="${displayNumber.replace(/"/g, '&quot;')}">`;
+            num1 = row.number;
+            num2 = '';
+            hasAlt = false;
           }
         }
         
+        // Если у команды есть альтернативные номера, но у этого игрока нет, дублируем
+        if (withNumber && hasAltNumbers && !hasAlt && num1) {
+          num2 = num1;
+          hasAlt = true;
+        }
+        
+        const rowClass = withNumber ? (hasAltNumbers ? 'roster-row-with-alt' : '') : 'staff';
+        const gridCols = withNumber 
+          ? (hasAltNumbers ? '1fr 80px 80px 34px' : '1fr 90px 34px')
+          : '1fr 34px';
+        
         return `
-        <div class="roster-row ${withNumber ? '' : 'staff'}" data-index="${idx}">
+        <div class="roster-row ${rowClass}" data-index="${idx}" style="grid-template-columns: ${gridCols};">
           <div>
             <input type="text" class="roster-name" value="${(row.name || '').replace(/"/g, '&quot;')}" placeholder="Фамилия Имя">
           </div>
           ${withNumber ? `
-          <div style="display: flex; align-items: center; gap: 2px;">
-            ${numberHtml}
-          </div>` : ''}
+          <div>
+            <input type="text" class="roster-number" value="${num1.replace(/"/g, '&quot;')}" placeholder="№" data-number-type="primary" style="width: 100%;">
+          </div>
+          ${hasAltNumbers ? `
+          <div>
+            <input type="text" class="roster-number-alt" value="${num2.replace(/"/g, '&quot;')}" placeholder="№ альт." data-number-type="alt" style="width: 100%; ${useAltNumbers ? 'color: #000;' : 'color: #999;'}">
+          </div>` : ''}` : ''}
           <div style="display:flex; align-items:center; justify-content:center; height: 34px;">
             <button type="button" class="btn-ghost" onclick="removeRosterRow('${containerId}', ${idx}, ${withNumber})" title="Удалить">✕</button>
           </div>
@@ -2302,14 +2325,24 @@
         const name = row.querySelector('.roster-name')?.value.trim() || '';
         let number = '';
         if (withNumber) {
-          const numberInput = row.querySelector('.roster-number');
+          const numberInput = row.querySelector('.roster-number[data-number-type="primary"]');
+          const altNumberInput = row.querySelector('.roster-number-alt[data-number-type="alt"]');
+          
           if (numberInput) {
-            // Используем оригинальный номер, если он есть (для сохранения формата "10/15")
-            const originalNumber = numberInput.dataset.originalNumber;
-            if (originalNumber && originalNumber.includes('/')) {
-              number = originalNumber;
+            const num1 = numberInput.value.trim() || '';
+            if (altNumberInput) {
+              const num2 = altNumberInput.value.trim() || '';
+              // Если есть альтернативный номер, объединяем через "/"
+              if (num2 && num2 !== num1) {
+                number = `${num1}/${num2}`;
+              } else if (num1) {
+                // Если альтернативный номер такой же или пустой, дублируем
+                number = `${num1}/${num1}`;
+              } else {
+                number = num1;
+              }
             } else {
-              number = numberInput.value.trim() || '';
+              number = num1;
             }
           }
         }
