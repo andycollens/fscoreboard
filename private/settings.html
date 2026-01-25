@@ -1975,8 +1975,31 @@
       // Проверяем, есть ли у команды игроки с альтернативными номерами
       const hasAltNumbers = playersList.some(p => p.number && p.number.includes('/'));
       
-      // Получаем состояние переключателя из localStorage
-      const useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
+      // Получаем состояние переключателя из сервера (приоритет) или localStorage (fallback)
+      let useAltNumbers = false;
+      if (team.useAltNumbers !== undefined) {
+        useAltNumbers = team.useAltNumbers === true;
+        // Синхронизируем с localStorage
+        localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
+      } else {
+        useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
+        // Если в localStorage есть значение, но на сервере нет, сохраняем на сервер
+        if (useAltNumbers) {
+          fetch(`/api/teams/${teamId}/useAltNumbers?token=${getToken()}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ useAltNumbers: true })
+          }).then(response => {
+            if (response.ok) {
+              team.useAltNumbers = true;
+            }
+          }).catch(error => {
+            console.error('Ошибка синхронизации useAltNumbers на сервер:', error);
+          });
+        }
+      }
       
       // Формируем HTML для игроков
       let playersHtml = '';
