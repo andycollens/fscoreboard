@@ -533,17 +533,20 @@
             // Заполняем тренера
             if (coachEl) {
                 if (staff && Array.isArray(staff) && staff.length > 0) {
-                    const coachName = staff
+                    const coachNames = staff
                         .map(item => {
                             if (!item) return '';
                             if (typeof item === 'string') return escapeHtml(item);
                             return escapeHtml(item.name || '');
                         })
-                        .filter(Boolean)
-                        .join(' ');
-                    coachEl.textContent = coachName || '';
+                        .filter(Boolean);
+                    if (coachNames.length > 0) {
+                        coachEl.innerHTML = coachNames.join('<br>');
+                    } else {
+                        coachEl.innerHTML = '';
+                    }
                 } else {
-                    coachEl.textContent = '';
+                    coachEl.innerHTML = '';
                 }
             }
 
