@@ -2094,54 +2094,67 @@ body.penalty-mode .penalty-score {
             stopRosterAutoScroll();
             const lists = [rosterTeam1Players, rosterTeam2Players].filter(el => el && el.classList.contains('many-players'));
             if (lists.length === 0) return;
-            const scrollStep = 0.45;
+            const scrollSpeed = 22; // px per second
             const pauseDuration = 5000;
-            const states = lists.map(() => ({
-                direction: 0,
-                nextDirection: 1,
-                pauseUntil: Date.now() + pauseDuration
-            }));
-            lists.forEach(el => { el.scrollTop = 0; });
 
-            const intervalId = setInterval(() => {
-                if (currentMode !== 'rosters') return;
-                lists.forEach((el, i) => {
-                    if (!el.classList.contains('many-players')) return;
+            lists.forEach((el) => {
+                el.scrollTop = 0;
+                const state = {
+                    direction: 1,
+                    lastTime: null,
+                    isPaused: true,
+                    pauseUntil: Date.now() + pauseDuration
+                };
+
+                const anim = { type: 'raf', id: null };
+                function step(timestamp) {
+                    anim.id = requestAnimationFrame(step);
+                    if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
                     const maxScroll = el.scrollHeight - el.clientHeight;
                     if (maxScroll <= 0) return;
-                    const st = states[i];
-                    const now = Date.now();
 
-                    if (st.direction === 0) {
-                        if (now < st.pauseUntil) return;
-                        st.direction = st.nextDirection;
+                    if (state.isPaused) {
+                        if (Date.now() >= state.pauseUntil) {
+                            state.isPaused = false;
+                            state.lastTime = timestamp;
+                        }
+                        return;
                     }
 
-                    if (st.direction === 1) {
-                        el.scrollTop = Math.min(maxScroll, el.scrollTop + scrollStep);
-                        if (el.scrollTop >= maxScroll - 1) {
-                            el.scrollTop = maxScroll;
-                            st.direction = 0;
-                            st.nextDirection = -1;
-                            st.pauseUntil = now + pauseDuration;
-                        }
-                    } else if (st.direction === -1) {
-                        el.scrollTop = Math.max(0, el.scrollTop - scrollStep);
-                        if (el.scrollTop <= 1) {
-                            el.scrollTop = 0;
-                            st.direction = 0;
-                            st.nextDirection = 1;
-                            st.pauseUntil = now + pauseDuration;
-                        }
-                    }
-                });
-            }, 25);
+                    if (state.lastTime === null) state.lastTime = timestamp;
+                    const dt = (timestamp - state.lastTime) / 1000;
+                    state.lastTime = timestamp;
 
-            rosterScrollAnimations.push(intervalId);
+                    el.scrollTop += state.direction * scrollSpeed * dt;
+
+                    if (state.direction > 0 && el.scrollTop >= maxScroll) {
+                        el.scrollTop = maxScroll;
+                        state.direction = -1;
+                        state.isPaused = true;
+                        state.pauseUntil = Date.now() + pauseDuration;
+                    } else if (state.direction < 0 && el.scrollTop <= 0) {
+                        el.scrollTop = 0;
+                        state.direction = 1;
+                        state.isPaused = true;
+                        state.pauseUntil = Date.now() + pauseDuration;
+                    }
+                }
+
+                anim.id = requestAnimationFrame(step);
+                rosterScrollAnimations.push(anim);
+            });
         }
 
         function stopRosterAutoScroll() {
-            rosterScrollAnimations.forEach(id => clearInterval(id));
+            rosterScrollAnimations.forEach(item => {
+                if (!item) return;
+                if (item.type === 'raf') {
+                    cancelAnimationFrame(item.id);
+                } else if (typeof item === 'number') {
+                    clearInterval(item);
+                    clearTimeout(item);
+                }
+            });
             rosterScrollAnimations = [];
         }
 
