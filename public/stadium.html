@@ -2092,35 +2092,22 @@ body.penalty-mode .penalty-score {
             stopRosterAutoScroll();
             const lists = [rosterTeam1Players, rosterTeam2Players].filter(Boolean);
             const scrollStep = 0.3;
-            const pauseAtTop = 10000;
-            const pauseAtBottom = 10000;
             lists.forEach(el => {
                 if (!el.classList.contains('many-players')) return;
                 el.scrollTop = 0;
-                let scrollDir = 0;
-                let pauseUntil = Date.now() + pauseAtTop;
+                let scrollDir = 1;
                 const frame = () => {
                     const rafId = requestAnimationFrame(frame);
                     rosterScrollAnimations.push(rafId);
                     if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
-                    const now = Date.now();
                     const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
                     if (maxScroll <= 0) return;
-                    if (now < pauseUntil) return;
-                    if (scrollDir === 0) {
-                        scrollDir = 1;
-                    } else if (scrollDir === 1) {
+                    if (scrollDir === 1) {
                         el.scrollTop = Math.min(el.scrollTop + scrollStep, maxScroll);
-                        if (el.scrollTop >= maxScroll - 1) {
-                            scrollDir = -1;
-                            pauseUntil = now + pauseAtBottom;
-                        }
-                    } else if (scrollDir === -1) {
+                        if (el.scrollTop >= maxScroll - 1) scrollDir = -1;
+                    } else {
                         el.scrollTop = Math.max(el.scrollTop - scrollStep, 0);
-                        if (el.scrollTop <= 1) {
-                            scrollDir = 1;
-                            pauseUntil = now + pauseAtTop;
-                        }
+                        if (el.scrollTop <= 1) scrollDir = 1;
                     }
                 };
                 rosterScrollAnimations.push(requestAnimationFrame(frame));
