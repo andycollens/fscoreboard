@@ -2096,8 +2096,17 @@ body.penalty-mode .penalty-score {
             if (lists.length === 0) return;
             const scrollStep = 0.5;
             const pauseDuration = 5000;
-            const states = lists.map(() => ({ phase: 'pause_top', phaseEnd: Date.now() + pauseDuration }));
-            lists.forEach((el, i) => { el.scrollTop = 0; });
+            const states = lists.map(() => ({ phase: 'pause_top', phaseEnd: Date.now() + pauseDuration, timeoutId: null }));
+            lists.forEach((el) => { el.scrollTop = 0; });
+            function schedulePhaseTransition(i, newPhase, delayMs) {
+                if (states[i].timeoutId) clearTimeout(states[i].timeoutId);
+                states[i].timeoutId = setTimeout(() => {
+                    states[i].timeoutId = null;
+                    if (currentMode !== 'rosters' || !lists[i].classList.contains('many-players')) return;
+                    states[i].phase = newPhase;
+                }, delayMs);
+                rosterScrollAnimations.push(states[i].timeoutId);
+            }
             const tick = () => {
                 if (currentMode !== 'rosters') return;
                 lists.forEach((el, i) => {
@@ -2105,37 +2114,35 @@ body.penalty-mode .penalty-score {
                     const maxScroll = el.scrollHeight - el.clientHeight;
                     if (maxScroll <= 0) return;
                     const st = states[i];
-                    const now = Date.now();
-                    if (st.phase === 'pause_top') {
-                        if (now < st.phaseEnd) return;
-                        st.phase = 'scroll_down';
-                    }
+                    if (st.phase === 'pause_top') return;
                     if (st.phase === 'scroll_down') {
                         el.scrollTop = Math.min(el.scrollTop + scrollStep, maxScroll);
                         if (el.scrollTop >= maxScroll - 2) {
                             st.phase = 'pause_bottom';
-                            st.phaseEnd = now + pauseDuration;
+                            schedulePhaseTransition(i, 'scroll_up', pauseDuration);
                         }
                         return;
                     }
-                    if (st.phase === 'pause_bottom') {
-                        if (now < st.phaseEnd) return;
-                        st.phase = 'scroll_up';
-                    }
+                    if (st.phase === 'pause_bottom') return;
                     if (st.phase === 'scroll_up') {
                         el.scrollTop = Math.max(0, el.scrollTop - scrollStep);
                         if (el.scrollTop <= 2) {
                             st.phase = 'pause_top';
-                            st.phaseEnd = now + pauseDuration;
+                            schedulePhaseTransition(i, 'scroll_down', pauseDuration);
                         }
                     }
                 });
             };
-            rosterScrollAnimations.push(setInterval(tick, 25));
+            const intervalId = setInterval(tick, 25);
+            rosterScrollAnimations.push(intervalId);
+            schedulePhaseTransition(0, 'scroll_down', pauseDuration);
+            if (lists.length > 1) schedulePhaseTransition(1, 'scroll_down', pauseDuration);
         }
 
         function stopRosterAutoScroll() {
-            rosterScrollAnimations.forEach(id => clearInterval(id));
+            rosterScrollAnimations.forEach(id => {
+                if (typeof id === 'number') { clearInterval(id); clearTimeout(id); }
+            });
             rosterScrollAnimations = [];
         }
 
