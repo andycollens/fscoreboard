@@ -2097,38 +2097,31 @@ body.penalty-mode .penalty-score {
             lists.forEach(el => {
                 if (!el.classList.contains('many-players')) return;
                 el.scrollTop = 0;
-                let phase = 'pause_top';
-                let phaseStart = Date.now();
+                let scrollDir = 0;
+                let pauseUntil = Date.now() + pauseAtTop;
                 const frame = () => {
+                    const rafId = requestAnimationFrame(frame);
+                    rosterScrollAnimations.push(rafId);
                     if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
                     const now = Date.now();
                     const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
-                    if (maxScroll <= 0) {
-                        rosterScrollAnimations.push(requestAnimationFrame(frame));
-                        return;
-                    }
-                    if (phase === 'pause_top') {
-                        if (now - phaseStart >= pauseAtTop) {
-                            phase = 'scroll_down';
-                        }
-                    } else if (phase === 'scroll_down') {
+                    if (maxScroll <= 0) return;
+                    if (now < pauseUntil) return;
+                    if (scrollDir === 0) {
+                        scrollDir = 1;
+                    } else if (scrollDir === 1) {
                         el.scrollTop = Math.min(el.scrollTop + scrollStep, maxScroll);
                         if (el.scrollTop >= maxScroll - 1) {
-                            phase = 'pause_bottom';
-                            phaseStart = now;
+                            scrollDir = -1;
+                            pauseUntil = now + pauseAtBottom;
                         }
-                    } else if (phase === 'pause_bottom') {
-                        if (now - phaseStart >= pauseAtBottom) {
-                            phase = 'scroll_up';
-                        }
-                    } else if (phase === 'scroll_up') {
+                    } else if (scrollDir === -1) {
                         el.scrollTop = Math.max(el.scrollTop - scrollStep, 0);
                         if (el.scrollTop <= 1) {
-                            phase = 'pause_top';
-                            phaseStart = now;
+                            scrollDir = 1;
+                            pauseUntil = now + pauseAtTop;
                         }
                     }
-                    rosterScrollAnimations.push(requestAnimationFrame(frame));
                 };
                 rosterScrollAnimations.push(requestAnimationFrame(frame));
             });
