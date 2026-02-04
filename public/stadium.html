@@ -2602,9 +2602,10 @@ body.penalty-mode .penalty-score {
                 
                 if (rosterTeam1Players && rosterTeam2Players) {
                     if (maxPlayersCount > 24) {
+                        const alreadyHadMany = rosterTeam1Players.classList.contains('many-players');
                         rosterTeam1Players.classList.add('many-players');
                         rosterTeam2Players.classList.add('many-players');
-                        initRosterAutoScroll();
+                        if (!alreadyHadMany) initRosterAutoScroll();
                     } else {
                         rosterTeam1Players.classList.remove('many-players');
                         rosterTeam2Players.classList.remove('many-players');
