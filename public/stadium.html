@@ -162,6 +162,31 @@
             display: none !important;
         }
 
+        /* Снежинки в режиме Лого — еле заметные, летят по всему экрану */
+        #logo-snowflakes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 2;
+        }
+        .logo-snowflake {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 12px;
+            line-height: 1;
+            animation: snowflakeFall linear infinite;
+        }
+        @keyframes snowflakeFall {
+            0% { transform: translateY(-10%) translateX(0); opacity: 0; }
+            3% { opacity: var(--snow-opacity, 0.2); }
+            97% { opacity: var(--snow-opacity, 0.2); }
+            100% { transform: translateY(110vh) translateX(var(--snow-drift, 0)); opacity: 0; }
+        }
+
         .winners-title {
             font-size: 70px;
             font-weight: bold;
@@ -1699,6 +1724,8 @@ body.penalty-mode .penalty-score {
 
     <!-- Режим Лого -->
     <div class="logo-mode" id="logoMode">
+        <!-- Снежинки поверх экрана (при режиме Лого) -->
+        <div id="logo-snowflakes"></div>
         <!-- Winter League: фон без логотипа + логотип с анимацией (только при graphicStyle winterleague) -->
         <img id="logo-winterleague-bg" src="/public/img/winterleague_tv_bg_nologo.jpg" alt="">
         <img id="logo-winterleague-logo" src="/public/img/winterleague_tv_logo.png" alt="">
@@ -2657,12 +2684,37 @@ body.penalty-mode .penalty-score {
     function applyLogoMode() {
         const logoMode = document.getElementById('logoMode');
         if (!logoMode) return;
+        initLogoSnowflakes();
         if (currentGraphicStyle === 'winterleague') {
             stopLogoAnimation();
             logoMode.classList.add('logo-winterleague');
         } else {
             logoMode.classList.remove('logo-winterleague');
             initLogoAnimation();
+        }
+    }
+
+    // Снежинки в режиме Лого — Unicode символы, рандомные позиции и скорость
+    let logoSnowflakesInitialized = false;
+    function initLogoSnowflakes() {
+        const container = document.getElementById('logo-snowflakes');
+        if (!container || logoSnowflakesInitialized) return;
+        logoSnowflakesInitialized = true;
+        const chars = ['\u2744', '\u2745', '\u2746', '\u2729', '\u2022']; // ❄ ❅ ❆ ✹ •
+        const count = 45;
+        for (let i = 0; i < count; i++) {
+            const flake = document.createElement('span');
+            flake.className = 'logo-snowflake';
+            flake.textContent = chars[Math.floor(Math.random() * chars.length)];
+            flake.style.left = Math.random() * 100 + '%';
+            flake.style.top = (-15 - Math.random() * 20) + '%';
+            flake.style.fontSize = (8 + Math.random() * 10) + 'px';
+            flake.style.setProperty('--snow-opacity', (0.15 + Math.random() * 0.12).toFixed(2));
+            flake.style.animationDuration = (12 + Math.random() * 18) + 's';
+            flake.style.animationDelay = -(Math.random() * 25) + 's';
+            const drift = (Math.random() - 0.5) * 40;
+            flake.style.setProperty('--snow-drift', drift + 'px');
+            container.appendChild(flake);
         }
     }
 
