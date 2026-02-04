@@ -2135,6 +2135,7 @@ body.penalty-mode .penalty-score {
                     if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
                     const maxScroll = el.scrollHeight - el.clientHeight;
                     if (maxScroll <= 0) return;
+                    const prevTop = el.scrollTop;
 
                     if (state.isPaused) {
                         if (Date.now() >= state.pauseUntil) {
@@ -2150,6 +2151,9 @@ body.penalty-mode .penalty-score {
                     state.lastTime = timestamp;
 
                     el.scrollTop += state.direction * scrollSpeed * dt;
+                    if (Math.abs(el.scrollTop - prevTop) > 0.5) {
+                        console.log('Roster', el.id, 'scrollTop', el.scrollTop.toFixed(2));
+                    }
 
                     if (state.direction > 0 && el.scrollTop >= maxScroll) {
                         el.scrollTop = maxScroll;
