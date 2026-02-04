@@ -1488,6 +1488,7 @@
             }
           });
           renderTeams();
+          fillWinnersSelects(); // списки победителей — после загрузки команд
       } else {
           console.error('Ошибка загрузки команд');
         }
@@ -3616,15 +3617,21 @@
           }
           
           if (config.winners) {
-            if (config.winners.winner1) {
-              document.getElementById('winner1Select').value = config.winners.winner1;
-            }
-            if (config.winners.winner2) {
-              document.getElementById('winner2Select').value = config.winners.winner2;
-            }
-            if (config.winners.winner3) {
-              document.getElementById('winner3Select').value = config.winners.winner3;
-            }
+            const setWinnerValue = (selectId, savedId) => {
+              if (!savedId) return;
+              const sel = document.getElementById(selectId);
+              if (!sel) return;
+              const resolved = resolveWinnerTeamById(savedId);
+              const valueToSet = String(resolved ? resolved.teamId : savedId);
+              if (sel.querySelector(`option[value="${CSS.escape(valueToSet)}"]`)) {
+                sel.value = valueToSet;
+              } else {
+                sel.value = String(savedId);
+              }
+            };
+            setWinnerValue('winner1Select', config.winners.winner1);
+            setWinnerValue('winner2Select', config.winners.winner2);
+            setWinnerValue('winner3Select', config.winners.winner3);
           }
         }, 100);
       }
@@ -3694,7 +3701,7 @@
       }
     }
     
-    // Заполнение списков команд для выбора победителей
+    // Заполнение списков команд для выбора победителей — тот же список, что и в блоке управления матчем (база команд)
     function fillWinnersSelects() {
       const winner1Select = document.getElementById('winner1Select');
       const winner2Select = document.getElementById('winner2Select');
@@ -3709,27 +3716,16 @@
         }
       });
       
-      // Собираем все команды из всех турниров
-      const allTeams = [];
-      tournaments.forEach(tournament => {
-        if (tournament.teams && tournament.teams.length > 0) {
-          tournament.teams.forEach(team => {
-            allTeams.push({
-              id: `${tournament.id}_${team.id}`,
-              name: team.name,
-              city: team.city,
-              tournamentName: tournament.name
-            });
-          });
-        }
-      });
-      
-      // Добавляем команды в каждый список
-      allTeams.forEach(team => {
-        const option1 = new Option(`${team.name}${team.city ? ' (' + team.city + ')' : ''} - ${team.tournamentName}`, team.id);
-        const option2 = new Option(`${team.name}${team.city ? ' (' + team.city + ')' : ''} - ${team.tournamentName}`, team.id);
-        const option3 = new Option(`${team.name}${team.city ? ' (' + team.city + ')' : ''} - ${team.tournamentName}`, team.id);
-        
+      // Используем глобальный массив teams (база команд), как в выборе команд для турнира/матча
+      const teamList = Array.isArray(teams) ? teams : [];
+      teamList.forEach(team => {
+        const id = String(team.id);
+        const name = (team.name || '').trim();
+        if (!name) return;
+        const label = `${name}${team.city ? ' (' + (team.city || '').trim() + ')' : ''}${team.birthYear ? ' — ' + team.birthYear : ''}`;
+        const option1 = new Option(label, id);
+        const option2 = new Option(label, id);
+        const option3 = new Option(label, id);
         winner1Select.add(option1);
         winner2Select.add(option2);
         winner3Select.add(option3);
@@ -3738,21 +3734,34 @@
 
     function resolveWinnerTeamById(compositeId) {
       if (!compositeId) return null;
-      const parts = String(compositeId).split('_');
+      const idStr = String(compositeId);
+      // Сначала ищем в глобальной базе команд (как в блоке управления матчем)
+      let team = (teams || []).find(t => String(t.id) === idStr);
+      if (team) {
+        return {
+          id: team.id,
+          tournamentId: null,
+          tournamentName: '',
+          teamId: team.id,
+          name: team.name,
+          city: team.city || '',
+          logo: team.logo || '',
+          kitColor: team.kitColor || '',
+          shortName: team.short || team.shortName || ''
+        };
+      }
+      // Обратная совместимость: старый формат tournamentId_teamId
+      const parts = idStr.split('_');
       if (parts.length < 2) return null;
       const tournamentId = parts[0];
       const teamIdPart = parts.slice(1).join('_');
-
       const tournament = tournaments.find(t => String(t.id) === tournamentId);
       if (!tournament || !Array.isArray(tournament.teams)) return null;
-
-      const team = tournament.teams.find(team => {
-        const tid = String(team.id);
+      team = tournament.teams.find(t => {
+        const tid = String(t.id);
         return tid === teamIdPart || tid.startsWith(teamIdPart + '_') || teamIdPart.startsWith(tid + '_');
       });
-
       if (!team) return null;
-
       return {
         id: compositeId,
         tournamentId: tournament.id,
@@ -3778,6 +3787,7 @@
           const winnersSettings = document.getElementById('winnersSettings');
           if (this.getAttribute('data-mode') === 'winners') {
             winnersSettings.style.display = 'block';
+            fillWinnersSelects(); // обновляем список команд при открытии блока
           } else {
             winnersSettings.style.display = 'none';
           }
