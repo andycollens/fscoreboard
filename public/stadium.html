@@ -2096,42 +2096,42 @@ body.penalty-mode .penalty-score {
             if (lists.length === 0) return;
             const scrollStep = 0.5;
             const pauseDuration = 5000;
-            lists.forEach(el => {
-                el.scrollTop = 0;
-                let phase = 'pause_top';
-                let phaseEnd = Date.now() + pauseDuration;
-                const tick = () => {
-                    if (currentMode !== 'rosters') return;
+            const states = lists.map(() => ({ phase: 'pause_top', phaseEnd: Date.now() + pauseDuration }));
+            lists.forEach((el, i) => { el.scrollTop = 0; });
+            const tick = () => {
+                if (currentMode !== 'rosters') return;
+                lists.forEach((el, i) => {
                     if (!el.classList.contains('many-players')) return;
                     const maxScroll = el.scrollHeight - el.clientHeight;
                     if (maxScroll <= 0) return;
+                    const st = states[i];
                     const now = Date.now();
-                    if (phase === 'pause_top') {
-                        if (now < phaseEnd) return;
-                        phase = 'scroll_down';
+                    if (st.phase === 'pause_top') {
+                        if (now < st.phaseEnd) return;
+                        st.phase = 'scroll_down';
                     }
-                    if (phase === 'scroll_down') {
+                    if (st.phase === 'scroll_down') {
                         el.scrollTop = Math.min(el.scrollTop + scrollStep, maxScroll);
                         if (el.scrollTop >= maxScroll - 2) {
-                            phase = 'pause_bottom';
-                            phaseEnd = now + pauseDuration;
+                            st.phase = 'pause_bottom';
+                            st.phaseEnd = now + pauseDuration;
                         }
                         return;
                     }
-                    if (phase === 'pause_bottom') {
-                        if (now < phaseEnd) return;
-                        phase = 'scroll_up';
+                    if (st.phase === 'pause_bottom') {
+                        if (now < st.phaseEnd) return;
+                        st.phase = 'scroll_up';
                     }
-                    if (phase === 'scroll_up') {
+                    if (st.phase === 'scroll_up') {
                         el.scrollTop = Math.max(0, el.scrollTop - scrollStep);
                         if (el.scrollTop <= 2) {
-                            phase = 'pause_top';
-                            phaseEnd = now + pauseDuration;
+                            st.phase = 'pause_top';
+                            st.phaseEnd = now + pauseDuration;
                         }
                     }
-                };
-                rosterScrollAnimations.push(setInterval(tick, 25));
-            });
+                });
+            };
+            rosterScrollAnimations.push(setInterval(tick, 25));
         }
 
         function stopRosterAutoScroll() {
