@@ -3541,12 +3541,16 @@
     // Update loadConfig to handle custom styles
     // This is already done in loadConfig function above
     
+    // Последняя загруженная конфигурация (для восстановления выбора победителей при заполнении списков)
+    let lastLoadedConfig = null;
+    
     // Загрузка конфигурации (секрет для Stadium)
     async function loadConfig() {
       try {
         const response = await fetch(`/api/config?token=${getToken()}`);
         if (response.ok) {
           const config = await response.json();
+          lastLoadedConfig = config;
           const stadiumTokenInput = document.getElementById('stadiumTokenInput');
           const stadiumLink = document.getElementById('stadiumLink');
           
@@ -3730,6 +3734,29 @@
         winner2Select.add(option2);
         winner3Select.add(option3);
       });
+      
+      // Восстанавливаем сохранённый выбор победителей и название, если конфиг уже загружен (при смене режима данные не теряются)
+      if (lastLoadedConfig && teamList.length > 0) {
+        if (lastLoadedConfig.winners) {
+          const setWinnerValue = (sel, savedId) => {
+            if (!savedId || !sel) return;
+            const resolved = resolveWinnerTeamById(savedId);
+            const valueToSet = String(resolved ? resolved.teamId : savedId);
+            if (sel.querySelector(`option[value="${CSS.escape(valueToSet)}"]`)) {
+              sel.value = valueToSet;
+            } else {
+              sel.value = String(savedId);
+            }
+          };
+          setWinnerValue(winner1Select, lastLoadedConfig.winners.winner1);
+          setWinnerValue(winner2Select, lastLoadedConfig.winners.winner2);
+          setWinnerValue(winner3Select, lastLoadedConfig.winners.winner3);
+        }
+        if (lastLoadedConfig.winnersTitle !== undefined) {
+          const winnersTitleInput = document.getElementById('winnersTitleInput');
+          if (winnersTitleInput) winnersTitleInput.value = lastLoadedConfig.winnersTitle || '';
+        }
+      }
     }
 
     function resolveWinnerTeamById(compositeId) {
