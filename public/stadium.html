@@ -3072,49 +3072,68 @@ body.penalty-mode .penalty-score {
         const ensureResolvedFromApi = async () => {
             const token = getAccessToken();
             if (!token) {
-                console.warn('Отсутствует токен доступа для загрузки турниров');
+                console.warn('Отсутствует токен доступа для загрузки команд');
                 return null;
             }
-            const response = await fetch('/api/tournaments?token=' + encodeURIComponent(token));
-            if (!response.ok) {
-                console.error('Failed to fetch tournaments:', response.status, response.statusText);
+            // Загружаем команды из базы (тот же источник, что и в настройках)
+            const teamsResponse = await fetch('/api/teams?token=' + encodeURIComponent(token));
+            if (!teamsResponse.ok) {
+                console.error('Failed to fetch teams:', teamsResponse.status, teamsResponse.statusText);
                 return null;
             }
-            const tournaments = await response.json();
+            const teamsList = await teamsResponse.json();
+            if (!Array.isArray(teamsList)) return null;
 
-            const resolveTeam = (teamIdStr) => {
+            const resolveTeam = async (teamIdStr) => {
                 if (!teamIdStr) return null;
-                const parts = String(teamIdStr).split('_');
+                const idStr = String(teamIdStr);
+                // Сначала ищем в базе команд по id (как в настройках)
+                const team = teamsList.find(t => String(t.id) === idStr);
+                if (team) {
+                    return {
+                        id: team.id,
+                        tournamentId: null,
+                        tournamentName: '',
+                        teamId: team.id,
+                        name: team.name,
+                        city: team.city || '',
+                        logo: team.logo || '',
+                        kitColor: team.kitColor || '',
+                        shortName: team.short || team.shortName || ''
+                    };
+                }
+                // Обратная совместимость: старый формат tournamentId_teamId
+                const parts = idStr.split('_');
                 if (parts.length < 2) return null;
                 const tournamentIdStr = parts[0];
                 const actualTeamId = parts.slice(1).join('_');
-
+                const tournamentResponse = await fetch('/api/tournaments?token=' + encodeURIComponent(token));
+                if (!tournamentResponse.ok) return null;
+                const tournaments = await tournamentResponse.json();
                 const tournament = tournaments.find(t => String(t.id) === tournamentIdStr);
                 if (!tournament || !Array.isArray(tournament.teams)) return null;
-
-                const team = tournament.teams.find(t => {
+                const oldTeam = tournament.teams.find(t => {
                     const tId = String(t.id);
                     return tId === actualTeamId || tId.startsWith(actualTeamId + '_') || actualTeamId.startsWith(tId + '_');
                 });
-                if (!team) return null;
-
+                if (!oldTeam) return null;
                 return {
                     id: teamIdStr,
                     tournamentId: tournament.id,
                     tournamentName: tournament.name,
-                    teamId: team.id,
-                    name: team.name,
-                    city: team.city || '',
-                    logo: team.logo || '',
-                    kitColor: team.kitColor || '',
-                    shortName: team.shortName || ''
+                    teamId: oldTeam.id,
+                    name: oldTeam.name,
+                    city: oldTeam.city || '',
+                    logo: oldTeam.logo || '',
+                    kitColor: oldTeam.kitColor || '',
+                    shortName: oldTeam.shortName || ''
                 };
             };
 
             return {
-                winner1: resolveTeam(winnersData.winner1),
-                winner2: resolveTeam(winnersData.winner2),
-                winner3: resolveTeam(winnersData.winner3)
+                winner1: await resolveTeam(winnersData.winner1),
+                winner2: await resolveTeam(winnersData.winner2),
+                winner3: await resolveTeam(winnersData.winner3)
             };
         };
 

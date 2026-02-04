@@ -276,15 +276,29 @@ if (fs.existsSync(TEAMS_PATH)) {
 
 function resolveWinnerTeamById(compositeId) {
   if (!compositeId) return null;
-  const parts = String(compositeId).split('_');
+  const idStr = String(compositeId);
+  // Сначала ищем в глобальной базе команд (как в настройках)
+  const teamFromBase = (teams || []).find(t => String(t.id) === idStr);
+  if (teamFromBase) {
+    return {
+      id: teamFromBase.id,
+      tournamentId: null,
+      tournamentName: '',
+      teamId: teamFromBase.id,
+      name: teamFromBase.name,
+      city: teamFromBase.city || '',
+      logo: teamFromBase.logo || '',
+      kitColor: teamFromBase.kitColor || '',
+      shortName: teamFromBase.short || teamFromBase.shortName || ''
+    };
+  }
+  // Обратная совместимость: старый формат tournamentId_teamId
+  const parts = idStr.split('_');
   if (parts.length < 2) return null;
-
   const tournamentIdStr = parts[0];
   const teamIdRest = parts.slice(1).join('_');
-
   const tournament = tournaments.find(t => String(t.id) === tournamentIdStr);
   if (!tournament || !Array.isArray(tournament.teams)) return null;
-
   const team = tournament.teams.find(team => {
     const id = String(team.id);
     return (
@@ -293,9 +307,7 @@ function resolveWinnerTeamById(compositeId) {
       teamIdRest.startsWith(id + '_')
     );
   });
-
   if (!team) return null;
-
   return {
     id: compositeId,
     tournamentId: tournament.id,
