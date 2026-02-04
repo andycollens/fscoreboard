@@ -2090,9 +2090,31 @@ body.penalty-mode .penalty-score {
         let rosterScrollAnimations = [];
         let lastRosterSignature = '';
 
+        function ensureRosterOverflow(el) {
+            if (!el) return false;
+            let extra = el.scrollHeight - el.clientHeight;
+            if (extra > 2) return true;
+            let filler = el.querySelector('.roster-scroll-filler');
+            if (!filler) {
+                filler = document.createElement('div');
+                filler.className = 'roster-scroll-filler';
+                filler.style.height = '150px';
+                filler.style.opacity = '0';
+                filler.style.pointerEvents = 'none';
+                el.appendChild(filler);
+            } else {
+                const current = parseInt(filler.style.height || '150', 10);
+                filler.style.height = (current + 80) + 'px';
+            }
+            extra = el.scrollHeight - el.clientHeight;
+            return extra > 2;
+        }
+
         function initRosterAutoScroll() {
             stopRosterAutoScroll();
-            const lists = [rosterTeam1Players, rosterTeam2Players].filter(el => el && el.classList.contains('many-players'));
+            const lists = [rosterTeam1Players, rosterTeam2Players]
+                .filter(el => el && el.classList.contains('many-players'))
+                .filter(el => ensureRosterOverflow(el));
             if (lists.length === 0) return;
             const scrollSpeed = 22; // px per second
             const pauseDuration = 5000;
