@@ -627,8 +627,7 @@
             min-height: 0;
             padding: 2vh 2vw;
             box-sizing: border-box;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         body.rosters-mode .roster-team1 {
@@ -669,6 +668,7 @@
             margin: 0 0 0.5vh 0;
             display: block;
             color: #b0b0b0;
+            flex-shrink: 0;
         }
 
         body.rosters-mode .roster-coach-name {
@@ -677,6 +677,7 @@
             margin: 0 0 2vh 0;
             display: block;
             color: #fff;
+            flex-shrink: 0;
         }
 
         body.rosters-mode .roster-players-list {
@@ -688,10 +689,22 @@
             column-gap: 2vw;
             width: 100%;
             color: #fff;
+            flex: 1;
+            min-height: 0;
         }
 
         body.rosters-mode .roster-players-list.many-players {
             font-size: 1.6vw;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 50px), transparent 100%);
+            mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 50px), transparent 100%);
+        }
+
+        body.rosters-mode .roster-players-list.many-players::-webkit-scrollbar {
+            display: none;
         }
 
         body.rosters-mode .roster-player-item {
@@ -2070,6 +2083,46 @@ body.penalty-mode .penalty-score {
         const team1Stripe = document.getElementById('team1Stripe');
         const team2Stripe = document.getElementById('team2Stripe');
 
+        // Auto-scroll для списков игроков в режиме Составы при >24 игроков
+        let rosterScrollAnimations = [];
+
+        function initRosterAutoScroll() {
+            stopRosterAutoScroll();
+            const lists = [rosterTeam1Players, rosterTeam2Players].filter(Boolean);
+            const scrollStep = 0.6;
+            const pauseDuration = 2500;
+            lists.forEach(el => {
+                if (!el.classList.contains('many-players')) return;
+                let scrollDir = 1;
+                let pauseUntil = 0;
+                const frame = () => {
+                    if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
+                    const now = Date.now();
+                    if (now < pauseUntil) {
+                        rosterScrollAnimations.push(requestAnimationFrame(frame));
+                        return;
+                    }
+                    const maxScroll = el.scrollHeight - el.clientHeight;
+                    if (maxScroll <= 0) return;
+                    el.scrollTop += scrollStep * scrollDir;
+                    if (el.scrollTop >= maxScroll - 1) {
+                        scrollDir = -1;
+                        pauseUntil = now + pauseDuration;
+                    } else if (el.scrollTop <= 1 && scrollDir < 0) {
+                        scrollDir = 1;
+                        pauseUntil = now + pauseDuration;
+                    }
+                    rosterScrollAnimations.push(requestAnimationFrame(frame));
+                };
+                rosterScrollAnimations.push(requestAnimationFrame(frame));
+            });
+        }
+
+        function stopRosterAutoScroll() {
+            rosterScrollAnimations.forEach(id => cancelAnimationFrame(id));
+            rosterScrollAnimations = [];
+        }
+
         // Подключение к WebSocket
         socket.on('connect', () => {
             console.log('Stadium подключен к серверу');
@@ -2536,9 +2589,11 @@ body.penalty-mode .penalty-score {
                     if (maxPlayersCount > 24) {
                         rosterTeam1Players.classList.add('many-players');
                         rosterTeam2Players.classList.add('many-players');
+                        initRosterAutoScroll();
                     } else {
                         rosterTeam1Players.classList.remove('many-players');
                         rosterTeam2Players.classList.remove('many-players');
+                        stopRosterAutoScroll();
                     }
                 }
             }
@@ -2605,6 +2660,7 @@ body.penalty-mode .penalty-score {
         console.log('Switching mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
         
         document.body.classList.toggle('rosters-mode', mode === 'rosters');
+        if (mode !== 'rosters') stopRosterAutoScroll();
         const scoreboardMode = document.getElementById('scoreboardMode');
         const flagMode = document.getElementById('flagMode');
         const winnersMode = document.getElementById('winnersMode');
