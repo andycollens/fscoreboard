@@ -700,9 +700,10 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
             padding-bottom: 60px;
+            padding-top: 30px;
             box-sizing: border-box;
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 50px), transparent 100%);
-            mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 50px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 40px, black calc(100% - 50px), transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, black 40px, black calc(100% - 50px), transparent 100%);
         }
 
         body.rosters-mode .roster-players-list.many-players::-webkit-scrollbar {
@@ -2091,29 +2092,24 @@ body.penalty-mode .penalty-score {
         function initRosterAutoScroll() {
             stopRosterAutoScroll();
             const lists = [rosterTeam1Players, rosterTeam2Players].filter(Boolean);
-            const scrollSpeed = 35;
+            const scrollStep = 0.4;
             const pauseDuration = 5000;
             lists.forEach(el => {
                 if (!el.classList.contains('many-players')) return;
                 el.scrollTop = 0;
                 let phase = 'pause_top';
                 let phaseEnd = Date.now() + pauseDuration;
-                let lastTime = Date.now();
-                const frame = () => {
-                    const rafId = requestAnimationFrame(frame);
-                    rosterScrollAnimations.push(rafId);
+                const tick = () => {
                     if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
                     const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
                     if (maxScroll <= 0) return;
                     const now = Date.now();
-                    const dt = (now - lastTime) / 1000;
-                    lastTime = now;
                     if (phase === 'pause_top') {
                         if (now < phaseEnd) return;
                         phase = 'scroll_down';
                     }
                     if (phase === 'scroll_down') {
-                        el.scrollTop = Math.min(el.scrollTop + scrollSpeed * dt, maxScroll);
+                        el.scrollTop = Math.min(el.scrollTop + scrollStep, maxScroll);
                         if (el.scrollTop >= maxScroll - 2) {
                             phase = 'pause_bottom';
                             phaseEnd = now + pauseDuration;
@@ -2125,19 +2121,20 @@ body.penalty-mode .penalty-score {
                         phase = 'scroll_up';
                     }
                     if (phase === 'scroll_up') {
-                        el.scrollTop = Math.max(el.scrollTop - scrollSpeed * dt, 0);
+                        el.scrollTop = Math.max(el.scrollTop - scrollStep, 0);
                         if (el.scrollTop <= 2) {
                             phase = 'pause_top';
                             phaseEnd = now + pauseDuration;
                         }
                     }
                 };
-                rosterScrollAnimations.push(requestAnimationFrame(frame));
+                const intervalId = setInterval(tick, 20);
+                rosterScrollAnimations.push(intervalId);
             });
         }
 
         function stopRosterAutoScroll() {
-            rosterScrollAnimations.forEach(id => cancelAnimationFrame(id));
+            rosterScrollAnimations.forEach(id => clearInterval(id));
             rosterScrollAnimations = [];
         }
 
