@@ -2091,17 +2091,18 @@ body.penalty-mode .penalty-score {
 
         function initRosterAutoScroll() {
             stopRosterAutoScroll();
-            const lists = [rosterTeam1Players, rosterTeam2Players].filter(Boolean);
-            const scrollStep = 0.4;
+            const lists = [rosterTeam1Players, rosterTeam2Players].filter(el => el && el.classList.contains('many-players'));
+            if (lists.length === 0) return;
+            const scrollStep = 0.5;
             const pauseDuration = 5000;
             lists.forEach(el => {
-                if (!el.classList.contains('many-players')) return;
                 el.scrollTop = 0;
                 let phase = 'pause_top';
                 let phaseEnd = Date.now() + pauseDuration;
                 const tick = () => {
-                    if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
-                    const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
+                    if (currentMode !== 'rosters') return;
+                    if (!el.classList.contains('many-players')) return;
+                    const maxScroll = el.scrollHeight - el.clientHeight;
                     if (maxScroll <= 0) return;
                     const now = Date.now();
                     if (phase === 'pause_top') {
@@ -2128,8 +2129,7 @@ body.penalty-mode .penalty-score {
                         }
                     }
                 };
-                const intervalId = setInterval(tick, 20);
-                rosterScrollAnimations.push(intervalId);
+                rosterScrollAnimations.push(setInterval(tick, 25));
             });
         }
 
@@ -2604,7 +2604,7 @@ body.penalty-mode .penalty-score {
                     if (maxPlayersCount > 24) {
                         rosterTeam1Players.classList.add('many-players');
                         rosterTeam2Players.classList.add('many-players');
-                        requestAnimationFrame(() => requestAnimationFrame(() => initRosterAutoScroll()));
+                        initRosterAutoScroll();
                     } else {
                         rosterTeam1Players.classList.remove('many-players');
                         rosterTeam2Players.classList.remove('many-players');
@@ -2723,6 +2723,13 @@ body.penalty-mode .penalty-score {
 
 
         refreshDisplayForMode(mode, window.lastScoreboardData || latestData || {});
+        if (mode === 'rosters') {
+            setTimeout(() => {
+                if (currentMode === 'rosters' && rosterTeam1Players && rosterTeam2Players && rosterTeam1Players.classList.contains('many-players')) {
+                    initRosterAutoScroll();
+                }
+            }, 300);
+        }
     }
     
     function refreshDisplayForMode(mode, data) {
