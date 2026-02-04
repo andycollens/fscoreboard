@@ -2802,13 +2802,16 @@ body.penalty-mode .penalty-score {
     function applyLogoMode() {
         const logoMode = document.getElementById('logoMode');
         if (!logoMode) return;
-        initLogoSnowflakes();
+        const snowflakesEl = document.getElementById('logo-snowflakes');
         if (currentGraphicStyle === 'winterleague') {
             stopLogoAnimation();
             logoMode.classList.add('logo-winterleague');
+            if (snowflakesEl) snowflakesEl.style.display = '';
+            initLogoSnowflakes();
         } else {
             logoMode.classList.remove('logo-winterleague');
             initLogoAnimation();
+            if (snowflakesEl) snowflakesEl.style.display = 'none';
         }
     }
 
