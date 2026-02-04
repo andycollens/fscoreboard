@@ -2091,39 +2091,53 @@ body.penalty-mode .penalty-score {
         function initRosterAutoScroll() {
             stopRosterAutoScroll();
             const lists = [rosterTeam1Players, rosterTeam2Players].filter(Boolean);
-            const scrollStep = 0.5;
+            const scrollSpeed = 35;
             const pauseDuration = 5000;
             lists.forEach(el => {
                 if (!el.classList.contains('many-players')) return;
                 el.scrollTop = 0;
-                let scrollDir = 1;
-                let pauseUntil = Date.now() + pauseDuration;
-                const intervalId = setInterval(() => {
+                let phase = 'pause_top';
+                let phaseEnd = Date.now() + pauseDuration;
+                let lastTime = Date.now();
+                const frame = () => {
+                    const rafId = requestAnimationFrame(frame);
+                    rosterScrollAnimations.push(rafId);
                     if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
                     const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
                     if (maxScroll <= 0) return;
                     const now = Date.now();
-                    if (now < pauseUntil) return;
-                    if (scrollDir === 1) {
-                        el.scrollTop = Math.min(el.scrollTop + scrollStep, maxScroll);
-                        if (el.scrollTop >= maxScroll - 1) {
-                            scrollDir = -1;
-                            pauseUntil = now + pauseDuration;
+                    const dt = (now - lastTime) / 1000;
+                    lastTime = now;
+                    if (phase === 'pause_top') {
+                        if (now < phaseEnd) return;
+                        phase = 'scroll_down';
+                    }
+                    if (phase === 'scroll_down') {
+                        el.scrollTop = Math.min(el.scrollTop + scrollSpeed * dt, maxScroll);
+                        if (el.scrollTop >= maxScroll - 2) {
+                            phase = 'pause_bottom';
+                            phaseEnd = now + pauseDuration;
                         }
-                    } else {
-                        el.scrollTop = Math.max(el.scrollTop - scrollStep, 0);
-                        if (el.scrollTop <= 1) {
-                            scrollDir = 1;
-                            pauseUntil = now + pauseDuration;
+                        return;
+                    }
+                    if (phase === 'pause_bottom') {
+                        if (now < phaseEnd) return;
+                        phase = 'scroll_up';
+                    }
+                    if (phase === 'scroll_up') {
+                        el.scrollTop = Math.max(el.scrollTop - scrollSpeed * dt, 0);
+                        if (el.scrollTop <= 2) {
+                            phase = 'pause_top';
+                            phaseEnd = now + pauseDuration;
                         }
                     }
-                }, 30);
-                rosterScrollAnimations.push(intervalId);
+                };
+                rosterScrollAnimations.push(requestAnimationFrame(frame));
             });
         }
 
         function stopRosterAutoScroll() {
-            rosterScrollAnimations.forEach(id => clearInterval(id));
+            rosterScrollAnimations.forEach(id => cancelAnimationFrame(id));
             rosterScrollAnimations = [];
         }
 
