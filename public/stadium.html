@@ -2098,6 +2098,7 @@ body.penalty-mode .penalty-score {
             const pauseDuration = 5000;
 
             lists.forEach((el) => {
+                console.log('Init roster autoscroll for element', el.id, 'scrollHeight', el.scrollHeight, 'clientHeight', el.clientHeight);
                 el.scrollTop = 0;
                 const state = {
                     direction: 1,
@@ -2117,6 +2118,7 @@ body.penalty-mode .penalty-score {
                         if (Date.now() >= state.pauseUntil) {
                             state.isPaused = false;
                             state.lastTime = timestamp;
+                            console.log('Roster scroll start moving', el.id, 'direction', state.direction);
                         }
                         return;
                     }
@@ -2129,11 +2131,13 @@ body.penalty-mode .penalty-score {
 
                     if (state.direction > 0 && el.scrollTop >= maxScroll) {
                         el.scrollTop = maxScroll;
+                        console.log('Roster reached bottom', el.id);
                         state.direction = -1;
                         state.isPaused = true;
                         state.pauseUntil = Date.now() + pauseDuration;
                     } else if (state.direction < 0 && el.scrollTop <= 0) {
                         el.scrollTop = 0;
+                        console.log('Roster reached top', el.id);
                         state.direction = 1;
                         state.isPaused = true;
                         state.pauseUntil = Date.now() + pauseDuration;
