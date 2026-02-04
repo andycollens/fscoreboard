@@ -699,6 +699,8 @@
             overflow-x: hidden;
             scrollbar-width: none;
             -ms-overflow-style: none;
+            padding-bottom: 60px;
+            box-sizing: border-box;
             -webkit-mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 50px), transparent 100%);
             mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 50px), transparent 100%);
         }
@@ -2089,28 +2091,42 @@ body.penalty-mode .penalty-score {
         function initRosterAutoScroll() {
             stopRosterAutoScroll();
             const lists = [rosterTeam1Players, rosterTeam2Players].filter(Boolean);
-            const scrollStep = 0.6;
-            const pauseDuration = 2500;
+            const scrollStep = 0.3;
+            const pauseAtTop = 10000;
+            const pauseAtBottom = 10000;
             lists.forEach(el => {
                 if (!el.classList.contains('many-players')) return;
-                let scrollDir = 1;
-                let pauseUntil = 0;
+                el.scrollTop = 0;
+                let phase = 'pause_top';
+                let phaseStart = Date.now();
                 const frame = () => {
                     if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
                     const now = Date.now();
-                    if (now < pauseUntil) {
+                    const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
+                    if (maxScroll <= 0) {
                         rosterScrollAnimations.push(requestAnimationFrame(frame));
                         return;
                     }
-                    const maxScroll = el.scrollHeight - el.clientHeight;
-                    if (maxScroll <= 0) return;
-                    el.scrollTop += scrollStep * scrollDir;
-                    if (el.scrollTop >= maxScroll - 1) {
-                        scrollDir = -1;
-                        pauseUntil = now + pauseDuration;
-                    } else if (el.scrollTop <= 1 && scrollDir < 0) {
-                        scrollDir = 1;
-                        pauseUntil = now + pauseDuration;
+                    if (phase === 'pause_top') {
+                        if (now - phaseStart >= pauseAtTop) {
+                            phase = 'scroll_down';
+                        }
+                    } else if (phase === 'scroll_down') {
+                        el.scrollTop = Math.min(el.scrollTop + scrollStep, maxScroll);
+                        if (el.scrollTop >= maxScroll - 1) {
+                            phase = 'pause_bottom';
+                            phaseStart = now;
+                        }
+                    } else if (phase === 'pause_bottom') {
+                        if (now - phaseStart >= pauseAtBottom) {
+                            phase = 'scroll_up';
+                        }
+                    } else if (phase === 'scroll_up') {
+                        el.scrollTop = Math.max(el.scrollTop - scrollStep, 0);
+                        if (el.scrollTop <= 1) {
+                            phase = 'pause_top';
+                            phaseStart = now;
+                        }
                     }
                     rosterScrollAnimations.push(requestAnimationFrame(frame));
                 };
