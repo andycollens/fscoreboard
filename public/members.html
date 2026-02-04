@@ -310,8 +310,7 @@
             min-height: 0;
             padding: 2vh 2vw;
             box-sizing: border-box;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         .roster-team1 {
@@ -365,17 +364,34 @@
         }
 
         .roster-players-list {
-            font-size: 1.6vw;
             font-weight: 500;
             line-height: 1.5;
             display: block;
+            width: 100%;
+            color: #fff;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .roster-players-scroll {
+            font-size: 1.6vw;
             column-count: 2;
             column-gap: 2vw;
             width: 100%;
-            color: #fff;
+            will-change: transform;
         }
 
         .roster-players-list.many-players {
+            padding-bottom: 60px;
+            padding-top: 30px;
+            box-sizing: border-box;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 40px, black calc(100% - 50px), transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, black 40px, black calc(100% - 50px), transparent 100%);
+        }
+
+        .roster-players-list.many-players .roster-players-scroll {
             font-size: 1.6vw;
         }
 
@@ -519,6 +535,7 @@
 
         const socket = io();
         let latestData = null;
+        let lastRosterSignature = '';
 
         function escapeHtml(str = '') {
             return str
@@ -605,7 +622,7 @@
                             }
                         })
                         .filter(Boolean);
-                    playersEl.innerHTML = playerItems.join('');
+                    playersEl.innerHTML = `<div class="roster-players-scroll">${playerItems.join('')}</div>`;
                 } else {
                     playersEl.innerHTML = '';
                 }
@@ -647,11 +664,17 @@
             team1City.textContent = data.team1City || 'Город 1';
             updateStripe('team1', data.kit1Color);
 
-            // Обновляем составы для команды 1
-            if (rosterTeam1Coach && rosterTeam1Players) {
-                // Пытаемся найти teamId из данных или используем глобальное состояние
+            // Обновляем составы (перерисовка только при изменении данных)
+            const rosterSig = JSON.stringify({
+                t1: data.team1Staff || data.staff1 || [],
+                t2: data.team2Staff || data.staff2 || [],
+                p1: data.team1Players || data.players1 || [],
+                p2: data.team2Players || data.players2 || []
+            });
+            if (rosterSig !== lastRosterSignature && rosterTeam1Coach && rosterTeam1Players && rosterTeam2Coach && rosterTeam2Players) {
+                lastRosterSignature = rosterSig;
                 const team1Id = data.team1Id || null;
-                console.log('Members updateDisplay: team1Id =', team1Id, 'data.team1Id =', data.team1Id);
+                const team2Id = data.team2Id || null;
                 renderRostersMode(
                     rosterTeam1Coach,
                     rosterTeam1Players,
@@ -659,6 +682,14 @@
                     data.team1Players || data.players1 || [],
                     false,
                     team1Id
+                );
+                renderRostersMode(
+                    rosterTeam2Coach,
+                    rosterTeam2Players,
+                    data.team2Staff || data.staff2 || [],
+                    data.team2Players || data.players2 || [],
+                    true,
+                    team2Id
                 );
             }
 
@@ -679,33 +710,21 @@
             team2City.textContent = data.team2City || 'Город 2';
             updateStripe('team2', data.kit2Color);
 
-            // Обновляем составы для команды 2
-            if (rosterTeam2Coach && rosterTeam2Players) {
-                // Пытаемся найти teamId из данных или используем глобальное состояние
-                const team2Id = data.team2Id || null;
-                console.log('Members updateDisplay: team2Id =', team2Id, 'data.team2Id =', data.team2Id);
-                renderRostersMode(
-                    rosterTeam2Coach,
-                    rosterTeam2Players,
-                    data.team2Staff || data.staff2 || [],
-                    data.team2Players || data.players2 || [],
-                    true,
-                    team2Id
-                );
-
-                // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков
-                const team1PlayersCount = (data.team1Players || data.players1 || []).length;
-                const team2PlayersCount = (data.team2Players || data.players2 || []).length;
-                const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
-                
-                if (rosterTeam1Players && rosterTeam2Players) {
-                    if (maxPlayersCount > 24) {
-                        rosterTeam1Players.classList.add('many-players');
-                        rosterTeam2Players.classList.add('many-players');
-                    } else {
-                        rosterTeam1Players.classList.remove('many-players');
-                        rosterTeam2Players.classList.remove('many-players');
-                    }
+            // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков
+            const team1PlayersCount = (data.team1Players || data.players1 || []).length;
+            const team2PlayersCount = (data.team2Players || data.players2 || []).length;
+            const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
+            
+            if (rosterTeam1Players && rosterTeam2Players) {
+                if (maxPlayersCount > 24) {
+                    const alreadyHadMany = rosterTeam1Players.classList.contains('many-players');
+                    rosterTeam1Players.classList.add('many-players');
+                    rosterTeam2Players.classList.add('many-players');
+                    if (!alreadyHadMany) initRosterAutoScroll();
+                } else {
+                    rosterTeam1Players.classList.remove('many-players');
+                    rosterTeam2Players.classList.remove('many-players');
+                    stopRosterAutoScroll();
                 }
             }
 
@@ -733,6 +752,106 @@
         const rosterTeam2Coach = document.getElementById('rosterTeam2Coach');
         const rosterTeam2Players = document.getElementById('rosterTeam2Players');
         const tournamentTitle = document.getElementById('tournamentTitle');
+
+        // Auto-scroll для списков игроков при >24 игроков
+        let rosterScrollAnimations = [];
+
+        function ensureRosterOverflow(el) {
+            if (!el) return false;
+            const content = el.querySelector('.roster-players-scroll');
+            if (!content) return false;
+            let extra = content.scrollHeight - el.clientHeight;
+            if (extra > 2) return true;
+            let filler = content.querySelector('.roster-scroll-filler');
+            if (!filler) {
+                filler = document.createElement('div');
+                filler.className = 'roster-scroll-filler';
+                filler.style.height = '160px';
+                filler.style.opacity = '0';
+                filler.style.pointerEvents = 'none';
+                filler.style.width = '100%';
+                content.appendChild(filler);
+            } else {
+                const current = parseInt(filler.style.height || '160', 10);
+                filler.style.height = (current + 80) + 'px';
+            }
+            extra = content.scrollHeight - el.clientHeight;
+            return extra > 2;
+        }
+
+        function initRosterAutoScroll() {
+            stopRosterAutoScroll();
+            const lists = [rosterTeam1Players, rosterTeam2Players]
+                .filter(el => el && el.classList.contains('many-players'))
+                .filter(el => ensureRosterOverflow(el));
+            if (lists.length === 0) return;
+            const scrollSpeed = 22; // px per second
+            const pauseDuration = 5000;
+
+            lists.forEach((el) => {
+                const content = el.querySelector('.roster-players-scroll');
+                if (!content) return;
+                content.style.transform = 'translateY(0)';
+                const state = {
+                    direction: 1,
+                    lastTime: null,
+                    isPaused: true,
+                    pauseUntil: Date.now() + pauseDuration,
+                    offset: 0
+                };
+
+                const anim = { type: 'raf', id: null };
+                function step(timestamp) {
+                    anim.id = requestAnimationFrame(step);
+                    if (!el.classList.contains('many-players')) return;
+                    const maxScroll = content.scrollHeight - el.clientHeight;
+                    if (maxScroll <= 0) return;
+
+                    if (state.isPaused) {
+                        if (Date.now() >= state.pauseUntil) {
+                            state.isPaused = false;
+                            state.lastTime = timestamp;
+                        }
+                        return;
+                    }
+
+                    if (state.lastTime === null) state.lastTime = timestamp;
+                    const dt = (timestamp - state.lastTime) / 1000;
+                    state.lastTime = timestamp;
+
+                    state.offset += state.direction * scrollSpeed * dt;
+                    if (state.offset <= 0) {
+                        state.offset = 0;
+                        state.direction = 1;
+                        state.isPaused = true;
+                        state.pauseUntil = Date.now() + pauseDuration;
+                    } else if (state.offset >= maxScroll) {
+                        state.offset = maxScroll;
+                        state.direction = -1;
+                        state.isPaused = true;
+                        state.pauseUntil = Date.now() + pauseDuration;
+                    }
+
+                    content.style.transform = `translateY(-${state.offset}px)`;
+                }
+
+                anim.id = requestAnimationFrame(step);
+                rosterScrollAnimations.push(anim);
+            });
+        }
+
+        function stopRosterAutoScroll() {
+            rosterScrollAnimations.forEach(item => {
+                if (!item) return;
+                if (item.type === 'raf') {
+                    cancelAnimationFrame(item.id);
+                } else if (typeof item === 'number') {
+                    clearInterval(item);
+                    clearTimeout(item);
+                }
+            });
+            rosterScrollAnimations = [];
+        }
 
         // Подключение к WebSocket
         socket.on('connect', () => {
