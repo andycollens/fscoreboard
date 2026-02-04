@@ -175,8 +175,8 @@
         }
         .logo-snowflake {
             position: absolute;
-            color: rgba(255, 255, 255, 0.25);
-            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
             line-height: 1;
             animation: snowflakeFall linear infinite;
         }
@@ -2708,8 +2708,8 @@ body.penalty-mode .penalty-score {
             flake.textContent = chars[Math.floor(Math.random() * chars.length)];
             flake.style.left = Math.random() * 100 + '%';
             flake.style.top = (-15 - Math.random() * 20) + '%';
-            flake.style.fontSize = (8 + Math.random() * 10) + 'px';
-            flake.style.setProperty('--snow-opacity', (0.15 + Math.random() * 0.12).toFixed(2));
+            flake.style.fontSize = (14 + Math.random() * 14) + 'px';
+            flake.style.setProperty('--snow-opacity', (0.45 + Math.random() * 0.35).toFixed(2));
             flake.style.animationDuration = (12 + Math.random() * 18) + 's';
             flake.style.animationDelay = -(Math.random() * 25) + 's';
             const drift = (Math.random() - 0.5) * 40;
