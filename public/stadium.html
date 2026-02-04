@@ -2088,6 +2088,7 @@ body.penalty-mode .penalty-score {
 
         // Auto-scroll для списков игроков в режиме Составы при >24 игроков
         let rosterScrollAnimations = [];
+        let lastRosterSignature = '';
 
         function initRosterAutoScroll() {
             stopRosterAutoScroll();
@@ -2528,17 +2529,25 @@ body.penalty-mode .penalty-score {
 
             // Обновляем списки для режима "Составы" (только в режиме rosters)
             if (currentMode === 'rosters' && rosterTeam1Coach && rosterTeam1Players) {
-                // Пытаемся найти teamId из данных или используем глобальное состояние
-                const team1Id = data.team1Id || null;
-                console.log('Stadium updateDisplay: team1Id =', team1Id, 'data.team1Id =', data.team1Id);
-                renderRostersMode(
-                    rosterTeam1Coach,
-                    rosterTeam1Players,
-                    data.team1Staff || data.staff1 || [],
-                    data.team1Players || data.players1 || [],
-                    false,
-                    team1Id
-                );
+                const rosterSig = JSON.stringify({
+                    t1: data.team1Staff || data.staff1 || [],
+                    t2: data.team2Staff || data.staff2 || [],
+                    p1: data.team1Players || data.players1 || [],
+                    p2: data.team2Players || data.players2 || []
+                });
+                if (rosterSig !== lastRosterSignature) {
+                    lastRosterSignature = rosterSig;
+                    const team1Id = data.team1Id || null;
+                    const team2Id = data.team2Id || null;
+                    renderRostersMode(rosterTeam1Coach, rosterTeam1Players,
+                        data.team1Staff || data.staff1 || [],
+                        data.team1Players || data.players1 || [],
+                        false, team1Id);
+                    renderRostersMode(rosterTeam2Coach, rosterTeam2Players,
+                        data.team2Staff || data.staff2 || [],
+                        data.team2Players || data.players2 || [],
+                        true, team2Id);
+                }
             }
 
             const stadiumTeam1Short = document.getElementById('stadiumTeam1');
@@ -2581,20 +2590,8 @@ body.penalty-mode .penalty-score {
                 );
             }
 
-            // Обновляем списки для режима "Составы" (только в режиме rosters)
+            // Устанавливаем размер шрифта и many-players для режима "Составы"
             if (currentMode === 'rosters' && rosterTeam2Coach && rosterTeam2Players) {
-                // Пытаемся найти teamId из данных или используем глобальное состояние
-                const team2Id = data.team2Id || null;
-                console.log('Stadium updateDisplay: team2Id =', team2Id, 'data.team2Id =', data.team2Id);
-                renderRostersMode(
-                    rosterTeam2Coach,
-                    rosterTeam2Players,
-                    data.team2Staff || data.staff2 || [],
-                    data.team2Players || data.players2 || [],
-                    true,
-                    team2Id
-                );
-
                 // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков
                 const team1PlayersCount = (data.team1Players || data.players1 || []).length;
                 const team2PlayersCount = (data.team2Players || data.players2 || []).length;
