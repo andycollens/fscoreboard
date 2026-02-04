@@ -2122,7 +2122,7 @@ body.penalty-mode .penalty-score {
                         phase = 'scroll_up';
                     }
                     if (phase === 'scroll_up') {
-                        el.scrollTop = Math.max(el.scrollTop - scrollStep, 0);
+                        el.scrollTop = Math.max(0, el.scrollTop - scrollStep);
                         if (el.scrollTop <= 2) {
                             phase = 'pause_top';
                             phaseEnd = now + pauseDuration;
@@ -2723,13 +2723,6 @@ body.penalty-mode .penalty-score {
 
 
         refreshDisplayForMode(mode, window.lastScoreboardData || latestData || {});
-        if (mode === 'rosters') {
-            setTimeout(() => {
-                if (currentMode === 'rosters' && rosterTeam1Players && rosterTeam2Players && rosterTeam1Players.classList.contains('many-players')) {
-                    initRosterAutoScroll();
-                }
-            }, 300);
-        }
     }
     
     function refreshDisplayForMode(mode, data) {
