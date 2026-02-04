@@ -2748,6 +2748,8 @@ body.penalty-mode .penalty-score {
             scoreboardMode.style.display = 'flex';
         } else if (mode === 'rosters') {
             scoreboardMode.style.display = 'flex';
+            // Запускаем автопрокрутку после отрисовки (иначе clientHeight/scrollHeight = 0 у скрытого контейнера)
+            requestAnimationFrame(() => { requestAnimationFrame(() => initRosterAutoScroll()); });
         } else if (mode === 'penalty') {
             scoreboardMode.style.display = 'flex';
             document.body.classList.add('penalty-mode');
