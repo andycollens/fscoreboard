@@ -62,9 +62,57 @@
                 max-height: 90vh;
             }
         }
+
+        /* Winter League: фон и логотип (как на stadium при graphicStyle winterleague) */
+        #logo-winterleague-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: auto;
+            height: auto;
+            max-width: none;
+            max-height: none;
+            object-fit: none;
+            object-position: center;
+            display: none;
+            z-index: 0;
+        }
+        #logo-winterleague-logo {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: auto;
+            height: auto;
+            max-width: none;
+            max-height: none;
+            object-fit: none;
+            display: none;
+            transform-origin: center center;
+            z-index: 1;
+        }
+        body.logo-winterleague #logo-winterleague-bg,
+        body.logo-winterleague #logo-winterleague-logo {
+            display: block;
+        }
+        body.logo-winterleague #logo-winterleague-logo {
+            animation: winterleagueLogoHeartbeat 6s ease-in-out infinite;
+        }
+        @keyframes winterleagueLogoHeartbeat {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(0.95); }
+        }
+        body.logo-winterleague #logo-background-svg,
+        body.logo-winterleague #logo-container {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
+    <!-- Winter League: фон и логотип (при graphicStyle winterleague) -->
+    <img id="logo-winterleague-bg" src="/public/img/winterleague_tv_bg_nologo.jpg" alt="">
+    <img id="logo-winterleague-logo" src="/public/img/winterleague_tv_logo.png" alt="">
+
     <!-- SVG-элемент, который будет заполнен треугольниками с помощью JavaScript -->
     <svg id="logo-background-svg"></svg>
 
@@ -77,6 +125,65 @@
         let logoAnimationInterval = null;
         let logoResizeTimeout = null;
         let logoResizeHandler = null;
+        let currentGraphicStyle = 'default';
+        let accessTokenCache = '';
+
+        function getAccessToken() {
+            if (accessTokenCache) return accessTokenCache;
+            const urlToken = new URLSearchParams(window.location.search).get('token');
+            if (urlToken && urlToken !== 'null' && urlToken !== 'undefined' && urlToken.trim() !== '') {
+                accessTokenCache = urlToken.trim();
+                try { localStorage.setItem('stadiumAccessToken', accessTokenCache); } catch (e) { /* ignore */ }
+                return accessTokenCache;
+            }
+            try {
+                const stored = localStorage.getItem('stadiumAccessToken');
+                if (stored && stored.trim() !== '') {
+                    accessTokenCache = stored.trim();
+                    return accessTokenCache;
+                }
+            } catch (e) {
+                console.warn('Не удалось получить токен из localStorage', e);
+            }
+            return '';
+        }
+
+        function stopLogoAnimation() {
+            if (logoAnimationInterval) {
+                clearInterval(logoAnimationInterval);
+                logoAnimationInterval = null;
+            }
+            if (logoResizeHandler) {
+                window.removeEventListener('resize', logoResizeHandler);
+                logoResizeHandler = null;
+            }
+        }
+
+        function applyLogoMode() {
+            if (currentGraphicStyle === 'winterleague') {
+                stopLogoAnimation();
+                document.body.classList.add('logo-winterleague');
+            } else {
+                document.body.classList.remove('logo-winterleague');
+                initLogoAnimation();
+            }
+        }
+
+        async function loadLogoConfig() {
+            try {
+                const token = getAccessToken();
+                const response = await fetch(`/api/config?token=${encodeURIComponent(token || '')}`);
+                if (response.ok) {
+                    const config = await response.json();
+                    currentGraphicStyle = (config && config.graphicStyle) ? config.graphicStyle : 'default';
+                    applyLogoMode();
+                    return;
+                }
+            } catch (e) {
+                console.warn('Logo: не удалось загрузить конфиг', e);
+            }
+            applyLogoMode();
+        }
 
         function initLogoAnimation() {
             const svg = document.getElementById('logo-background-svg');
@@ -214,12 +321,10 @@
             window.addEventListener('resize', logoResizeHandler);
         }
 
-        // Инициализация при загрузке страницы
+        // Инициализация при загрузке страницы: загружаем конфиг и показываем вид в зависимости от graphicStyle (как на stadium)
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Logo page loaded');
-            setTimeout(() => {
-                initLogoAnimation();
-            }, 100);
+            loadLogoConfig();
         });
 
         // Очистка при выгрузке страницы
