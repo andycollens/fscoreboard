@@ -3952,12 +3952,31 @@
       }
     }
     
-    // Initialize graphic style buttons
+    // Сохранение стиля без подтверждения (для мгновенного переключения по клику)
+    async function applyGraphicStyleImmediate(selectedStyle) {
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ graphicStyle: selectedStyle })
+        });
+        if (response.ok) {
+          showNotification('Стиль применён', 'success');
+        }
+      } catch (e) {
+        console.error('Ошибка применения стиля:', e);
+        showNotification('Ошибка применения стиля', 'error');
+      }
+    }
+
+    // Initialize graphic style buttons — по клику сразу сохраняем и применяем (logo.html и stadium обновятся по Socket.IO)
     function initGraphicStyleButtons() {
       document.querySelectorAll('.graphic-style-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           document.querySelectorAll('.graphic-style-btn').forEach(b => b.classList.remove('active'));
           this.classList.add('active');
+          const selectedStyle = this.getAttribute('data-style');
+          if (selectedStyle) applyGraphicStyleImmediate(selectedStyle);
         });
       });
     }
