@@ -117,7 +117,7 @@
             filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
         }
 
-        /* Winter League: полноэкранное изображение в режиме Лого — центрировано, без изменения размера/пропорций */
+        /* Winter League: фон без логотипа — центрировано, без изменения размера/пропорций */
         #logo-winterleague-bg {
             position: absolute;
             top: 50%;
@@ -131,8 +131,31 @@
             object-position: center;
             display: none;
         }
-        .logo-mode.logo-winterleague #logo-winterleague-bg {
+        /* Winter League: логотип по центру, 100% масштаб, анимация «бьётся сердце» */
+        #logo-winterleague-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: auto;
+            height: auto;
+            max-width: none;
+            max-height: none;
+            object-fit: none;
+            display: none;
+            transform-origin: center center;
+        }
+        .logo-mode.logo-winterleague #logo-winterleague-bg,
+        .logo-mode.logo-winterleague #logo-winterleague-logo {
             display: block;
+        }
+        .logo-mode.logo-winterleague #logo-winterleague-logo {
+            animation: winterleagueLogoHeartbeat 4s ease-in-out infinite;
+        }
+        @keyframes winterleagueLogoHeartbeat {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            25% { transform: translate(-50%, -50%) scale(1.05); }
+            50% { transform: translate(-50%, -50%) scale(0.95); }
+            75% { transform: translate(-50%, -50%) scale(1); }
         }
         .logo-mode.logo-winterleague #logo-background-svg,
         .logo-mode.logo-winterleague #logo-container {
@@ -1676,8 +1699,9 @@ body.penalty-mode .penalty-score {
 
     <!-- Режим Лого -->
     <div class="logo-mode" id="logoMode">
-        <!-- Winter League: полноэкранное изображение (только при graphicStyle winterleague) -->
-        <img id="logo-winterleague-bg" src="/public/img/winterleague_tv_bg.jpg" alt="">
+        <!-- Winter League: фон без логотипа + логотип с анимацией (только при graphicStyle winterleague) -->
+        <img id="logo-winterleague-bg" src="/public/img/winterleague_tv_bg_nologo.jpg" alt="">
+        <img id="logo-winterleague-logo" src="/public/img/winterleague_tv_logo.png" alt="">
         <!-- SVG-элемент, который будет заполнен треугольниками с помощью JavaScript -->
         <svg id="logo-background-svg"></svg>
 
