@@ -2091,14 +2091,12 @@ body.penalty-mode .penalty-score {
         function initRosterAutoScroll() {
             stopRosterAutoScroll();
             const lists = [rosterTeam1Players, rosterTeam2Players].filter(Boolean);
-            const scrollStep = 0.3;
+            const scrollStep = 0.5;
             lists.forEach(el => {
                 if (!el.classList.contains('many-players')) return;
                 el.scrollTop = 0;
                 let scrollDir = 1;
-                const frame = () => {
-                    const rafId = requestAnimationFrame(frame);
-                    rosterScrollAnimations.push(rafId);
+                const intervalId = setInterval(() => {
                     if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
                     const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
                     if (maxScroll <= 0) return;
@@ -2109,13 +2107,13 @@ body.penalty-mode .penalty-score {
                         el.scrollTop = Math.max(el.scrollTop - scrollStep, 0);
                         if (el.scrollTop <= 1) scrollDir = 1;
                     }
-                };
-                rosterScrollAnimations.push(requestAnimationFrame(frame));
+                }, 30);
+                rosterScrollAnimations.push(intervalId);
             });
         }
 
         function stopRosterAutoScroll() {
-            rosterScrollAnimations.forEach(id => cancelAnimationFrame(id));
+            rosterScrollAnimations.forEach(id => clearInterval(id));
             rosterScrollAnimations = [];
         }
 
@@ -2585,7 +2583,7 @@ body.penalty-mode .penalty-score {
                     if (maxPlayersCount > 24) {
                         rosterTeam1Players.classList.add('many-players');
                         rosterTeam2Players.classList.add('many-players');
-                        initRosterAutoScroll();
+                        requestAnimationFrame(() => requestAnimationFrame(() => initRosterAutoScroll()));
                     } else {
                         rosterTeam1Players.classList.remove('many-players');
                         rosterTeam2Players.classList.remove('many-players');
