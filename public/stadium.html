@@ -2092,20 +2092,30 @@ body.penalty-mode .penalty-score {
             stopRosterAutoScroll();
             const lists = [rosterTeam1Players, rosterTeam2Players].filter(Boolean);
             const scrollStep = 0.5;
+            const pauseDuration = 5000;
             lists.forEach(el => {
                 if (!el.classList.contains('many-players')) return;
                 el.scrollTop = 0;
                 let scrollDir = 1;
+                let pauseUntil = Date.now() + pauseDuration;
                 const intervalId = setInterval(() => {
                     if (currentMode !== 'rosters' || !el.classList.contains('many-players')) return;
                     const maxScroll = Math.max(0, el.scrollHeight - el.clientHeight);
                     if (maxScroll <= 0) return;
+                    const now = Date.now();
+                    if (now < pauseUntil) return;
                     if (scrollDir === 1) {
                         el.scrollTop = Math.min(el.scrollTop + scrollStep, maxScroll);
-                        if (el.scrollTop >= maxScroll - 1) scrollDir = -1;
+                        if (el.scrollTop >= maxScroll - 1) {
+                            scrollDir = -1;
+                            pauseUntil = now + pauseDuration;
+                        }
                     } else {
                         el.scrollTop = Math.max(el.scrollTop - scrollStep, 0);
-                        if (el.scrollTop <= 1) scrollDir = 1;
+                        if (el.scrollTop <= 1) {
+                            scrollDir = 1;
+                            pauseUntil = now + pauseDuration;
+                        }
                     }
                 }, 30);
                 rosterScrollAnimations.push(intervalId);
