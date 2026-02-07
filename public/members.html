@@ -596,27 +596,27 @@
                             if (typeof item === 'string') {
                                 // Если строка, пытаемся извлечь номер и имя
                                 const parts = item.trim().split(/\s+/);
-                                num = parts[0].match(/^\d+$/) ? parts[0] : '';
-                                name = num ? parts.slice(1).join(' ') : item;
+                                num = parts[0].match(/^\d+$/) ? parts[0] : '—';
+                                name = num !== '—' ? parts.slice(1).join(' ') : item;
                             } else {
-                                num = item.number ? String(item.number) : '';
+                                num = item.number != null && item.number !== '' ? String(item.number) : '—';
                                 name = item.name || '';
                                 
                                 // Если номер содержит "/", обрабатываем альтернативные номера
-                                if (num && num.includes('/')) {
+                                if (num && num !== '—' && num.includes('/')) {
                                     const [num1, num2] = num.split('/');
                                     num = useAltNumbers ? (num2 || num1) : (num1 || '');
                                 }
                             }
-                            
+                            const numDisplay = (num === '' || num == null) ? '—' : num;
                             if (isRightSide) {
                                 return `<div class="roster-player-item">
                                     <span class="roster-player-name">${escapeHtml(name)}</span>
-                                    <span class="roster-player-number">${escapeHtml(num)}</span>
+                                    <span class="roster-player-number">${escapeHtml(numDisplay)}</span>
                                 </div>`;
                             } else {
                                 return `<div class="roster-player-item">
-                                    <span class="roster-player-number">${escapeHtml(num)}</span>
+                                    <span class="roster-player-number">${escapeHtml(numDisplay)}</span>
                                     <span class="roster-player-name">${escapeHtml(name)}</span>
                                 </div>`;
                             }
