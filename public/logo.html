@@ -127,13 +127,16 @@
             color: rgba(255, 255, 255, 1);
             font-size: 18px;
             line-height: 1;
+            padding-top: 0.25em;
             animation: snowflakeFall linear infinite;
+            will-change: transform;
+            backface-visibility: hidden;
         }
         @keyframes snowflakeFall {
-            0% { transform: translateY(-10%) translateX(0); opacity: 0; }
+            0% { transform: translate3d(0, -10%, 0); opacity: 0; }
             3% { opacity: var(--snow-opacity, 0.2); }
             97% { opacity: var(--snow-opacity, 0.2); }
-            100% { transform: translateY(110vh) translateX(var(--snow-drift, 0)); opacity: 0; }
+            100% { transform: translate3d(var(--snow-drift, 0), 110vh, 0); opacity: 0; }
         }
     </style>
 </head>
