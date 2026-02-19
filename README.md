@@ -142,6 +142,13 @@ curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/update
 cd /opt/fscoreboard && git fetch origin && git reset --hard origin/main && pm2 restart fscoreboard
 ```
 
+**После обновления — перезагрузка Nginx (обязательно для загрузки рекламы):**  
+Иначе загрузка роликов в разделе «Реклама» будет давать ошибку **413 Request Entity Too Large**.
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+Если конфиг Nginx у вас свой, добавьте в блок `server` отдельный `location /api/ads` с `client_max_body_size 1024M;` (пример в `nginx-scoreboard.conf`).
+
 ## 🔒 Безопасность
 
 - **Токен доступа**: Автогенерируется при установке

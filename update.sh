@@ -307,14 +307,16 @@ restart_application() {
     fi
 }
 
-# Перезагрузка Nginx
+# Перезагрузка Nginx (всегда после обновления — подхватывает лимит для /api/ads и др.)
 reload_nginx() {
-    if [ "$RELOAD_NGINX" = true ]; then
+    if [ -f "/etc/nginx/sites-enabled/fscoreboard" ] || [ -f "/etc/nginx/sites-available/fscoreboard" ]; then
         print_step "Перезагрузка Nginx..."
-        
-        systemctl reload nginx
-        
-        print_success "Nginx перезагружен"
+        if nginx -t 2>/dev/null; then
+            systemctl reload nginx
+            print_success "Nginx перезагружен"
+        else
+            print_warning "Nginx: конфиг с ошибками, перезагрузка пропущена (проверьте nginx -t)"
+        fi
     fi
 }
 
