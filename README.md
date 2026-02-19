@@ -136,6 +136,7 @@ pm2 logs fscoreboard
 ### Обновление
 ```bash
 # Автоматическое обновление (рекомендуется)
+# Подтягивает код из Git, при необходимости дополняет конфиг Nginx (лимит загрузки рекламы 1 ГБ), перезагружает Nginx и PM2
 curl -fsSL https://raw.githubusercontent.com/andycollens/fscoreboard/main/update.sh | sudo bash
 
 # Ручное обновление через Git

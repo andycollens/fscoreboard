@@ -216,11 +216,13 @@ update_code() {
     [ -d "public/logos" ] && cp -r "public/logos" "$backup_dir/" 2>/dev/null || true
     [ -f ".env" ] && cp ".env" "$backup_dir/"
     [ -f "server/config.json" ] && cp "server/config.json" "$backup_dir/" 2>/dev/null || true
-    
+    [ -f "server/ads.json" ] && cp "server/ads.json" "$backup_dir/" 2>/dev/null || true
+    [ -d "public/ads" ] && cp -r "public/ads" "$backup_dir/" 2>/dev/null || true
+
     # Обновляем код
     git fetch origin
     git reset --hard origin/main
-    
+
     # Восстанавливаем пользовательские данные
     print_info "Восстановление пользовательских данных..."
     [ -f "$backup_dir/state.json" ] && cp "$backup_dir/state.json" "server/"
@@ -228,10 +230,12 @@ update_code() {
     [ -d "$backup_dir/logos" ] && cp -r "$backup_dir/logos" "public/" 2>/dev/null || true
     [ -f "$backup_dir/.env" ] && cp "$backup_dir/.env" "."
     [ -f "$backup_dir/config.json" ] && cp "$backup_dir/config.json" "server/" 2>/dev/null || true
+    [ -f "$backup_dir/ads.json" ] && cp "$backup_dir/ads.json" "server/" 2>/dev/null || true
+    [ -d "$backup_dir/ads" ] && cp -r "$backup_dir/ads" "public/" 2>/dev/null || true
     
     # Устанавливаем правильные права
-    chown -R root:root server/state.json server/presets.json 2>/dev/null || true
-    chown -R root:root public/logos 2>/dev/null || true
+    chown -R root:root server/state.json server/presets.json server/ads.json 2>/dev/null || true
+    chown -R root:root public/logos public/ads 2>/dev/null || true
     chown root:root .env 2>/dev/null || true
     chown root:root server/config.json 2>/dev/null || true
     
