@@ -1665,6 +1665,10 @@ app.put('/api/config', (req, res) => {
   if (req.body.adsMuted !== undefined) {
     currentConfig.adsMuted = !!req.body.adsMuted;
   }
+  if (req.body.adsPauseSeconds !== undefined) {
+    const sec = parseInt(req.body.adsPauseSeconds, 10);
+    currentConfig.adsPauseSeconds = (sec >= 1 && sec <= 600) ? sec : 30;
+  }
   if (req.body.graphicStyle !== undefined) {
     // Сохраняем стиль графического оформления
     currentConfig.graphicStyle = req.body.graphicStyle;
@@ -2006,18 +2010,21 @@ app.get('/api/ads', (req, res) => {
   if (token !== actualToken && token !== actualStadiumToken) {
     return res.status(403).send('Forbidden');
   }
-  let configForAds = { adsMuted: true };
+  let configForAds = { adsMuted: true, adsPauseSeconds: 30 };
   if (fs.existsSync(CONFIG_PATH)) {
     try {
       const c = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
       configForAds.adsMuted = c.adsMuted !== false;
+      if (typeof c.adsPauseSeconds === 'number' && c.adsPauseSeconds >= 1 && c.adsPauseSeconds <= 600) {
+        configForAds.adsPauseSeconds = c.adsPauseSeconds;
+      }
     } catch (e) { /* keep default */ }
   }
   const list = loadAdsMeta().map(ad => ({
     ...ad,
     originalName: fixAdsOriginalName(ad.originalName) || ad.filename
   }));
-  res.json({ list, adsMuted: configForAds.adsMuted });
+  res.json({ list, adsMuted: configForAds.adsMuted, adsPauseSeconds: configForAds.adsPauseSeconds });
 });
 
 // POST /api/ads - upload new ad (management token only)
@@ -2061,6 +2068,19 @@ app.post('/api/ads/play-now', (req, res) => {
   if (!list.some(ad => ad.filename === filename)) return res.status(404).json({ error: 'Ролик не найден' });
   io.emit('stadiumAdPlayNow', { filename });
   res.json({ success: true });
+});
+
+// PUT /api/ads/order - изменить порядок роликов (management token only)
+app.put('/api/ads/order', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  const order = req.body && req.body.order;
+  if (!Array.isArray(order) || order.length === 0) return res.status(400).json({ error: 'order array required' });
+  const ads = loadAdsMeta();
+  const byId = new Map(ads.map(a => [String(a.id), a]));
+  const ordered = order.map(id => byId.get(String(id))).filter(Boolean);
+  if (ordered.length !== ads.length) return res.status(400).json({ error: 'order must contain all ad ids' });
+  saveAdsMeta(ordered);
+  res.json({ success: true, list: ordered.map(ad => ({ ...ad, originalName: fixAdsOriginalName(ad.originalName) || ad.filename })) });
 });
 
 // DELETE /api/ads/:id - delete ad (management token only)

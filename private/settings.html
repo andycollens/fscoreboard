@@ -1415,10 +1415,16 @@
   <div class="section">
     <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
       <h2>Реклама</h2>
-      <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #163d74; cursor: pointer;">
-        <input type="checkbox" id="adsSoundToggle" onchange="saveAdsMuted()">
-        <span>Со звуком</span>
-      </label>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #163d74;">
+          <span>Пауза между роликами (сек):</span>
+          <input type="number" id="adsPauseSeconds" min="1" max="600" value="30" style="width: 56px; padding: 4px 6px; border: 1px solid #c5d9ff; border-radius: 6px; font-size: 13px;" onchange="saveAdsPauseSeconds()">
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #163d74; cursor: pointer;">
+          <input type="checkbox" id="adsSoundToggle" onchange="saveAdsMuted()">
+          <span>Со звуком</span>
+        </label>
+      </div>
     </div>
 
     <div style="margin-bottom: 16px;">
@@ -3574,6 +3580,7 @@
 
     // ====== Реклама (ролики спонсоров) ======
     let adsMuted = true;
+    let adsPauseSeconds = 30;
     async function loadAds() {
       try {
         const response = await fetch(`/api/ads?token=${getToken()}`);
@@ -3581,11 +3588,31 @@
         const data = await response.json();
         ads = Array.isArray(data) ? data : (data.list || []);
         adsMuted = data.adsMuted !== false;
+        adsPauseSeconds = (typeof data.adsPauseSeconds === 'number' && data.adsPauseSeconds >= 1 && data.adsPauseSeconds <= 600) ? data.adsPauseSeconds : 30;
         const toggle = document.getElementById('adsSoundToggle');
         if (toggle) toggle.checked = !adsMuted;
+        const pauseInput = document.getElementById('adsPauseSeconds');
+        if (pauseInput) { pauseInput.value = adsPauseSeconds; }
         renderAdsList();
       } catch (error) {
         console.error('Ошибка загрузки роликов рекламы:', error);
+      }
+    }
+    async function saveAdsPauseSeconds() {
+      const input = document.getElementById('adsPauseSeconds');
+      if (!input) return;
+      const sec = parseInt(input.value, 10);
+      const val = (sec >= 1 && sec <= 600) ? sec : 30;
+      input.value = val;
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adsPauseSeconds: val })
+        });
+        if (response.ok) adsPauseSeconds = val;
+      } catch (e) {
+        console.error('Ошибка сохранения паузы рекламы', e);
       }
     }
     async function saveAdsMuted() {
@@ -3614,12 +3641,33 @@
         return;
       }
 
-      ads.forEach(ad => {
+      ads.forEach((ad, index) => {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #e5edff; font-size:13px;';
 
         const left = document.createElement('div');
-        left.style.cssText = 'display:flex; flex-direction:column;';
+        left.style.cssText = 'display:flex; align-items:center; gap:8px; flex:1; min-width:0;';
+        const orderBtns = document.createElement('div');
+        orderBtns.style.cssText = 'display:flex; flex-direction:column; gap:0; flex-shrink:0;';
+        const upBtn = document.createElement('button');
+        upBtn.type = 'button';
+        upBtn.title = 'Выше';
+        upBtn.style.cssText = 'padding:0 6px; font-size:12px; line-height:1.1; border:1px solid #c5d9ff; border-radius:4px; background:#fff; color:#163d74; cursor:pointer;';
+        upBtn.textContent = '↑';
+        upBtn.disabled = index === 0;
+        upBtn.onclick = (e) => { e.preventDefault(); moveAdOrder(index, -1); };
+        const downBtn = document.createElement('button');
+        downBtn.type = 'button';
+        downBtn.title = 'Ниже';
+        downBtn.style.cssText = 'padding:0 6px; font-size:12px; line-height:1.1; border:1px solid #c5d9ff; border-radius:4px; background:#fff; color:#163d74; cursor:pointer;';
+        downBtn.textContent = '↓';
+        downBtn.disabled = index === ads.length - 1;
+        downBtn.onclick = (e) => { e.preventDefault(); moveAdOrder(index, 1); };
+        orderBtns.appendChild(upBtn);
+        orderBtns.appendChild(downBtn);
+        left.appendChild(orderBtns);
+        const info = document.createElement('div');
+        info.style.cssText = 'display:flex; flex-direction:column; min-width:0;';
         const title = document.createElement('div');
         title.style.cssText = 'font-weight:500; color:#163d74;';
         title.textContent = ad.originalName || ad.filename;
@@ -3630,11 +3678,12 @@
           ad.mimeType || '',
           sizeKb ? `${sizeKb} КБ` : ''
         ].filter(Boolean).join(' • ');
-        left.appendChild(title);
-        left.appendChild(meta);
+        info.appendChild(title);
+        info.appendChild(meta);
+        left.appendChild(info);
 
         const right = document.createElement('div');
-        right.style.cssText = 'display:flex; gap:8px; align-items:center;';
+        right.style.cssText = 'display:flex; gap:8px; align-items:center; flex-shrink:0;';
         const playBtn = document.createElement('button');
         playBtn.type = 'button';
         playBtn.className = 'btn btn-primary';
@@ -3653,6 +3702,33 @@
         row.appendChild(right);
         container.appendChild(row);
       });
+    }
+
+    async function moveAdOrder(fromIndex, delta) {
+      const toIndex = fromIndex + delta;
+      if (toIndex < 0 || toIndex >= ads.length) return;
+      const b = ads[toIndex];
+      ads[toIndex] = ads[fromIndex];
+      ads[fromIndex] = b;
+      const order = ads.map(a => a.id);
+      try {
+        const response = await fetch(`/api/ads/order?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.list) ads = data.list;
+          renderAdsList();
+          showNotification('Порядок роликов сохранён', 'success');
+        } else {
+          showNotification('Ошибка сохранения порядка', 'error');
+        }
+      } catch (e) {
+        console.error('Ошибка смены порядка роликов', e);
+        showNotification('Ошибка запроса', 'error');
+      }
     }
 
     async function playAdPreview(ad) {

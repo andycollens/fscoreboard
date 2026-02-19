@@ -2832,8 +2832,8 @@ body.penalty-mode .penalty-score {
     let adTimeoutId = null;
     let adList = [];
     let adsMutedState = true;
+    let adPauseSecondsState = 30;
     let adPauseTimeoutId = null;
-    const AD_PAUSE_MS = 30000;
 
     function stopAdVideo() {
         if (adTimeoutId) {
@@ -2903,7 +2903,8 @@ body.penalty-mode .penalty-score {
                 stopAdVideo();
                 applyLogoMode();
                 const nextIndex = (index + 1) % adList.length;
-                adPauseTimeoutId = setTimeout(() => playAdByIndex(nextIndex, false), AD_PAUSE_MS);
+                const pauseMs = (adPauseSecondsState >= 1 && adPauseSecondsState <= 600 ? adPauseSecondsState : 30) * 1000;
+                adPauseTimeoutId = setTimeout(() => playAdByIndex(nextIndex, false), pauseMs);
             };
         }, { once: true });
         tryStart();
@@ -2923,6 +2924,8 @@ body.penalty-mode .penalty-score {
             const data = await resp.json();
             const list = Array.isArray(data) ? data : (data.list || []);
             adsMutedState = data.adsMuted !== false;
+            const sec = data.adsPauseSeconds;
+            adPauseSecondsState = (typeof sec === 'number' && sec >= 1 && sec <= 600) ? sec : 30;
             if (list.length === 0) {
                 console.warn('Список рекламных роликов пуст');
                 return;
@@ -2945,6 +2948,8 @@ body.penalty-mode .penalty-score {
             const data = await resp.json();
             const list = Array.isArray(data) ? data : (data.list || []);
             adsMutedState = data.adsMuted !== false;
+            const sec = data.adsPauseSeconds;
+            adPauseSecondsState = (typeof sec === 'number' && sec >= 1 && sec <= 600) ? sec : 30;
             adList = list;
             const idx = list.findIndex(a => a.filename === filename);
             if (idx === -1) return;
