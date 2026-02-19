@@ -1742,7 +1742,7 @@ const adsStorage = multer.diskStorage({
 const uploadAdMiddleware = multer({
   storage: adsStorage,
   limits: {
-    fileSize: 200 * 1024 * 1024 // 200MB
+    fileSize: 1024 * 1024 * 1024 // 1GB
   },
   fileFilter: function (req, file, cb) {
     const allowed = /mp4|webm|ogg|quicktime|x-matroska/;
