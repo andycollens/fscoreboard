@@ -2878,13 +2878,12 @@ body.penalty-mode .penalty-score {
             adVideoElement.style.objectFit = 'cover';
             adVideoElement.style.opacity = '0';
             adVideoElement.style.transition = 'opacity 0.8s ease';
+            adVideoElement.style.zIndex = '100';
             adVideoElement.playsInline = true;
             adVideoElement.setAttribute('webkit-playsinline', 'true');
             adVideoElement.preload = 'auto';
 
             logoMode.appendChild(adVideoElement);
-            const snowflakesEl = document.getElementById('logo-snowflakes');
-            if (snowflakesEl) snowflakesEl.style.display = 'none';
 
             const startTime = Date.now();
             let canPlay = false;
@@ -2895,6 +2894,8 @@ body.penalty-mode .penalty-score {
                     adTimeoutId = setTimeout(tryStart, 150);
                     return;
                 }
+                const snowflakesEl = document.getElementById('logo-snowflakes');
+                if (snowflakesEl) snowflakesEl.style.display = 'none';
                 adVideoElement.style.opacity = '1';
                 const playPromise = adVideoElement.play();
                 if (playPromise && typeof playPromise.then === 'function') {
@@ -2956,12 +2957,11 @@ body.penalty-mode .penalty-score {
         adVideoElement.style.objectFit = 'cover';
         adVideoElement.style.opacity = '0';
         adVideoElement.style.transition = 'opacity 0.8s ease';
+        adVideoElement.style.zIndex = '100';
         adVideoElement.playsInline = true;
         adVideoElement.setAttribute('webkit-playsinline', 'true');
         adVideoElement.preload = 'auto';
         logoMode.appendChild(adVideoElement);
-        const snowflakesElAd = document.getElementById('logo-snowflakes');
-        if (snowflakesElAd) snowflakesElAd.style.display = 'none';
         const startTime = Date.now();
         let canPlay = false;
         const tryStart = () => {
@@ -2970,6 +2970,8 @@ body.penalty-mode .penalty-score {
                 adTimeoutId = setTimeout(tryStart, 100);
                 return;
             }
+            const snowflakesElAd = document.getElementById('logo-snowflakes');
+            if (snowflakesElAd) snowflakesElAd.style.display = 'none';
             adVideoElement.style.opacity = '1';
             adVideoElement.play().catch(err => console.error('Ошибка запуска ролика рекламы:', err));
         };
