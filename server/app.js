@@ -366,6 +366,7 @@ app.use('/public', (req, res, next) => {
   next();
 });
 app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use('/ads', express.static(ADS_DIR)); // ролики рекламы для режима «Реклама» на стадионе
 // app.use('/private', express.static(path.join(__dirname, '../private'))); // Отключено для безопасности
 
 // ====== Маршруты ======
@@ -1982,6 +1983,17 @@ app.delete('/api/custom-styles/:id', (req, res) => {
   res.json({ success: true });
 });
 
+// Исправление кодировки имени (UTF-8, ошибочно прочитанный как Latin-1)
+function fixAdsOriginalName(name) {
+  if (!name || typeof name !== 'string') return name;
+  try {
+    const decoded = Buffer.from(name, 'latin1').toString('utf8');
+    return decoded.includes('\uFFFD') ? name : decoded;
+  } catch (e) {
+    return name;
+  }
+}
+
 // ====== Ads API (Реклама) ======
 // GET /api/ads - list ads (management or stadium token)
 app.get('/api/ads', (req, res) => {
@@ -1991,7 +2003,10 @@ app.get('/api/ads', (req, res) => {
   if (token !== actualToken && token !== actualStadiumToken) {
     return res.status(403).send('Forbidden');
   }
-  const list = loadAdsMeta();
+  const list = loadAdsMeta().map(ad => ({
+    ...ad,
+    originalName: fixAdsOriginalName(ad.originalName) || ad.filename
+  }));
   res.json(list);
 });
 
@@ -2010,8 +2025,8 @@ app.post('/api/ads', uploadAdMiddleware.single('file'), (req, res) => {
     console.error('Ошибка чтения размера файла рекламы:', e);
   }
 
-  // originalName только для отображения; убираем символы, небезопасные для JSON/UI
-  let originalName = (req.file.originalname || '').trim();
+  // originalName только для отображения; исправляем кодировку (часто приходит UTF-8, прочитанный как Latin-1)
+  let originalName = fixAdsOriginalName((req.file.originalname || '').trim());
   originalName = originalName.replace(/[\x00-\x1f\\/:*?"<>|]/g, '').slice(0, 200) || req.file.filename;
 
   const ad = {
