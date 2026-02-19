@@ -4267,7 +4267,62 @@
         <button class="btn btn-primary" onclick="saveStadiumTournamentTitle()">Сохранить</button>
       </div>
     </div>
+    <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e0e8f2; text-align: center; font-size: 11px; color: #8a9bb2;">
+      <input type="file" id="restoreFileInput" accept=".zip" style="display: none;">
+      <a href="#" id="backupServerLink" style="color: inherit; text-decoration: none;">Backup server</a>
+      <span style="margin: 0 6px;">/</span>
+      <a href="#" id="restoreServerLink" style="color: inherit; text-decoration: none;">Restore server</a>
+    </div>
   </div>
+  <script>
+    (function() {
+      var backupLink = document.getElementById('backupServerLink');
+      var restoreLink = document.getElementById('restoreServerLink');
+      var restoreInput = document.getElementById('restoreFileInput');
+      if (backupLink) {
+        backupLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          var url = '/api/backup?token=' + encodeURIComponent(typeof getToken === 'function' ? getToken() : '');
+          fetch(url).then(function(r) {
+            if (!r.ok) throw new Error('Ошибка ' + r.status);
+            return r.blob();
+          }).then(function(blob) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'fscore-backup-' + new Date().toISOString().slice(0, 10) + '.zip';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            if (typeof showNotification === 'function') showNotification('Бэкап сохранён', 'success');
+          }).catch(function(err) {
+            if (typeof showNotification === 'function') showNotification('Ошибка бэкапа: ' + (err.message || err), 'error');
+          });
+        });
+      }
+      if (restoreLink && restoreInput) {
+        restoreLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          restoreInput.click();
+        });
+        restoreInput.addEventListener('change', function() {
+          var file = this.files && this.files[0];
+          if (!file) return;
+          var fd = new FormData();
+          fd.append('file', file);
+          var token = typeof getToken === 'function' ? getToken() : '';
+          fetch('/api/restore?token=' + encodeURIComponent(token), { method: 'POST', body: fd }).then(function(r) {
+            return r.json().then(function(data) {
+              if (!r.ok) throw new Error(data.error || 'Ошибка ' + r.status);
+              if (typeof showNotification === 'function') showNotification('Данные восстановлены. Обновите страницу.', 'success');
+              restoreInput.value = '';
+            });
+          }).catch(function(err) {
+            if (typeof showNotification === 'function') showNotification('Ошибка восстановления: ' + (err.message || err), 'error');
+            restoreInput.value = '';
+          });
+        });
+      }
+    })();
+  </script>
 </body>
 </html>
 

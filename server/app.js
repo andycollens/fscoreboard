@@ -4,6 +4,8 @@ const path = require('path');
 const socketio = require('socket.io');
 const fs = require('fs');
 const multer = require('multer');
+const archiver = require('archiver');
+const AdmZip = require('adm-zip');
 
 const app = express();
 const server = http.createServer(app);
@@ -173,6 +175,12 @@ const upload = multer({
   }
 });
 
+// Загрузка одного файла в память (для restore — ZIP)
+const restoreUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 300 * 1024 * 1024 }
+});
+
 // ====== Состояние табло ======
 let state = {
   timerRunning: false,
@@ -277,6 +285,46 @@ if (fs.existsSync(TEAMS_PATH)) {
   // Файл не существует - инициализируем пустым массивом
   teams = [];
   console.log('Файл teams.json не найден, инициализирован пустой массив');
+}
+
+// Перезагрузка состояния с диска (после restore)
+function reloadStateFromDisk() {
+  if (fs.existsSync(SAVE_PATH)) {
+    try {
+      const savedData = JSON.parse(fs.readFileSync(SAVE_PATH, 'utf8'));
+      Object.assign(state, savedData);
+      if (state.team1Id === undefined) state.team1Id = null;
+      if (state.team2Id === undefined) state.team2Id = null;
+    } catch (e) {
+      console.error('Ошибка чтения state.json после restore', e);
+    }
+  }
+  if (fs.existsSync(PRESETS_PATH)) {
+    try {
+      matchPresets = JSON.parse(fs.readFileSync(PRESETS_PATH, 'utf8'));
+    } catch (e) {
+      console.error('Ошибка чтения presets.json после restore', e);
+    }
+  }
+  if (fs.existsSync(TOURNAMENTS_PATH)) {
+    try {
+      const saved = JSON.parse(fs.readFileSync(TOURNAMENTS_PATH, 'utf8'));
+      tournaments = saved.map(t => ({ ...t, selectedTeamIds: t.selectedTeamIds || [] }));
+    } catch (e) {
+      console.error('Ошибка чтения tournaments.json после restore', e);
+    }
+  }
+  if (fs.existsSync(TEAMS_PATH)) {
+    try {
+      const saved = JSON.parse(fs.readFileSync(TEAMS_PATH, 'utf8'));
+      teams = saved.map(t => ({ ...t, useAltNumbers: t.useAltNumbers !== undefined ? t.useAltNumbers : false }));
+    } catch (e) {
+      console.error('Ошибка чтения teams.json после restore', e);
+      teams = [];
+    }
+  } else {
+    teams = [];
+  }
 }
 
 function resolveWinnerTeamById(compositeId) {
@@ -2097,6 +2145,103 @@ app.delete('/api/ads/:id', (req, res) => {
     fs.unlink(filePath, (err) => {
       if (err) console.error('Ошибка удаления файла рекламы:', err);
     });
+  }
+  res.json({ success: true });
+});
+
+// ====== Backup / Restore сервера ======
+app.get('/api/backup', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+
+  const filename = 'fscore-backup-' + new Date().toISOString().slice(0, 10) + '.zip';
+  res.attachment(filename);
+  res.setHeader('Content-Type', 'application/zip');
+
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  archive.on('error', (err) => {
+    console.error('Backup archive error:', err);
+    if (!res.headersSent) res.status(500).json({ error: 'Ошибка создания архива' });
+  });
+  archive.pipe(res);
+
+  const jsonFiles = [
+    { name: 'state.json', path: SAVE_PATH },
+    { name: 'presets.json', path: PRESETS_PATH },
+    { name: 'tournaments.json', path: TOURNAMENTS_PATH },
+    { name: 'teams.json', path: TEAMS_PATH },
+    { name: 'config.json', path: CONFIG_PATH },
+    { name: 'custom-styles.json', path: CUSTOM_STYLES_PATH },
+    { name: 'ads.json', path: ADS_META_PATH }
+  ];
+  for (const { name, path: filePath } of jsonFiles) {
+    if (fs.existsSync(filePath)) {
+      archive.file(filePath, { name });
+    }
+  }
+  if (fs.existsSync(LOGOS_PATH)) {
+    archive.directory(LOGOS_PATH, 'logos');
+  }
+  if (fs.existsSync(ADS_DIR)) {
+    archive.directory(ADS_DIR, 'ads');
+  }
+  if (fs.existsSync(CUSTOM_STYLES_DIR)) {
+    archive.directory(CUSTOM_STYLES_DIR, 'custom-styles');
+  }
+  archive.finalize();
+});
+
+app.post('/api/restore', restoreUpload.single('file'), (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).json({ error: 'Forbidden' });
+  if (!req.file || !req.file.buffer) return res.status(400).json({ error: 'Файл не загружен' });
+
+  const zip = new AdmZip(req.file.buffer);
+  const tempDir = path.join(__dirname, '..', 'temp_restore_' + Date.now());
+  try {
+    zip.extractAllTo(tempDir, true);
+
+    const copyJson = (zipName) => {
+      const src = path.join(tempDir, zipName);
+      if (fs.existsSync(src)) {
+        const dest = path.join(__dirname, zipName);
+        fs.copyFileSync(src, dest);
+      }
+    };
+    copyJson('state.json');
+    copyJson('presets.json');
+    copyJson('tournaments.json');
+    copyJson('teams.json');
+    copyJson('config.json');
+    copyJson('custom-styles.json');
+    copyJson('ads.json');
+
+    const copyDir = (zipSubdir, destPath) => {
+      const srcDir = path.join(tempDir, zipSubdir);
+      if (!fs.existsSync(srcDir)) return;
+      if (!fs.existsSync(destPath)) fs.mkdirSync(destPath, { recursive: true });
+      for (const name of fs.readdirSync(srcDir)) {
+        const src = path.join(srcDir, name);
+        if (fs.statSync(src).isFile()) {
+          fs.copyFileSync(src, path.join(destPath, name));
+        }
+      }
+    };
+    copyDir('logos', LOGOS_PATH);
+    copyDir('ads', ADS_DIR);
+    copyDir('custom-styles', CUSTOM_STYLES_DIR);
+
+    reloadStateFromDisk();
+    io.emit('scoreboardUpdate', enrichStateWithConfig(state));
+  } catch (err) {
+    console.error('Restore error:', err);
+    return res.status(500).json({ error: 'Ошибка восстановления: ' + (err.message || String(err)) });
+  } finally {
+    if (fs.existsSync(tempDir)) {
+      try {
+        fs.rmSync(tempDir, { recursive: true });
+      } catch (e) {
+        console.error('Ошибка удаления temp после restore:', e);
+      }
+    }
   }
   res.json({ success: true });
 });
