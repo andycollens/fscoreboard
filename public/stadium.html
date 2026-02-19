@@ -2721,9 +2721,14 @@ body.penalty-mode .penalty-score {
 
     // Функция переключения режимов
     function switchMode(mode) {
+        const prevMode = currentMode;
         currentMode = mode;
         pendingMode = null;
         lastAppliedMode = mode;
+        if (prevMode === 'ad' && mode !== 'ad') {
+            if (adPauseTimeoutId) { clearTimeout(adPauseTimeoutId); adPauseTimeoutId = null; }
+            stopAdVideo();
+        }
         console.log('Switching mode to:', mode, 'winnersData:', winnersData, 'lastScoreboardData:', window.lastScoreboardData);
         
         document.body.classList.toggle('rosters-mode', mode === 'rosters');
@@ -2822,16 +2827,22 @@ body.penalty-mode .penalty-score {
         }
     }
 
-    // Режим Реклама: сначала Лого, затем ролик спонсора и возврат к Лого.
-    // Тайминги: при входе в режим — минимум 3 с ожидания + canplaythrough, затем фэйд-in 0.8 с;
-    // по окончании ролика — фэйд в чёрный 0.5 с, затем переключение на Лого.
-    // По кнопке Play из настроек (вне очереди): минимум 0.5 с + canplaythrough, фэйд-in 0.8 с; по ended — так же.
+    // Режим Реклама: лого → первый ролик → лого 30 с → следующий ролик → … по кругу. Один ролик — тот же цикл с паузой 30 с.
     let adVideoElement = null;
     let adTimeoutId = null;
+    let adList = [];
+    let adsMutedState = true;
+    let adPauseTimeoutId = null;
+    const AD_PAUSE_MS = 30000;
+
     function stopAdVideo() {
         if (adTimeoutId) {
             clearTimeout(adTimeoutId);
             adTimeoutId = null;
+        }
+        if (adPauseTimeoutId) {
+            clearTimeout(adPauseTimeoutId);
+            adPauseTimeoutId = null;
         }
         if (adVideoElement) {
             adVideoElement.pause();
@@ -2842,113 +2853,19 @@ body.penalty-mode .penalty-score {
         }
     }
 
-    async function applyAdMode() {
-        // Показываем тот же фон/логотип, что и в режиме Лого
-        applyLogoMode();
-
+    function playAdByIndex(index, isFirst) {
+        if (currentMode !== 'ad' || !adList.length) return;
+        if (adPauseTimeoutId) { clearTimeout(adPauseTimeoutId); adPauseTimeoutId = null; }
         stopAdVideo();
-
-        const token = getAccessToken();
-        try {
-            const resp = await fetch('/api/ads?token=' + encodeURIComponent(token || ''));
-            if (!resp.ok) {
-                console.warn('Не удалось загрузить список рекламных роликов');
-                return;
-            }
-            const data = await resp.json();
-            const list = Array.isArray(data) ? data : (data.list || []);
-            const adsMuted = data.adsMuted !== false;
-            if (list.length === 0) {
-                console.warn('Список рекламных роликов пуст');
-                return;
-            }
-            const ad = list[0]; // пока берём первый ролик
-            const logoMode = document.getElementById('logoMode');
-            if (!logoMode) return;
-
-            adVideoElement = document.createElement('video');
-            adVideoElement.id = 'stadiumAdVideo';
-            adVideoElement.src = `/ads/${ad.filename}`;
-            adVideoElement.muted = adsMuted;
-            adVideoElement.style.position = 'absolute';
-            adVideoElement.style.top = '0';
-            adVideoElement.style.left = '0';
-            adVideoElement.style.width = '100%';
-            adVideoElement.style.height = '100%';
-            adVideoElement.style.objectFit = 'cover';
-            adVideoElement.style.opacity = '0';
-            adVideoElement.style.transition = 'opacity 0.8s ease';
-            adVideoElement.style.zIndex = '100';
-            adVideoElement.playsInline = true;
-            adVideoElement.setAttribute('webkit-playsinline', 'true');
-            adVideoElement.preload = 'auto';
-
-            logoMode.appendChild(adVideoElement);
-
-            const startTime = Date.now();
-            let canPlay = false;
-
-            const tryStart = () => {
-                const elapsed = Date.now() - startTime;
-                if (elapsed < 3000 || !canPlay) {
-                    adTimeoutId = setTimeout(tryStart, 150);
-                    return;
-                }
-                const snowflakesEl = document.getElementById('logo-snowflakes');
-                if (snowflakesEl) snowflakesEl.style.display = 'none';
-                adVideoElement.style.opacity = '1';
-                const playPromise = adVideoElement.play();
-                if (playPromise && typeof playPromise.then === 'function') {
-                    playPromise.catch(err => {
-                        console.error('Ошибка запуска ролика рекламы:', err);
-                    });
-                }
-            };
-
-            adVideoElement.addEventListener('canplaythrough', () => {
-                canPlay = true;
-            }, { once: true });
-
-            adVideoElement.addEventListener('ended', () => {
-                // Финальный фэйд через чёрный: сначала гасим видео, потом переключаем на лого
-                adVideoElement.style.transition = 'opacity 0.5s ease';
-                adVideoElement.style.opacity = '0';
-                adVideoElement.ontransitionend = () => {
-                    adVideoElement.ontransitionend = null;
-                    stopAdVideo();
-                    try {
-                        socket.emit('stadiumModeChange', { mode: 'logo' });
-                    } catch (e) {
-                        console.error('Не удалось отправить stadiumModeChange на logo:', e);
-                        switchMode('logo');
-                    }
-                };
-            }, { once: true });
-
-            tryStart();
-        } catch (e) {
-            console.error('Ошибка применения режима Реклама:', e);
-        }
-    }
-
-    // Воспроизвести указанный ролик на стадионе вне очереди (вызов из настроек по кнопке Play)
-    async function playAdNow(filename) {
-        if (currentMode !== 'ad') return;
         const logoMode = document.getElementById('logoMode');
         if (!logoMode) return;
-        stopAdVideo();
-        let adsMuted = true;
-        try {
-            const resp = await fetch('/api/ads?token=' + encodeURIComponent(getAccessToken() || ''));
-            if (resp.ok) {
-                const data = await resp.json();
-                adsMuted = data.adsMuted !== false;
-            }
-        } catch (e) { /* keep default */ }
+        const ad = adList[index];
+        if (!ad || !ad.filename) return;
+
         adVideoElement = document.createElement('video');
         adVideoElement.id = 'stadiumAdVideo';
-        adVideoElement.src = '/ads/' + filename;
-        adVideoElement.muted = adsMuted;
+        adVideoElement.src = '/ads/' + ad.filename;
+        adVideoElement.muted = adsMutedState;
         adVideoElement.style.position = 'absolute';
         adVideoElement.style.top = '0';
         adVideoElement.style.left = '0';
@@ -2962,16 +2879,18 @@ body.penalty-mode .penalty-score {
         adVideoElement.setAttribute('webkit-playsinline', 'true');
         adVideoElement.preload = 'auto';
         logoMode.appendChild(adVideoElement);
+
+        const minDelay = isFirst ? 3000 : 500;
         const startTime = Date.now();
         let canPlay = false;
         const tryStart = () => {
             const elapsed = Date.now() - startTime;
-            if (elapsed < 500 || !canPlay) {
-                adTimeoutId = setTimeout(tryStart, 100);
+            if (elapsed < minDelay || !canPlay) {
+                adTimeoutId = setTimeout(tryStart, isFirst ? 150 : 100);
                 return;
             }
-            const snowflakesElAd = document.getElementById('logo-snowflakes');
-            if (snowflakesElAd) snowflakesElAd.style.display = 'none';
+            const snowflakesEl = document.getElementById('logo-snowflakes');
+            if (snowflakesEl) snowflakesEl.style.display = 'none';
             adVideoElement.style.opacity = '1';
             adVideoElement.play().catch(err => console.error('Ошибка запуска ролика рекламы:', err));
         };
@@ -2982,14 +2901,57 @@ body.penalty-mode .penalty-score {
             adVideoElement.ontransitionend = () => {
                 adVideoElement.ontransitionend = null;
                 stopAdVideo();
-                try {
-                    socket.emit('stadiumModeChange', { mode: 'logo' });
-                } catch (e) {
-                    switchMode('logo');
-                }
+                applyLogoMode();
+                const nextIndex = (index + 1) % adList.length;
+                adPauseTimeoutId = setTimeout(() => playAdByIndex(nextIndex, false), AD_PAUSE_MS);
             };
         }, { once: true });
         tryStart();
+    }
+
+    async function applyAdMode() {
+        applyLogoMode();
+        stopAdVideo();
+
+        const token = getAccessToken();
+        try {
+            const resp = await fetch('/api/ads?token=' + encodeURIComponent(token || ''));
+            if (!resp.ok) {
+                console.warn('Не удалось загрузить список рекламных роликов');
+                return;
+            }
+            const data = await resp.json();
+            const list = Array.isArray(data) ? data : (data.list || []);
+            adsMutedState = data.adsMuted !== false;
+            if (list.length === 0) {
+                console.warn('Список рекламных роликов пуст');
+                return;
+            }
+            adList = list;
+            playAdByIndex(0, true);
+        } catch (e) {
+            console.error('Ошибка применения режима Реклама:', e);
+        }
+    }
+
+    // Воспроизвести указанный ролик на стадионе вне очереди (вызов из настроек по кнопке Play)
+    async function playAdNow(filename) {
+        if (currentMode !== 'ad') return;
+        const logoMode = document.getElementById('logoMode');
+        if (!logoMode) return;
+        try {
+            const resp = await fetch('/api/ads?token=' + encodeURIComponent(getAccessToken() || ''));
+            if (!resp.ok) return;
+            const data = await resp.json();
+            const list = Array.isArray(data) ? data : (data.list || []);
+            adsMutedState = data.adsMuted !== false;
+            adList = list;
+            const idx = list.findIndex(a => a.filename === filename);
+            if (idx === -1) return;
+            playAdByIndex(idx, false);
+        } catch (e) {
+            console.error('Ошибка запроса воспроизведения рекламы:', e);
+        }
     }
 
     // Снежинки в режиме Лого — Unicode символы, рандомные позиции и скорость
