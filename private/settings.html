@@ -155,6 +155,11 @@
       font-weight: 600;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
     }
+
+    .ads-row-drag-over {
+      background: #e8f0fe !important;
+      border-radius: 6px;
+    }
     
     .graphic-style-btn:not(.active):hover {
       background: #eef4ff;
@@ -3643,29 +3648,31 @@
 
       ads.forEach((ad, index) => {
         const row = document.createElement('div');
-        row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #e5edff; font-size:13px;';
+        row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid #e5edff; font-size:13px;';
+        row.dataset.index = String(index);
+        row.setAttribute('data-drop-target', 'ads-row');
 
         const left = document.createElement('div');
-        left.style.cssText = 'display:flex; align-items:center; gap:8px; flex:1; min-width:0;';
-        const orderBtns = document.createElement('div');
-        orderBtns.style.cssText = 'display:flex; flex-direction:column; gap:0; flex-shrink:0;';
-        const upBtn = document.createElement('button');
-        upBtn.type = 'button';
-        upBtn.title = 'Выше';
-        upBtn.style.cssText = 'padding:0 6px; font-size:12px; line-height:1.1; border:1px solid #c5d9ff; border-radius:4px; background:#fff; color:#163d74; cursor:pointer;';
-        upBtn.textContent = '↑';
-        upBtn.disabled = index === 0;
-        upBtn.onclick = (e) => { e.preventDefault(); moveAdOrder(index, -1); };
-        const downBtn = document.createElement('button');
-        downBtn.type = 'button';
-        downBtn.title = 'Ниже';
-        downBtn.style.cssText = 'padding:0 6px; font-size:12px; line-height:1.1; border:1px solid #c5d9ff; border-radius:4px; background:#fff; color:#163d74; cursor:pointer;';
-        downBtn.textContent = '↓';
-        downBtn.disabled = index === ads.length - 1;
-        downBtn.onclick = (e) => { e.preventDefault(); moveAdOrder(index, 1); };
-        orderBtns.appendChild(upBtn);
-        orderBtns.appendChild(downBtn);
-        left.appendChild(orderBtns);
+        left.style.cssText = 'display:flex; align-items:center; gap:10px; flex:1; min-width:0;';
+        const dragHandle = document.createElement('div');
+        dragHandle.setAttribute('draggable', 'true');
+        dragHandle.setAttribute('aria-label', 'Изменить порядок');
+        dragHandle.title = 'Перетащите для изменения порядка';
+        dragHandle.style.cssText = 'display:flex; flex-direction:column; justify-content:center; gap:2px; width:24px; height:24px; padding:4px; cursor:grab; color:#64748b; flex-shrink:0; touch-action:none;';
+        dragHandle.innerHTML = '<span style="display:block; width:100%; height:2px; border-radius:1px; background:currentColor;"></span><span style="display:block; width:100%; height:2px; border-radius:1px; background:currentColor;"></span><span style="display:block; width:100%; height:2px; border-radius:1px; background:currentColor;"></span>';
+        dragHandle.ondragstart = (e) => { e.dataTransfer.setData('text/plain', String(index)); e.dataTransfer.effectAllowed = 'move'; dragHandle.style.cursor = 'grabbing'; };
+        dragHandle.ondragend = () => { dragHandle.style.cursor = 'grab'; document.querySelectorAll(\'[data-drop-target="ads-row"]\').forEach(r => r.classList.remove(\'ads-row-drag-over\')); };
+        row.ondragover = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (e.currentTarget.dataset.index !== e.dataTransfer.getData('text/plain')) e.currentTarget.classList.add('ads-row-drag-over'); };
+        row.ondragleave = (e) => { e.currentTarget.classList.remove('ads-row-drag-over'); };
+        row.ondrop = (e) => {
+          e.preventDefault();
+          e.currentTarget.classList.remove('ads-row-drag-over');
+          const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+          const toIdx = parseInt(e.currentTarget.dataset.index, 10);
+          if (fromIdx === toIdx || isNaN(fromIdx) || isNaN(toIdx)) return;
+          applyAdOrderByDrag(fromIdx, toIdx);
+        };
+        left.appendChild(dragHandle);
         const info = document.createElement('div');
         info.style.cssText = 'display:flex; flex-direction:column; min-width:0;';
         const title = document.createElement('div');
@@ -3704,12 +3711,9 @@
       });
     }
 
-    async function moveAdOrder(fromIndex, delta) {
-      const toIndex = fromIndex + delta;
-      if (toIndex < 0 || toIndex >= ads.length) return;
-      const b = ads[toIndex];
-      ads[toIndex] = ads[fromIndex];
-      ads[fromIndex] = b;
+    async function applyAdOrderByDrag(fromIndex, toIndex) {
+      const item = ads.splice(fromIndex, 1)[0];
+      ads.splice(toIndex, 0, item);
       const order = ads.map(a => a.id);
       try {
         const response = await fetch(`/api/ads/order?token=${getToken()}`, {
