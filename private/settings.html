@@ -3636,10 +3636,11 @@
         const right = document.createElement('div');
         right.style.cssText = 'display:flex; gap:8px; align-items:center;';
         const playBtn = document.createElement('button');
+        playBtn.type = 'button';
         playBtn.className = 'btn btn-primary';
         playBtn.style.cssText = 'padding:2px 10px; font-size:11px;';
         playBtn.textContent = 'Play';
-        playBtn.onclick = () => playAdPreview(ad);
+        playBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); playAdPreview(ad); return false; };
         right.appendChild(playBtn);
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn btn-secondary';
@@ -3663,9 +3664,9 @@
           body: JSON.stringify({ filename: ad.filename })
         });
         if (response.ok) {
-          showNotification('Ролик запущен на стадионе', 'success');
+          showNotification('Ролик запущен на табло стадиона (страница настроек не меняется)', 'success');
         } else {
-          showNotification('Включите режим «Реклама» на стадионе или обновите страницу', 'error');
+          showNotification('Включите режим «Реклама» на табло стадиона или обновите страницу табло', 'error');
         }
       } catch (e) {
         console.error('Ошибка запроса воспроизведения на стадионе', e);
