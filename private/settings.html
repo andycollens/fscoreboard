@@ -4283,19 +4283,14 @@
         backupLink.addEventListener('click', function(e) {
           e.preventDefault();
           var url = '/api/backup?token=' + encodeURIComponent(typeof getToken === 'function' ? getToken() : '');
-          fetch(url).then(function(r) {
-            if (!r.ok) throw new Error('Ошибка ' + r.status);
-            return r.blob();
-          }).then(function(blob) {
-            var a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'fscore-backup-' + new Date().toISOString().slice(0, 10) + '.zip';
-            a.click();
-            URL.revokeObjectURL(a.href);
-            if (typeof showNotification === 'function') showNotification('Бэкап сохранён', 'success');
-          }).catch(function(err) {
-            if (typeof showNotification === 'function') showNotification('Ошибка бэкапа: ' + (err.message || err), 'error');
-          });
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'fscore-backup-' + new Date().toISOString().slice(0, 10) + '.zip';
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          if (typeof showNotification === 'function') showNotification('Скачивание бэкапа...', 'success');
         });
       }
       if (restoreLink && restoreInput) {
