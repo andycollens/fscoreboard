@@ -1662,6 +1662,9 @@ app.put('/api/config', (req, res) => {
     // Важно: отправляем полный state с обновленным tournamentTitle, чтобы не потерять остальные данные
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
   }
+  if (req.body.adsMuted !== undefined) {
+    currentConfig.adsMuted = !!req.body.adsMuted;
+  }
   if (req.body.graphicStyle !== undefined) {
     // Сохраняем стиль графического оформления
     currentConfig.graphicStyle = req.body.graphicStyle;
@@ -1995,7 +1998,7 @@ function fixAdsOriginalName(name) {
 }
 
 // ====== Ads API (Реклама) ======
-// GET /api/ads - list ads (management or stadium token)
+// GET /api/ads - list ads (management or stadium token); adsMuted из config (по умолчанию true = без звука)
 app.get('/api/ads', (req, res) => {
   const token = req.query.token;
   const actualToken = getActualToken();
@@ -2003,11 +2006,18 @@ app.get('/api/ads', (req, res) => {
   if (token !== actualToken && token !== actualStadiumToken) {
     return res.status(403).send('Forbidden');
   }
+  let configForAds = { adsMuted: true };
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const c = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      configForAds.adsMuted = c.adsMuted !== false;
+    } catch (e) { /* keep default */ }
+  }
   const list = loadAdsMeta().map(ad => ({
     ...ad,
     originalName: fixAdsOriginalName(ad.originalName) || ad.filename
   }));
-  res.json(list);
+  res.json({ list, adsMuted: configForAds.adsMuted });
 });
 
 // POST /api/ads - upload new ad (management token only)

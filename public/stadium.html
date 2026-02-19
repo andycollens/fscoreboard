@@ -2852,8 +2852,10 @@ body.penalty-mode .penalty-score {
                 console.warn('Не удалось загрузить список рекламных роликов');
                 return;
             }
-            const list = await resp.json();
-            if (!Array.isArray(list) || list.length === 0) {
+            const data = await resp.json();
+            const list = Array.isArray(data) ? data : (data.list || []);
+            const adsMuted = data.adsMuted !== false;
+            if (list.length === 0) {
                 console.warn('Список рекламных роликов пуст');
                 return;
             }
@@ -2864,6 +2866,7 @@ body.penalty-mode .penalty-score {
             adVideoElement = document.createElement('video');
             adVideoElement.id = 'stadiumAdVideo';
             adVideoElement.src = `/ads/${ad.filename}`;
+            adVideoElement.muted = adsMuted;
             adVideoElement.style.position = 'absolute';
             adVideoElement.style.top = '0';
             adVideoElement.style.left = '0';
@@ -2901,14 +2904,19 @@ body.penalty-mode .penalty-score {
             }, { once: true });
 
             adVideoElement.addEventListener('ended', () => {
-                stopAdVideo();
-                // После ролика вернёмся в режим Лого через сервер, чтобы всё было синхронно
-                try {
-                    socket.emit('stadiumModeChange', { mode: 'logo' });
-                } catch (e) {
-                    console.error('Не удалось отправить stadiumModeChange на logo:', e);
-                    switchMode('logo');
-                }
+                // Финальный фэйд через чёрный: сначала гасим видео, потом переключаем на лого
+                adVideoElement.style.transition = 'opacity 0.5s ease';
+                adVideoElement.style.opacity = '0';
+                adVideoElement.ontransitionend = () => {
+                    adVideoElement.ontransitionend = null;
+                    stopAdVideo();
+                    try {
+                        socket.emit('stadiumModeChange', { mode: 'logo' });
+                    } catch (e) {
+                        console.error('Не удалось отправить stadiumModeChange на logo:', e);
+                        switchMode('logo');
+                    }
+                };
             }, { once: true });
 
             tryStart();

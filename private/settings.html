@@ -1413,8 +1413,12 @@
 
   <!-- Секция Реклама (ролики спонсоров для режима Реклама на табло стадиона) -->
   <div class="section">
-    <div class="section-header">
+    <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
       <h2>Реклама</h2>
+      <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #163d74; cursor: pointer;">
+        <input type="checkbox" id="adsSoundToggle" onchange="saveAdsMuted()">
+        <span>Со звуком</span>
+      </label>
     </div>
 
     <div style="margin-bottom: 16px;">
@@ -3569,14 +3573,34 @@
     }
 
     // ====== Реклама (ролики спонсоров) ======
+    let adsMuted = true;
     async function loadAds() {
       try {
         const response = await fetch(`/api/ads?token=${getToken()}`);
         if (!response.ok) return;
-        ads = await response.json();
+        const data = await response.json();
+        ads = Array.isArray(data) ? data : (data.list || []);
+        adsMuted = data.adsMuted !== false;
+        const toggle = document.getElementById('adsSoundToggle');
+        if (toggle) toggle.checked = !adsMuted;
         renderAdsList();
       } catch (error) {
         console.error('Ошибка загрузки роликов рекламы:', error);
+      }
+    }
+    async function saveAdsMuted() {
+      const toggle = document.getElementById('adsSoundToggle');
+      if (!toggle) return;
+      const muted = !toggle.checked;
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adsMuted: muted })
+        });
+        if (response.ok) adsMuted = muted;
+      } catch (e) {
+        console.error('Ошибка сохранения настройки звука рекламы', e);
       }
     }
 
@@ -3610,7 +3634,13 @@
         left.appendChild(meta);
 
         const right = document.createElement('div');
-        right.style.cssText = 'display:flex; gap:8px;';
+        right.style.cssText = 'display:flex; gap:8px; align-items:center;';
+        const playBtn = document.createElement('button');
+        playBtn.className = 'btn btn-primary';
+        playBtn.style.cssText = 'padding:2px 10px; font-size:11px;';
+        playBtn.textContent = 'Play';
+        playBtn.onclick = () => playAdPreview(ad);
+        right.appendChild(playBtn);
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn btn-secondary';
         deleteBtn.style.cssText = 'padding:2px 8px; font-size:11px;';
@@ -3622,6 +3652,53 @@
         row.appendChild(right);
         container.appendChild(row);
       });
+    }
+
+    let adsPreviewVideo = null;
+    let adsPreviewOverlay = null;
+    function playAdPreview(ad) {
+      if (!ad || !ad.filename) return;
+      if (!adsPreviewOverlay) {
+        adsPreviewOverlay = document.createElement('div');
+        adsPreviewOverlay.id = 'adsPreviewOverlay';
+        adsPreviewOverlay.style.cssText = 'position:fixed; inset:0; background:#000; z-index:99999; display:flex; align-items:center; justify-content:center;';
+        adsPreviewOverlay.onclick = () => closeAdsPreview();
+        document.body.appendChild(adsPreviewOverlay);
+      }
+      if (adsPreviewVideo) {
+        adsPreviewVideo.remove();
+        adsPreviewVideo = null;
+      }
+      adsPreviewVideo = document.createElement('video');
+      adsPreviewVideo.style.cssText = 'max-width:100%; max-height:100%; object-fit:contain; opacity:0; transition: opacity 0.8s ease;';
+      adsPreviewVideo.muted = adsMuted;
+      adsPreviewVideo.playsInline = true;
+      adsPreviewVideo.src = '/ads/' + ad.filename;
+      adsPreviewVideo.onclick = (e) => e.stopPropagation();
+      adsPreviewOverlay.appendChild(adsPreviewVideo);
+      adsPreviewOverlay.style.display = 'flex';
+      adsPreviewVideo.oncanplaythrough = () => {
+        adsPreviewVideo.style.opacity = '1';
+        adsPreviewVideo.play().catch(() => {});
+      };
+      adsPreviewVideo.onended = () => {
+        adsPreviewVideo.style.transition = 'opacity 0.5s ease';
+        adsPreviewVideo.style.opacity = '0';
+        adsPreviewVideo.ontransitionend = () => closeAdsPreview();
+      };
+      adsPreviewVideo.load();
+    }
+    function closeAdsPreview() {
+      if (adsPreviewVideo) {
+        adsPreviewVideo.pause();
+        adsPreviewVideo.removeAttribute('src');
+        adsPreviewVideo.load();
+        adsPreviewVideo.remove();
+        adsPreviewVideo = null;
+      }
+      if (adsPreviewOverlay) {
+        adsPreviewOverlay.style.display = 'none';
+      }
     }
 
     async function uploadAd() {
