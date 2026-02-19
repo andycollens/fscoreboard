@@ -1258,6 +1258,7 @@
           <button type="button" class="stadium-mode-btn" data-mode="scoreboard" id="modeScoreboardBtn">Табло</button>
             <button type="button" class="stadium-mode-btn" data-mode="rosters" id="modeRostersBtn">Составы</button>
             <button type="button" class="stadium-mode-btn" data-mode="logo" id="modeLogoBtn">Лого</button>
+            <button type="button" class="stadium-mode-btn" data-mode="ad" id="modeAdBtn">Реклама</button>
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; margin-left: 0;">
@@ -1410,9 +1411,38 @@
     </div>
   </div>
 
+  <!-- Секция Реклама (ролики спонсоров для режима Реклама на табло стадиона) -->
+  <div class="section">
+    <div class="section-header">
+      <h2>Реклама</h2>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #163d74; font-size: 13px;">
+        Загрузить ролик спонсора (video/*):
+      </label>
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <input type="file" id="adFileInput" accept="video/*"
+               style="flex: 1; min-width: 220px; padding: 6px 10px; border: 1px solid #c5d9ff; border-radius: 8px; font-size: 13px; background: #fff;">
+        <button class="btn btn-primary" onclick="uploadAd()" style="white-space: nowrap;">Загрузить ролик</button>
+      </div>
+      <div style="font-size: 11px; color: #61708a; margin-top: 4px;">
+        Ролики будут использоваться в режиме <strong>«Реклама»</strong> на табло стадиона.
+      </div>
+    </div>
+
+    <div>
+      <div style="margin-bottom: 6px; font-weight: 500; color: #163d74; font-size: 13px;">Загруженные ролики:</div>
+      <div id="adsList" style="border: 1px solid #e1e7f5; border-radius: 8px; padding: 10px; background: #f8fbff; font-size: 13px;">
+        <div style="color: #94a3b8;">Ролики ещё не загружены.</div>
+      </div>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+    let ads = [];
     
     // Слушаем обновления useAltNumbers с других устройств
     socket.on('teamUseAltNumbersUpdated', (data) => {
@@ -3537,6 +3567,107 @@
         showNotification('Ошибка сохранения стиля', 'error');
       }
     }
+
+    // ====== Реклама (ролики спонсоров) ======
+    async function loadAds() {
+      try {
+        const response = await fetch(`/api/ads?token=${getToken()}`);
+        if (!response.ok) return;
+        ads = await response.json();
+        renderAdsList();
+      } catch (error) {
+        console.error('Ошибка загрузки роликов рекламы:', error);
+      }
+    }
+
+    function renderAdsList() {
+      const container = document.getElementById('adsList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!ads || ads.length === 0) {
+        container.innerHTML = '<div style="color: #94a3b8;">Ролики ещё не загружены.</div>';
+        return;
+      }
+
+      ads.forEach(ad => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #e5edff; font-size:13px;';
+
+        const left = document.createElement('div');
+        left.style.cssText = 'display:flex; flex-direction:column;';
+        const title = document.createElement('div');
+        title.style.cssText = 'font-weight:500; color:#163d74;';
+        title.textContent = ad.originalName || ad.filename;
+        const meta = document.createElement('div');
+        meta.style.cssText = 'font-size:11px; color:#64748b;';
+        const sizeKb = ad.size ? Math.round(ad.size / 1024) : null;
+        meta.textContent = [
+          ad.mimeType || '',
+          sizeKb ? `${sizeKb} КБ` : ''
+        ].filter(Boolean).join(' • ');
+        left.appendChild(title);
+        left.appendChild(meta);
+
+        const right = document.createElement('div');
+        right.style.cssText = 'display:flex; gap:8px;';
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-secondary';
+        deleteBtn.style.cssText = 'padding:2px 8px; font-size:11px;';
+        deleteBtn.textContent = 'Удалить';
+        deleteBtn.onclick = () => deleteAd(ad.id);
+        right.appendChild(deleteBtn);
+
+        row.appendChild(left);
+        row.appendChild(right);
+        container.appendChild(row);
+      });
+    }
+
+    async function uploadAd() {
+      const input = document.getElementById('adFileInput');
+      if (!input || !input.files || input.files.length === 0) {
+        showNotification('Выберите видеофайл для загрузки', 'error');
+        return;
+      }
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const response = await fetch(`/api/ads?token=${getToken()}`, {
+          method: 'POST',
+          body: formData
+        });
+        if (response.ok) {
+          showNotification('Ролик загружен', 'success');
+          input.value = '';
+          await loadAds();
+        } else {
+          showNotification('Ошибка загрузки ролика', 'error');
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки ролика:', error);
+        showNotification('Ошибка загрузки ролика', 'error');
+      }
+    }
+
+    async function deleteAd(id) {
+      if (!confirm('Удалить этот ролик?')) return;
+      try {
+        const response = await fetch(`/api/ads/${encodeURIComponent(id)}?token=${getToken()}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          showNotification('Ролик удалён', 'success');
+          await loadAds();
+        } else {
+          showNotification('Ошибка удаления ролика', 'error');
+        }
+      } catch (error) {
+        console.error('Ошибка удаления ролика:', error);
+        showNotification('Ошибка удаления ролика', 'error');
+      }
+    }
     
     // Update loadConfig to handle custom styles
     // This is already done in loadConfig function above
@@ -3966,11 +4097,13 @@
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', function() {
         loadConfig();
+        loadAds();
         initGraphicStyleButtons();
         initModeRadios();
       });
     } else {
       loadConfig();
+      loadAds();
       initGraphicStyleButtons();
       initModeRadios();
     }

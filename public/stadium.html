@@ -2760,7 +2760,7 @@ body.penalty-mode .penalty-score {
             flagMode.classList.add('active');
         } else if (mode === 'winners') {
             winnersMode.classList.add('active');
-        } else if (mode === 'logo') {
+        } else if (mode === 'logo' || mode === 'ad') {
             logoMode.classList.add('active');
         }
 
@@ -2800,6 +2800,8 @@ body.penalty-mode .penalty-score {
             }
         } else if (mode === 'logo') {
             applyLogoMode();
+        } else if (mode === 'ad') {
+            applyAdMode();
         }
     }
 
@@ -2817,6 +2819,101 @@ body.penalty-mode .penalty-score {
             logoMode.classList.remove('logo-winterleague');
             initLogoAnimation();
             if (snowflakesEl) snowflakesEl.style.display = 'none';
+        }
+    }
+
+    // Режим Реклама: сначала Лого, затем ролик спонсора и возврат к Лого
+    let adVideoElement = null;
+    let adTimeoutId = null;
+    function stopAdVideo() {
+        if (adTimeoutId) {
+            clearTimeout(adTimeoutId);
+            adTimeoutId = null;
+        }
+        if (adVideoElement) {
+            adVideoElement.pause();
+            adVideoElement.removeAttribute('src');
+            adVideoElement.load();
+            adVideoElement.remove();
+            adVideoElement = null;
+        }
+    }
+
+    async function applyAdMode() {
+        // Показываем тот же фон/логотип, что и в режиме Лого
+        applyLogoMode();
+
+        stopAdVideo();
+
+        const token = getAccessToken();
+        try {
+            const resp = await fetch('/api/ads?token=' + encodeURIComponent(token || ''));
+            if (!resp.ok) {
+                console.warn('Не удалось загрузить список рекламных роликов');
+                return;
+            }
+            const list = await resp.json();
+            if (!Array.isArray(list) || list.length === 0) {
+                console.warn('Список рекламных роликов пуст');
+                return;
+            }
+            const ad = list[0]; // пока берём первый ролик
+            const logoMode = document.getElementById('logoMode');
+            if (!logoMode) return;
+
+            adVideoElement = document.createElement('video');
+            adVideoElement.id = 'stadiumAdVideo';
+            adVideoElement.src = `/ads/${ad.filename}`;
+            adVideoElement.style.position = 'absolute';
+            adVideoElement.style.top = '0';
+            adVideoElement.style.left = '0';
+            adVideoElement.style.width = '100%';
+            adVideoElement.style.height = '100%';
+            adVideoElement.style.objectFit = 'cover';
+            adVideoElement.style.opacity = '0';
+            adVideoElement.style.transition = 'opacity 0.8s ease';
+            adVideoElement.playsInline = true;
+            adVideoElement.setAttribute('webkit-playsinline', 'true');
+            adVideoElement.preload = 'auto';
+
+            logoMode.appendChild(adVideoElement);
+
+            const startTime = Date.now();
+            let canPlay = false;
+
+            const tryStart = () => {
+                const elapsed = Date.now() - startTime;
+                if (elapsed < 3000 || !canPlay) {
+                    adTimeoutId = setTimeout(tryStart, 150);
+                    return;
+                }
+                adVideoElement.style.opacity = '1';
+                const playPromise = adVideoElement.play();
+                if (playPromise && typeof playPromise.then === 'function') {
+                    playPromise.catch(err => {
+                        console.error('Ошибка запуска ролика рекламы:', err);
+                    });
+                }
+            };
+
+            adVideoElement.addEventListener('canplaythrough', () => {
+                canPlay = true;
+            }, { once: true });
+
+            adVideoElement.addEventListener('ended', () => {
+                stopAdVideo();
+                // После ролика вернёмся в режим Лого через сервер, чтобы всё было синхронно
+                try {
+                    socket.emit('stadiumModeChange', { mode: 'logo' });
+                } catch (e) {
+                    console.error('Не удалось отправить stadiumModeChange на logo:', e);
+                    switchMode('logo');
+                }
+            }, { once: true });
+
+            tryStart();
+        } catch (e) {
+            console.error('Ошибка применения режима Реклама:', e);
         }
     }
 

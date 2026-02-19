@@ -3114,6 +3114,7 @@
       <button type="button" class="main-mode-btn" data-mode="scoreboard" id="mainModeScoreboardBtn">Табло</button>
       <button type="button" class="main-mode-btn" data-mode="rosters" id="mainModeRostersBtn">Составы</button>
       <button type="button" class="main-mode-btn" data-mode="logo" id="mainModeLogoBtn">Лого</button>
+      <button type="button" class="main-mode-btn" data-mode="ad" id="mainModeAdBtn">Реклама</button>
     </div>
   </div>
 
@@ -3405,7 +3406,8 @@
       const modeNames = {
         'scoreboard': 'Табло',
         'rosters': 'Составы',
-        'logo': 'Лого'
+        'logo': 'Лого',
+        'ad': 'Реклама'
       };
       const modeName = modeNames[mode] || 'Табло';
       
@@ -3454,11 +3456,13 @@
           const scoreboardBtn = document.getElementById('mainModeScoreboardBtn');
           const rostersBtn = document.getElementById('mainModeRostersBtn');
           const logoBtn = document.getElementById('mainModeLogoBtn');
+          const adBtn = document.getElementById('mainModeAdBtn');
           
-          if (scoreboardBtn && rostersBtn && logoBtn) {
+          if (scoreboardBtn && rostersBtn && logoBtn && adBtn) {
             scoreboardBtn.classList.remove('active');
             rostersBtn.classList.remove('active');
             logoBtn.classList.remove('active');
+            adBtn.classList.remove('active');
             
             if (currentMode === 'scoreboard') {
               scoreboardBtn.classList.add('active');
@@ -3466,6 +3470,8 @@
               rostersBtn.classList.add('active');
             } else if (currentMode === 'logo') {
               logoBtn.classList.add('active');
+            } else if (currentMode === 'ad') {
+              adBtn.classList.add('active');
             }
           }
         })
@@ -4493,6 +4499,7 @@
       const scoreboardBtn = document.getElementById('mainModeScoreboardBtn');
       const rostersBtn = document.getElementById('mainModeRostersBtn');
       const logoBtn = document.getElementById('mainModeLogoBtn');
+      const adBtn = document.getElementById('mainModeAdBtn');
       
       if (scoreboardBtn) {
         scoreboardBtn.addEventListener('click', () => {
@@ -4514,6 +4521,14 @@
         logoBtn.addEventListener('click', () => {
           if (!logoBtn.classList.contains('active')) {
             switchMainStadiumMode('logo');
+          }
+        });
+      }
+      
+      if (adBtn) {
+        adBtn.addEventListener('click', () => {
+          if (!adBtn.classList.contains('active')) {
+            switchMainStadiumMode('ad');
           }
         });
       }

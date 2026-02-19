@@ -21,10 +21,15 @@ const CONFIG_PATH = path.join(__dirname, 'config.json');
 const LOGOS_PATH = path.join(__dirname, '..', 'public', 'logos');
 const CUSTOM_STYLES_PATH = path.join(__dirname, 'custom-styles.json');
 const CUSTOM_STYLES_DIR = path.join(__dirname, '..', 'public', 'img', 'custom-styles');
+const ADS_DIR = path.join(__dirname, '..', 'public', 'ads');
+const ADS_META_PATH = path.join(__dirname, 'ads.json');
 
-// Ensure custom styles directory exists
+// Ensure custom styles and ads directories exist
 if (!fs.existsSync(CUSTOM_STYLES_DIR)) {
   fs.mkdirSync(CUSTOM_STYLES_DIR, { recursive: true });
+}
+if (!fs.existsSync(ADS_DIR)) {
+  fs.mkdirSync(ADS_DIR, { recursive: true });
 }
 
 // Загрузка конфигурации (токены)
@@ -1531,6 +1536,23 @@ function saveCustomStyles(styles) {
   fs.writeFileSync(CUSTOM_STYLES_PATH, JSON.stringify(styles, null, 2));
 }
 
+// ====== Ads helpers ======
+function loadAdsMeta() {
+  if (fs.existsSync(ADS_META_PATH)) {
+    try {
+      return JSON.parse(fs.readFileSync(ADS_META_PATH, 'utf8'));
+    } catch (e) {
+      console.error('Ошибка чтения ads.json', e);
+      return [];
+    }
+  }
+  return [];
+}
+
+function saveAdsMeta(list) {
+  fs.writeFileSync(ADS_META_PATH, JSON.stringify(list, null, 2));
+}
+
 // ====== API для конфигурации (токены) ======
 app.get('/api/config', (req, res) => {
   // Разрешаем доступ с токеном управления ИЛИ токеном стадиона
@@ -1703,6 +1725,33 @@ const customStylesStorage = multer.diskStorage({
 });
 
 const uploadCustomStyle = multer({ storage: customStylesStorage });
+
+// ====== Ads (Реклама) storage and helpers ======
+const adsStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, ADS_DIR);
+  },
+  filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 9);
+    const ext = path.extname(file.originalname).toLowerCase() || '.mp4';
+    cb(null, `ad_${timestamp}_${random}${ext}`);
+  }
+});
+
+const uploadAdMiddleware = multer({
+  storage: adsStorage,
+  limits: {
+    fileSize: 200 * 1024 * 1024 // 200MB
+  },
+  fileFilter: function (req, file, cb) {
+    const allowed = /mp4|webm|ogg|quicktime|x-matroska/;
+    const extname = allowed.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowed.test(file.mimetype);
+    if (extname && mimetype) return cb(null, true);
+    cb(new Error('Разрешены только видеофайлы (mp4, webm, ogg, mov, mkv)'));
+  }
+});
 
 // GET /api/custom-styles - Get all custom styles
 app.get('/api/custom-styles', (req, res) => {
@@ -1922,5 +1971,64 @@ app.delete('/api/custom-styles/:id', (req, res) => {
   delete styles[styleId];
   saveCustomStyles(styles);
   
+  res.json({ success: true });
+});
+
+// ====== Ads API (Реклама) ======
+// GET /api/ads - list ads (management or stadium token)
+app.get('/api/ads', (req, res) => {
+  const token = req.query.token;
+  const actualToken = getActualToken();
+  const actualStadiumToken = getActualStadiumToken();
+  if (token !== actualToken && token !== actualStadiumToken) {
+    return res.status(403).send('Forbidden');
+  }
+  const list = loadAdsMeta();
+  res.json(list);
+});
+
+// POST /api/ads - upload new ad (management token only)
+app.post('/api/ads', uploadAdMiddleware.single('file'), (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  if (!req.file) return res.status(400).json({ error: 'Файл не получен' });
+
+  const ads = loadAdsMeta();
+  const id = Date.now().toString();
+  const filePath = path.join(ADS_DIR, req.file.filename);
+  let size = 0;
+  try {
+    size = fs.statSync(filePath).size;
+  } catch (e) {
+    console.error('Ошибка чтения размера файла рекламы:', e);
+  }
+
+  const ad = {
+    id,
+    filename: req.file.filename,
+    originalName: req.file.originalname,
+    size,
+    mimeType: req.file.mimetype,
+    createdAt: new Date().toISOString()
+  };
+  ads.push(ad);
+  saveAdsMeta(ads);
+  res.json({ success: true, ad });
+});
+
+// DELETE /api/ads/:id - delete ad (management token only)
+app.delete('/api/ads/:id', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  const id = req.params.id;
+  const ads = loadAdsMeta();
+  const idx = ads.findIndex(a => String(a.id) === String(id));
+  if (idx === -1) return res.status(404).json({ error: 'Ролик не найден' });
+  const [ad] = ads.splice(idx, 1);
+  saveAdsMeta(ads);
+  if (ad && ad.filename) {
+    const filePath = path.join(ADS_DIR, ad.filename);
+    fs.unlink(filePath, (err) => {
+      if (err) console.error('Ошибка удаления файла рекламы:', err);
+    });
+  }
   res.json({ success: true });
 });
