@@ -1727,6 +1727,15 @@ const customStylesStorage = multer.diskStorage({
 const uploadCustomStyle = multer({ storage: customStylesStorage });
 
 // ====== Ads (Реклама) storage and helpers ======
+// Расширение только из mimetype, чтобы русские/любые имена не попадали в имя файла на диске
+const mimeToExt = {
+  'video/mp4': '.mp4',
+  'video/webm': '.webm',
+  'video/ogg': '.ogg',
+  'video/quicktime': '.mov',
+  'video/x-matroska': '.mkv'
+};
+
 const adsStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, ADS_DIR);
@@ -1734,7 +1743,7 @@ const adsStorage = multer.diskStorage({
   filename: function (req, file, cb) {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 9);
-    const ext = path.extname(file.originalname).toLowerCase() || '.mp4';
+    const ext = mimeToExt[file.mimetype] || '.mp4';
     cb(null, `ad_${timestamp}_${random}${ext}`);
   }
 });
@@ -1746,9 +1755,8 @@ const uploadAdMiddleware = multer({
   },
   fileFilter: function (req, file, cb) {
     const allowed = /mp4|webm|ogg|quicktime|x-matroska/;
-    const extname = allowed.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowed.test(file.mimetype);
-    if (extname && mimetype) return cb(null, true);
+    const mimetypeOk = allowed.test(file.mimetype);
+    if (mimetypeOk) return cb(null, true);
     cb(new Error('Разрешены только видеофайлы (mp4, webm, ogg, mov, mkv)'));
   }
 });
@@ -2002,10 +2010,14 @@ app.post('/api/ads', uploadAdMiddleware.single('file'), (req, res) => {
     console.error('Ошибка чтения размера файла рекламы:', e);
   }
 
+  // originalName только для отображения; убираем символы, небезопасные для JSON/UI
+  let originalName = (req.file.originalname || '').trim();
+  originalName = originalName.replace(/[\x00-\x1f\\/:*?"<>|]/g, '').slice(0, 200) || req.file.filename;
+
   const ad = {
     id,
     filename: req.file.filename,
-    originalName: req.file.originalname,
+    originalName,
     size,
     mimeType: req.file.mimetype,
     createdAt: new Date().toISOString()
