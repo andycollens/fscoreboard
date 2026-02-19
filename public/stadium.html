@@ -2883,6 +2883,8 @@ body.penalty-mode .penalty-score {
             adVideoElement.preload = 'auto';
 
             logoMode.appendChild(adVideoElement);
+            const snowflakesEl = document.getElementById('logo-snowflakes');
+            if (snowflakesEl) snowflakesEl.style.display = 'none';
 
             const startTime = Date.now();
             let canPlay = false;
@@ -2958,6 +2960,8 @@ body.penalty-mode .penalty-score {
         adVideoElement.setAttribute('webkit-playsinline', 'true');
         adVideoElement.preload = 'auto';
         logoMode.appendChild(adVideoElement);
+        const snowflakesElAd = document.getElementById('logo-snowflakes');
+        if (snowflakesElAd) snowflakesElAd.style.display = 'none';
         const startTime = Date.now();
         let canPlay = false;
         const tryStart = () => {
