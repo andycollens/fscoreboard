@@ -480,6 +480,20 @@ server {
         proxy_send_timeout 86400;
     }
 
+    # Загрузка рекламных роликов — лимит 1 ГБ (иначе 413 Request Entity Too Large)
+    location /api/ads {
+        client_max_body_size 1024M;
+        proxy_request_buffering off;
+        proxy_pass http://localhost:$PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 3600;
+        proxy_send_timeout 3600;
+    }
+
     # Все остальные запросы проксируются на Express сервер
     location / {
         proxy_pass http://localhost:$PORT;
