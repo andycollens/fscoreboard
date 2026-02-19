@@ -2052,6 +2052,17 @@ app.post('/api/ads', uploadAdMiddleware.single('file'), (req, res) => {
   res.json({ success: true, ad });
 });
 
+// POST /api/ads/play-now - запрос воспроизвести ролик на стадионе (только при включённом режиме «Реклама»)
+app.post('/api/ads/play-now', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  const filename = req.body && req.body.filename;
+  if (!filename || typeof filename !== 'string') return res.status(400).json({ error: 'filename required' });
+  const list = loadAdsMeta();
+  if (!list.some(ad => ad.filename === filename)) return res.status(404).json({ error: 'Ролик не найден' });
+  io.emit('stadiumAdPlayNow', { filename });
+  res.json({ success: true });
+});
+
 // DELETE /api/ads/:id - delete ad (management token only)
 app.delete('/api/ads/:id', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
