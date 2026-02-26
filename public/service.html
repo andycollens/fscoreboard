@@ -685,6 +685,8 @@
         const socket = io();
         let latestData = null;
         let lastRosterSignature = '';
+        let lastScoreSnapshot = null;
+        let lastScoreChangeAt = 0;
 
         function escapeHtml(str = '') {
             return str
@@ -767,6 +769,28 @@
             }
         }
 
+        function trackScoreChangeFromData(data) {
+            if (!data) return;
+            let s1 = 0;
+            let s2 = 0;
+            if (typeof data.score1 === 'number' || typeof data.score2 === 'number') {
+                s1 = Number(data.score1) || 0;
+                s2 = Number(data.score2) || 0;
+            } else {
+                if (data.team1 && typeof data.team1.score !== 'undefined') s1 = Number(data.team1.score) || 0;
+                if (data.team2 && typeof data.team2.score !== 'undefined') s2 = Number(data.team2.score) || 0;
+            }
+            if (!lastScoreSnapshot) {
+                lastScoreSnapshot = { s1, s2 };
+                lastScoreChangeAt = Date.now();
+                return;
+            }
+            if (s1 !== lastScoreSnapshot.s1 || s2 !== lastScoreSnapshot.s2) {
+                lastScoreSnapshot = { s1, s2 };
+                lastScoreChangeAt = Date.now();
+            }
+        }
+
         function updateStripe(team, color) {
             const stripe = team === 'team1' ? team1Stripe : team2Stripe;
             const direction = team === 'team1' ? 'to right' : 'to left';
@@ -780,6 +804,7 @@
         }
 
         function updateDisplay(data) {
+            trackScoreChangeFromData(data);
             // Команда 1
             if (data.team1Logo && data.team1Logo !== '') {
                 team1Logo.src = data.team1Logo;
@@ -990,6 +1015,33 @@
             if (footballAnthemAudio) footballAnthemAudio.volume = jingleVolume;
             try { localStorage.setItem(JINGLE_STORAGE_VOLUME, String(jingleVolumeEl ? jingleVolumeEl.value : jingleVolume)); } catch (e) {}
         }
+        function shouldWarnGoalWithoutRecentScoreChange() {
+            if (!latestData || !lastScoreSnapshot || !lastScoreChangeAt) return false;
+            const diffMs = Date.now() - lastScoreChangeAt;
+            return diffMs > 60000;
+        }
+
+        function hasActiveScoreOrTime() {
+            if (!latestData) return false;
+            let s1 = 0;
+            let s2 = 0;
+            if (typeof latestData.score1 === 'number' || typeof latestData.score2 === 'number') {
+                s1 = Number(latestData.score1) || 0;
+                s2 = Number(latestData.score2) || 0;
+            } else {
+                if (latestData.team1 && typeof latestData.team1.score !== 'undefined') s1 = Number(latestData.team1.score) || 0;
+                if (latestData.team2 && typeof latestData.team2.score !== 'undefined') s2 = Number(latestData.team2.score) || 0;
+            }
+            const nonZeroScore = (s1 !== 0) || (s2 !== 0);
+            let nonZeroTime = false;
+            if (typeof latestData.timerSeconds === 'number') {
+                nonZeroTime = latestData.timerSeconds > 0;
+            } else if (typeof latestData.time === 'string') {
+                nonZeroTime = latestData.time !== '' && latestData.time !== '00:00';
+            }
+            return nonZeroScore || nonZeroTime;
+        }
+
         function playJingle(teamNum) {
             const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
             const btn = teamNum === 1 ? jinglePlay1 : jinglePlay2;
@@ -1004,6 +1056,11 @@
             }
             const filename = select && select.value ? select.value : '';
             if (!filename) return;
+            if (shouldWarnGoalWithoutRecentScoreChange()) {
+                if (!confirm('На табло давно не менялся счёт. Убедитесь, что счёт обновлён перед запуском голевого джингла. Продолжить воспроизведение?')) {
+                    return;
+                }
+            }
             const a = getOrCreateAudio(filename);
             a.volume = jingleVolume;
             if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } currentTeam1Audio = null; setProgressFill(1, 0); }
@@ -1036,6 +1093,11 @@
             }
             footballAnthemAudio.volume = jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7;
             if (footballAnthemAudio.paused) {
+                if (hasActiveScoreOrTime()) {
+                    if (!confirm('На табло уже выставлены счёт или время. Убедитесь, что гимн запускается в нужный момент. Продолжить воспроизведение гимна?')) {
+                        return;
+                    }
+                }
                 footballAnthemAudio.currentTime = 0;
                 footballAnthemAudio.play();
                 if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); }
