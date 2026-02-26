@@ -3497,11 +3497,30 @@ body.penalty-mode .penalty-score {
         }
     });
 
+    function clearCountdownOverlay() {
+        const overlay = document.getElementById('countdownOverlay');
+        const textEl = document.getElementById('countdownOverlayText');
+        if (!overlay || !textEl) return;
+        if (overlay._countdownTimeouts) {
+            overlay._countdownTimeouts.forEach(t => clearTimeout(t));
+            overlay._countdownTimeouts = null;
+        }
+        overlay.style.display = 'none';
+        textEl.style.fontSize = '';
+        textEl.textContent = '5';
+        textEl.innerHTML = '5';
+        textEl.classList.remove('countdown-pop', 'countdown-match-started');
+    }
+
     socket.on('startCountdown', () => {
         if (currentMode !== 'scoreboard') return;
         const overlay = document.getElementById('countdownOverlay');
         const textEl = document.getElementById('countdownOverlayText');
         if (!overlay || !textEl) return;
+        if (overlay._countdownTimeouts) {
+            overlay._countdownTimeouts.forEach(t => clearTimeout(t));
+            overlay._countdownTimeouts = null;
+        }
         overlay.style.display = 'flex';
         textEl.classList.remove('countdown-match-started');
         const triggerPop = () => {
@@ -3514,11 +3533,7 @@ body.penalty-mode .penalty-score {
             if (usePop) triggerPop();
         };
         const hideOverlayAndFinish = () => {
-            overlay.style.display = 'none';
-            textEl.style.fontSize = '';
-            textEl.textContent = '5';
-            textEl.innerHTML = '5';
-            textEl.classList.remove('countdown-pop', 'countdown-match-started');
+            clearCountdownOverlay();
             socket.emit('countdownFinished');
         };
         show('5');
@@ -3535,6 +3550,10 @@ body.penalty-mode .penalty-score {
         }, 5000);
         const t6 = setTimeout(hideOverlayAndFinish, 6500);
         overlay._countdownTimeouts = [t1, t2, t3, t4, t5, t6];
+    });
+
+    socket.on('cancelCountdown', () => {
+        clearCountdownOverlay();
     });
     
     socket.on('configUpdate', (data) => {

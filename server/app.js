@@ -419,7 +419,8 @@ function resolveWinnerTeamById(compositeId) {
 
 // ====== Таймер — тикает каждую секунду ======
 setInterval(() => {
-  if (state.timerRunning) {
+  // Во время обратного отсчёта 5→0 таймер не тикает
+  if (state.timerRunning && !countdownInProgress) {
     const now = Date.now();
     state.timerSeconds = state.timerStartTS
       ? Math.floor((now - state.timerStartTS) / 1000)
@@ -1494,16 +1495,35 @@ io.on('connection', (socket) => {
     // Управление таймером
     if ('timerRunning' in newState) {
       if (newState.timerRunning && !state.timerRunning) {
-        // Старт: при включённом обратном отсчёте и времени 0:00 — показываем 5→0 на табло, таймер стартует после countdownFinished
+        // Старт: при включённом обратном отсчёте и времени 0:00 — показываем 5→0 на табло; панель сразу в режиме «таймер идёт»
         if (getCountdownEnabled() && state.timerSeconds === 0) {
           countdownInProgress = true;
+          state.timerRunning = true;
+          state.timerStartTS = null; // тикать начнём после countdownFinished
           io.emit('startCountdown');
+          io.emit('scoreboardUpdate', enrichStateWithConfig(state));
+          fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
           return;
         }
         state.timerStartTS = Date.now() - (state.timerSeconds * 1000);
         state.timerRunning = true;
       } else if (!newState.timerRunning && state.timerRunning) {
-        state.timerSeconds = Math.floor((Date.now() - state.timerStartTS) / 1000);
+        // Стоп: если шёл обратный отсчёт — отменяем его и сразу возвращаем табло к счётчику
+        if (countdownInProgress) {
+          countdownInProgress = false;
+          state.timerRunning = false;
+          state.timerStartTS = null;
+          io.emit('cancelCountdown');
+          const mm = Math.floor(state.timerSeconds / 60).toString().padStart(2, '0');
+          const ss = (state.timerSeconds % 60).toString().padStart(2, '0');
+          state.time = `${mm}:${ss}`;
+          io.emit('scoreboardUpdate', enrichStateWithConfig(state));
+          fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+          return;
+        }
+        state.timerSeconds = state.timerStartTS
+          ? Math.floor((Date.now() - state.timerStartTS) / 1000)
+          : state.timerSeconds;
         state.timerRunning = false;
         state.timerStartTS = null;
       }
