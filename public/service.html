@@ -171,22 +171,20 @@
             box-sizing: border-box;
         }
 
-        .team1-logo,
-        .team1-no-logo {
-            order: 2;
-        }
+        .team1-meta { order: 1; }
+        .team1-logo-wrap { order: 2; }
+        .team1-jingle-play-wrap { order: 3; }
+        .team2-jingle-play-wrap { order: 1; }
+        .team2-logo-wrap { order: 2; }
+        .team2-meta { order: 3; }
 
-        .team1-meta {
-            order: 1;
-        }
-
-        .team2-logo,
-        .team2-no-logo {
-            order: 1;
-        }
-
-        .team2-meta {
-            order: 2;
+        .team1-logo-wrap,
+        .team2-logo-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         .team1-logo,
@@ -455,48 +453,19 @@
             display: none !important;
         }
 
-        /* Плеер джинглов — без подложки, плоский стиль как на превью, поля одинаковой длины */
+        /* Jingle: dropdown above logo (200px), play symmetric to center, progress in dropdown bg */
         .jingle-player-block {
             display: flex;
             flex-direction: column;
-            align-items: stretch;
+            align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 0;
             padding: 0 12px;
-            min-width: 200px;
-        }
-        .jingle-team-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .jingle-team-name {
-            font-size: 11px;
-            font-weight: 600;
-            color: #fff;
-            min-width: 52px;
-            max-width: 70px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .jingle-team-color-bar {
-            width: 3px;
-            height: 22px;
-            border-radius: 2px;
-            flex-shrink: 0;
-            background: #2b2b2b;
-        }
-        .jingle-team-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
             min-width: 0;
         }
         .jingle-play-btn {
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             border: none;
             border-radius: 50%;
             background: #555;
@@ -505,53 +474,32 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 12px;
             padding: 0;
             flex-shrink: 0;
         }
-        .jingle-play-btn:hover {
-            opacity: 0.9;
-        }
-        .jingle-play-btn.playing {
-            opacity: 1;
-        }
+        .jingle-play-btn:hover { opacity: 0.9; }
+        .jingle-play-btn.playing { opacity: 1; }
         .jingle-select {
             font-size: 10px;
-            padding: 5px 8px;
-            width: 130px;
-            min-width: 130px;
-            max-width: 130px;
+            padding: 6px 8px;
+            width: 200px;
+            min-width: 200px;
+            max-width: 200px;
+            box-sizing: border-box;
             background: #333;
             border: 1px solid #444;
             border-radius: 4px;
             color: #fff;
             cursor: pointer;
             outline: none;
+            transition: background 0.12s linear;
         }
-        .jingle-select option {
-            background: #2a2a2a;
-            color: #fff;
-        }
-        .jingle-progress-wrap {
-            width: 100%;
-            height: 4px;
-            background: #333;
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 4px;
-        }
-        .jingle-progress-fill {
-            height: 100%;
-            width: 0%;
-            background: #4a7fc7;
-            border-radius: 2px;
-            transition: width 0.12s linear;
-        }
+        .jingle-select option { background: #2a2a2a; color: #fff; }
         .jingle-volume-row {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 6px;
         }
         .jingle-volume-icon {
             width: 18px;
@@ -568,17 +516,6 @@
             flex: 1;
             height: 6px;
             min-width: 80px;
-        }
-        .jingle-volume-fill {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 0%;
-            background: #4a7fc7;
-            border-radius: 3px 0 0 3px;
-            pointer-events: none;
-            transition: width 0.1s ease;
         }
         .jingle-volume-row input[type="range"] {
             position: relative;
@@ -631,51 +568,44 @@
         <!-- Средняя область -->
         <div class="middle-section">
             <div class="middle-content">
-                <!-- Команда 1 -->
+                <!-- Team 1 -->
                 <div class="team1-section">
-                    <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
-                    <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
                     <div class="team1-meta">
                         <div class="team1-name" id="team1Name">Команда 1</div>
                         <div id="team1Stripe" class="team1-stripe"></div>
                         <div class="team1-city" id="team1City">Город 1</div>
                     </div>
+                    <div class="team1-logo-wrap">
+                        <select class="jingle-select" id="jingleSelect1" title="Jingle team 1"></select>
+                        <img id="team1Logo" class="team1-logo" alt="Team 1 logo">
+                        <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
+                    </div>
+                    <div class="team1-jingle-play-wrap">
+                        <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
+                    </div>
                 </div>
 
-                <!-- Плеер джинглов: строка 1 — команда 1, строка 2 — команда 2, внизу громкость -->
+                <!-- Center: volume only -->
                 <div class="jingle-player-block">
-                    <div class="jingle-team-row">
-                        <span class="jingle-team-name" id="jingleTeam1Name">Команда 1</span>
-                        <div class="jingle-team-color-bar" id="jingleTeam1ColorBar"></div>
-                        <div class="jingle-team-controls">
-                            <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
-                            <select class="jingle-select" id="jingleSelect1" title="Джингл команды 1"></select>
-                        </div>
-                    </div>
-                    <div class="jingle-progress-wrap" id="jingleProgressWrap1"><div class="jingle-progress-fill" id="jingleProgressFill1"></div></div>
-                    <div class="jingle-team-row">
-                        <span class="jingle-team-name" id="jingleTeam2Name">Команда 2</span>
-                        <div class="jingle-team-color-bar" id="jingleTeam2ColorBar"></div>
-                        <div class="jingle-team-controls">
-                            <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
-                            <select class="jingle-select" id="jingleSelect2" title="Джингл команды 2"></select>
-                        </div>
-                    </div>
-                    <div class="jingle-progress-wrap" id="jingleProgressWrap2"><div class="jingle-progress-fill" id="jingleProgressFill2"></div></div>
                     <div class="jingle-volume-row">
                         <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
                         <div class="jingle-volume-track-wrap">
-                            <div class="jingle-volume-fill" id="jingleVolumeFill"></div>
-                            <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Громкость">
+                            <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Volume">
                         </div>
                         <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                     </div>
                 </div>
 
-                <!-- Команда 2 -->
+                <!-- Team 2 -->
                 <div class="team2-section">
-                    <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
-                    <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
+                    <div class="team2-jingle-play-wrap">
+                        <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
+                    </div>
+                    <div class="team2-logo-wrap">
+                        <select class="jingle-select" id="jingleSelect2" title="Jingle team 2"></select>
+                        <img id="team2Logo" class="team2-logo" alt="Team 2 logo">
+                        <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
+                    </div>
                     <div class="team2-meta">
                         <div class="team2-name" id="team2Name">Команда 2</div>
                         <div id="team2Stripe" class="team2-stripe"></div>
@@ -881,18 +811,14 @@
             if (data.tournamentTitle && tournamentTitle) {
                 tournamentTitle.textContent = data.tournamentTitle;
             }
-            const jingleTeam1NameEl = document.getElementById('jingleTeam1Name');
-            const jingleTeam2NameEl = document.getElementById('jingleTeam2Name');
-            const jingleTeam1ColorBarEl = document.getElementById('jingleTeam1ColorBar');
-            const jingleTeam2ColorBarEl = document.getElementById('jingleTeam2ColorBar');
-            if (jingleTeam1NameEl) jingleTeam1NameEl.textContent = data.team1Name || 'Команда 1';
-            if (jingleTeam2NameEl) jingleTeam2NameEl.textContent = data.team2Name || 'Команда 2';
-            if (jingleTeam1ColorBarEl) jingleTeam1ColorBarEl.style.backgroundColor = data.kit1Color || '#2b2b2b';
-            if (jingleTeam2ColorBarEl) jingleTeam2ColorBarEl.style.backgroundColor = data.kit2Color || '#2b2b2b';
             const jinglePlay1El = document.getElementById('jinglePlay1');
             const jinglePlay2El = document.getElementById('jinglePlay2');
+            const jingleSelect1El = document.getElementById('jingleSelect1');
+            const jingleSelect2El = document.getElementById('jingleSelect2');
             if (jinglePlay1El) jinglePlay1El.style.backgroundColor = data.kit1Color || '#555';
             if (jinglePlay2El) jinglePlay2El.style.backgroundColor = data.kit2Color || '#555';
+            if (jingleSelect1El) jingleSelect1El.dataset.fillColor = data.kit1Color || '#4a7fc7';
+            if (jingleSelect2El) jingleSelect2El.dataset.fillColor = data.kit2Color || '#4a7fc7';
         }
 
         const team1Logo = document.getElementById('team1Logo');
@@ -988,14 +914,19 @@
         const jinglePlay2 = document.getElementById('jinglePlay2');
         const jingleSelect1 = document.getElementById('jingleSelect1');
         const jingleSelect2 = document.getElementById('jingleSelect2');
-        const jingleProgressFill1 = document.getElementById('jingleProgressFill1');
-        const jingleProgressFill2 = document.getElementById('jingleProgressFill2');
         let currentTeam1Audio = null;
         let currentTeam2Audio = null;
 
         function setProgressFill(teamNum, percent) {
-            const el = teamNum === 1 ? jingleProgressFill1 : jingleProgressFill2;
-            if (el) el.style.width = (percent || 0) + '%';
+            const sel = teamNum === 1 ? jingleSelect1 : jingleSelect2;
+            if (!sel) return;
+            const pct = Math.min(100, Math.max(0, percent || 0));
+            const fillColor = sel.dataset.fillColor || '#4a7fc7';
+            if (pct <= 0) {
+                sel.style.background = '#333';
+            } else {
+                sel.style.background = 'linear-gradient(to right, ' + fillColor + ' 0%, ' + fillColor + ' ' + pct + '%, #333 ' + pct + '%, #333 100%)';
+            }
         }
         function updateProgressFromAudio(a) {
             if (!a.duration || !isFinite(a.duration)) return;
@@ -1068,14 +999,7 @@
                     list.forEach(f => sel.appendChild(opt(f, f.replace(/\.(mp3|ogg|m4a|wav)$/i, ''))));
                 });
             }).catch(() => {});
-            const jingleVolumeFillEl = document.getElementById('jingleVolumeFill');
-        function updateVolumeFill() {
-            if (jingleVolumeFillEl && jingleVolumeEl) jingleVolumeFillEl.style.width = (parseFloat(jingleVolumeEl.value) * 100) + '%';
-        }
-        if (jingleVolumeEl) {
-            jingleVolumeEl.addEventListener('input', function() { applyVolumeToAll(); updateVolumeFill(); });
-            updateVolumeFill();
-        }
+            if (jingleVolumeEl) jingleVolumeEl.addEventListener('input', applyVolumeToAll);
             if (jinglePlay1) jinglePlay1.addEventListener('click', () => playJingle(1));
             if (jinglePlay2) jinglePlay2.addEventListener('click', () => playJingle(2));
             if (jingleSelect1) jingleSelect1.addEventListener('change', () => onJingleSelect(1));
