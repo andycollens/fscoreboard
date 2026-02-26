@@ -86,6 +86,19 @@ function getTournamentTitle() {
   return null;
 }
 
+// Обратный отсчёт перед стартом матча (5…0 → «МАТЧ НАЧАЛСЯ!»)
+function getCountdownEnabled() {
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      return !!savedConfig.countdownEnabled;
+    } catch (error) {
+      return false;
+    }
+  }
+  return false;
+}
+
 // Функция для добавления tournamentTitle к state перед отправкой
 function enrichStateWithConfig(state) {
   const tournamentTitle = getTournamentTitle();
@@ -212,6 +225,9 @@ let state = {
   penaltyMaxAttempts: 5,
   penaltySeries: null
 };
+
+// Обратный отсчёт перед стартом матча: ждём countdownFinished от табло
+let countdownInProgress = false;
 
 // ====== Предварительные настройки матчей ======
 let matchPresets = [];
@@ -1442,6 +1458,12 @@ io.on('connection', (socket) => {
     // Управление таймером
     if ('timerRunning' in newState) {
       if (newState.timerRunning && !state.timerRunning) {
+        // Старт: при включённом обратном отсчёте и времени 0:00 — показываем 5→0 на табло, таймер стартует после countdownFinished
+        if (getCountdownEnabled() && state.timerSeconds === 0) {
+          countdownInProgress = true;
+          io.emit('startCountdown');
+          return;
+        }
         state.timerStartTS = Date.now() - (state.timerSeconds * 1000);
         state.timerRunning = true;
       } else if (!newState.timerRunning && state.timerRunning) {
@@ -1479,6 +1501,18 @@ io.on('connection', (socket) => {
     state.time = `${mm}:${ss}`;
 
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
+    fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+  });
+
+  // Табло закончило показ обратного отсчёта 5→0 → «МАТЧ НАЧАЛСЯ!» — стартуем таймер
+  socket.on('countdownFinished', () => {
+    if (!countdownInProgress) return;
+    countdownInProgress = false;
+    state.timerRunning = true;
+    state.timerStartTS = Date.now();
+    state.time = '00:00';
+    const newState = enrichStateWithConfig(state);
+    io.emit('scoreboardUpdate', newState);
     fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
   });
 
@@ -1712,6 +1746,9 @@ app.put('/api/config', (req, res) => {
   }
   if (req.body.adsMuted !== undefined) {
     currentConfig.adsMuted = !!req.body.adsMuted;
+  }
+  if (req.body.countdownEnabled !== undefined) {
+    currentConfig.countdownEnabled = !!req.body.countdownEnabled;
   }
   if (req.body.adsPauseSeconds !== undefined) {
     const sec = parseInt(req.body.adsPauseSeconds, 10);

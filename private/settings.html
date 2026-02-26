@@ -1274,6 +1274,13 @@
           <button type="button" class="stadium-mode-btn" data-mode="penalty" id="modePenaltyBtn">Пенальти</button>
           </div>
         </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 12px;">
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #163d74; cursor: pointer;">
+            <input type="checkbox" id="countdownEnabledCheckbox" onchange="saveCountdownEnabled()" style="cursor: pointer;">
+            <span>Обратный отсчёт</span>
+          </label>
+          <span style="font-size: 11px; color: #8a9bb2;">При 0:00 перед стартом таймера на табло показывается отсчёт 5→0 и надпись «МАТЧ НАЧАЛСЯ!»</span>
+        </div>
       </div>
       <button class="btn btn-primary" onclick="saveStadiumMode()">Применить режим</button>
     </div>
@@ -3871,6 +3878,9 @@
           }
         }
         
+        const countdownCheckbox = document.getElementById('countdownEnabledCheckbox');
+        if (countdownCheckbox) countdownCheckbox.checked = !!config.countdownEnabled;
+        
         // Сначала заполняем списки команд для выбора победителей
         fillWinnersSelects();
         
@@ -4148,6 +4158,27 @@
       } catch (error) {
         console.error('Ошибка сохранения режима:', error);
         showNotification('Ошибка сохранения режима', 'error');
+      }
+    }
+    
+    async function saveCountdownEnabled() {
+      const checkbox = document.getElementById('countdownEnabledCheckbox');
+      if (!checkbox) return;
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ countdownEnabled: checkbox.checked })
+        });
+        if (response.ok) {
+          showNotification(checkbox.checked ? 'Обратный отсчёт включён' : 'Обратный отсчёт выключен', 'success');
+        } else {
+          throw new Error('Ошибка сохранения');
+        }
+      } catch (error) {
+        console.error('Ошибка сохранения обратного отсчёта:', error);
+        showNotification('Ошибка сохранения настройки', 'error');
+        checkbox.checked = !checkbox.checked;
       }
     }
     

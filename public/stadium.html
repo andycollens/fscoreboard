@@ -1898,6 +1898,11 @@ body.penalty-mode .penalty-score {
         </div>
     </div>
 
+    <!-- Оверлей обратного отсчёта перед стартом матча (5→0 → МАТЧ НАЧАЛСЯ!) -->
+    <div id="countdownOverlay" style="display: none; position: fixed; inset: 0; background: #000; z-index: 9999; align-items: center; justify-content: center; font-family: 'RPL', Arial, sans-serif;">
+        <div id="countdownOverlayText" style="color: #fff; font-size: clamp(80px, 25vw, 280px); font-weight: 700; text-align: center; line-height: 1.1; user-select: none;">5</div>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
@@ -3421,6 +3426,36 @@ body.penalty-mode .penalty-score {
                 initLogoAnimation();
             }, 100);
         }
+    });
+
+    socket.on('startCountdown', () => {
+        if (currentMode !== 'scoreboard') return;
+        const overlay = document.getElementById('countdownOverlay');
+        const textEl = document.getElementById('countdownOverlayText');
+        if (!overlay || !textEl) return;
+        overlay.style.display = 'flex';
+        let step = 5;
+        const show = (txt) => {
+            textEl.textContent = txt;
+        };
+        const hideOverlayAndFinish = () => {
+            overlay.style.display = 'none';
+            textEl.style.fontSize = '';
+            textEl.textContent = '5';
+            socket.emit('countdownFinished');
+        };
+        show('5');
+        textEl.style.fontSize = 'clamp(80px, 25vw, 280px)';
+        const t1 = setTimeout(() => { show('4'); }, 1000);
+        const t2 = setTimeout(() => { show('3'); }, 2000);
+        const t3 = setTimeout(() => { show('2'); }, 3000);
+        const t4 = setTimeout(() => { show('1'); }, 4000);
+        const t5 = setTimeout(() => {
+            show('МАТЧ НАЧАЛСЯ!');
+            textEl.style.fontSize = 'clamp(28px, 6vw, 72px)';
+        }, 5000);
+        const t6 = setTimeout(hideOverlayAndFinish, 6500);
+        overlay._countdownTimeouts = [t1, t2, t3, t4, t5, t6];
     });
     
     socket.on('configUpdate', (data) => {
