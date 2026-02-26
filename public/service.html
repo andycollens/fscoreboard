@@ -455,107 +455,85 @@
             display: none !important;
         }
 
-        /* Плеер джинглов — сквеморфизм Apple, ультрапрофессионально */
+        /* Плеер джинглов — две строки: название | цвет формы | Play | джингл; громкость с иконками */
         .jingle-player-block {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: stretch;
             justify-content: center;
-            gap: 14px;
-            padding: 14px 18px;
-            min-width: 160px;
+            gap: 12px;
+            padding: 14px 16px;
+            min-width: 200px;
             background: linear-gradient(165deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 50%, rgba(0,0,0,0.08) 100%);
             border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.25);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.25);
         }
-        .jingle-volume-row {
-            width: 100%;
-            max-width: 130px;
-        }
-        .jingle-volume-row input[type="range"] {
-            width: 100%;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 4px;
-            outline: none;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
-            border: 1px solid rgba(0,0,0,0.2);
-        }
-        .jingle-volume-row input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #f5f5f5 0%, #c8c8c8 50%, #a0a0a0 100%);
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(255,255,255,0.8) inset, 0 1px 2px rgba(0,0,0,0.3);
-            border: 1px solid rgba(0,0,0,0.2);
-        }
-        .jingle-volume-row input[type="range"]::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #f5f5f5 0%, #c8c8c8 50%, #a0a0a0 100%);
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(255,255,255,0.8) inset, 0 1px 2px rgba(0,0,0,0.3);
-            border: 1px solid rgba(0,0,0,0.2);
-        }
-        .jingle-buttons-row {
+        .jingle-team-row {
             display: flex;
-            gap: 16px;
-            align-items: flex-start;
+            align-items: center;
+            gap: 8px;
         }
-        .jingle-team-wrap {
+        .jingle-team-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.95);
+            min-width: 52px;
+            max-width: 70px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.4);
+        }
+        .jingle-team-color-bar {
+            width: 3px;
+            height: 22px;
+            border-radius: 2px;
+            flex-shrink: 0;
+            background: #2b2b2b;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+        }
+        .jingle-team-controls {
             display: flex;
-            flex-direction: column;
             align-items: center;
             gap: 6px;
-        }
-        .jingle-team-wrap label {
-            font-size: 9px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.6);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+            flex: 1;
+            min-width: 0;
         }
         .jingle-play-btn {
-            width: 34px;
-            height: 34px;
+            width: 30px;
+            height: 30px;
             border: 1px solid rgba(0,0,0,0.25);
-            border-radius: 8px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.12) 50%, rgba(0,0,0,0.08) 100%);
+            border-radius: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.15) 50%, rgba(0,0,0,0.1) 100%);
             color: #333;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 11px;
             padding: 0;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.25);
+            flex-shrink: 0;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.25);
             transition: all 0.15s ease;
         }
         .jingle-play-btn:hover {
-            background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 50%, rgba(0,0,0,0.06) 100%);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 6px rgba(0,0,0,0.3);
+            background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.22) 50%, rgba(0,0,0,0.08) 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 2px 6px rgba(0,0,0,0.3);
         }
         .jingle-play-btn:active {
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.25);
-            background: linear-gradient(180deg, rgba(200,200,200,0.3) 0%, rgba(150,150,150,0.2) 100%);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
         }
         .jingle-play-btn.playing {
-            background: linear-gradient(180deg, rgba(180,220,255,0.5) 0%, rgba(120,180,240,0.35) 50%, rgba(60,120,200,0.2) 100%);
+            background: linear-gradient(180deg, rgba(180,220,255,0.6) 0%, rgba(120,180,240,0.4) 50%, rgba(60,120,200,0.3) 100%);
             border-color: rgba(80,140,220,0.5);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 6px rgba(0,80,180,0.2);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 6px rgba(0,80,180,0.25);
         }
         .jingle-select {
             font-size: 10px;
-            padding: 5px 8px;
+            padding: 4px 6px;
+            flex: 1;
             min-width: 0;
-            max-width: 118px;
             background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.06) 100%);
             border: 1px solid rgba(0,0,0,0.25);
             border-radius: 6px;
@@ -571,13 +549,13 @@
         }
         .jingle-progress-wrap {
             width: 100%;
-            max-width: 118px;
-            height: 5px;
+            height: 4px;
             background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.25) 100%);
-            border-radius: 3px;
+            border-radius: 2px;
             overflow: hidden;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
             border: 1px solid rgba(0,0,0,0.2);
+            margin-top: 4px;
         }
         .jingle-progress-fill {
             height: 100%;
@@ -586,6 +564,82 @@
             border-radius: 2px;
             transition: width 0.12s linear;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+        }
+        .jingle-volume-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .jingle-volume-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .jingle-volume-track-wrap {
+            position: relative;
+            flex: 1;
+            height: 6px;
+            min-width: 80px;
+        }
+        .jingle-volume-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0%;
+            background: linear-gradient(to bottom, #5a9cf5 0%, #7eb8ff 50%, #5a9cf5 100%);
+            border-radius: 3px 0 0 3px;
+            pointer-events: none;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+            transition: width 0.1s ease;
+        }
+        .jingle-volume-row input[type="range"] {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            outline: none;
+        }
+        .jingle-volume-row input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 3px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+        }
+        .jingle-volume-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #fff 0%, #e8e8e8 100%);
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.35);
+            border: 1px solid rgba(0,0,0,0.15);
+            margin-top: -4px;
+        }
+        .jingle-volume-row input[type="range"]::-moz-range-track {
+            height: 6px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 3px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
+        }
+        .jingle-volume-row input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #fff 0%, #e8e8e8 100%);
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.35);
+            border: 1px solid rgba(0,0,0,0.15);
         }
     </style>
 </head>
@@ -611,24 +665,33 @@
                     </div>
                 </div>
 
-                <!-- Плеер джинглов -->
+                <!-- Плеер джинглов: строка 1 — команда 1, строка 2 — команда 2, внизу громкость -->
                 <div class="jingle-player-block">
-                    <div class="jingle-volume-row">
-                        <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Громкость">
-                    </div>
-                    <div class="jingle-buttons-row">
-                        <div class="jingle-team-wrap">
-                            <label>1</label>
+                    <div class="jingle-team-row">
+                        <span class="jingle-team-name" id="jingleTeam1Name">Команда 1</span>
+                        <div class="jingle-team-color-bar" id="jingleTeam1ColorBar"></div>
+                        <div class="jingle-team-controls">
                             <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
                             <select class="jingle-select" id="jingleSelect1" title="Джингл команды 1"></select>
-                            <div class="jingle-progress-wrap" id="jingleProgressWrap1"><div class="jingle-progress-fill" id="jingleProgressFill1"></div></div>
                         </div>
-                        <div class="jingle-team-wrap">
-                            <label>2</label>
+                    </div>
+                    <div class="jingle-progress-wrap" id="jingleProgressWrap1"><div class="jingle-progress-fill" id="jingleProgressFill1"></div></div>
+                    <div class="jingle-team-row">
+                        <span class="jingle-team-name" id="jingleTeam2Name">Команда 2</span>
+                        <div class="jingle-team-color-bar" id="jingleTeam2ColorBar"></div>
+                        <div class="jingle-team-controls">
                             <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
                             <select class="jingle-select" id="jingleSelect2" title="Джингл команды 2"></select>
-                            <div class="jingle-progress-wrap" id="jingleProgressWrap2"><div class="jingle-progress-fill" id="jingleProgressFill2"></div></div>
                         </div>
+                    </div>
+                    <div class="jingle-progress-wrap" id="jingleProgressWrap2"><div class="jingle-progress-fill" id="jingleProgressFill2"></div></div>
+                    <div class="jingle-volume-row">
+                        <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
+                        <div class="jingle-volume-track-wrap">
+                            <div class="jingle-volume-fill" id="jingleVolumeFill"></div>
+                            <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Громкость">
+                        </div>
+                        <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                     </div>
                 </div>
 
@@ -841,6 +904,14 @@
             if (data.tournamentTitle && tournamentTitle) {
                 tournamentTitle.textContent = data.tournamentTitle;
             }
+            const jingleTeam1NameEl = document.getElementById('jingleTeam1Name');
+            const jingleTeam2NameEl = document.getElementById('jingleTeam2Name');
+            const jingleTeam1ColorBarEl = document.getElementById('jingleTeam1ColorBar');
+            const jingleTeam2ColorBarEl = document.getElementById('jingleTeam2ColorBar');
+            if (jingleTeam1NameEl) jingleTeam1NameEl.textContent = data.team1Name || 'Команда 1';
+            if (jingleTeam2NameEl) jingleTeam2NameEl.textContent = data.team2Name || 'Команда 2';
+            if (jingleTeam1ColorBarEl) jingleTeam1ColorBarEl.style.backgroundColor = data.kit1Color || '#2b2b2b';
+            if (jingleTeam2ColorBarEl) jingleTeam2ColorBarEl.style.backgroundColor = data.kit2Color || '#2b2b2b';
         }
 
         const team1Logo = document.getElementById('team1Logo');
@@ -1016,7 +1087,14 @@
                     list.forEach(f => sel.appendChild(opt(f, f.replace(/\.(mp3|ogg|m4a|wav)$/i, ''))));
                 });
             }).catch(() => {});
-            if (jingleVolumeEl) jingleVolumeEl.addEventListener('input', applyVolumeToAll);
+            const jingleVolumeFillEl = document.getElementById('jingleVolumeFill');
+        function updateVolumeFill() {
+            if (jingleVolumeFillEl && jingleVolumeEl) jingleVolumeFillEl.style.width = (parseFloat(jingleVolumeEl.value) * 100) + '%';
+        }
+        if (jingleVolumeEl) {
+            jingleVolumeEl.addEventListener('input', function() { applyVolumeToAll(); updateVolumeFill(); });
+            updateVolumeFill();
+        }
             if (jinglePlay1) jinglePlay1.addEventListener('click', () => playJingle(1));
             if (jinglePlay2) jinglePlay2.addEventListener('click', () => playJingle(2));
             if (jingleSelect1) jingleSelect1.addEventListener('change', () => onJingleSelect(1));
