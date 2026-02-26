@@ -1009,7 +1009,7 @@
             if (footballAnthemAudio.paused) {
                 footballAnthemAudio.currentTime = 0;
                 footballAnthemAudio.play();
-                if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); footballAnthemBtn.textContent = 'Футбольный гимн ■'; }
+                if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); }
             } else {
                 footballAnthemAudio.pause();
                 if (footballAnthemBtn) { footballAnthemBtn.classList.remove('playing'); footballAnthemBtn.textContent = 'Футбольный гимн'; }
