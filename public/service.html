@@ -173,10 +173,8 @@
 
         .team1-meta { order: 1; }
         .team1-logo-wrap { order: 2; }
-        .team1-jingle-play-wrap { order: 3; }
-        .team2-jingle-play-wrap { order: 1; }
-        .team2-logo-wrap { order: 2; }
-        .team2-meta { order: 3; }
+        .team2-logo-wrap { order: 1; }
+        .team2-meta { order: 2; }
 
         .team1-logo-wrap,
         .team2-logo-wrap {
@@ -186,6 +184,16 @@
             gap: 8px;
             flex-shrink: 0;
         }
+        .jingle-select-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+        .team1-logo-wrap .jingle-select-row { justify-content: center; }
+        .team2-logo-wrap .jingle-select-row { justify-content: center; }
 
         .team1-logo,
         .team2-logo,
@@ -453,15 +461,18 @@
             display: none !important;
         }
 
-        /* Jingle: dropdown above logo (200px), play symmetric to center, progress in dropdown bg */
+        /* Jingle: dropdown + play in row (play does not shrink dropdown), volume aligned with dropdowns */
+        .middle-content { align-items: flex-start; }
         .jingle-player-block {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 0;
+            justify-content: flex-start;
+            gap: 10px;
             padding: 0 12px;
             min-width: 0;
+            align-self: flex-start;
+            padding-top: 58px;
         }
         .jingle-play-btn {
             width: 36px;
@@ -555,6 +566,23 @@
             cursor: pointer;
             border: none;
         }
+        .football-anthem-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-family: inherit;
+            color: #888;
+            background: transparent;
+            border: 2px solid #555;
+            border-radius: 999px;
+            cursor: pointer;
+            outline: none;
+            white-space: nowrap;
+        }
+        .football-anthem-btn:hover { color: #aaa; border-color: #666; }
+        .football-anthem-btn.playing { color: #fff; background: #4a7fc7; border-color: #4a7fc7; }
     </style>
 </head>
 <body class="rosters-mode">
@@ -576,16 +604,16 @@
                         <div class="team1-city" id="team1City">Город 1</div>
                     </div>
                     <div class="team1-logo-wrap">
-                        <select class="jingle-select" id="jingleSelect1" title="Jingle team 1"></select>
+                        <div class="jingle-select-row">
+                            <select class="jingle-select" id="jingleSelect1" title="Jingle team 1"></select>
+                            <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
+                        </div>
                         <img id="team1Logo" class="team1-logo" alt="Team 1 logo">
                         <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
                     </div>
-                    <div class="team1-jingle-play-wrap">
-                        <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
-                    </div>
                 </div>
 
-                <!-- Center: volume only -->
+                <!-- Center: volume on same level as dropdowns, football anthem below -->
                 <div class="jingle-player-block">
                     <div class="jingle-volume-row">
                         <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
@@ -594,15 +622,16 @@
                         </div>
                         <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                     </div>
+                    <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
                 </div>
 
                 <!-- Team 2 -->
                 <div class="team2-section">
-                    <div class="team2-jingle-play-wrap">
-                        <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
-                    </div>
                     <div class="team2-logo-wrap">
-                        <select class="jingle-select" id="jingleSelect2" title="Jingle team 2"></select>
+                        <div class="jingle-select-row">
+                            <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
+                            <select class="jingle-select" id="jingleSelect2" title="Jingle team 2"></select>
+                        </div>
                         <img id="team2Logo" class="team2-logo" alt="Team 2 logo">
                         <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
                     </div>
@@ -955,6 +984,7 @@
         function applyVolumeToAll() {
             if (jingleVolumeEl) jingleVolume = parseFloat(jingleVolumeEl.value);
             Object.keys(jingleCache).forEach(f => { jingleCache[f].volume = jingleVolume; });
+            if (footballAnthemAudio) footballAnthemAudio.volume = jingleVolume;
         }
         function playJingle(teamNum) {
             const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
@@ -988,9 +1018,34 @@
             const filename = select && select.value ? select.value : '';
             if (filename) preloadJingle(filename);
         }
+        const FOOTBALL_ANTHEM_PATH = 'special/football.mp3';
+        let footballAnthemAudio = null;
+        const footballAnthemBtn = document.getElementById('footballAnthemBtn');
+        function toggleFootballAnthem() {
+            if (!footballAnthemAudio) {
+                footballAnthemAudio = new Audio(jingleBase + FOOTBALL_ANTHEM_PATH);
+                footballAnthemAudio.addEventListener('ended', function() {
+                    if (footballAnthemBtn) { footballAnthemBtn.classList.remove('playing'); footballAnthemBtn.textContent = 'Футбольный гимн'; }
+                });
+            }
+            footballAnthemAudio.volume = jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7;
+            if (footballAnthemAudio.paused) {
+                footballAnthemAudio.currentTime = 0;
+                footballAnthemAudio.play();
+                if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); footballAnthemBtn.textContent = 'Футбольный гимн ■'; }
+            } else {
+                footballAnthemAudio.pause();
+                if (footballAnthemBtn) { footballAnthemBtn.classList.remove('playing'); footballAnthemBtn.textContent = 'Футбольный гимн'; }
+            }
+        }
+        if (footballAnthemBtn) footballAnthemBtn.addEventListener('click', toggleFootballAnthem);
+
         (function initJinglePlayer() {
             fetch('/api/jingles').then(r => r.json()).then(data => {
-                const list = data.jingles || [];
+                const list = (data.jingles || []).filter(f => {
+                    const base = f.split('/').pop();
+                    return base !== 'football.mp3';
+                });
                 const opt = (v, label) => { const o = document.createElement('option'); o.value = v; o.textContent = label || v.replace(/\.(mp3|ogg|m4a|wav)$/i, ''); return o; };
                 [jingleSelect1, jingleSelect2].forEach(sel => {
                     if (!sel) return;
