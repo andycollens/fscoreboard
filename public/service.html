@@ -79,7 +79,8 @@
             position: fixed;
             inset: 0;
             display: grid !important;
-            grid-template-rows: 30px 270px 1fr;
+            grid-template-rows: 30px 230px 1fr;
+            min-height: 0;
             height: 100vh;
             width: 100vw;
             background: transparent;
@@ -118,32 +119,29 @@
         .middle-section {
             display: grid !important;
             grid-template-columns: 1fr 1fr;
-            height: 270px;
+            height: 230px;
+            min-height: 0;
             width: 100%;
             background: transparent;
             gap: 0;
+            overflow: hidden;
         }
 
         .middle-content {
             display: grid !important;
             grid-template-columns: 1fr auto 1fr;
-            grid-template-rows: auto 40px 200px;
             width: 100%;
             height: 100%;
+            min-height: 0;
             padding: 0;
             box-sizing: border-box;
             gap: 0;
             grid-column: 1 / -1;
-            align-items: start;
+            align-items: center;
         }
-        .middle-content .team1-meta { grid-column: 1; grid-row: 1; padding-left: 80px; }
-        .middle-content .team1-jingle-row { grid-column: 1; grid-row: 2; padding-left: 80px; }
-        .middle-content .team1-logo-wrap { grid-column: 1; grid-row: 3; padding-left: 80px; }
-        .middle-content .jingle-volume-wrap { grid-column: 2; grid-row: 2; }
-        .middle-content .jingle-anthem-wrap { grid-column: 2; grid-row: 3; }
-        .middle-content .team2-jingle-row { grid-column: 3; grid-row: 2; padding-right: 80px; }
-        .middle-content .team2-logo-wrap { grid-column: 3; grid-row: 3; padding-right: 80px; }
-        .middle-content .team2-meta { grid-column: 3; grid-row: 1; padding-right: 80px; }
+        .middle-content .team1-section { grid-column: 1; padding-left: 80px; }
+        .middle-content .jingle-player-block { grid-column: 2; }
+        .middle-content .team2-section { grid-column: 3; padding-right: 80px; }
 
         .team-penalty-track {
             display: none !important;
@@ -159,23 +157,35 @@
             display: none !important;
         }
 
-        .team1-meta { justify-content: flex-end; text-align: right; }
-        .team2-meta { justify-content: flex-start; text-align: left; }
-
-        .team1-jingle-row,
-        .team2-jingle-row {
-            display: flex;
+        .team1-section {
+            display: flex !important;
             flex-direction: row;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            justify-content: flex-end;
+            gap: clamp(12px, 2vw, 28px);
+            min-width: 0;
+            min-height: 0;
         }
+        .team2-section {
+            display: flex !important;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: clamp(12px, 2vw, 28px);
+            min-width: 0;
+            min-height: 0;
+        }
+        .team1-meta { order: 1; justify-content: flex-end; text-align: right; flex-shrink: 0; }
+        .team1-logo-wrap { order: 2; }
+        .team2-logo-wrap { order: 1; }
+        .team2-meta { order: 2; justify-content: flex-start; text-align: left; flex-shrink: 0; }
+
         .team1-logo-wrap,
         .team2-logo-wrap {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0;
+            gap: 8px;
             flex-shrink: 0;
         }
         .jingle-select-row {
@@ -183,7 +193,6 @@
             flex-direction: row;
             align-items: center;
             gap: 8px;
-            width: 100%;
             justify-content: center;
         }
         .team1-logo,
@@ -194,6 +203,13 @@
             width: 200px;
             height: 200px;
             flex-shrink: 0;
+        }
+        .middle-section .team1-logo,
+        .middle-section .team2-logo,
+        .middle-section .team1-no-logo,
+        .middle-section .team2-no-logo {
+            width: 170px;
+            height: 170px;
         }
 
         .team1-logo,
@@ -453,15 +469,15 @@
             display: none !important;
         }
 
-        .jingle-volume-wrap,
-        .jingle-anthem-wrap {
+        .jingle-player-block {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 8px;
             padding: 0 12px;
+            min-width: 0;
         }
-        .jingle-volume-wrap { padding-bottom: 4px; }
-        .jingle-anthem-wrap { padding-top: 6px; }
         .jingle-play-btn {
             width: 36px;
             height: 36px;
@@ -581,23 +597,25 @@
             <div class="rosters-subtitle" id="rostersSubtitle">Составы команд</div>
         </div>
 
-        <!-- Средняя область: row 1 = meta, row 2 = dropdown+logo | volume+anthem | play+dropdown+logo -->
+        <!-- Средняя область: слева название | лого+выпадайки, центр громкость+гимн, справа лого+выпадайки | название -->
         <div class="middle-section">
             <div class="middle-content">
-                <div class="team1-meta">
-                    <div class="team1-name" id="team1Name">Команда 1</div>
-                    <div id="team1Stripe" class="team1-stripe"></div>
-                    <div class="team1-city" id="team1City">Город 1</div>
+                <div class="team1-section">
+                    <div class="team1-meta">
+                        <div class="team1-name" id="team1Name">Команда 1</div>
+                        <div id="team1Stripe" class="team1-stripe"></div>
+                        <div class="team1-city" id="team1City">Город 1</div>
+                    </div>
+                    <div class="team1-logo-wrap">
+                        <div class="jingle-select-row">
+                            <select class="jingle-select" id="jingleSelect1" title="Jingle team 1"></select>
+                            <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
+                        </div>
+                        <img id="team1Logo" class="team1-logo" alt="Team 1 logo">
+                        <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
+                    </div>
                 </div>
-                <div class="team1-jingle-row">
-                    <select class="jingle-select" id="jingleSelect1" title="Jingle team 1"></select>
-                    <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
-                </div>
-                <div class="team1-logo-wrap">
-                    <img id="team1Logo" class="team1-logo" alt="Team 1 logo">
-                    <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
-                </div>
-                <div class="jingle-volume-wrap">
+                <div class="jingle-player-block">
                     <div class="jingle-volume-row">
                         <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
                         <div class="jingle-volume-track-wrap">
@@ -605,22 +623,22 @@
                         </div>
                         <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                     </div>
-                </div>
-                <div class="jingle-anthem-wrap">
                     <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
                 </div>
-                <div class="team2-jingle-row">
-                    <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
-                    <select class="jingle-select" id="jingleSelect2" title="Jingle team 2"></select>
-                </div>
-                <div class="team2-logo-wrap">
-                    <img id="team2Logo" class="team2-logo" alt="Team 2 logo">
-                    <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
-                </div>
-                <div class="team2-meta">
-                    <div class="team2-name" id="team2Name">Команда 2</div>
-                    <div id="team2Stripe" class="team2-stripe"></div>
-                    <div class="team2-city" id="team2City">Город 2</div>
+                <div class="team2-section">
+                    <div class="team2-logo-wrap">
+                        <div class="jingle-select-row">
+                            <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
+                            <select class="jingle-select" id="jingleSelect2" title="Jingle team 2"></select>
+                        </div>
+                        <img id="team2Logo" class="team2-logo" alt="Team 2 logo">
+                        <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
+                    </div>
+                    <div class="team2-meta">
+                        <div class="team2-name" id="team2Name">Команда 2</div>
+                        <div id="team2Stripe" class="team2-stripe"></div>
+                        <div class="team2-city" id="team2City">Город 2</div>
+                    </div>
                 </div>
             </div>
         </div>
