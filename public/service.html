@@ -9,173 +9,787 @@
             font-family: 'RPL';
             src: url('/public/fonts/RPL.ttf') format('truetype');
         }
-        * { box-sizing: border-box; }
+
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             width: 100%;
-            background: #000;
-            color: #fff;
+            background: transparent;
             font-family: 'RPL', Arial, sans-serif;
-            overflow: auto;
+            overflow: hidden;
+            position: relative;
         }
-        .service-container {
-            display: flex;
-            min-height: 100vh;
-            padding: 24px;
-            gap: 32px;
-            align-items: flex-start;
-            justify-content: center;
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url('/public/img/memberspage_bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            opacity: 0.9375;
+            z-index: -2;
+            clip-path: inset(0 0 100% 0);
+            animation: none;
         }
-        .team-block {
-            flex: 1;
-            max-width: 50%;
-            min-width: 280px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+            clip-path: inset(0 0 100% 0);
+            animation: none;
         }
-        .team-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 16px;
+
+        body.background-loaded::before,
+        body.background-loaded::after {
+            animation: slideDownBackground 0.5s ease-out forwards;
         }
-        .team-logo {
-            width: 64px;
-            height: 64px;
-            object-fit: contain;
-            margin-bottom: 8px;
+
+        @keyframes slideDownBackground {
+            from {
+                clip-path: inset(0 0 100% 0);
+            }
+            to {
+                clip-path: inset(0 0 0 0);
+            }
         }
-        .team-logo.hidden { display: none; }
-        .team-name {
-            font-size: 1.25rem;
-            font-weight: 700;
-            text-align: center;
-            margin: 0 0 4px 0;
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
         }
-        .team-city {
-            font-size: 0.85rem;
-            opacity: 0.85;
-            text-align: center;
-            margin: 0;
+
+        body.rosters-mode,
+        body.rosters-mode #scoreboardMode {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
         }
-        .roster {
+
+        .stadium-container {
+            position: fixed;
+            inset: 0;
+            display: grid !important;
+            grid-template-rows: 30px 230px 1fr;
+            height: 100vh;
+            width: 100vw;
+            background: transparent;
+            opacity: 0;
+            animation: none;
+        }
+
+        body.content-ready .stadium-container {
+            animation: fadeInContent 0.4s ease-in 0.5s forwards;
+        }
+
+        @keyframes fadeInContent {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .top-section {
+            display: block !important;
+            height: 30px;
             width: 100%;
-            font-size: 0.8rem;
-            line-height: 1.35;
+            background: transparent;
         }
-        .roster-title {
+
+        .tournament-title {
+            display: none !important;
+        }
+
+        .rosters-subtitle {
+            display: none !important;
+        }
+
+        .middle-section {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            height: 230px;
+            width: 100%;
+            background: transparent;
+            gap: 0;
+        }
+
+        .middle-content {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            box-sizing: border-box;
+            gap: 0;
+            grid-column: 1 / -1;
+        }
+
+        .team-penalty-track {
+            display: none !important;
+        }
+
+        .score1-section,
+        .score2-section {
+            display: none !important;
+        }
+
+        .team1-score,
+        .team2-score {
+            display: none !important;
+        }
+
+        .team1-section {
+            display: flex !important;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+            gap: clamp(12px, 2vw, 28px);
+            padding: 0 2vw;
+            padding-left: 80px;
+            box-sizing: border-box;
+        }
+
+        .team2-section {
+            display: flex !important;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: clamp(12px, 2vw, 28px);
+            padding: 0 2vw;
+            padding-right: 80px;
+            box-sizing: border-box;
+        }
+
+        .team1-logo,
+        .team1-no-logo {
+            order: 2;
+        }
+
+        .team1-meta {
+            order: 1;
+        }
+
+        .team2-logo,
+        .team2-no-logo {
+            order: 1;
+        }
+
+        .team2-meta {
+            order: 2;
+        }
+
+        .team1-logo,
+        .team2-logo,
+        .team1-no-logo,
+        .team2-no-logo {
+            width: 200px;
+            height: 200px;
+            flex-shrink: 0;
+        }
+
+        .team1-logo,
+        .team2-logo {
+            object-fit: contain;
+            display: none;
+        }
+
+        .team1-logo.show,
+        .team2-logo.show {
+            display: block;
+        }
+
+        .team1-no-logo,
+        .team2-no-logo {
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4vw;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .team1-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0;
+            min-width: 0;
+            text-align: right;
+        }
+
+        .team1-meta .team1-name {
+            margin-bottom: 1vh;
+        }
+
+        .team1-meta .team1-city {
+            margin-top: 0;
+            align-self: flex-end;
+        }
+
+        .team2-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .team2-meta .team2-name {
+            margin-bottom: 1vh;
+        }
+
+        .team2-meta .team2-city {
+            margin-top: 0;
+            align-self: flex-start;
+        }
+
+        .team1-name,
+        .team2-name {
+            font-size: 3vw;
+            margin: 0;
+            margin-top: 40px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #fff;
+        }
+
+        .team1-stripe,
+        .team2-stripe {
+            width: clamp(60px, 8vw, 140px);
+            height: clamp(8px, 0.6vw, 14px);
+            margin: 0;
+            opacity: 1 !important;
+            display: none !important;
+        }
+
+        .team1-city,
+        .team2-city {
+            font-size: 2.5vw;
+            margin: 0;
+            margin-top: 40px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #fff;
+        }
+
+        .bottom-section {
+            display: grid !important;
+            grid-template-columns: 1fr auto 1fr;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+            gap: 0;
+        }
+
+        .roster-team1,
+        .roster-team2 {
+            display: flex !important;
+            position: relative !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
+            padding: 2vh 2vw;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .roster-team1 {
+            grid-column: 1;
+            align-items: flex-start;
+            padding-left: 80px;
+        }
+
+        .roster-divider {
+            grid-column: 2;
+            display: flex !important;
+            position: relative !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .roster-colon {
+            width: 8px;
+            height: 80%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 50%, rgba(255, 255, 255, 0) 100%);
+            border-radius: 8px;
+            opacity: 1;
+        }
+
+        .roster-team2 {
+            grid-column: 3;
+            align-items: flex-end;
+            padding-right: 80px;
+        }
+
+        .roster-coach-label,
+        .roster-players-label {
             font-weight: 700;
-            margin: 10px 0 4px 0;
-            font-size: 0.75rem;
-            opacity: 0.9;
+            font-size: 2.1vw;
+            margin: 0 0 0.5vh 0;
+            display: block;
+            color: #b0b0b0;
         }
-        .roster-title:first-child { margin-top: 0; }
-        .roster-line {
-            margin: 2px 0;
+
+        .roster-coach-name {
+            font-size: 2.0vw;
+            font-weight: 500;
+            margin: 0 0 2vh 0;
+            display: block;
+            color: #fff;
+        }
+
+        .roster-players-list {
+            font-weight: 500;
+            line-height: 1.5;
+            display: block;
+            width: 100%;
+            color: #fff;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .roster-players-scroll {
+            font-size: 1.6vw;
+            column-count: 2;
+            column-gap: 2vw;
+            width: 100%;
+            will-change: transform;
+        }
+
+        .roster-players-list.many-players {
+            padding-bottom: 60px;
+            padding-top: 30px;
+            box-sizing: border-box;
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 40px, black calc(100% - 50px), transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, black 40px, black calc(100% - 50px), transparent 100%);
+        }
+
+        .roster-players-list.many-players .roster-players-scroll {
+            font-size: 1.6vw;
+        }
+
+        .roster-player-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5vw;
+        }
+
+        .roster-player-number {
+            text-align: right;
+            min-width: 2.5vw;
+            flex-shrink: 0;
+            font-size: 1.5vw;
+            color: #b0b0b0;
+        }
+
+        .roster-player-name {
+            flex: 1;
+        }
+
+        .roster-team1 .roster-coach-label,
+        .roster-team1 .roster-coach-name,
+        .roster-team1 .roster-players-label,
+        .roster-team1 .roster-players-list {
+            text-align: left;
+        }
+
+        .roster-team2 .roster-coach-label,
+        .roster-team2 .roster-coach-name,
+        .roster-team2 .roster-players-label,
+        .roster-team2 .roster-players-list {
+            text-align: right;
+        }
+
+        .roster-team2 .roster-player-item {
+            flex-direction: row;
+            gap: 0.5vw;
+            justify-content: flex-end;
+        }
+
+        .roster-team2 .roster-player-number {
+            text-align: left;
+            min-width: 2.0vw;
+            flex-shrink: 0;
+        }
+
+        .roster-team2 .roster-player-name {
+            text-align: right;
+            flex: 1;
+        }
+
+        .divider-section,
+        .timer {
+            display: none !important;
+        }
+
+        .match-score-label,
+        .penalty-label,
+        .penalty-overlay {
+            display: none !important;
         }
     </style>
 </head>
-<body>
-    <div class="service-container">
-        <div class="team-block" id="team1Block">
-            <div class="team-header">
-                <img id="team1Logo" class="team-logo hidden" src="" alt="">
-                <h2 class="team-name" id="team1Name">—</h2>
-                <p class="team-city" id="team1City">—</p>
-            </div>
-            <div class="roster" id="team1Roster"></div>
+<body class="rosters-mode">
+    <div class="stadium-container" id="scoreboardMode">
+        <!-- Верхняя область -->
+        <div class="top-section">
+            <div class="tournament-title" id="tournamentTitle">ISKRA CUP 2025</div>
+            <div class="rosters-subtitle" id="rostersSubtitle">Составы команд</div>
         </div>
-        <div class="team-block" id="team2Block">
-            <div class="team-header">
-                <img id="team2Logo" class="team-logo hidden" src="" alt="">
-                <h2 class="team-name" id="team2Name">—</h2>
-                <p class="team-city" id="team2City">—</p>
+
+        <!-- Средняя область -->
+        <div class="middle-section">
+            <div class="middle-content">
+                <!-- Команда 1 -->
+                <div class="team1-section">
+                    <img id="team1Logo" class="team1-logo" alt="Логотип команды 1">
+                    <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
+                    <div class="team1-meta">
+                        <div class="team1-name" id="team1Name">Команда 1</div>
+                        <div id="team1Stripe" class="team1-stripe"></div>
+                        <div class="team1-city" id="team1City">Город 1</div>
+                    </div>
+                </div>
+
+                <!-- Команда 2 -->
+                <div class="team2-section">
+                    <img id="team2Logo" class="team2-logo" alt="Логотип команды 2">
+                    <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
+                    <div class="team2-meta">
+                        <div class="team2-name" id="team2Name">Команда 2</div>
+                        <div id="team2Stripe" class="team2-stripe"></div>
+                        <div class="team2-city" id="team2City">Город 2</div>
+                    </div>
+                </div>
             </div>
-            <div class="roster" id="team2Roster"></div>
+        </div>
+
+        <!-- Нижняя область -->
+        <div class="bottom-section">
+            <div class="roster-team1" id="rosterTeam1">
+                <div class="roster-coach-label">Тренер:</div>
+                <div class="roster-coach-name" id="rosterTeam1Coach"></div>
+                <div class="roster-players-label">Игроки:</div>
+                <div class="roster-players-list" id="rosterTeam1Players"></div>
+            </div>
+            <div class="roster-divider" id="rosterDivider">
+                <div class="roster-colon"></div>
+            </div>
+            <div class="roster-team2" id="rosterTeam2">
+                <div class="roster-coach-label">Тренер:</div>
+                <div class="roster-coach-name" id="rosterTeam2Coach"></div>
+                <div class="roster-players-label">Игроки:</div>
+                <div class="roster-players-list" id="rosterTeam2Players"></div>
+            </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        // Ждем загрузки фонового изображения перед началом анимации
+        const bgImage = new Image();
+        bgImage.onload = function() {
+            document.body.classList.add('background-loaded');
+            setTimeout(() => {
+                document.body.classList.add('content-ready');
+            }, 500);
+        };
+        bgImage.onerror = function() {
+            document.body.classList.add('background-loaded');
+            setTimeout(() => {
+                document.body.classList.add('content-ready');
+            }, 500);
+        };
+        bgImage.src = '/public/img/memberspage_bg.jpg';
+
         const socket = io();
+        let latestData = null;
+        let lastRosterSignature = '';
 
-        function escapeHtml(s) {
-            if (s == null) return '';
-            const div = document.createElement('div');
-            div.textContent = s;
-            return div.innerHTML;
+        function escapeHtml(str = '') {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
-        function renderRoster(el, players, staff) {
-            if (!el) return;
-            const parts = [];
-            if (staff && Array.isArray(staff) && staff.length > 0) {
-                parts.push('<div class="roster-title">Тренерский состав</div>');
-                staff.forEach(item => {
-                    if (!item) return;
-                    const name = typeof item === 'string' ? item : (item.name || '');
-                    if (name) parts.push('<div class="roster-line">' + escapeHtml(name) + '</div>');
-                });
-            }
-            if (players && Array.isArray(players) && players.length > 0) {
-                parts.push('<div class="roster-title">Игроки</div>');
-                players.forEach(item => {
-                    if (!item) return;
-                    const num = item.number != null && item.number !== '' ? String(item.number) : '—';
-                    const name = item.name || '';
-                    parts.push('<div class="roster-line">' + escapeHtml(num) + ' ' + escapeHtml(name) + '</div>');
-                });
-            }
-            el.innerHTML = parts.length ? parts.join('') : '<div class="roster-line">Состав не выбран</div>';
-        }
-
-        function applyState(data) {
-            const team1Name = document.getElementById('team1Name');
-            const team1City = document.getElementById('team1City');
-            const team1Logo = document.getElementById('team1Logo');
-            const team1Roster = document.getElementById('team1Roster');
-            const team2Name = document.getElementById('team2Name');
-            const team2City = document.getElementById('team2City');
-            const team2Logo = document.getElementById('team2Logo');
-            const team2Roster = document.getElementById('team2Roster');
-
-            if (team1Name) team1Name.textContent = data.team1Name || '—';
-            if (team1City) team1City.textContent = data.team1City || '—';
-            if (team2Name) team2Name.textContent = data.team2Name || '—';
-            if (team2City) team2City.textContent = data.team2City || '—';
-
-            if (team1Logo) {
-                if (data.team1Logo && data.team1Logo.trim()) {
-                    team1Logo.src = data.team1Logo;
-                    team1Logo.classList.remove('hidden');
+        function renderRostersMode(coachEl, playersEl, staff, players, isRightSide = false, teamId = null) {
+            if (coachEl) {
+                if (staff && Array.isArray(staff) && staff.length > 0) {
+                    const coachNames = staff
+                        .map(item => {
+                            if (!item) return '';
+                            if (typeof item === 'string') return escapeHtml(item);
+                            return escapeHtml(item.name || '');
+                        })
+                        .filter(Boolean);
+                    if (coachNames.length > 0) {
+                        coachEl.innerHTML = coachNames.join('<br>');
+                    } else {
+                        coachEl.innerHTML = '';
+                    }
                 } else {
-                    team1Logo.classList.add('hidden');
-                }
-            }
-            if (team2Logo) {
-                if (data.team2Logo && data.team2Logo.trim()) {
-                    team2Logo.src = data.team2Logo;
-                    team2Logo.classList.remove('hidden');
-                } else {
-                    team2Logo.classList.add('hidden');
+                    coachEl.innerHTML = '';
                 }
             }
 
-            renderRoster(team1Roster, data.team1Players || data.players1 || [], data.team1Staff || data.staff1 || []);
-            renderRoster(team2Roster, data.team2Players || data.players2 || [], data.team2Staff || data.staff2 || []);
+            if (playersEl) {
+                if (players && Array.isArray(players) && players.length > 0) {
+                    const hasAltNumbers = players.some(p => {
+                        if (typeof p === 'string') return false;
+                        return p.number && p.number.includes('/');
+                    });
+                    let useAltNumbers = false;
+                    if (hasAltNumbers) {
+                        if (teamId) {
+                            useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
+                        } else {
+                            useAltNumbers = localStorage.getItem('globalUseAltNumbers') === 'true';
+                        }
+                    }
+                    const playerItems = players
+                        .map(item => {
+                            if (!item) return '';
+                            let num = '';
+                            let name = '';
+                            if (typeof item === 'string') {
+                                const parts = item.trim().split(/\s+/);
+                                num = parts[0].match(/^\d+$/) ? parts[0] : '—';
+                                name = num !== '—' ? parts.slice(1).join(' ') : item;
+                            } else {
+                                num = item.number != null && item.number !== '' ? String(item.number) : '—';
+                                name = item.name || '';
+                                if (num && num !== '—' && num.includes('/')) {
+                                    const [num1, num2] = num.split('/');
+                                    num = useAltNumbers ? (num2 || num1) : (num1 || '');
+                                }
+                            }
+                            const numDisplay = (num === '' || num == null) ? '—' : num;
+                            if (isRightSide) {
+                                return `<div class="roster-player-item">
+                                    <span class="roster-player-name">${escapeHtml(name)}</span>
+                                    <span class="roster-player-number">${escapeHtml(numDisplay)}</span>
+                                </div>`;
+                            } else {
+                                return `<div class="roster-player-item">
+                                    <span class="roster-player-number">${escapeHtml(numDisplay)}</span>
+                                    <span class="roster-player-name">${escapeHtml(name)}</span>
+                                </div>`;
+                            }
+                        })
+                        .filter(Boolean);
+                    playersEl.innerHTML = `<div class="roster-players-scroll">${playerItems.join('')}</div>`;
+                } else {
+                    playersEl.innerHTML = '';
+                }
+            }
         }
 
-        socket.on('connect', () => {
-            socket.emit('getCurrentState');
-        });
-        socket.on('scoreboardUpdate', (data) => {
-            applyState(data);
-        });
-        socket.on('currentState', (data) => {
-            applyState(data);
+        function updateStripe(team, color) {
+            const stripe = team === 'team1' ? team1Stripe : team2Stripe;
+            const direction = team === 'team1' ? 'to right' : 'to left';
+            if (color && color !== '') {
+                stripe.style.background = `linear-gradient(${direction}, transparent, ${color} 70px, ${color} 130px, transparent 200px)`;
+                setTimeout(() => stripe.classList.add('active'), 100);
+            } else {
+                stripe.classList.remove('active');
+                stripe.style.background = `linear-gradient(${direction}, transparent, #2b2b2b 70px, #2b2b2b 130px, transparent 200px)`;
+            }
+        }
+
+        function updateDisplay(data) {
+            // Команда 1
+            if (data.team1Logo && data.team1Logo !== '') {
+                team1Logo.src = data.team1Logo;
+                team1Logo.classList.add('show');
+                team1NoLogo.style.display = 'none';
+            } else {
+                team1Logo.classList.remove('show');
+                team1NoLogo.style.display = 'flex';
+                if (data.kit1Color) team1NoLogo.style.backgroundColor = data.kit1Color;
+            }
+            team1Name.textContent = data.team1Name || 'Команда 1';
+            team1City.textContent = data.team1City || 'Город 1';
+            updateStripe('team1', data.kit1Color);
+
+            const rosterSig = JSON.stringify({
+                t1: data.team1Staff || data.staff1 || [],
+                t2: data.team2Staff || data.staff2 || [],
+                p1: data.team1Players || data.players1 || [],
+                p2: data.team2Players || data.players2 || []
+            });
+            if (rosterSig !== lastRosterSignature && rosterTeam1Coach && rosterTeam1Players && rosterTeam2Coach && rosterTeam2Players) {
+                lastRosterSignature = rosterSig;
+                const team1Id = data.team1Id || null;
+                const team2Id = data.team2Id || null;
+                renderRostersMode(rosterTeam1Coach, rosterTeam1Players, data.team1Staff || data.staff1 || [], data.team1Players || data.players1 || [], false, team1Id);
+                renderRostersMode(rosterTeam2Coach, rosterTeam2Players, data.team2Staff || data.staff2 || [], data.team2Players || data.players2 || [], true, team2Id);
+            }
+
+            // Команда 2
+            if (data.team2Logo && data.team2Logo !== '') {
+                team2Logo.src = data.team2Logo;
+                team2Logo.classList.add('show');
+                team2NoLogo.style.display = 'none';
+            } else {
+                team2Logo.classList.remove('show');
+                team2NoLogo.style.display = 'flex';
+                if (data.kit2Color) team2NoLogo.style.backgroundColor = data.kit2Color;
+            }
+            team2Name.textContent = data.team2Name || 'Команда 2';
+            team2City.textContent = data.team2City || 'Город 2';
+            updateStripe('team2', data.kit2Color);
+
+            const team1PlayersCount = (data.team1Players || data.players1 || []).length;
+            const team2PlayersCount = (data.team2Players || data.players2 || []).length;
+            const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
+            if (rosterTeam1Players && rosterTeam2Players) {
+                if (maxPlayersCount > 24) {
+                    const alreadyHadMany = rosterTeam1Players.classList.contains('many-players');
+                    rosterTeam1Players.classList.add('many-players');
+                    rosterTeam2Players.classList.add('many-players');
+                    if (!alreadyHadMany) initRosterAutoScroll();
+                } else {
+                    rosterTeam1Players.classList.remove('many-players');
+                    rosterTeam2Players.classList.remove('many-players');
+                    stopRosterAutoScroll();
+                }
+            }
+            if (data.tournamentTitle && tournamentTitle) {
+                tournamentTitle.textContent = data.tournamentTitle;
+            }
+        }
+
+        const team1Logo = document.getElementById('team1Logo');
+        const team1NoLogo = document.getElementById('team1NoLogo');
+        const team1Name = document.getElementById('team1Name');
+        const team1City = document.getElementById('team1City');
+        const team1Stripe = document.getElementById('team1Stripe');
+        const team2Logo = document.getElementById('team2Logo');
+        const team2NoLogo = document.getElementById('team2NoLogo');
+        const team2Name = document.getElementById('team2Name');
+        const team2City = document.getElementById('team2City');
+        const team2Stripe = document.getElementById('team2Stripe');
+        const rosterTeam1Coach = document.getElementById('rosterTeam1Coach');
+        const rosterTeam1Players = document.getElementById('rosterTeam1Players');
+        const rosterTeam2Coach = document.getElementById('rosterTeam2Coach');
+        const rosterTeam2Players = document.getElementById('rosterTeam2Players');
+        const tournamentTitle = document.getElementById('tournamentTitle');
+
+        let rosterScrollAnimations = [];
+
+        function ensureRosterOverflow(el) {
+            if (!el) return false;
+            const content = el.querySelector('.roster-players-scroll');
+            if (!content) return false;
+            let extra = content.scrollHeight - el.clientHeight;
+            if (extra > 2) return true;
+            let filler = content.querySelector('.roster-scroll-filler');
+            if (!filler) {
+                filler = document.createElement('div');
+                filler.className = 'roster-scroll-filler';
+                filler.style.height = '160px';
+                filler.style.opacity = '0';
+                filler.style.pointerEvents = 'none';
+                filler.style.width = '100%';
+                content.appendChild(filler);
+            } else {
+                filler.style.height = (parseInt(filler.style.height || '160', 10) + 80) + 'px';
+            }
+            return content.scrollHeight - el.clientHeight > 2;
+        }
+
+        function initRosterAutoScroll() {
+            stopRosterAutoScroll();
+            const lists = [rosterTeam1Players, rosterTeam2Players]
+                .filter(el => el && el.classList.contains('many-players'))
+                .filter(el => ensureRosterOverflow(el));
+            if (lists.length === 0) return;
+            const scrollSpeed = 22;
+            const pauseDuration = 5000;
+            lists.forEach((el) => {
+                const content = el.querySelector('.roster-players-scroll');
+                if (!content) return;
+                content.style.transform = 'translateY(0)';
+                const state = { direction: 1, lastTime: null, isPaused: true, pauseUntil: Date.now() + pauseDuration, offset: 0 };
+                const anim = { type: 'raf', id: null };
+                function step(timestamp) {
+                    anim.id = requestAnimationFrame(step);
+                    if (!el.classList.contains('many-players')) return;
+                    const maxScroll = content.scrollHeight - el.clientHeight;
+                    if (maxScroll <= 0) return;
+                    if (state.isPaused) {
+                        if (Date.now() >= state.pauseUntil) { state.isPaused = false; state.lastTime = timestamp; }
+                        return;
+                    }
+                    if (state.lastTime === null) state.lastTime = timestamp;
+                    const dt = (timestamp - state.lastTime) / 1000;
+                    state.lastTime = timestamp;
+                    state.offset += state.direction * scrollSpeed * dt;
+                    if (state.offset <= 0) { state.offset = 0; state.direction = 1; state.isPaused = true; state.pauseUntil = Date.now() + pauseDuration; }
+                    else if (state.offset >= maxScroll) { state.offset = maxScroll; state.direction = -1; state.isPaused = true; state.pauseUntil = Date.now() + pauseDuration; }
+                    content.style.transform = `translateY(-${state.offset}px)`;
+                }
+                anim.id = requestAnimationFrame(step);
+                rosterScrollAnimations.push(anim);
+            });
+        }
+
+        function stopRosterAutoScroll() {
+            rosterScrollAnimations.forEach(item => {
+                if (!item) return;
+                if (item.type === 'raf') cancelAnimationFrame(item.id);
+                else if (typeof item === 'number') { clearInterval(item); clearTimeout(item); }
+            });
+            rosterScrollAnimations = [];
+        }
+
+        socket.on('connect', () => socket.emit('getCurrentState'));
+        socket.on('reconnect', () => socket.emit('getCurrentState'));
+        socket.on('scoreboardUpdate', (data) => { latestData = data; updateDisplay(data); });
+        socket.on('currentState', (data) => { latestData = data; updateDisplay(data); });
+        socket.on('teamUseAltNumbersUpdated', (data) => {
+            const { teamId, useAltNumbers } = data;
+            localStorage.setItem(`team-${teamId}-useAltNumbers`, useAltNumbers.toString());
+            if (latestData && ((latestData.team1Id && String(latestData.team1Id) === String(teamId)) || (latestData.team2Id && String(latestData.team2Id) === String(teamId)))) {
+                const team1Id = latestData.team1Id || null;
+                const team2Id = latestData.team2Id || null;
+                if (rosterTeam1Coach && rosterTeam1Players && team1Id && String(team1Id) === String(teamId)) {
+                    renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
+                }
+                if (rosterTeam2Coach && rosterTeam2Players && team2Id && String(team2Id) === String(teamId)) {
+                    renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
+                }
+            }
         });
     </script>
 </body>
