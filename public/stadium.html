@@ -1750,7 +1750,7 @@ body.penalty-mode .penalty-score {
 }
 #countdownOverlayText {
     color: #fff;
-    font-size: clamp(400px, 92vmin, 1200px);
+    font-size: clamp(500px, 98vmin, 1600px);
     font-weight: 700;
     text-align: center;
     line-height: 1;
@@ -3498,7 +3498,6 @@ body.penalty-mode .penalty-score {
         const textEl = document.getElementById('countdownOverlayText');
         if (!overlay || !textEl) return;
         overlay.style.display = 'flex';
-        textEl.style.fontSize = 'clamp(80px, 25vw, 280px)';
         textEl.classList.remove('countdown-match-started');
         const triggerPop = () => {
             textEl.classList.remove('countdown-pop');
