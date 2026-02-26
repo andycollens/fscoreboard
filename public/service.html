@@ -455,19 +455,15 @@
             display: none !important;
         }
 
-        /* Плеер джинглов — две строки: название | цвет формы | Play | джингл; громкость с иконками */
+        /* Плеер джинглов — без подложки, плоский стиль как на превью, поля одинаковой длины */
         .jingle-player-block {
             display: flex;
             flex-direction: column;
             align-items: stretch;
             justify-content: center;
-            gap: 12px;
-            padding: 14px 16px;
+            gap: 10px;
+            padding: 0 12px;
             min-width: 200px;
-            background: linear-gradient(165deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 50%, rgba(0,0,0,0.08) 100%);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.25);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.25);
         }
         .jingle-team-row {
             display: flex;
@@ -477,13 +473,12 @@
         .jingle-team-name {
             font-size: 11px;
             font-weight: 600;
-            color: rgba(255,255,255,0.95);
+            color: #fff;
             min-width: 52px;
             max-width: 70px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.4);
         }
         .jingle-team-color-bar {
             width: 3px;
@@ -491,22 +486,21 @@
             border-radius: 2px;
             flex-shrink: 0;
             background: #2b2b2b;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
         }
         .jingle-team-controls {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             flex: 1;
             min-width: 0;
         }
         .jingle-play-btn {
             width: 30px;
             height: 30px;
-            border: 1px solid rgba(0,0,0,0.25);
+            border: none;
             border-radius: 50%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.15) 50%, rgba(0,0,0,0.1) 100%);
-            color: #333;
+            background: #555;
+            color: #fff;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -514,34 +508,25 @@
             font-size: 11px;
             padding: 0;
             flex-shrink: 0;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 4px rgba(0,0,0,0.25);
-            transition: all 0.15s ease;
         }
         .jingle-play-btn:hover {
-            background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.22) 50%, rgba(0,0,0,0.08) 100%);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 2px 6px rgba(0,0,0,0.3);
-        }
-        .jingle-play-btn:active {
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            opacity: 0.9;
         }
         .jingle-play-btn.playing {
-            background: linear-gradient(180deg, rgba(180,220,255,0.6) 0%, rgba(120,180,240,0.4) 50%, rgba(60,120,200,0.3) 100%);
-            border-color: rgba(80,140,220,0.5);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 6px rgba(0,80,180,0.25);
+            opacity: 1;
         }
         .jingle-select {
             font-size: 10px;
-            padding: 4px 6px;
-            flex: 1;
-            min-width: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.06) 100%);
-            border: 1px solid rgba(0,0,0,0.25);
-            border-radius: 6px;
+            padding: 5px 8px;
+            width: 130px;
+            min-width: 130px;
+            max-width: 130px;
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 4px;
             color: #fff;
             cursor: pointer;
             outline: none;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.2);
-            text-shadow: 0 1px 1px rgba(0,0,0,0.4);
         }
         .jingle-select option {
             background: #2a2a2a;
@@ -550,26 +535,23 @@
         .jingle-progress-wrap {
             width: 100%;
             height: 4px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.25) 100%);
+            background: #333;
             border-radius: 2px;
             overflow: hidden;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
-            border: 1px solid rgba(0,0,0,0.2);
             margin-top: 4px;
         }
         .jingle-progress-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, rgba(100,160,255,0.9) 0%, rgba(140,200,255,0.95) 50%, rgba(180,220,255,0.9) 100%);
+            background: #4a7fc7;
             border-radius: 2px;
             transition: width 0.12s linear;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
         }
         .jingle-volume-row {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
         .jingle-volume-icon {
             width: 18px;
@@ -577,7 +559,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: rgba(255,255,255,0.85);
+            color: #fff;
             font-size: 14px;
             flex-shrink: 0;
         }
@@ -593,10 +575,9 @@
             top: 0;
             bottom: 0;
             width: 0%;
-            background: linear-gradient(to bottom, #5a9cf5 0%, #7eb8ff 50%, #5a9cf5 100%);
+            background: #4a7fc7;
             border-radius: 3px 0 0 3px;
             pointer-events: none;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
             transition: width 0.1s ease;
         }
         .jingle-volume-row input[type="range"] {
@@ -611,35 +592,31 @@
         }
         .jingle-volume-row input[type="range"]::-webkit-slider-runnable-track {
             height: 6px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.2) 100%);
+            background: #444;
             border-radius: 3px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
         }
         .jingle-volume-row input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: linear-gradient(145deg, #fff 0%, #e8e8e8 100%);
+            background: #fff;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.35);
-            border: 1px solid rgba(0,0,0,0.15);
+            border: none;
             margin-top: -4px;
         }
         .jingle-volume-row input[type="range"]::-moz-range-track {
             height: 6px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.2) 100%);
+            background: #444;
             border-radius: 3px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.4);
         }
         .jingle-volume-row input[type="range"]::-moz-range-thumb {
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: linear-gradient(145deg, #fff 0%, #e8e8e8 100%);
+            background: #fff;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.35);
-            border: 1px solid rgba(0,0,0,0.15);
+            border: none;
         }
     </style>
 </head>
@@ -912,6 +889,10 @@
             if (jingleTeam2NameEl) jingleTeam2NameEl.textContent = data.team2Name || 'Команда 2';
             if (jingleTeam1ColorBarEl) jingleTeam1ColorBarEl.style.backgroundColor = data.kit1Color || '#2b2b2b';
             if (jingleTeam2ColorBarEl) jingleTeam2ColorBarEl.style.backgroundColor = data.kit2Color || '#2b2b2b';
+            const jinglePlay1El = document.getElementById('jinglePlay1');
+            const jinglePlay2El = document.getElementById('jinglePlay2');
+            if (jinglePlay1El) jinglePlay1El.style.backgroundColor = data.kit1Color || '#555';
+            if (jinglePlay2El) jinglePlay2El.style.backgroundColor = data.kit2Color || '#555';
         }
 
         const team1Logo = document.getElementById('team1Logo');
