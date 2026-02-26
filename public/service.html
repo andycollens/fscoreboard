@@ -550,6 +550,21 @@
             background: #1a1a1a;
             color: #fff;
         }
+        .jingle-progress-wrap {
+            width: 100%;
+            max-width: 110px;
+            height: 3px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .jingle-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: rgba(255,255,255,0.6);
+            border-radius: 2px;
+            transition: width 0.15s linear;
+        }
     </style>
 </head>
 <body class="rosters-mode">
@@ -584,11 +599,13 @@
                             <label>1</label>
                             <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
                             <select class="jingle-select" id="jingleSelect1" title="Джингл команды 1"></select>
+                            <div class="jingle-progress-wrap" id="jingleProgressWrap1"><div class="jingle-progress-fill" id="jingleProgressFill1"></div></div>
                         </div>
                         <div class="jingle-team-wrap">
                             <label>2</label>
                             <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
                             <select class="jingle-select" id="jingleSelect2" title="Джингл команды 2"></select>
+                            <div class="jingle-progress-wrap" id="jingleProgressWrap2"><div class="jingle-progress-fill" id="jingleProgressFill2"></div></div>
                         </div>
                     </div>
                 </div>
@@ -897,16 +914,31 @@
         const jinglePlay2 = document.getElementById('jinglePlay2');
         const jingleSelect1 = document.getElementById('jingleSelect1');
         const jingleSelect2 = document.getElementById('jingleSelect2');
+        const jingleProgressFill1 = document.getElementById('jingleProgressFill1');
+        const jingleProgressFill2 = document.getElementById('jingleProgressFill2');
         let currentTeam1Audio = null;
         let currentTeam2Audio = null;
+
+        function setProgressFill(teamNum, percent) {
+            const el = teamNum === 1 ? jingleProgressFill1 : jingleProgressFill2;
+            if (el) el.style.width = (percent || 0) + '%';
+        }
+        function updateProgressFromAudio(a) {
+            if (!a.duration || !isFinite(a.duration)) return;
+            const pct = (a.currentTime / a.duration) * 100;
+            if (currentTeam1Audio === a) setProgressFill(1, pct);
+            if (currentTeam2Audio === a) setProgressFill(2, pct);
+        }
 
         function getOrCreateAudio(filename) {
             if (jingleCache[filename]) return jingleCache[filename];
             const a = new Audio(jingleBase + filename);
             jingleCache[filename] = a;
+            a.addEventListener('timeupdate', () => updateProgressFromAudio(a));
+            a.addEventListener('loadedmetadata', () => updateProgressFromAudio(a));
             a.addEventListener('ended', () => {
-                if (jinglePlay1 && currentTeam1Audio === a) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); currentTeam1Audio = null; }
-                if (jinglePlay2 && currentTeam2Audio === a) { jinglePlay2.textContent = '▶'; jinglePlay2.classList.remove('playing'); currentTeam2Audio = null; }
+                if (currentTeam1Audio === a) { if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } currentTeam1Audio = null; setProgressFill(1, 0); }
+                if (currentTeam2Audio === a) { if (jinglePlay2) { jinglePlay2.textContent = '▶'; jinglePlay2.classList.remove('playing'); } currentTeam2Audio = null; setProgressFill(2, 0); }
             });
             return a;
         }
@@ -931,15 +963,16 @@
             if (currentTeam1Audio === a || currentTeam2Audio === a) {
                 a.pause();
                 a.currentTime = 0;
-                if (currentTeam1Audio === a) currentTeam1Audio = null;
-                if (currentTeam2Audio === a) currentTeam2Audio = null;
+                if (currentTeam1Audio === a) { currentTeam1Audio = null; setProgressFill(1, 0); }
+                if (currentTeam2Audio === a) { currentTeam2Audio = null; setProgressFill(2, 0); }
                 btn.textContent = '▶';
                 btn.classList.remove('playing');
                 return;
             }
-            if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } currentTeam1Audio = null; }
-            if (currentTeam2Audio) { currentTeam2Audio.pause(); currentTeam2Audio.currentTime = 0; if (jinglePlay2) { jinglePlay2.textContent = '▶'; jinglePlay2.classList.remove('playing'); } currentTeam2Audio = null; }
+            if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } currentTeam1Audio = null; setProgressFill(1, 0); }
+            if (currentTeam2Audio) { currentTeam2Audio.pause(); currentTeam2Audio.currentTime = 0; if (jinglePlay2) { jinglePlay2.textContent = '▶'; jinglePlay2.classList.remove('playing'); } currentTeam2Audio = null; setProgressFill(2, 0); }
             if (teamNum === 1) currentTeam1Audio = a; else currentTeam2Audio = a;
+            setProgressFill(teamNum, 0);
             btn.textContent = '❚❚';
             btn.classList.add('playing');
             a.currentTime = 0;
