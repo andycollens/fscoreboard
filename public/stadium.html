@@ -1750,11 +1750,15 @@ body.penalty-mode .penalty-score {
 }
 #countdownOverlayText {
     color: #fff;
-    font-size: clamp(500px, 98vmin, 1600px);
+    font-size: clamp(420px, 88vmin, 1400px);
     font-weight: 700;
     text-align: center;
     line-height: 1;
     user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 #countdownOverlayText.countdown-pop {
     animation: countdown-pop 0.9s ease-out forwards;
@@ -1962,7 +1966,7 @@ body.penalty-mode .penalty-score {
         </div>
     </div>
 
-    <!-- Оверлей обратного отсчёта перед стартом матча (5→0 → МАТЧ НАЧАЛСЯ!) -->
+    <!-- Оверлей обратного отсчёта перед стартом матча (5→0 → МАТЧ НАЧАЛСЯ) -->
     <div id="countdownOverlay">
         <div id="countdownOverlayText">5</div>
     </div>
@@ -3524,7 +3528,7 @@ body.penalty-mode .penalty-score {
         const t5 = setTimeout(() => {
             textEl.classList.remove('countdown-pop');
             textEl.style.fontSize = '';
-            textEl.innerHTML = 'МАТЧ<br>НАЧАЛСЯ!';
+            textEl.innerHTML = 'МАТЧ<br>НАЧАЛСЯ';
             void textEl.offsetWidth;
             textEl.classList.add('countdown-match-started');
         }, 5000);
