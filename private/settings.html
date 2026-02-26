@@ -87,6 +87,31 @@
       font-size: 12px;
     }
     
+    .section.service-token-section {
+      padding: 9px 10px;
+      margin-top: 20px;
+      opacity: 0.85;
+      background: #f8fbff;
+      border: 1px solid #d8e3f6;
+    }
+    .section.service-token-section .section-header h2 {
+      font-size: 16px;
+      color: #61708a;
+      font-weight: 500;
+    }
+    .section.service-token-section label {
+      font-size: 12px;
+      color: #61708a;
+    }
+    .section.service-token-section input {
+      font-size: 13px;
+      padding: 6px 10px;
+    }
+    .section.service-token-section .btn {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    
     .section.graphic-style-section {
       padding: 9px 10px;
       opacity: 0.85;
@@ -3829,6 +3854,18 @@
             stadiumTokenInput.value = config.stadiumToken || '';
           }
           
+          const serviceTokenInput = document.getElementById('serviceTokenInput');
+          const serviceLink = document.getElementById('serviceLink');
+          if (serviceTokenInput) {
+            serviceTokenInput.value = config.serviceToken || '';
+          }
+          if (serviceLink) {
+            const currentUrl = window.location.origin;
+            const serviceUrl = `${currentUrl}/service.html?token=${encodeURIComponent(config.serviceToken || '')}`;
+            serviceLink.href = serviceUrl;
+            serviceLink.textContent = serviceUrl;
+          }
+          
           const stadiumTournamentTitleInput = document.getElementById('stadiumTournamentTitleInput');
           if (stadiumTournamentTitleInput) {
             stadiumTournamentTitleInput.value = config.tournamentTitle || 'ISKRA CUP 2025';
@@ -3918,6 +3955,33 @@
       }
     }
     
+    // Сохранение секрета для Service (пустое значение = сгенерировать на сервере)
+    async function saveServiceToken() {
+      const serviceTokenInput = document.getElementById('serviceTokenInput');
+      if (!serviceTokenInput) return;
+      const serviceToken = serviceTokenInput.value.trim();
+      try {
+        const response = await fetch(`/api/config?token=${getToken()}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ serviceToken: serviceToken || '' })
+        });
+        if (!response.ok) throw new Error('Ошибка сохранения');
+        const data = await response.json();
+        if (data.serviceToken) serviceTokenInput.value = data.serviceToken;
+        showNotification('Секрет для Service сохранён', 'success');
+        await loadConfig();
+      } catch (error) {
+        console.error('Ошибка сохранения секрета Service:', error);
+        showNotification('Ошибка сохранения секрета Service', 'error');
+      }
+    }
+    async function generateAndSaveServiceToken() {
+      const serviceTokenInput = document.getElementById('serviceTokenInput');
+      if (serviceTokenInput) serviceTokenInput.value = '';
+      await saveServiceToken();
+    }
+
     // Сохранение секрета для Stadium
     async function saveStadiumToken() {
       const stadiumTokenInput = document.getElementById('stadiumTokenInput');
@@ -4272,6 +4336,26 @@
       initModeRadios();
     }
   </script>
+
+  <!-- Секция Настройки Service (такая же по структуре, как Stadium) -->
+  <div class="section service-token-section">
+    <div class="section-header">
+      <h2>Настройки Service</h2>
+    </div>
+    
+    <div style="margin-bottom: 12px;">
+      <label style="display: block; margin-bottom: 6px;">Секрет для доступа к странице Service:</label>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input type="text" id="serviceTokenInput" style="flex: 1; padding: 6px 10px; border: 1px solid #c5d9ff; border-radius: 8px; font-size: 13px; background: #fff;" placeholder="Введите секрет">
+        <button class="btn btn-primary" onclick="saveServiceToken()">Сохранить</button>
+        <button class="btn" style="background: #e0e8f2; color: #333;" onclick="generateAndSaveServiceToken()">Сгенерировать</button>
+      </div>
+      <div style="margin-top: 8px; padding: 8px; background: #eef4ff; border-radius: 8px; font-size: 12px; color: #61708a;">
+        <strong>Ссылка на Service:</strong><br>
+        <a id="serviceLink" href="#" target="_blank" style="color: #338af3; word-break: break-all;">Загрузка...</a>
+      </div>
+    </div>
+  </div>
 
   <!-- Секция Настройки Stadium (менее заметная, внизу страницы) -->
   <div class="section stadium-token-section">

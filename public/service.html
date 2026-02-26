@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service — Составы команд</title>
+    <style>
+        @font-face {
+            font-family: 'RPL';
+            src: url('/public/fonts/RPL.ttf') format('truetype');
+        }
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background: #000;
+            color: #fff;
+            font-family: 'RPL', Arial, sans-serif;
+            overflow: auto;
+        }
+        .service-container {
+            display: flex;
+            min-height: 100vh;
+            padding: 24px;
+            gap: 32px;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .team-block {
+            flex: 1;
+            max-width: 50%;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .team-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .team-logo {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+        .team-logo.hidden { display: none; }
+        .team-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 0 0 4px 0;
+        }
+        .team-city {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            text-align: center;
+            margin: 0;
+        }
+        .roster {
+            width: 100%;
+            font-size: 0.8rem;
+            line-height: 1.35;
+        }
+        .roster-title {
+            font-weight: 700;
+            margin: 10px 0 4px 0;
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+        .roster-title:first-child { margin-top: 0; }
+        .roster-line {
+            margin: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="service-container">
+        <div class="team-block" id="team1Block">
+            <div class="team-header">
+                <img id="team1Logo" class="team-logo hidden" src="" alt="">
+                <h2 class="team-name" id="team1Name">—</h2>
+                <p class="team-city" id="team1City">—</p>
+            </div>
+            <div class="roster" id="team1Roster"></div>
+        </div>
+        <div class="team-block" id="team2Block">
+            <div class="team-header">
+                <img id="team2Logo" class="team-logo hidden" src="" alt="">
+                <h2 class="team-name" id="team2Name">—</h2>
+                <p class="team-city" id="team2City">—</p>
+            </div>
+            <div class="roster" id="team2Roster"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function renderRoster(el, players, staff) {
+            if (!el) return;
+            const parts = [];
+            if (staff && Array.isArray(staff) && staff.length > 0) {
+                parts.push('<div class="roster-title">Тренерский состав</div>');
+                staff.forEach(item => {
+                    if (!item) return;
+                    const name = typeof item === 'string' ? item : (item.name || '');
+                    if (name) parts.push('<div class="roster-line">' + escapeHtml(name) + '</div>');
+                });
+            }
+            if (players && Array.isArray(players) && players.length > 0) {
+                parts.push('<div class="roster-title">Игроки</div>');
+                players.forEach(item => {
+                    if (!item) return;
+                    const num = item.number != null && item.number !== '' ? String(item.number) : '—';
+                    const name = item.name || '';
+                    parts.push('<div class="roster-line">' + escapeHtml(num) + ' ' + escapeHtml(name) + '</div>');
+                });
+            }
+            el.innerHTML = parts.length ? parts.join('') : '<div class="roster-line">Состав не выбран</div>';
+        }
+
+        function applyState(data) {
+            const team1Name = document.getElementById('team1Name');
+            const team1City = document.getElementById('team1City');
+            const team1Logo = document.getElementById('team1Logo');
+            const team1Roster = document.getElementById('team1Roster');
+            const team2Name = document.getElementById('team2Name');
+            const team2City = document.getElementById('team2City');
+            const team2Logo = document.getElementById('team2Logo');
+            const team2Roster = document.getElementById('team2Roster');
+
+            if (team1Name) team1Name.textContent = data.team1Name || '—';
+            if (team1City) team1City.textContent = data.team1City || '—';
+            if (team2Name) team2Name.textContent = data.team2Name || '—';
+            if (team2City) team2City.textContent = data.team2City || '—';
+
+            if (team1Logo) {
+                if (data.team1Logo && data.team1Logo.trim()) {
+                    team1Logo.src = data.team1Logo;
+                    team1Logo.classList.remove('hidden');
+                } else {
+                    team1Logo.classList.add('hidden');
+                }
+            }
+            if (team2Logo) {
+                if (data.team2Logo && data.team2Logo.trim()) {
+                    team2Logo.src = data.team2Logo;
+                    team2Logo.classList.remove('hidden');
+                } else {
+                    team2Logo.classList.add('hidden');
+                }
+            }
+
+            renderRoster(team1Roster, data.team1Players || data.players1 || [], data.team1Staff || data.staff1 || []);
+            renderRoster(team2Roster, data.team2Players || data.players2 || [], data.team2Staff || data.staff2 || []);
+        }
+
+        socket.on('connect', () => {
+            socket.emit('getCurrentState');
+        });
+        socket.on('scoreboardUpdate', (data) => {
+            applyState(data);
+        });
+        socket.on('currentState', (data) => {
+            applyState(data);
+        });
+    </script>
+</body>
+</html>

@@ -61,25 +61,34 @@ get_config() {
     # Читаем токены из config.json (если есть)
     local config_file="/opt/fscoreboard/server/config.json"
     STADIUM_TOKEN="StadiumSecret222"
+    SERVICE_TOKEN=""
     if [ -f "$config_file" ]; then
         if command -v jq &> /dev/null; then
             local json_token=$(jq -r '.token' "$config_file" 2>/dev/null || echo "")
             local json_stadium_token=$(jq -r '.stadiumToken' "$config_file" 2>/dev/null || echo "")
+            local json_service_token=$(jq -r '.serviceToken' "$config_file" 2>/dev/null || echo "")
             if [ -n "$json_token" ] && [ "$json_token" != "null" ]; then
                 TOKEN="$json_token"
             fi
             if [ -n "$json_stadium_token" ] && [ "$json_stadium_token" != "null" ]; then
                 STADIUM_TOKEN="$json_stadium_token"
             fi
+            if [ -n "$json_service_token" ] && [ "$json_service_token" != "null" ]; then
+                SERVICE_TOKEN="$json_service_token"
+            fi
         else
             # Fallback: используем grep для простого парсинга JSON
             local json_token=$(grep -o '"token"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
             local json_stadium_token=$(grep -o '"stadiumToken"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
+            local json_service_token=$(grep -o '"serviceToken"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
             if [ -n "$json_token" ]; then
                 TOKEN="$json_token"
             fi
             if [ -n "$json_stadium_token" ]; then
                 STADIUM_TOKEN="$json_stadium_token"
+            fi
+            if [ -n "$json_service_token" ]; then
+                SERVICE_TOKEN="$json_service_token"
             fi
         fi
     fi
@@ -151,6 +160,7 @@ print_links() {
     echo -e "  ${CYAN}Порт:${NC}            $PORT"
     echo -e "  ${CYAN}Токен управления:${NC} $TOKEN"
     echo -e "  ${CYAN}Токен стадиона:${NC}   $STADIUM_TOKEN"
+    echo -e "  ${CYAN}Токен Service:${NC}   $SERVICE_TOKEN"
     echo -e "  ${CYAN}Директория:${NC}      /opt/fscoreboard"
     
     echo -e "\n${YELLOW}🔧 УПРАВЛЕНИЕ:${NC}"

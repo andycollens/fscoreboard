@@ -259,6 +259,15 @@ interactive_setup() {
         STADIUM_TOKEN=$custom_stadium_token
     fi
     
+    # Токен для Service (страница составов)
+    read -p "Введите токен для Service (или Enter для автогенерации): " custom_service_token
+    if [ -z "$custom_service_token" ]; then
+        SERVICE_TOKEN=$(generate_token)
+        print_info "Сгенерирован токен для Service: $SERVICE_TOKEN"
+    else
+        SERVICE_TOKEN=$custom_service_token
+    fi
+    
     # Домен/IP
     read -p "Введите домен или IP сервера (или Enter для автодетекции): " custom_domain
     if [ -z "$custom_domain" ]; then
@@ -581,7 +590,8 @@ EOF
         cat > "$config_file" << EOF
 {
   "token": "$TOKEN",
-  "stadiumToken": "$STADIUM_TOKEN"
+  "stadiumToken": "$STADIUM_TOKEN",
+  "serviceToken": "$SERVICE_TOKEN"
 }
 EOF
         print_success "Файл config.json создан"
@@ -755,21 +765,30 @@ print_results() {
     # Читаем токены из config.json (если есть), иначе из переменных
     local config_file="$INSTALL_DIR/server/config.json"
     local current_stadium_token="$STADIUM_TOKEN"
+    local current_service_token="$SERVICE_TOKEN"
     if [ -f "$config_file" ]; then
         if command -v jq &> /dev/null; then
             local json_token=$(jq -r '.token' "$config_file" 2>/dev/null || echo "")
             local json_stadium_token=$(jq -r '.stadiumToken' "$config_file" 2>/dev/null || echo "")
+            local json_service_token=$(jq -r '.serviceToken' "$config_file" 2>/dev/null || echo "")
             if [ -n "$json_token" ] && [ "$json_token" != "null" ]; then
                 current_token="$json_token"
             fi
             if [ -n "$json_stadium_token" ] && [ "$json_stadium_token" != "null" ]; then
                 current_stadium_token="$json_stadium_token"
             fi
+            if [ -n "$json_service_token" ] && [ "$json_service_token" != "null" ]; then
+                current_service_token="$json_service_token"
+            fi
         else
             # Fallback: используем grep для простого парсинга JSON
             local json_stadium_token=$(grep -o '"stadiumToken"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
+            local json_service_token=$(grep -o '"serviceToken"[[:space:]]*:[[:space:]]*"[^"]*"' "$config_file" 2>/dev/null | cut -d'"' -f4 || echo "")
             if [ -n "$json_stadium_token" ]; then
                 current_stadium_token="$json_stadium_token"
+            fi
+            if [ -n "$json_service_token" ]; then
+                current_service_token="$json_service_token"
             fi
         fi
     fi
@@ -779,6 +798,7 @@ print_results() {
     print_info "Порт: $current_port"
     print_info "Токен управления: $current_token"
     print_info "Токен Stadium: $current_stadium_token"
+    print_info "Токен Service: $current_service_token"
     
     echo -e "\n${GREEN}╔══════════════════════════════════════════════════════════════════════════════╗"
     if [ "$INSTALLATION_TYPE" = "update" ]; then
@@ -797,6 +817,7 @@ print_results() {
     echo -e "  ${GREEN}http://$current_domain/penalti.html${NC}  (табло пенальти)"
     echo -e "  ${GREEN}http://$current_domain/public/scoreboard_vmix.html${NC}  (табло для vMix)"
     echo -e "  ${GREEN}http://$current_domain/stadium.html?token=$current_stadium_token${NC}  (стадион)"
+    echo -e "  ${GREEN}http://$current_domain/service.html?token=$current_service_token${NC}  (service — составы по токену)"
     echo -e "  ${GREEN}http://$current_domain/members.html${NC}  (составы команд)"
     echo -e "  ${GREEN}http://$current_domain/prematch.html${NC}  (прематч)"
     echo -e "  ${GREEN}http://$current_domain/break.html${NC}  (перерыв)"
@@ -808,6 +829,7 @@ print_results() {
     echo -e "${YELLOW}Порт:${NC}               $current_port"
     echo -e "${YELLOW}Токен управления:${NC}    $current_token"
     echo -e "${YELLOW}Токен стадиона:${NC}      $current_stadium_token"
+    echo -e "${YELLOW}Токен Service:${NC}       $current_service_token"
     echo -e "${YELLOW}Директория:${NC}         $INSTALL_DIR"
     
     echo -e "\n${CYAN}🔧 УПРАВЛЕНИЕ:${NC}"

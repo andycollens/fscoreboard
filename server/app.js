@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+const crypto = require('crypto');
 const socketio = require('socket.io');
 const fs = require('fs');
 const multer = require('multer');
@@ -15,6 +16,7 @@ const io = socketio(server);
 const PORT = process.env.PORT || 3002;
 const TOKEN = process.env.TOKEN || 'MySecret111';
 const STADIUM_TOKEN = process.env.STADIUM_TOKEN || 'StadiumSecret222';
+const SERVICE_TOKEN_DEFAULT = process.env.SERVICE_TOKEN || null; // если не задан — сгенерируется при первом чтении конфига
 const SAVE_PATH = path.join(__dirname, 'state.json');
 const PRESETS_PATH = path.join(__dirname, 'presets.json');
 const TOURNAMENTS_PATH = path.join(__dirname, 'tournaments.json');
@@ -35,7 +37,7 @@ if (!fs.existsSync(ADS_DIR)) {
 }
 
 // Загрузка конфигурации (токены)
-let config = { token: TOKEN, stadiumToken: STADIUM_TOKEN };
+let config = { token: TOKEN, stadiumToken: STADIUM_TOKEN, serviceToken: SERVICE_TOKEN_DEFAULT };
 if (fs.existsSync(CONFIG_PATH)) {
   try {
     const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
@@ -71,6 +73,31 @@ function getActualStadiumToken() {
     }
   }
   return STADIUM_TOKEN;
+}
+
+// Функция для получения актуального токена service (если не задан — генерируем и сохраняем)
+function getActualServiceToken() {
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      let serviceToken = savedConfig.serviceToken || SERVICE_TOKEN_DEFAULT;
+      if (!serviceToken || serviceToken === '') {
+        serviceToken = crypto.randomBytes(16).toString('hex');
+        const toSave = { ...savedConfig, serviceToken };
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(toSave, null, 2));
+        console.log('Service token сгенерирован и сохранён в config.json');
+      }
+      return serviceToken;
+    } catch (error) {
+      return SERVICE_TOKEN_DEFAULT || crypto.randomBytes(16).toString('hex');
+    }
+  }
+  const generated = SERVICE_TOKEN_DEFAULT || crypto.randomBytes(16).toString('hex');
+  try {
+    const base = { token: TOKEN, stadiumToken: STADIUM_TOKEN };
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify({ ...base, serviceToken: generated }, null, 2));
+  } catch (e) { /* ignore */ }
+  return generated;
 }
 
 // Функция для получения tournamentTitle из конфига
@@ -419,11 +446,15 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 // ====== Раздача статики ======
-// Защита stadium.html в публичной папке
+// Защита stadium.html и service.html в публичной папке
 app.use('/public', (req, res, next) => {
-  // Если запрос к stadium.html - проверяем токен
   if (req.path === '/stadium.html' || req.path === '/stadium.html/') {
     if (req.query.token !== getActualStadiumToken()) {
+      return res.status(403).send('Forbidden');
+    }
+  }
+  if (req.path === '/service.html' || req.path === '/service.html/') {
+    if (req.query.token !== getActualServiceToken()) {
       return res.status(403).send('Forbidden');
     }
   }
@@ -469,6 +500,11 @@ app.get('/logo.html', (_, res) => {
 app.get('/stadium.html', (req, res) => {
   if (req.query.token !== getActualStadiumToken()) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../public', 'stadium.html'));
+});
+
+app.get('/service.html', (req, res) => {
+  if (req.query.token !== getActualServiceToken()) return res.status(403).send('Forbidden');
+  res.sendFile(path.join(__dirname, '../public', 'service.html'));
 });
 
 app.get('/members.html', (_, res) => {
@@ -1597,6 +1633,7 @@ server.listen(PORT, () => {
   console.log(`Flag: http://localhost:${PORT}/flag.html`);
   console.log(`Logo: http://localhost:${PORT}/logo.html`);
   console.log(`Stadium: http://localhost:${PORT}/stadium.html?token=${getActualStadiumToken()}`);
+  console.log(`Service:  http://localhost:${PORT}/service.html?token=${getActualServiceToken()}`);
   console.log(`Members: http://localhost:${PORT}/members.html`);
 });
 
@@ -1638,13 +1675,14 @@ function saveAdsMeta(list) {
 
 // ====== API для конфигурации (токены) ======
 app.get('/api/config', (req, res) => {
-  // Разрешаем доступ с токеном управления ИЛИ токеном стадиона
+  // Разрешаем доступ с токеном управления, стадиона или service
   const token = req.query.token;
   const actualToken = getActualToken();
   const actualStadiumToken = getActualStadiumToken();
+  const actualServiceToken = getActualServiceToken();
   
   // Загружаем полную конфигурацию
-  let config = { token: actualToken, stadiumToken: actualStadiumToken };
+  let config = { token: actualToken, stadiumToken: actualStadiumToken, serviceToken: actualServiceToken };
   if (fs.existsSync(CONFIG_PATH)) {
     try {
       const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
@@ -1655,7 +1693,7 @@ app.get('/api/config', (req, res) => {
   }
 
   // Если токен не предоставлен или неверный, возвращаем только публичные данные
-  if (token !== actualToken && token !== actualStadiumToken) {
+  if (token !== actualToken && token !== actualStadiumToken && token !== actualServiceToken) {
     // Возвращаем только публичные данные (graphicStyle) без токенов и других секретных данных
     const publicConfig = {
       graphicStyle: config.graphicStyle || 'default'
@@ -1692,7 +1730,7 @@ app.put('/api/config', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
   // Загружаем текущую конфигурацию
-  let currentConfig = { token: TOKEN, stadiumToken: STADIUM_TOKEN };
+  let currentConfig = { token: TOKEN, stadiumToken: STADIUM_TOKEN, serviceToken: getActualServiceToken() };
   if (fs.existsSync(CONFIG_PATH)) {
     try {
       currentConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
@@ -1707,6 +1745,10 @@ app.put('/api/config', (req, res) => {
   }
   if (req.body.stadiumToken !== undefined) {
     currentConfig.stadiumToken = req.body.stadiumToken;
+  }
+  if (req.body.serviceToken !== undefined) {
+    const v = String(req.body.serviceToken || '').trim();
+    currentConfig.serviceToken = v || crypto.randomBytes(16).toString('hex');
   }
   if (req.body.stadiumMode !== undefined) {
     currentConfig.stadiumMode = req.body.stadiumMode;
@@ -1782,6 +1824,7 @@ app.put('/api/config', (req, res) => {
   console.log('Config updated:', { 
     token: req.body.token !== undefined ? '***changed***' : 'unchanged', 
     stadiumToken: req.body.stadiumToken !== undefined ? '***changed***' : 'unchanged',
+    serviceToken: req.body.serviceToken !== undefined ? '***changed***' : 'unchanged',
     stadiumMode: req.body.stadiumMode !== undefined ? req.body.stadiumMode : (currentConfig.stadiumMode || 'scoreboard'),
     winners: req.body.winners !== undefined ? '***changed***' : (currentConfig.winners ? 'preserved' : 'none'),
     graphicStyle: req.body.graphicStyle !== undefined ? req.body.graphicStyle : (currentConfig.graphicStyle || 'default')

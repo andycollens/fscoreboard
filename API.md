@@ -75,7 +75,8 @@ Authorization: Bearer your-secret-token-here
   "graphicStyle": "iskracup",
   "stadiumMode": "scoreboard",
   "tournamentTitle": "ISKRA CUP 2025",
-  "stadiumToken": "stadium-token-here"
+  "stadiumToken": "stadium-token-here",
+  "serviceToken": "service-token-here"
 }
 ```
 

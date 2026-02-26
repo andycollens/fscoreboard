@@ -34,6 +34,7 @@ curl -I "http://localhost:3001/private/control.html"
 - [ ] `http://localhost:3001/preloader.html` — загружается
 - [ ] `http://localhost:3001/public/scoreboard_vmix.html` — загружается
 - [ ] `http://localhost:3001/stadium.html?token=TOKEN` — загружается
+- [ ] `http://localhost:3001/service.html?token=TOKEN` — загружается
 - [ ] `http://localhost:3001/members.html` — загружается
 
 ### Проверка API

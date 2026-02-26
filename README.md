@@ -41,7 +41,7 @@ npm start
 
 ### Доступ к интерфейсам
 - **Панель управления**: `http://localhost:PORT/private/control.html?token=TOKEN`
-- **Основные страницы**: `scoreboard.html`, `penalti.html`, `prematch.html`, `break.html`, `preloader.html`, `stadium.html`, `members.html`
+- **Основные страницы**: `scoreboard.html`, `penalti.html`, `prematch.html`, `break.html`, `preloader.html`, `stadium.html`, `service.html`, `members.html`
 - **Legacy**: `scoreboard_vmix.html` (для vMix)
 
 > 💡 **Совет:** Используйте `fscoreboard-links` для получения всех ссылок с актуальными IP и токенами
@@ -107,6 +107,7 @@ fscoreboard/
 │   ├── preloader.html      # Заглушка для стримов (анимация лого)
 │   ├── scoreboard_vmix.html # Табло для vMix (legacy)
 │   ├── stadium.html        # Табло стадиона
+│   ├── service.html        # Составы команд (по токену, чёрный фон)
 │   ├── members.html        # Составы команд
 │   ├── fonts/RPL.ttf       # Шрифт
 │   └── img/                # Изображения и логотипы
