@@ -1736,6 +1736,77 @@ body.penalty-mode .penalty-score {
     text-align: left;
     padding-left: 40px;
 }
+
+/* Countdown overlay — stadium-style epic animations */
+#countdownOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    font-family: 'RPL', Arial, sans-serif;
+}
+#countdownOverlayText {
+    color: #fff;
+    font-size: clamp(80px, 25vw, 280px);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.1;
+    user-select: none;
+    text-shadow: 0 0 40px rgba(255,255,255,0.5), 0 0 80px rgba(255,255,255,0.3);
+}
+#countdownOverlayText.countdown-pop {
+    animation: countdown-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+#countdownOverlayText.countdown-match-started {
+    animation: countdown-match-started 1.2s ease-out forwards;
+}
+@keyframes countdown-pop {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+        filter: blur(8px);
+        text-shadow: 0 0 60px rgba(255,255,255,0.8);
+    }
+    50% {
+        transform: scale(1.15);
+        opacity: 1;
+        filter: blur(0);
+        text-shadow: 0 0 80px rgba(255,255,255,0.9), 0 0 120px rgba(255,255,255,0.4);
+    }
+    70% {
+        transform: scale(0.97);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+        filter: blur(0);
+        text-shadow: 0 0 40px rgba(255,255,255,0.5), 0 0 80px rgba(255,255,255,0.3);
+    }
+}
+@keyframes countdown-match-started {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+        letter-spacing: 0.3em;
+    }
+    30% {
+        opacity: 1;
+        text-shadow: 0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,220,100,0.4);
+    }
+    60% {
+        transform: scale(1.08);
+        letter-spacing: 0.05em;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+        letter-spacing: 0.05em;
+        text-shadow: 0 0 40px rgba(255,255,255,0.6), 0 0 80px rgba(255,220,100,0.3);
+    }
+}
     </style>
 </head>
 <body>
@@ -1899,8 +1970,8 @@ body.penalty-mode .penalty-score {
     </div>
 
     <!-- Оверлей обратного отсчёта перед стартом матча (5→0 → МАТЧ НАЧАЛСЯ!) -->
-    <div id="countdownOverlay" style="display: none; position: fixed; inset: 0; background: #000; z-index: 9999; align-items: center; justify-content: center; font-family: 'RPL', Arial, sans-serif;">
-        <div id="countdownOverlayText" style="color: #fff; font-size: clamp(80px, 25vw, 280px); font-weight: 700; text-align: center; line-height: 1.1; user-select: none;">5</div>
+    <div id="countdownOverlay">
+        <div id="countdownOverlayText">5</div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -3434,25 +3505,35 @@ body.penalty-mode .penalty-score {
         const textEl = document.getElementById('countdownOverlayText');
         if (!overlay || !textEl) return;
         overlay.style.display = 'flex';
-        let step = 5;
-        const show = (txt) => {
+        textEl.style.fontSize = 'clamp(80px, 25vw, 280px)';
+        textEl.classList.remove('countdown-match-started');
+        const triggerPop = () => {
+            textEl.classList.remove('countdown-pop');
+            void textEl.offsetWidth;
+            textEl.classList.add('countdown-pop');
+        };
+        const show = (txt, usePop = true) => {
             textEl.textContent = txt;
+            if (usePop) triggerPop();
         };
         const hideOverlayAndFinish = () => {
             overlay.style.display = 'none';
             textEl.style.fontSize = '';
             textEl.textContent = '5';
+            textEl.classList.remove('countdown-pop', 'countdown-match-started');
             socket.emit('countdownFinished');
         };
         show('5');
-        textEl.style.fontSize = 'clamp(80px, 25vw, 280px)';
-        const t1 = setTimeout(() => { show('4'); }, 1000);
-        const t2 = setTimeout(() => { show('3'); }, 2000);
-        const t3 = setTimeout(() => { show('2'); }, 3000);
-        const t4 = setTimeout(() => { show('1'); }, 4000);
+        const t1 = setTimeout(() => show('4'), 1000);
+        const t2 = setTimeout(() => show('3'), 2000);
+        const t3 = setTimeout(() => show('2'), 3000);
+        const t4 = setTimeout(() => show('1'), 4000);
         const t5 = setTimeout(() => {
-            show('МАТЧ НАЧАЛСЯ!');
+            textEl.classList.remove('countdown-pop');
             textEl.style.fontSize = 'clamp(28px, 6vw, 72px)';
+            textEl.textContent = 'МАТЧ НАЧАЛСЯ!';
+            void textEl.offsetWidth;
+            textEl.classList.add('countdown-match-started');
         }, 5000);
         const t6 = setTimeout(hideOverlayAndFinish, 6500);
         overlay._countdownTimeouts = [t1, t2, t3, t4, t5, t6];
