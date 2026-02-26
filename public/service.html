@@ -782,7 +782,7 @@
             }
             if (!lastScoreSnapshot) {
                 lastScoreSnapshot = { s1, s2 };
-                lastScoreChangeAt = Date.now();
+                lastScoreChangeAt = 0;
                 return;
             }
             if (s1 !== lastScoreSnapshot.s1 || s2 !== lastScoreSnapshot.s2) {
@@ -1016,7 +1016,8 @@
             try { localStorage.setItem(JINGLE_STORAGE_VOLUME, String(jingleVolumeEl ? jingleVolumeEl.value : jingleVolume)); } catch (e) {}
         }
         function shouldWarnGoalWithoutRecentScoreChange() {
-            if (!latestData || !lastScoreSnapshot || !lastScoreChangeAt) return false;
+            if (!latestData) return false;
+            if (!lastScoreSnapshot || !lastScoreChangeAt) return true;
             const diffMs = Date.now() - lastScoreChangeAt;
             return diffMs > 60000;
         }
