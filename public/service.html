@@ -971,6 +971,7 @@
         let currentTeam1Audio = null;
         let currentTeam2Audio = null;
         let lastGoalJinglePlayedAt = 0;
+        let lastGoalJingleScoreSnapshot = null;
 
         function setProgressFill(teamNum, percent) {
             const sel = teamNum === 1 ? jingleSelect1 : jingleSelect2;
@@ -1023,10 +1024,9 @@
             return diffMs > 60000;
         }
 
-        function hasActiveScoreOrTime() {
-            if (!latestData) return false;
-            let s1 = 0;
-            let s2 = 0;
+        function getCurrentScoreFromLatest() {
+            if (!latestData) return { s1: 0, s2: 0 };
+            let s1 = 0, s2 = 0;
             if (typeof latestData.score1 === 'number' || typeof latestData.score2 === 'number') {
                 s1 = Number(latestData.score1) || 0;
                 s2 = Number(latestData.score2) || 0;
@@ -1034,6 +1034,11 @@
                 if (latestData.team1 && typeof latestData.team1.score !== 'undefined') s1 = Number(latestData.team1.score) || 0;
                 if (latestData.team2 && typeof latestData.team2.score !== 'undefined') s2 = Number(latestData.team2.score) || 0;
             }
+            return { s1, s2 };
+        }
+        function hasActiveScoreOrTime() {
+            if (!latestData) return false;
+            const { s1, s2 } = getCurrentScoreFromLatest();
             const nonZeroScore = (s1 !== 0) || (s2 !== 0);
             let nonZeroTime = false;
             if (typeof latestData.timerSeconds === 'number') {
@@ -1042,6 +1047,11 @@
                 nonZeroTime = latestData.time !== '' && latestData.time !== '00:00';
             }
             return nonZeroScore || nonZeroTime;
+        }
+        function hasScoreIncreasedSinceLastJingle() {
+            if (!lastGoalJingleScoreSnapshot) return false;
+            const cur = getCurrentScoreFromLatest();
+            return cur.s1 > lastGoalJingleScoreSnapshot.s1 || cur.s2 > lastGoalJingleScoreSnapshot.s2;
         }
 
         function playJingle(teamNum) {
@@ -1063,7 +1073,7 @@
                     return;
                 }
             }
-            if (lastGoalJinglePlayedAt) {
+            if (lastGoalJinglePlayedAt && !hasScoreIncreasedSinceLastJingle()) {
                 if (!confirm('Вы уже запускали голевой джингл. Запустить его повторно?')) {
                     return;
                 }
@@ -1079,6 +1089,7 @@
             a.currentTime = 0;
             a.play();
             lastGoalJinglePlayedAt = Date.now();
+            lastGoalJingleScoreSnapshot = getCurrentScoreFromLatest();
         }
         function onJingleSelect(teamNum) {
             const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
