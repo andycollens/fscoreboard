@@ -970,6 +970,7 @@
         const jingleSelect2 = document.getElementById('jingleSelect2');
         let currentTeam1Audio = null;
         let currentTeam2Audio = null;
+        let lastGoalJinglePlayedAt = 0;
 
         function setProgressFill(teamNum, percent) {
             const sel = teamNum === 1 ? jingleSelect1 : jingleSelect2;
@@ -1062,6 +1063,11 @@
                     return;
                 }
             }
+            if (lastGoalJinglePlayedAt) {
+                if (!confirm('Вы уже запускали голевой джингл. Запустить его повторно?')) {
+                    return;
+                }
+            }
             const a = getOrCreateAudio(filename);
             a.volume = jingleVolume;
             if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } currentTeam1Audio = null; setProgressFill(1, 0); }
@@ -1072,6 +1078,7 @@
             btn.classList.add('playing');
             a.currentTime = 0;
             a.play();
+            lastGoalJinglePlayedAt = Date.now();
         }
         function onJingleSelect(teamNum) {
             const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
