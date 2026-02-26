@@ -126,7 +126,7 @@
 
         .middle-content {
             display: grid !important;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr auto 1fr;
             width: 100%;
             height: 100%;
             padding: 0;
@@ -454,6 +454,102 @@
         .penalty-overlay {
             display: none !important;
         }
+
+        /* Плеер джинглов — минималистичный */
+        .jingle-player-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 16px;
+            min-width: 140px;
+        }
+        .jingle-volume-row {
+            width: 100%;
+            max-width: 120px;
+        }
+        .jingle-volume-row input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            outline: none;
+        }
+        .jingle-volume-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+        }
+        .jingle-volume-row input[type="range"]::-moz-range-thumb {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            border: none;
+        }
+        .jingle-buttons-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .jingle-team-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .jingle-team-wrap label {
+            font-size: 9px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .jingle-play-btn {
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            padding: 0;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .jingle-play-btn:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.6);
+        }
+        .jingle-play-btn.playing {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.8);
+        }
+        .jingle-select {
+            font-size: 10px;
+            padding: 2px 6px;
+            min-width: 0;
+            max-width: 110px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+            outline: none;
+        }
+        .jingle-select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
     </style>
 </head>
 <body class="rosters-mode">
@@ -475,6 +571,25 @@
                         <div class="team1-name" id="team1Name">Команда 1</div>
                         <div id="team1Stripe" class="team1-stripe"></div>
                         <div class="team1-city" id="team1City">Город 1</div>
+                    </div>
+                </div>
+
+                <!-- Плеер джинглов -->
+                <div class="jingle-player-block">
+                    <div class="jingle-volume-row">
+                        <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Громкость">
+                    </div>
+                    <div class="jingle-buttons-row">
+                        <div class="jingle-team-wrap">
+                            <label>1</label>
+                            <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
+                            <select class="jingle-select" id="jingleSelect1" title="Джингл команды 1"></select>
+                        </div>
+                        <div class="jingle-team-wrap">
+                            <label>2</label>
+                            <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
+                            <select class="jingle-select" id="jingleSelect2" title="Джингл команды 2"></select>
+                        </div>
                     </div>
                 </div>
 
@@ -772,6 +887,86 @@
             });
             rosterScrollAnimations = [];
         }
+
+        // Плеер джинглов: кэш по имени файла, предзагрузка при выборе
+        const jingleCache = {};
+        let jingleVolume = 0.7;
+        const jingleBase = '/public/sound/';
+        const jingleVolumeEl = document.getElementById('jingleVolume');
+        const jinglePlay1 = document.getElementById('jinglePlay1');
+        const jinglePlay2 = document.getElementById('jinglePlay2');
+        const jingleSelect1 = document.getElementById('jingleSelect1');
+        const jingleSelect2 = document.getElementById('jingleSelect2');
+        let currentTeam1Audio = null;
+        let currentTeam2Audio = null;
+
+        function getOrCreateAudio(filename) {
+            if (jingleCache[filename]) return jingleCache[filename];
+            const a = new Audio(jingleBase + filename);
+            jingleCache[filename] = a;
+            a.addEventListener('ended', () => {
+                if (jinglePlay1 && currentTeam1Audio === a) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); currentTeam1Audio = null; }
+                if (jinglePlay2 && currentTeam2Audio === a) { jinglePlay2.textContent = '▶'; jinglePlay2.classList.remove('playing'); currentTeam2Audio = null; }
+            });
+            return a;
+        }
+        function preloadJingle(filename) {
+            const a = getOrCreateAudio(filename);
+            a.volume = jingleVolume;
+            a.load();
+        }
+        function applyVolumeToAll() {
+            if (jingleVolumeEl) jingleVolume = parseFloat(jingleVolumeEl.value);
+            Object.keys(jingleCache).forEach(f => { jingleCache[f].volume = jingleVolume; });
+        }
+        function playJingle(teamNum) {
+            const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
+            const btn = teamNum === 1 ? jinglePlay1 : jinglePlay2;
+            const currentRef = teamNum === 1 ? 'currentTeam1Audio' : 'currentTeam2Audio';
+            const otherRef = teamNum === 1 ? 'currentTeam2Audio' : 'currentTeam1Audio';
+            const filename = select && select.value ? select.value : '';
+            if (!filename) return;
+            const a = getOrCreateAudio(filename);
+            a.volume = jingleVolume;
+            if (currentTeam1Audio === a || currentTeam2Audio === a) {
+                a.pause();
+                a.currentTime = 0;
+                if (currentTeam1Audio === a) currentTeam1Audio = null;
+                if (currentTeam2Audio === a) currentTeam2Audio = null;
+                btn.textContent = '▶';
+                btn.classList.remove('playing');
+                return;
+            }
+            if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } currentTeam1Audio = null; }
+            if (currentTeam2Audio) { currentTeam2Audio.pause(); currentTeam2Audio.currentTime = 0; if (jinglePlay2) { jinglePlay2.textContent = '▶'; jinglePlay2.classList.remove('playing'); } currentTeam2Audio = null; }
+            if (teamNum === 1) currentTeam1Audio = a; else currentTeam2Audio = a;
+            btn.textContent = '❚❚';
+            btn.classList.add('playing');
+            a.currentTime = 0;
+            a.play();
+        }
+        function onJingleSelect(teamNum) {
+            const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
+            const filename = select && select.value ? select.value : '';
+            if (filename) preloadJingle(filename);
+        }
+        (function initJinglePlayer() {
+            fetch('/api/jingles').then(r => r.json()).then(data => {
+                const list = data.jingles || [];
+                const opt = (v, label) => { const o = document.createElement('option'); o.value = v; o.textContent = label || v.replace(/\.(mp3|ogg|m4a|wav)$/i, ''); return o; };
+                [jingleSelect1, jingleSelect2].forEach(sel => {
+                    if (!sel) return;
+                    sel.innerHTML = '';
+                    sel.appendChild(opt('', '—'));
+                    list.forEach(f => sel.appendChild(opt(f, f.replace(/\.(mp3|ogg|m4a|wav)$/i, ''))));
+                });
+            }).catch(() => {});
+            if (jingleVolumeEl) jingleVolumeEl.addEventListener('input', applyVolumeToAll);
+            if (jinglePlay1) jinglePlay1.addEventListener('click', () => playJingle(1));
+            if (jinglePlay2) jinglePlay2.addEventListener('click', () => playJingle(2));
+            if (jingleSelect1) jingleSelect1.addEventListener('change', () => onJingleSelect(1));
+            if (jingleSelect2) jingleSelect2.addEventListener('change', () => onJingleSelect(2));
+        })();
 
         socket.on('connect', () => socket.emit('getCurrentState'));
         socket.on('reconnect', () => socket.emit('getCurrentState'));

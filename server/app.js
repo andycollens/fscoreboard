@@ -27,6 +27,7 @@ const CUSTOM_STYLES_PATH = path.join(__dirname, 'custom-styles.json');
 const CUSTOM_STYLES_DIR = path.join(__dirname, '..', 'public', 'img', 'custom-styles');
 const ADS_DIR = path.join(__dirname, '..', 'public', 'ads');
 const ADS_META_PATH = path.join(__dirname, 'ads.json');
+const SOUND_DIR = path.join(__dirname, '..', 'public', 'sound');
 
 // Ensure custom styles and ads directories exist
 if (!fs.existsSync(CUSTOM_STYLES_DIR)) {
@@ -34,6 +35,9 @@ if (!fs.existsSync(CUSTOM_STYLES_DIR)) {
 }
 if (!fs.existsSync(ADS_DIR)) {
   fs.mkdirSync(ADS_DIR, { recursive: true });
+}
+if (!fs.existsSync(SOUND_DIR)) {
+  fs.mkdirSync(SOUND_DIR, { recursive: true });
 }
 
 // Загрузка конфигурации (токены)
@@ -510,6 +514,20 @@ app.get('/service.html', (req, res) => {
 
 app.get('/members.html', (_, res) => {
   res.sendFile(path.join(__dirname, '../public', 'members.html'));
+});
+
+app.get('/api/jingles', (_, res) => {
+  try {
+    if (!fs.existsSync(SOUND_DIR)) {
+      return res.json({ jingles: [] });
+    }
+    const files = fs.readdirSync(SOUND_DIR);
+    const jingles = files.filter(f => /\.(mp3|ogg|m4a|wav)$/i.test(f)).sort();
+    res.json({ jingles });
+  } catch (err) {
+    console.error('api/jingles:', err);
+    res.status(500).json({ jingles: [] });
+  }
 });
 
 app.get('/control', (req, res) => {
