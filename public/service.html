@@ -819,6 +819,7 @@
         let lastRosterSignature = '';
         let lastScoreSnapshot = null;
         let lastScoreChangeAt = 0;
+        let lastTimerRunningFlag = null;
 
         function escapeHtml(str = '') {
             return str
@@ -937,6 +938,13 @@
 
         function updateDisplay(data) {
             trackScoreChangeFromData(data);
+            const nowTimerRunning = isTimerRunningFromData(data);
+            if (lastTimerRunningFlag === false && nowTimerRunning === true) {
+                if (window.breakMusicPlaying && typeof window.stopBreakMusicFromTimer === 'function') {
+                    window.stopBreakMusicFromTimer();
+                }
+            }
+            lastTimerRunningFlag = nowTimerRunning;
             // Команда 1
             if (data.team1Logo && data.team1Logo !== '') {
                 team1Logo.src = data.team1Logo;
@@ -1218,15 +1226,18 @@
             const cur = getCurrentScoreFromLatest();
             return cur.s1 > lastGoalJingleScoreSnapshot.s1 || cur.s2 > lastGoalJingleScoreSnapshot.s2;
         }
-        function isTimerPaused() {
-            if (!latestData) return true;
-            if (typeof latestData.timerRunning === 'boolean') return !latestData.timerRunning;
-            if (typeof latestData.timerState === 'string') {
-                const s = latestData.timerState.toLowerCase();
-                if (s === 'running' || s === 'play' || s === 'started') return false;
-                return true;
+        function isTimerRunningFromData(data) {
+            if (!data) return false;
+            if (typeof data.timerRunning === 'boolean') return data.timerRunning;
+            if (typeof data.timerState === 'string') {
+                const s = data.timerState.toLowerCase();
+                if (s === 'running' || s === 'play' || s === 'started') return true;
+                return false;
             }
-            return true;
+            return false;
+        }
+        function isTimerPaused() {
+            return !isTimerRunningFromData(latestData);
         }
 
         let jingleConfirmPending = null;
@@ -1819,6 +1830,9 @@
                 advanceToNext();
             });
             setupQueueListDelegation();
+            window.stopBreakMusicFromTimer = function() {
+                stopBreakMusic();
+            };
         })();
 
         (function initKeyboardShortcuts() {
