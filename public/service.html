@@ -673,6 +673,27 @@
             0%, 100% { transform: translateX(0); }
             50% { transform: translateX(var(--track-scroll-dx, 0)); }
         }
+        .jingle-confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+        .jingle-confirm-box {
+            background: #222;
+            color: #fff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            max-width: 440px;
+            box-sizing: border-box;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-line;
+            text-align: left;
+        }
     </style>
 </head>
 <body class="rosters-mode">
@@ -769,6 +790,10 @@
                 <div class="roster-players-list" id="rosterTeam2Players"></div>
             </div>
         </div>
+    </div>
+
+    <div id="jingleConfirmOverlay" class="jingle-confirm-overlay">
+        <div class="jingle-confirm-box" id="jingleConfirmText"></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -1193,6 +1218,31 @@
             const cur = getCurrentScoreFromLatest();
             return cur.s1 > lastGoalJingleScoreSnapshot.s1 || cur.s2 > lastGoalJingleScoreSnapshot.s2;
         }
+        function isTimerPaused() {
+            if (!latestData) return true;
+            if (typeof latestData.timerRunning === 'boolean') return !latestData.timerRunning;
+            if (typeof latestData.timerState === 'string') {
+                const s = latestData.timerState.toLowerCase();
+                if (s === 'running' || s === 'play' || s === 'started') return false;
+                return true;
+            }
+            return true;
+        }
+
+        let jingleConfirmPending = null;
+        let jingleSkipConfirms = false;
+        const jingleConfirmOverlay = document.getElementById('jingleConfirmOverlay');
+        const jingleConfirmText = document.getElementById('jingleConfirmText');
+
+        function showJingleConfirm(message) {
+            if (!jingleConfirmOverlay || !jingleConfirmText) return;
+            jingleConfirmText.textContent = message;
+            jingleConfirmOverlay.style.display = 'flex';
+        }
+        function hideJingleConfirm() {
+            if (!jingleConfirmOverlay) return;
+            jingleConfirmOverlay.style.display = 'none';
+        }
 
         function playJingle(teamNum) {
             const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
@@ -1212,12 +1262,12 @@
                 alert('Джингл можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                 return;
             }
-            if (shouldWarnGoalWithoutRecentScoreChange()) {
+            if (!jingleSkipConfirms && shouldWarnGoalWithoutRecentScoreChange()) {
                 if (!confirm('На табло давно не менялся счёт. Убедитесь, что счёт обновлён перед запуском голевого джингла. Продолжить воспроизведение?')) {
                     return;
                 }
             }
-            if (lastGoalJinglePlayedAt && !hasScoreIncreasedSinceLastJingle()) {
+            if (!jingleSkipConfirms && lastGoalJinglePlayedAt && !hasScoreIncreasedSinceLastJingle()) {
                 if (!confirm('Вы уже запускали голевой джингл. Запустить его повторно?')) {
                     return;
                 }
@@ -1275,6 +1325,64 @@
         }
         if (footballAnthemBtn) footballAnthemBtn.addEventListener('click', toggleFootballAnthem);
 
+        function handleJingleKey(teamNum) {
+            const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
+            const btn = teamNum === 1 ? jinglePlay1 : jinglePlay2;
+            const currentAudio = teamNum === 1 ? currentTeam1Audio : currentTeam2Audio;
+
+            // Если уже играет джингл этой команды – вторым нажатием просто остановим
+            if (btn && btn.classList.contains('playing') && currentAudio) {
+                jingleConfirmPending = null;
+                hideJingleConfirm();
+                playJingle(teamNum);
+                return;
+            }
+
+            // Подтверждение предупреждения вторым нажатием
+            if (jingleConfirmPending && jingleConfirmPending.teamNum === teamNum) {
+                jingleConfirmPending = null;
+                hideJingleConfirm();
+                jingleSkipConfirms = true;
+                playJingle(teamNum);
+                jingleSkipConfirms = false;
+                return;
+            }
+
+            // Сброс подтверждения для другой команды
+            if (jingleConfirmPending && jingleConfirmPending.teamNum !== teamNum) {
+                jingleConfirmPending = null;
+                hideJingleConfirm();
+            }
+
+            if (!select || !select.value) {
+                playJingle(teamNum);
+                return;
+            }
+
+            if (window.breakMusicPlaying) {
+                playJingle(teamNum);
+                return;
+            }
+
+            const needsScoreWarn = shouldWarnGoalWithoutRecentScoreChange();
+            const needsRepeatWarn = lastGoalJinglePlayedAt && !hasScoreIncreasedSinceLastJingle();
+            if (needsScoreWarn || needsRepeatWarn) {
+                let msg = '';
+                if (needsScoreWarn) {
+                    msg += 'На табло давно не менялся счёт. Убедитесь, что счёт обновлён перед запуском голевого джингла.';
+                }
+                if (needsRepeatWarn) {
+                    msg += (msg ? '\n\n' : '') + 'Вы уже запускали голевой джингл. Запустить его повторно?';
+                }
+                msg += '\n\nНажмите ещё раз стрелку ' + (teamNum === 1 ? 'влево' : 'вправо') + ' для подтверждения.';
+                jingleConfirmPending = { teamNum: teamNum };
+                showJingleConfirm(msg);
+                return;
+            }
+
+            playJingle(teamNum);
+        }
+
         (function initJinglePlayer() {
             try {
                 const savedVol = localStorage.getItem(JINGLE_STORAGE_VOLUME);
@@ -1302,8 +1410,8 @@
                 });
             }).catch(() => {});
             if (jingleVolumeEl) jingleVolumeEl.addEventListener('input', applyVolumeToAll);
-            if (jinglePlay1) jinglePlay1.addEventListener('click', () => playJingle(1));
-            if (jinglePlay2) jinglePlay2.addEventListener('click', () => playJingle(2));
+            if (jinglePlay1) jinglePlay1.addEventListener('click', () => { jingleConfirmPending = null; hideJingleConfirm(); playJingle(1); });
+            if (jinglePlay2) jinglePlay2.addEventListener('click', () => { jingleConfirmPending = null; hideJingleConfirm(); playJingle(2); });
             if (jingleSelect1) jingleSelect1.addEventListener('change', () => onJingleSelect(1));
             if (jingleSelect2) jingleSelect2.addEventListener('change', () => onJingleSelect(2));
         })();
@@ -1337,6 +1445,37 @@
             const SECRET_CLICK_WINDOW_MS = 1500;
             let secretClicks = [];
             let isSeeking = false;
+            const BREAK_MUSIC_FADE_MS = 700;
+            let breakMusicFadeTimer = null;
+
+            function clearBreakMusicFade() {
+                if (breakMusicFadeTimer) {
+                    clearInterval(breakMusicFadeTimer);
+                    breakMusicFadeTimer = null;
+                }
+            }
+            function fadeBreakMusicTo(targetVolume, durationMs, onDone) {
+                clearBreakMusicFade();
+                const start = breakMusicAudio.volume;
+                const clampedTarget = Math.max(0, Math.min(1, targetVolume));
+                if (!durationMs || durationMs <= 0) {
+                    breakMusicAudio.volume = clampedTarget;
+                    if (onDone) onDone();
+                    return;
+                }
+                const startTime = Date.now();
+                breakMusicFadeTimer = setInterval(function() {
+                    const elapsed = Date.now() - startTime;
+                    let t = elapsed / durationMs;
+                    if (t >= 1) t = 1;
+                    const v = start + (clampedTarget - start) * t;
+                    breakMusicAudio.volume = v;
+                    if (t === 1) {
+                        clearBreakMusicFade();
+                        if (onDone) onDone();
+                    }
+                }, 40);
+            }
 
             function openDB() {
                 return new Promise((resolve, reject) => {
@@ -1550,8 +1689,11 @@
                 const blob = new Blob([item.data], { type: 'audio/mpeg' });
                 currentBlobUrl = URL.createObjectURL(blob);
                 breakMusicAudio.src = currentBlobUrl;
-                breakMusicAudio.volume = getVolume();
+                clearBreakMusicFade();
+                const targetVol = getVolume();
+                breakMusicAudio.volume = 0;
                 breakMusicAudio.play().catch(() => {});
+                fadeBreakMusicTo(targetVol, BREAK_MUSIC_FADE_MS);
             }
             function advanceToNext() {
                 while (queueNext5.length && !queueNext5[0]) queueNext5.shift();
@@ -1562,17 +1704,26 @@
                 playTrack(next);
             }
             function stopBreakMusic() {
-                if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
-                breakMusicAudio.pause();
-                breakMusicAudio.currentTime = 0;
-                breakMusicAudio.removeAttribute('src');
-                playingNow = null;
-                window.breakMusicPlaying = false;
-                hideProgress();
-                btn.classList.remove('playing');
-                btn.textContent = '▶';
-                setNowPlayingDisplay('', false);
-                setState();
+                const finishStop = function() {
+                    if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+                    breakMusicAudio.pause();
+                    breakMusicAudio.currentTime = 0;
+                    breakMusicAudio.removeAttribute('src');
+                    playingNow = null;
+                    window.breakMusicPlaying = false;
+                    hideProgress();
+                    btn.classList.remove('playing');
+                    btn.textContent = '▶';
+                    setNowPlayingDisplay('', false);
+                    setState();
+                };
+                clearBreakMusicFade();
+                const currentVol = breakMusicAudio.volume;
+                if (currentVol && currentVol > 0) {
+                    fadeBreakMusicTo(0, BREAK_MUSIC_FADE_MS, finishStop);
+                } else {
+                    finishStop();
+                }
             }
 
             breakMusicAudio.addEventListener('timeupdate', updateProgress);
@@ -1668,6 +1819,34 @@
                 advanceToNext();
             });
             setupQueueListDelegation();
+        })();
+
+        (function initKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                if (e.repeat) return;
+                const target = e.target;
+                if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) {
+                    return;
+                }
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    handleJingleKey(1);
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    handleJingleKey(2);
+                } else if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    if (isTimerPaused()) {
+                        const breakBtn = document.getElementById('breakMusicPlayBtn');
+                        if (breakBtn) breakBtn.click();
+                    }
+                } else if (e.key === 'Escape') {
+                    if (jingleConfirmPending) {
+                        jingleConfirmPending = null;
+                        hideJingleConfirm();
+                    }
+                }
+            });
         })();
 
         socket.on('connect', () => socket.emit('getCurrentState'));
