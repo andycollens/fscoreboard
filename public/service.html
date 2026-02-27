@@ -79,7 +79,7 @@
             position: fixed;
             inset: 0;
             display: grid !important;
-            grid-template-rows: 30px 230px 1fr;
+            grid-template-rows: 30px 320px 1fr;
             min-height: 0;
             height: 100vh;
             width: 100vw;
@@ -628,7 +628,7 @@
         .break-music-now-row.scroll .break-music-now-inner {
             animation: break-track-scroll 20s ease-in-out infinite;
         }
-        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; max-height: 130px; overflow-y: auto; overflow-x: hidden; }
+        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; max-height: 130px; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 2; }
         .break-music-queue-row {
             display: flex; align-items: center; gap: 4px;
             font-size: 10px; color: #666;
