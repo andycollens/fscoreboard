@@ -1289,6 +1289,7 @@
             const trackWrap = document.getElementById('breakMusicTrackWrap');
             const progressWrap = document.getElementById('breakMusicProgressWrap');
             const progressThumb = document.getElementById('breakMusicProgressThumb');
+            const progressTrack = progressWrap ? progressWrap.querySelector('.break-music-progress-track') : null;
             const progressTimeRemainingEl = document.getElementById('breakMusicProgressTime');
             const progressTimeElapsedEl = document.getElementById('breakMusicElapsedTime');
             if (!btn || !fileInput) return;
@@ -1302,6 +1303,7 @@
             const getVolume = () => (jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7);
             const SECRET_CLICK_WINDOW_MS = 1500;
             let secretClicks = [];
+            let isSeeking = false;
 
             function openDB() {
                 return new Promise((resolve, reject) => {
@@ -1456,6 +1458,20 @@
                     }
                 }
             }
+            function seekFromEvent(ev) {
+                if (!progressTrack) return;
+                var d = breakMusicAudio.duration;
+                if (!d || !isFinite(d) || d <= 0) return;
+                var rect = progressTrack.getBoundingClientRect();
+                if (!rect || !rect.width) return;
+                var x = ev.clientX;
+                var pct = (x - rect.left) / rect.width;
+                if (!isFinite(pct)) return;
+                if (pct < 0) pct = 0;
+                if (pct > 1) pct = 1;
+                breakMusicAudio.currentTime = d * pct;
+                updateProgress();
+            }
             function showProgress() {
                 if (progressWrap) progressWrap.classList.add('visible');
                 if (progressTimeRemainingEl) progressTimeRemainingEl.classList.add('visible');
@@ -1559,6 +1575,28 @@
                 }).catch(() => {});
                 fileInput.value = '';
             });
+
+            if (progressTrack) {
+                progressTrack.addEventListener('pointerdown', function(ev) {
+                    if (ev.button !== 0) return;
+                    isSeeking = true;
+                    ev.preventDefault();
+                    seekFromEvent(ev);
+                    try { progressTrack.setPointerCapture(ev.pointerId); } catch (e) {}
+                });
+                progressTrack.addEventListener('pointermove', function(ev) {
+                    if (!isSeeking) return;
+                    ev.preventDefault();
+                    seekFromEvent(ev);
+                });
+                ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(type) {
+                    progressTrack.addEventListener(type, function(ev) {
+                        if (!isSeeking) return;
+                        isSeeking = false;
+                        try { progressTrack.releasePointerCapture(ev.pointerId); } catch (e) {}
+                    });
+                });
+            }
 
             if (nowRow) {
                 nowRow.addEventListener('click', handleNowRowSecretClick);
