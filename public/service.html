@@ -595,6 +595,7 @@
             align-items: center;
             gap: 6px;
         }
+        .break-music-title { font-size: 15px; color: #888; letter-spacing: 0.05em; text-align: center; margin-bottom: 10px; }
         .break-music-controls {
             display: flex;
             align-items: center;
@@ -616,11 +617,12 @@
             opacity: 0.6;
         }
         .break-music-play.playing { opacity: 1; }
-        .break-music-track-wrap { max-width: 220px; margin: 0 auto; }
+        .break-music-track-wrap { max-width: 220px; margin: 0 auto; margin-top: 2px; }
         .break-music-now-row {
             font-size: 11px; color: #555; max-width: 100%; overflow: hidden; white-space: nowrap;
-            min-height: 16px; margin-bottom: 4px;
+            min-height: 0; margin-bottom: 4px;
         }
+        .break-music-now-row:empty, .break-music-now-row.empty { min-height: 0; margin-bottom: 0; }
         .break-music-now-row.playing { color: #aaa; }
         .break-music-now-inner { display: inline-block; white-space: nowrap; }
         .break-music-now-row.scroll .break-music-now-inner {
@@ -685,6 +687,7 @@
                     <div class="break-music-spacer"></div>
                     <div class="break-music-block">
                         <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
+                        <div class="break-music-title">МУЗЫКА ПЕРЕРЫВА</div>
                         <div class="break-music-controls">
                             <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Предыдущий трек" aria-label="Предыдущий">‹</button>
                             <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
@@ -1302,15 +1305,14 @@
                     else break;
                 }
             }
-            const LABEL_IDLE = 'МУЗЫКА ПЕРЕРЫВА';
             function setNowPlayingDisplay(text, isPlaying) {
                 if (!nowRow || !nowInner) return;
-                const show = isPlaying ? (text || '') : LABEL_IDLE;
-                nowInner.textContent = show;
+                nowInner.textContent = isPlaying ? (text || '') : '';
                 nowRow.classList.toggle('playing', !!isPlaying);
+                nowRow.classList.toggle('empty', !isPlaying);
                 nowRow.classList.remove('scroll');
                 nowRow.style.removeProperty('--track-scroll-dx');
-                if (show && nowInner.offsetWidth > nowRow.clientWidth) {
+                if (isPlaying && text && nowInner.offsetWidth > nowRow.clientWidth) {
                     nowRow.classList.add('scroll');
                     nowRow.style.setProperty('--track-scroll-dx', (nowRow.clientWidth - nowInner.offsetWidth) + 'px');
                 }
