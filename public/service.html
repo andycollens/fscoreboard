@@ -595,18 +595,18 @@
             align-items: center;
             gap: 6px;
         }
-        .break-music-title { font-size: 15px; color: #888; letter-spacing: 0.05em; text-align: center; }
+        .break-music-title { font-size: 15px; color: #888; letter-spacing: 0.05em; text-align: center; margin-bottom: 10px; }
         .break-music-controls {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 20px;
         }
         .break-music-nav-btn {
-            background: none; border: none; color: #444; cursor: pointer;
-            font-size: 16px; line-height: 1; padding: 4px; font-family: inherit;
+            background: none; border: none; color: #666; cursor: pointer;
+            font-size: 24px; font-weight: bold; line-height: 1; padding: 6px; font-family: inherit;
         }
-        .break-music-nav-btn:hover { color: #666; }
+        .break-music-nav-btn:hover { color: #aaa; }
         .break-music-nav-btn:disabled { color: #333; cursor: default; }
         .break-music-play {
             width: 44px; height: 44px; font-size: 18px;
@@ -617,14 +617,31 @@
             opacity: 0.6;
         }
         .break-music-play.playing { opacity: 1; }
+        .break-music-track-name-wrap { position: relative; }
         .break-music-track-name {
             font-size: 11px; color: #555; max-width: 180px;
             overflow: hidden; white-space: nowrap;
+            cursor: pointer;
         }
         .break-music-track-name.playing { color: #aaa; }
+        .break-music-queue-dropdown {
+            display: none; position: absolute; left: 0; top: 100%; margin-top: 4px;
+            background: #2a2a2a; border: 1px solid #555; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100;
+            min-width: 200px; max-width: 260px; max-height: 200px; overflow-y: auto;
+        }
+        .break-music-queue-dropdown.open { display: block; }
+        .break-music-queue-item {
+            display: block; width: 100%; padding: 8px 12px; font-size: 12px; color: #aaa;
+            background: none; border: none; cursor: pointer; text-align: left; font-family: inherit;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .break-music-queue-item:hover { background: #3a3a3a; color: #fff; }
+        .break-music-queue-item.current { color: #7ab; font-weight: bold; }
+        .break-music-queue-item.next { color: #8bc; }
         .break-music-track-name-inner { display: inline-block; white-space: nowrap; }
         .break-music-track-name.scroll .break-music-track-name-inner {
-            animation: break-track-scroll 6s ease-in-out infinite;
+            animation: break-track-scroll 20s ease-in-out infinite;
         }
         @keyframes break-track-scroll {
             0%, 100% { transform: translateX(0); }
@@ -676,7 +693,10 @@
                             <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
                             <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
                         </div>
-                        <div class="break-music-track-name" id="breakMusicTrackName"><span class="break-music-track-name-inner"></span></div>
+                        <div class="break-music-track-name-wrap" id="breakMusicTrackNameWrap">
+                            <div class="break-music-track-name" id="breakMusicTrackName" title="Следующие треки"><span class="break-music-track-name-inner"></span></div>
+                            <div class="break-music-queue-dropdown" id="breakMusicQueueDropdown"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="team2-section">
@@ -1221,6 +1241,8 @@
             const nextBtn = document.getElementById('breakMusicNextBtn');
             const fileInput = document.getElementById('breakMusicFileInput');
             const trackNameEl = document.getElementById('breakMusicTrackName');
+            const trackNameWrap = document.getElementById('breakMusicTrackNameWrap');
+            const queueDropdown = document.getElementById('breakMusicQueueDropdown');
             if (!btn || !fileInput) return;
 
             let breakMusicList = [];
@@ -1375,6 +1397,50 @@
                 breakMusicAudio.pause();
                 breakMusicAudio.removeAttribute('src');
                 playNextBreakTrack();
+            });
+
+            function openQueueDropdown() {
+                if (breakMusicList.length === 0) return;
+                if (breakMusicOrder.length === 0) { breakMusicOrder = shuffle(breakMusicList); breakMusicIndex = 0; }
+                const L = breakMusicOrder.length;
+                const playing = btn.classList.contains('playing');
+                const currentOrderIndex = playing ? (breakMusicIndex - 1 + L) % L : -1;
+                queueDropdown.innerHTML = '';
+                for (let i = 0; i < Math.min(5, L); i++) {
+                    const idx = (breakMusicIndex + i) % L;
+                    const item = breakMusicOrder[idx];
+                    const name = (item.name || '').replace(/\.(mp3|MP3)$/i, '');
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'break-music-queue-item' + (idx === currentOrderIndex ? ' current' : (i === 0 ? ' next' : ''));
+                    b.textContent = name;
+                    b.dataset.queueIndex = String(i);
+                    b.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const i = parseInt(this.dataset.queueIndex, 10);
+                        breakMusicIndex = (breakMusicIndex + i) % breakMusicOrder.length;
+                        queueDropdown.classList.remove('open');
+                        if (btn.classList.contains('playing')) {
+                            if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+                            breakMusicAudio.pause();
+                            breakMusicAudio.removeAttribute('src');
+                            playNextBreakTrack();
+                        }
+                    });
+                    queueDropdown.appendChild(b);
+                }
+                queueDropdown.classList.add('open');
+            }
+            function closeQueueDropdown() { if (queueDropdown) queueDropdown.classList.remove('open'); }
+            if (trackNameWrap) {
+                trackNameWrap.addEventListener('click', function(e) {
+                    if (e.target.closest('.break-music-queue-dropdown')) return;
+                    if (queueDropdown.classList.contains('open')) closeQueueDropdown();
+                    else openQueueDropdown();
+                });
+            }
+            document.addEventListener('click', function(e) {
+                if (trackNameWrap && !trackNameWrap.contains(e.target)) closeQueueDropdown();
             });
         })();
 
