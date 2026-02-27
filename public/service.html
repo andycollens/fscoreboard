@@ -968,6 +968,8 @@
                     rosterTeam2Players.classList.remove('many-players');
                     stopRosterAutoScroll();
                 }
+                adjustRosterFont(rosterTeam1Players);
+                adjustRosterFont(rosterTeam2Players);
             }
             if (data.tournamentTitle && tournamentTitle) {
                 tournamentTitle.textContent = data.tournamentTitle;
@@ -999,6 +1001,23 @@
         const tournamentTitle = document.getElementById('tournamentTitle');
 
         let rosterScrollAnimations = [];
+
+        function adjustRosterFont(playersEl) {
+            if (!playersEl) return;
+            const content = playersEl.querySelector('.roster-players-scroll');
+            if (!content) return;
+            content.style.fontSize = '';
+            const maxHeight = playersEl.clientHeight;
+            if (!maxHeight) return;
+            let font = 1.6;
+            const minFont = 1.1;
+            while (font >= minFont) {
+                content.style.fontSize = font + 'vw';
+                const h = content.scrollHeight;
+                if (h <= maxHeight) break;
+                font -= 0.1;
+            }
+        }
 
         function ensureRosterOverflow(el) {
             if (!el) return false;
