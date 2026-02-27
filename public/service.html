@@ -595,7 +595,6 @@
             align-items: center;
             gap: 6px;
         }
-        .break-music-title { font-size: 15px; color: #888; letter-spacing: 0.05em; text-align: center; margin-bottom: 10px; }
         .break-music-controls {
             display: flex;
             align-items: center;
@@ -630,7 +629,7 @@
         .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; }
         .break-music-queue-row {
             display: flex; align-items: center; gap: 4px;
-            font-size: 10px; color: #666; background: #252525; border-radius: 4px;
+            font-size: 10px; color: #666;
             padding: 3px 6px; min-height: 22px; box-sizing: border-box;
         }
         .break-music-queue-row .queue-row-name {
@@ -686,7 +685,6 @@
                     <div class="break-music-spacer"></div>
                     <div class="break-music-block">
                         <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
-                        <div class="break-music-title">МУЗЫКА ПЕРЕРЫВА</div>
                         <div class="break-music-controls">
                             <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Предыдущий трек" aria-label="Предыдущий">‹</button>
                             <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
@@ -1283,23 +1281,36 @@
                     });
                 });
             }
-            function getRandomTrack() {
+            function getRandomTrack(excludeTrack) {
                 if (breakMusicList.length === 0) return null;
-                return breakMusicList[Math.floor(Math.random() * breakMusicList.length)];
+                if (breakMusicList.length === 1) return breakMusicList[0];
+                if (breakMusicList.length === 2) return breakMusicList[Math.floor(Math.random() * 2)];
+                var excludeName = excludeTrack && excludeTrack.name;
+                var t;
+                var tries = 0;
+                do {
+                    t = breakMusicList[Math.floor(Math.random() * breakMusicList.length)];
+                    tries++;
+                } while (tries < 20 && excludeName && t && t.name === excludeName);
+                return t;
             }
-            function fillQueueToFive() {
+            function fillQueueToFive(excludeForNew) {
                 while (queueNext5.length < QUEUE_SIZE) {
-                    const t = getRandomTrack();
+                    const prev = queueNext5.length > 0 ? queueNext5[queueNext5.length - 1] : (playingNow || null);
+                    const t = getRandomTrack(excludeForNew || prev);
                     if (t) queueNext5.push(t);
                     else break;
                 }
             }
-            function setNowPlayingDisplay(text) {
+            const LABEL_IDLE = 'МУЗЫКА ПЕРЕРЫВА';
+            function setNowPlayingDisplay(text, isPlaying) {
                 if (!nowRow || !nowInner) return;
-                nowInner.textContent = text || '';
+                const show = isPlaying ? (text || '') : LABEL_IDLE;
+                nowInner.textContent = show;
+                nowRow.classList.toggle('playing', !!isPlaying);
                 nowRow.classList.remove('scroll');
                 nowRow.style.removeProperty('--track-scroll-dx');
-                if (text && nowInner.offsetWidth > nowRow.clientWidth) {
+                if (show && nowInner.offsetWidth > nowRow.clientWidth) {
                     nowRow.classList.add('scroll');
                     nowRow.style.setProperty('--track-scroll-dx', (nowRow.clientWidth - nowInner.offsetWidth) + 'px');
                 }
@@ -1320,17 +1331,25 @@
                     const downBtn = row.querySelector('[data-dir="down"]');
                     if (upBtn) {
                         upBtn.disabled = i === 0;
-                        upBtn.addEventListener('click', function(e) { e.stopPropagation();
-                            if (i === 0) return;
-                            [queueNext5[i - 1], queueNext5[i]] = [queueNext5[i], queueNext5[i - 1]];
+                        upBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const idx = parseInt(row.dataset.index, 10);
+                            if (idx <= 0) return;
+                            const a = queueNext5[idx - 1], b = queueNext5[idx];
+                            queueNext5[idx - 1] = b;
+                            queueNext5[idx] = a;
                             renderQueueRows();
                         });
                     }
                     if (downBtn) {
-                        downBtn.disabled = i === QUEUE_SIZE - 1;
-                        downBtn.addEventListener('click', function(e) { e.stopPropagation();
-                            if (i >= queueNext5.length - 1) return;
-                            [queueNext5[i], queueNext5[i + 1]] = [queueNext5[i + 1], queueNext5[i]];
+                        downBtn.disabled = i >= QUEUE_SIZE - 1;
+                        downBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const idx = parseInt(row.dataset.index, 10);
+                            if (idx >= QUEUE_SIZE - 1 || idx >= queueNext5.length - 1) return;
+                            const a = queueNext5[idx], b = queueNext5[idx + 1];
+                            queueNext5[idx] = b;
+                            queueNext5[idx + 1] = a;
                             renderQueueRows();
                         });
                     }
@@ -1339,8 +1358,7 @@
             }
             function setState() {
                 if (breakMusicList.length === 0) {
-                    setNowPlayingDisplay('');
-                    if (nowRow) nowRow.classList.remove('playing');
+                    setNowPlayingDisplay('', false);
                     queueNext5 = [];
                     renderQueueRows();
                 }
@@ -1353,8 +1371,7 @@
                 if (!item) return;
                 if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
                 playingNow = item;
-                setNowPlayingDisplay((item.name || '').replace(/\.(mp3|MP3)$/i, ''));
-                if (nowRow) nowRow.classList.add('playing');
+                setNowPlayingDisplay((item.name || '').replace(/\.(mp3|MP3)$/i, ''), true);
                 const blob = new Blob([item.data], { type: 'audio/mpeg' });
                 currentBlobUrl = URL.createObjectURL(blob);
                 breakMusicAudio.src = currentBlobUrl;
@@ -1364,7 +1381,7 @@
             function advanceToNext() {
                 if (queueNext5.length === 0) return;
                 const next = queueNext5.shift();
-                fillQueueToFive();
+                fillQueueToFive(next);
                 renderQueueRows();
                 playTrack(next);
             }
@@ -1376,8 +1393,7 @@
                 playingNow = null;
                 btn.classList.remove('playing');
                 btn.textContent = '▶';
-                setNowPlayingDisplay('');
-                if (nowRow) nowRow.classList.remove('playing');
+                setNowPlayingDisplay('', false);
                 setState();
             }
 
@@ -1434,7 +1450,8 @@
                 btn.classList.add('playing');
                 btn.textContent = '❚❚';
                 setState();
-                playTrack(getRandomTrack());
+                var first = queueNext5.length > 0 ? getRandomTrack(queueNext5[0]) : getRandomTrack();
+                playTrack(first);
             });
             if (prevBtn) prevBtn.addEventListener('click', function() {
                 if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
