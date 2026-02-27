@@ -1337,38 +1337,40 @@
                     row.innerHTML = '<span class="queue-row-name">' + (name || '—') + '</span>' +
                         '<button type="button" class="queue-row-move" data-dir="up" title="Выше" aria-label="Up">▲</button>' +
                         '<button type="button" class="queue-row-move" data-dir="down" title="Ниже" aria-label="Down">▼</button>';
-                    const upBtn = row.querySelector('[data-dir="up"]');
-                    const downBtn = row.querySelector('[data-dir="down"]');
-                    if (upBtn) {
-                        upBtn.disabled = i === 0;
-                        upBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            var r = e.currentTarget.closest('.break-music-queue-row');
-                            if (!r) return;
-                            var idx = parseInt(r.getAttribute('data-index'), 10);
-                            if (isNaN(idx) || idx <= 0) return;
-                            var a = queueNext5[idx - 1], b = queueNext5[idx];
-                            queueNext5[idx - 1] = b;
-                            queueNext5[idx] = a;
-                            renderQueueRows();
-                        });
-                    }
-                    if (downBtn) {
-                        downBtn.disabled = i === QUEUE_SIZE - 1;
-                        downBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            var r = e.currentTarget.closest('.break-music-queue-row');
-                            if (!r) return;
-                            var idx = parseInt(r.getAttribute('data-index'), 10);
-                            if (isNaN(idx) || idx >= QUEUE_SIZE - 1) return;
-                            var a = queueNext5[idx], b = queueNext5[idx + 1];
-                            queueNext5[idx] = b;
-                            queueNext5[idx + 1] = a;
-                            renderQueueRows();
-                        });
-                    }
+                    var upBtn = row.querySelector('[data-dir="up"]');
+                    var downBtn = row.querySelector('[data-dir="down"]');
+                    if (upBtn) upBtn.disabled = i === 0;
+                    if (downBtn) downBtn.disabled = i === QUEUE_SIZE - 1;
                     queueListEl.appendChild(row);
                 }
+            }
+            function setupQueueListDelegation() {
+                if (!queueListEl) return;
+                queueListEl.removeEventListener('click', handleQueueListClick);
+                queueListEl.addEventListener('click', handleQueueListClick);
+            }
+            function handleQueueListClick(e) {
+                var btn = e.target.closest('.queue-row-move');
+                if (!btn || btn.disabled) return;
+                e.preventDefault();
+                e.stopPropagation();
+                var row = btn.closest('.break-music-queue-row');
+                if (!row || row.parentNode !== queueListEl) return;
+                var idx = parseInt(row.getAttribute('data-index'), 10);
+                if (isNaN(idx) || idx < 0 || idx >= QUEUE_SIZE) return;
+                var dir = btn.getAttribute('data-dir');
+                if (dir === 'up') {
+                    if (idx <= 0) return;
+                    var a = queueNext5[idx - 1], b = queueNext5[idx];
+                    queueNext5[idx - 1] = b;
+                    queueNext5[idx] = a;
+                } else if (dir === 'down') {
+                    if (idx >= QUEUE_SIZE - 1) return;
+                    var a = queueNext5[idx], b = queueNext5[idx + 1];
+                    queueNext5[idx] = b;
+                    queueNext5[idx + 1] = a;
+                }
+                renderQueueRows();
             }
             function setState() {
                 if (breakMusicList.length === 0) {
@@ -1479,6 +1481,7 @@
                 if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
                 advanceToNext();
             });
+            setupQueueListDelegation();
         })();
 
         socket.on('connect', () => socket.emit('getCurrentState'));
