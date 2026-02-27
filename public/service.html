@@ -625,16 +625,16 @@
         }
         .break-music-track-name.playing { color: #aaa; }
         .break-music-queue-dropdown {
-            display: none; position: absolute; left: 0; top: 100%; margin-top: 4px;
+            display: none; position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 4px;
             background: #2a2a2a; border: 1px solid #555; border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100;
-            min-width: 200px; max-width: 260px; max-height: 200px; overflow-y: auto;
+            min-width: 220px; max-width: 280px; min-height: 0; max-height: 220px; overflow-y: auto;
         }
         .break-music-queue-dropdown.open { display: block; }
         .break-music-queue-item {
-            display: block; width: 100%; padding: 8px 12px; font-size: 12px; color: #aaa;
+            display: block; width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 12px; color: #aaa;
             background: none; border: none; cursor: pointer; text-align: left; font-family: inherit;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 38px; line-height: 1.2;
         }
         .break-music-queue-item:hover { background: #3a3a3a; color: #fff; }
         .break-music-queue-item.current { color: #7ab; font-weight: bold; }
@@ -1420,12 +1420,7 @@
                         const i = parseInt(this.dataset.queueIndex, 10);
                         breakMusicIndex = (breakMusicIndex + i) % breakMusicOrder.length;
                         queueDropdown.classList.remove('open');
-                        if (btn.classList.contains('playing')) {
-                            if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
-                            breakMusicAudio.pause();
-                            breakMusicAudio.removeAttribute('src');
-                            playNextBreakTrack();
-                        }
+                        /* Selected track is now next in queue; no immediate play */
                     });
                     queueDropdown.appendChild(b);
                 }
