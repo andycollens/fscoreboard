@@ -595,18 +595,19 @@
             align-items: center;
             gap: 6px;
         }
-        .break-music-header {
+        .break-music-title { font-size: 15px; color: #888; letter-spacing: 0.05em; text-align: center; }
+        .break-music-controls {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 4px;
         }
-        .break-music-title { font-size: 11px; color: #888; letter-spacing: 0.05em; }
-        .break-music-select-btn {
-            font-size: 10px; color: #666; background: transparent; border: 1px solid #555;
-            border-radius: 4px; padding: 2px 6px; cursor: pointer; font-family: inherit;
+        .break-music-nav-btn {
+            background: none; border: none; color: #444; cursor: pointer;
+            font-size: 16px; line-height: 1; padding: 4px; font-family: inherit;
         }
-        .break-music-select-btn:hover { color: #aaa; border-color: #666; }
+        .break-music-nav-btn:hover { color: #666; }
+        .break-music-nav-btn:disabled { color: #333; cursor: default; }
         .break-music-play {
             width: 44px; height: 44px; font-size: 18px;
         }
@@ -618,9 +619,17 @@
         .break-music-play.playing { opacity: 1; }
         .break-music-track-name {
             font-size: 11px; color: #555; max-width: 180px;
-            text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+            overflow: hidden; white-space: nowrap;
         }
         .break-music-track-name.playing { color: #aaa; }
+        .break-music-track-name-inner { display: inline-block; white-space: nowrap; }
+        .break-music-track-name.scroll .break-music-track-name-inner {
+            animation: break-track-scroll 6s ease-in-out infinite;
+        }
+        @keyframes break-track-scroll {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(var(--track-scroll-dx, 0)); }
+        }
     </style>
 </head>
 <body class="rosters-mode">
@@ -660,13 +669,14 @@
                     <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
                     <div class="break-music-spacer"></div>
                     <div class="break-music-block">
-                        <div class="break-music-header">
-                            <span class="break-music-title">МУЗЫКА ПЕРЕРЫВА</span>
-                            <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" multiple hidden>
-                            <button type="button" class="break-music-select-btn" id="breakMusicSelectBtn" title="Выбрать MP3 с этого компьютера">Файлы…</button>
+                        <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
+                        <div class="break-music-title">МУЗЫКА ПЕРЕРЫВА</div>
+                        <div class="break-music-controls">
+                            <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Предыдущий трек" aria-label="Предыдущий">‹</button>
+                            <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
+                            <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
                         </div>
-                        <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
-                        <div class="break-music-track-name" id="breakMusicTrackName"></div>
+                        <div class="break-music-track-name" id="breakMusicTrackName"><span class="break-music-track-name-inner"></span></div>
                     </div>
                 </div>
                 <div class="team2-section">
@@ -1207,7 +1217,8 @@
             const DB_NAME = 'fscoreboard-break-music';
             const STORE_KEY = 'list';
             const btn = document.getElementById('breakMusicPlayBtn');
-            const selectBtn = document.getElementById('breakMusicSelectBtn');
+            const prevBtn = document.getElementById('breakMusicPrevBtn');
+            const nextBtn = document.getElementById('breakMusicNextBtn');
             const fileInput = document.getElementById('breakMusicFileInput');
             const trackNameEl = document.getElementById('breakMusicTrackName');
             if (!btn || !fileInput) return;
@@ -1259,11 +1270,22 @@
                 return out;
             }
             function setState() {
-                if (breakMusicList.length > 0) {
-                    btn.disabled = false;
-                } else {
-                    btn.disabled = true;
-                    if (trackNameEl) { trackNameEl.textContent = ''; trackNameEl.classList.remove('playing'); }
+                if (breakMusicList.length === 0 && trackNameEl) { setTrackName(''); trackNameEl.classList.remove('playing'); }
+                btn.disabled = false;
+                const playing = btn.classList.contains('playing');
+                if (prevBtn) prevBtn.disabled = !playing || breakMusicList.length === 0;
+                if (nextBtn) nextBtn.disabled = !playing || breakMusicList.length === 0;
+            }
+            function setTrackName(text) {
+                if (!trackNameEl) return;
+                const inner = trackNameEl.querySelector('.break-music-track-name-inner');
+                if (inner) inner.textContent = text;
+                else trackNameEl.textContent = text;
+                trackNameEl.classList.remove('scroll');
+                trackNameEl.style.removeProperty('--track-scroll-dx');
+                if (text && inner && inner.offsetWidth > trackNameEl.clientWidth) {
+                    trackNameEl.classList.add('scroll');
+                    trackNameEl.style.setProperty('--track-scroll-dx', (trackNameEl.clientWidth - inner.offsetWidth) + 'px');
                 }
             }
             function playNextBreakTrack() {
@@ -1271,7 +1293,7 @@
                 if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
                 const item = breakMusicOrder[breakMusicIndex];
                 breakMusicIndex = (breakMusicIndex + 1) % breakMusicOrder.length;
-                if (trackNameEl) { trackNameEl.textContent = item.name || ''; trackNameEl.classList.add('playing'); }
+                if (trackNameEl) { setTrackName((item.name || '').replace(/\.(mp3|MP3)$/i, '')); trackNameEl.classList.add('playing'); }
                 const blob = new Blob([item.data], { type: 'audio/mpeg' });
                 currentBlobUrl = URL.createObjectURL(blob);
                 breakMusicAudio.src = currentBlobUrl;
@@ -1286,6 +1308,7 @@
                 btn.classList.remove('playing');
                 btn.textContent = '▶';
                 if (trackNameEl) trackNameEl.classList.remove('playing');
+                setState();
             }
 
             breakMusicAudio.addEventListener('ended', function() {
@@ -1300,7 +1323,6 @@
                 setState();
             });
 
-            if (selectBtn) selectBtn.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', function() {
                 const files = this.files;
                 if (!files || files.length === 0) return;
@@ -1323,7 +1345,10 @@
             });
 
             btn.addEventListener('click', function() {
-                if (breakMusicList.length === 0) return;
+                if (breakMusicList.length === 0) {
+                    fileInput.click();
+                    return;
+                }
                 if (btn.classList.contains('playing')) {
                     stopBreakMusic();
                     return;
@@ -1332,6 +1357,23 @@
                 breakMusicOrder = shuffle(breakMusicList);
                 btn.classList.add('playing');
                 btn.textContent = '❚❚';
+                setState();
+                playNextBreakTrack();
+            });
+            if (prevBtn) prevBtn.addEventListener('click', function() {
+                if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
+                if (breakMusicOrder.length <= 1) return;
+                if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+                breakMusicAudio.pause();
+                breakMusicAudio.removeAttribute('src');
+                breakMusicIndex = (breakMusicIndex - 2 + breakMusicOrder.length) % breakMusicOrder.length;
+                playNextBreakTrack();
+            });
+            if (nextBtn) nextBtn.addEventListener('click', function() {
+                if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
+                if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+                breakMusicAudio.pause();
+                breakMusicAudio.removeAttribute('src');
                 playNextBreakTrack();
             });
         })();
