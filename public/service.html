@@ -1009,13 +1009,27 @@
             content.style.fontSize = '';
             const maxHeight = playersEl.clientHeight;
             if (!maxHeight) return;
-            let font = 1.6;
+            const baseContent = 1.6;
             const minFont = 1.1;
+            let font = baseContent;
             while (font >= minFont) {
                 content.style.fontSize = font + 'vw';
                 const h = content.scrollHeight;
                 if (h <= maxHeight) break;
                 font -= 0.1;
+            }
+            const scale = Math.max(minFont / baseContent, Math.min(1, font / baseContent));
+            const teamBlock = playersEl.closest('.roster-team1, .roster-team2');
+            if (teamBlock) {
+                const coachLabel = teamBlock.querySelector('.roster-coach-label');
+                const coachName = teamBlock.querySelector('.roster-coach-name');
+                const playersLabel = teamBlock.querySelector('.roster-players-label');
+                const baseCoachLabel = 2.1;
+                const baseCoachName = 2.0;
+                const basePlayersLabel = 2.1;
+                if (coachLabel) coachLabel.style.fontSize = (baseCoachLabel * scale) + 'vw';
+                if (coachName) coachName.style.fontSize = (baseCoachName * scale) + 'vw';
+                if (playersLabel) playersLabel.style.fontSize = (basePlayersLabel * scale) + 'vw';
             }
         }
 
