@@ -594,6 +594,10 @@
             flex-direction: column;
             align-items: center;
             gap: 6px;
+            width: 220px;
+            min-width: 220px;
+            max-width: 220px;
+            box-sizing: border-box;
         }
         .break-music-controls {
             display: flex;
@@ -622,7 +626,7 @@
             overflow: hidden; white-space: nowrap;
         }
         .break-music-now-row.playing { color: #aaa; }
-        .break-music-track-wrap { max-width: 220px; margin: 0 auto; margin-top: 2px; display: none; }
+        .break-music-track-wrap { width: 220px; min-width: 220px; max-width: 220px; margin: 0 auto; margin-top: 2px; display: none; box-sizing: border-box; }
         .break-music-track-wrap.break-music-queue-ready { display: block; }
         .break-music-now-inner { display: inline-block; white-space: nowrap; }
         .break-music-now-row.scroll .break-music-now-inner {
@@ -645,7 +649,7 @@
         .break-music-progress-time {
             font-size: 10px; color: #666; min-width: 36px; text-align: right;
         }
-        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; max-height: 130px; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 2; }
+        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; max-height: 130px; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 2; width: 100%; min-width: 0; box-sizing: border-box; }
         .break-music-queue-row {
             display: flex; align-items: center; gap: 4px;
             font-size: 10px; color: #666;
@@ -705,16 +709,16 @@
                     <div class="break-music-block">
                         <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
                         <div class="break-music-now-row" id="breakMusicNowRow"><span class="break-music-now-inner" id="breakMusicNowInner"></span></div>
-                        <div class="break-music-controls">
-                            <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Предыдущий трек" aria-label="Предыдущий">‹</button>
-                            <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
-                            <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
-                        </div>
                         <div class="break-music-progress-wrap" id="breakMusicProgressWrap">
                             <div class="break-music-progress-track">
                                 <div class="break-music-progress-thumb" id="breakMusicProgressThumb"></div>
                             </div>
                             <span class="break-music-progress-time" id="breakMusicProgressTime"></span>
+                        </div>
+                        <div class="break-music-controls">
+                            <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Предыдущий трек" aria-label="Предыдущий">‹</button>
+                            <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
+                            <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
                         </div>
                         <div class="break-music-track-wrap" id="breakMusicTrackWrap">
                             <div class="break-music-queue-list" id="breakMusicQueueList"></div>
