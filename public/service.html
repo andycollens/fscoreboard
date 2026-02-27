@@ -1300,9 +1300,8 @@
             let currentBlobUrl = null;
             const breakMusicAudio = new Audio();
             const getVolume = () => (jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7);
-            const LONG_PRESS_MS = 7000;
-            let longPressTimer = null;
-            let longPressTriggered = false;
+            const SECRET_CLICK_WINDOW_MS = 1500;
+            let secretClicks = [];
 
             function openDB() {
                 return new Promise((resolve, reject) => {
@@ -1475,22 +1474,16 @@
                 }
                 if (progressThumb) progressThumb.style.left = '0%';
             }
-            function startLongPress() {
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                }
-                longPressTriggered = false;
-                longPressTimer = setTimeout(function() {
-                    longPressTriggered = true;
+            function handleNowRowSecretClick() {
+                if (!nowRow || window.breakMusicPlaying) return;
+                const nowTs = Date.now();
+                secretClicks = secretClicks.filter(ts => nowTs - ts <= SECRET_CLICK_WINDOW_MS);
+                secretClicks.push(nowTs);
+                if (secretClicks.length >= 5) {
+                    secretClicks = [];
                     if (fileInput) {
                         fileInput.click();
                     }
-                }, LONG_PRESS_MS);
-            }
-            function cancelLongPress() {
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
                 }
             }
             function playTrack(item) {
@@ -1567,27 +1560,11 @@
                 fileInput.value = '';
             });
 
-            btn.addEventListener('pointerdown', function(e) {
-                if (e.button !== 0) return;
-                startLongPress();
-            });
-            ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev) {
-                btn.addEventListener(ev, function() {
-                    if (longPressTriggered) {
-                        longPressTriggered = false;
-                        cancelLongPress();
-                        btn.dataset.ignoreClickOnce = '1';
-                    } else {
-                        cancelLongPress();
-                    }
-                });
-            });
+            if (nowRow) {
+                nowRow.addEventListener('click', handleNowRowSecretClick);
+            }
 
             btn.addEventListener('click', function() {
-                if (btn.dataset.ignoreClickOnce === '1') {
-                    delete btn.dataset.ignoreClickOnce;
-                    return;
-                }
                 if (breakMusicList.length === 0) {
                     fileInput.click();
                     return;
