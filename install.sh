@@ -656,6 +656,9 @@ start_application() {
     fi
     
     # Создаем ecosystem.config.js для правильной работы с переменными окружения
+    # Убираем \r и переводы строк из значений (иначе кавычка ломается и PM2: malformated)
+    PORT=$(echo "$PORT" | tr -d '\r\n')
+    TOKEN=$(echo "$TOKEN" | tr -d '\r\n')
     cat > "$INSTALL_DIR/ecosystem.config.js" << EOF
 module.exports = {
   apps: [{
@@ -867,8 +870,8 @@ main() {
     else
         # Для обновлений или неинтерактивного режима используем автоматические настройки
         if [ "$INSTALLATION_TYPE" = "update" ]; then
-            PORT=$(grep -o 'PORT=[0-9]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "3001")
-            TOKEN=$(grep -o 'TOKEN=[^[:space:]]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 || echo "$DEFAULT_TOKEN")
+            PORT=$(grep -o 'PORT=[0-9]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '\r\n' || echo "3001")
+            TOKEN=$(grep -o 'TOKEN=[^[:space:]]*' "$INSTALL_DIR/.env" 2>/dev/null | cut -d'=' -f2 | tr -d '\r\n' || echo "$DEFAULT_TOKEN")
             print_info "Используются существующие настройки: порт $PORT"
         else
             PORT=$(find_free_port $DEFAULT_PORT)

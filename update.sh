@@ -233,6 +233,11 @@ update_code() {
     [ -f "$backup_dir/ads.json" ] && cp "$backup_dir/ads.json" "server/" 2>/dev/null || true
     [ -d "$backup_dir/ads" ] && cp -r "$backup_dir/ads" "public/" 2>/dev/null || true
     
+    # Всегда подставляем валидный ecosystem.config.js из репозитория (токен — из config.json)
+    (cd /opt/fscoreboard && git checkout origin/main -- ecosystem.config.js 2>/dev/null) || true
+    port=$(grep -o 'PORT=[0-9]*' /opt/fscoreboard/.env 2>/dev/null | cut -d'=' -f2 || echo "3002")
+    sed -i "s/PORT: [0-9]*/PORT: $port/" /opt/fscoreboard/ecosystem.config.js 2>/dev/null || true
+    
     # Устанавливаем правильные права
     chown -R root:root server/state.json server/presets.json server/ads.json 2>/dev/null || true
     chown -R root:root public/logos public/ads 2>/dev/null || true
@@ -555,6 +560,16 @@ main() {
     restart_application
     reload_nginx
     full_reinstall
+    
+    # После full_reinstall — снова подставляем валидный ecosystem.config.js (install.sh мог сломать из‑за \r в .env)
+    if [ -f /opt/fscoreboard/ecosystem.config.js ]; then
+        (cd /opt/fscoreboard && git checkout origin/main -- ecosystem.config.js 2>/dev/null) || true
+        port=$(grep -o 'PORT=[0-9]*' /opt/fscoreboard/.env 2>/dev/null | cut -d'=' -f2 || echo "3002")
+        sed -i "s/PORT: [0-9]*/PORT: $port/" /opt/fscoreboard/ecosystem.config.js 2>/dev/null || true
+        if ! pm2 list 2>/dev/null | grep -q "fscoreboard.*online"; then
+            (cd /opt/fscoreboard && pm2 start ecosystem.config.js 2>/dev/null) && pm2 save 2>/dev/null || true
+        fi
+    fi
     
     # Проверяем успешность обновления перед очисткой
     if verify_update; then
