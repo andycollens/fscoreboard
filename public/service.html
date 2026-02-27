@@ -628,6 +628,23 @@
         .break-music-now-row.scroll .break-music-now-inner {
             animation: break-track-scroll 20s ease-in-out infinite;
         }
+        .break-music-progress-wrap {
+            display: none; align-items: center; gap: 8px; width: 100%; max-width: 220px; margin: 0 auto 4px;
+            box-sizing: border-box;
+        }
+        .break-music-progress-wrap.visible { display: flex; }
+        .break-music-progress-track {
+            flex: 1; height: 3px; min-width: 0; background: #444; border-radius: 2px;
+            position: relative;
+        }
+        .break-music-progress-thumb {
+            position: absolute; width: 8px; height: 8px; border-radius: 50%;
+            background: #888; top: 50%; margin-top: -4px; margin-left: -4px;
+            left: 0%; transition: left 0.15s linear;
+        }
+        .break-music-progress-time {
+            font-size: 10px; color: #666; min-width: 36px; text-align: right;
+        }
         .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; max-height: 130px; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 2; }
         .break-music-queue-row {
             display: flex; align-items: center; gap: 4px;
@@ -692,6 +709,12 @@
                             <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Предыдущий трек" aria-label="Предыдущий">‹</button>
                             <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
                             <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
+                        </div>
+                        <div class="break-music-progress-wrap" id="breakMusicProgressWrap">
+                            <div class="break-music-progress-track">
+                                <div class="break-music-progress-thumb" id="breakMusicProgressThumb"></div>
+                            </div>
+                            <span class="break-music-progress-time" id="breakMusicProgressTime"></span>
                         </div>
                         <div class="break-music-track-wrap" id="breakMusicTrackWrap">
                             <div class="break-music-queue-list" id="breakMusicQueueList"></div>
@@ -1252,6 +1275,9 @@
             const nowInner = document.getElementById('breakMusicNowInner');
             const queueListEl = document.getElementById('breakMusicQueueList');
             const trackWrap = document.getElementById('breakMusicTrackWrap');
+            const progressWrap = document.getElementById('breakMusicProgressWrap');
+            const progressThumb = document.getElementById('breakMusicProgressThumb');
+            const progressTimeEl = document.getElementById('breakMusicProgressTime');
             if (!btn || !fileInput) return;
             window.breakMusicPlaying = false;
 
@@ -1387,12 +1413,32 @@
                 if (nextBtn) nextBtn.disabled = !playing || breakMusicList.length === 0;
             }
             window.breakMusicPlaying = false;
+            function formatRemaining(seconds) {
+                if (!isFinite(seconds) || seconds < 0) return '0:00';
+                var m = Math.floor(seconds / 60);
+                var s = Math.floor(seconds % 60);
+                return '-' + m + ':' + (s < 10 ? '0' : '') + s;
+            }
+            function updateProgress() {
+                var ct = breakMusicAudio.currentTime;
+                var d = breakMusicAudio.duration;
+                if (progressWrap && progressWrap.classList.contains('visible')) {
+                    if (progressThumb) {
+                        var pct = (d && isFinite(d) && d > 0) ? Math.min(100, (ct / d) * 100) : 0;
+                        progressThumb.style.left = pct + '%';
+                    }
+                    if (progressTimeEl) progressTimeEl.textContent = (d && isFinite(d)) ? formatRemaining(d - ct) : '0:00';
+                }
+            }
+            function showProgress() { if (progressWrap) progressWrap.classList.add('visible'); updateProgress(); }
+            function hideProgress() { if (progressWrap) progressWrap.classList.remove('visible'); if (progressThumb) progressThumb.style.left = '0%'; if (progressTimeEl) progressTimeEl.textContent = ''; }
             function playTrack(item) {
                 if (!item) return;
                 if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
                 playingNow = item;
                 window.breakMusicPlaying = true;
                 setNowPlayingDisplay((item.name || '').replace(/\.(mp3|MP3)$/i, ''), true);
+                showProgress();
                 const blob = new Blob([item.data], { type: 'audio/mpeg' });
                 currentBlobUrl = URL.createObjectURL(blob);
                 breakMusicAudio.src = currentBlobUrl;
@@ -1414,12 +1460,15 @@
                 breakMusicAudio.removeAttribute('src');
                 playingNow = null;
                 window.breakMusicPlaying = false;
+                hideProgress();
                 btn.classList.remove('playing');
                 btn.textContent = '▶';
                 setNowPlayingDisplay('', false);
                 setState();
             }
 
+            breakMusicAudio.addEventListener('timeupdate', updateProgress);
+            breakMusicAudio.addEventListener('loadedmetadata', updateProgress);
             breakMusicAudio.addEventListener('ended', function() {
                 if (btn.classList.contains('playing')) advanceToNext();
             });
