@@ -1807,6 +1807,10 @@
                     fileInput.click();
                     return;
                 }
+                if (!btn.classList.contains('playing') && isTimerRunningFromData(latestData)) {
+                    alert('Музыка перерыва может играть только когда таймер на паузе.');
+                    return;
+                }
                 if (btn.classList.contains('playing')) {
                     stopBreakMusic();
                     return;
