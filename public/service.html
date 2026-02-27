@@ -743,7 +743,7 @@
                         <div class="break-music-controls-row">
                             <span class="break-music-progress-time elapsed" id="breakMusicElapsedTime"></span>
                             <div class="break-music-controls">
-                                <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Предыдущий трек" aria-label="Предыдущий">‹</button>
+                                <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Перемешать очередь" aria-label="Перемешать очередь">⟳</button>
                                 <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
                                 <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
                             </div>
@@ -1614,7 +1614,7 @@
                 }
                 btn.disabled = false;
                 const playing = btn.classList.contains('playing');
-                if (prevBtn) prevBtn.disabled = !playing || breakMusicList.length === 0;
+                if (prevBtn) prevBtn.disabled = breakMusicList.length === 0;
                 if (nextBtn) nextBtn.disabled = !playing || breakMusicList.length === 0;
             }
             window.breakMusicPlaying = false;
@@ -1826,8 +1826,10 @@
                 playTrack(first);
             });
             if (prevBtn) prevBtn.addEventListener('click', function() {
-                if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
-                if (playingNow) playTrack(playingNow);
+                if (breakMusicList.length === 0) return;
+                queueNext5 = [];
+                fillQueueToFive(playingNow || null);
+                renderQueueRows();
             });
             if (nextBtn) nextBtn.addEventListener('click', function() {
                 if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
