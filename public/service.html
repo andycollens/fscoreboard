@@ -628,9 +628,9 @@
             animation: break-track-scroll 20s ease-in-out infinite;
         }
         .break-music-queue-dropdown {
-            display: none; position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 4px;
+            display: none; position: fixed;
             background: #2a2a2a; border: 1px solid #555; border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 99999;
             min-width: 240px; max-width: 280px; max-height: 280px; overflow-y: auto;
         }
         .break-music-queue-dropdown.open { display: block; }
@@ -1464,6 +1464,10 @@
                     else {
                         if (breakMusicList.length === 0) return;
                         renderQueueRows();
+                        var rect = trackWrap.getBoundingClientRect();
+                        var w = 240;
+                        queueDropdown.style.left = (rect.left + rect.width / 2 - w / 2) + 'px';
+                        queueDropdown.style.top = (rect.bottom + 4) + 'px';
                         queueDropdown.classList.add('open');
                     }
                 });
