@@ -647,10 +647,12 @@
         }
         .break-music-controls-row { position: relative; display: flex; justify-content: center; width: 100%; }
         .break-music-progress-time {
-            position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-            font-size: 10px; color: #666; min-width: 36px; text-align: right;
-            visibility: hidden;
+            position: absolute; top: 50%; transform: translateY(-50%);
+            font-size: 11px; color: #666; min-width: 36px;
+            visibility: hidden; margin-top: 5px;
         }
+        .break-music-progress-time.elapsed { left: 0; text-align: left; }
+        .break-music-progress-time.remaining { right: 0; text-align: right; }
         .break-music-progress-time.visible { visibility: visible; }
         .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; max-height: 130px; overflow-y: auto; overflow-x: hidden; position: relative; z-index: 2; width: 100%; min-width: 0; box-sizing: border-box; }
         .break-music-queue-row {
@@ -718,12 +720,13 @@
                             </div>
                         </div>
                         <div class="break-music-controls-row">
+                            <span class="break-music-progress-time elapsed" id="breakMusicElapsedTime"></span>
                             <div class="break-music-controls">
                                 <button type="button" class="break-music-nav-btn" id="breakMusicPrevBtn" title="Предыдущий трек" aria-label="Предыдущий">‹</button>
                                 <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
                                 <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
                             </div>
-                            <span class="break-music-progress-time" id="breakMusicProgressTime"></span>
+                            <span class="break-music-progress-time remaining" id="breakMusicProgressTime"></span>
                         </div>
                         <div class="break-music-track-wrap" id="breakMusicTrackWrap">
                             <div class="break-music-queue-list" id="breakMusicQueueList"></div>
@@ -1286,7 +1289,8 @@
             const trackWrap = document.getElementById('breakMusicTrackWrap');
             const progressWrap = document.getElementById('breakMusicProgressWrap');
             const progressThumb = document.getElementById('breakMusicProgressThumb');
-            const progressTimeEl = document.getElementById('breakMusicProgressTime');
+            const progressTimeRemainingEl = document.getElementById('breakMusicProgressTime');
+            const progressTimeElapsedEl = document.getElementById('breakMusicElapsedTime');
             if (!btn || !fileInput) return;
             window.breakMusicPlaying = false;
 
@@ -1296,6 +1300,9 @@
             let currentBlobUrl = null;
             const breakMusicAudio = new Audio();
             const getVolume = () => (jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7);
+            const LONG_PRESS_MS = 7000;
+            let longPressTimer = null;
+            let longPressTriggered = false;
 
             function openDB() {
                 return new Promise((resolve, reject) => {
@@ -1428,6 +1435,12 @@
                 var s = Math.floor(seconds % 60);
                 return '-' + m + ':' + (s < 10 ? '0' : '') + s;
             }
+            function formatElapsed(seconds) {
+                if (!isFinite(seconds) || seconds < 0) return '0:00';
+                var m = Math.floor(seconds / 60);
+                var s = Math.floor(seconds % 60);
+                return m + ':' + (s < 10 ? '0' : '') + s;
+            }
             function updateProgress() {
                 var ct = breakMusicAudio.currentTime;
                 var d = breakMusicAudio.duration;
@@ -1436,11 +1449,50 @@
                         var pct = (d && isFinite(d) && d > 0) ? Math.min(100, (ct / d) * 100) : 0;
                         progressThumb.style.left = pct + '%';
                     }
-                    if (progressTimeEl) progressTimeEl.textContent = (d && isFinite(d)) ? formatRemaining(d - ct) : '0:00';
+                    if (progressTimeRemainingEl) {
+                        progressTimeRemainingEl.textContent = (d && isFinite(d)) ? formatRemaining(d - ct) : '0:00';
+                    }
+                    if (progressTimeElapsedEl) {
+                        progressTimeElapsedEl.textContent = formatElapsed(ct);
+                    }
                 }
             }
-            function showProgress() { if (progressWrap) progressWrap.classList.add('visible'); if (progressTimeEl) progressTimeEl.classList.add('visible'); updateProgress(); }
-            function hideProgress() { if (progressWrap) progressWrap.classList.remove('visible'); if (progressTimeEl) { progressTimeEl.classList.remove('visible'); progressTimeEl.textContent = ''; } if (progressThumb) progressThumb.style.left = '0%'; }
+            function showProgress() {
+                if (progressWrap) progressWrap.classList.add('visible');
+                if (progressTimeRemainingEl) progressTimeRemainingEl.classList.add('visible');
+                if (progressTimeElapsedEl) progressTimeElapsedEl.classList.add('visible');
+                updateProgress();
+            }
+            function hideProgress() {
+                if (progressWrap) progressWrap.classList.remove('visible');
+                if (progressTimeRemainingEl) {
+                    progressTimeRemainingEl.classList.remove('visible');
+                    progressTimeRemainingEl.textContent = '';
+                }
+                if (progressTimeElapsedEl) {
+                    progressTimeElapsedEl.classList.remove('visible');
+                    progressTimeElapsedEl.textContent = '';
+                }
+                if (progressThumb) progressThumb.style.left = '0%';
+            }
+            function startLongPress() {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                }
+                longPressTriggered = false;
+                longPressTimer = setTimeout(function() {
+                    longPressTriggered = true;
+                    if (fileInput) {
+                        fileInput.click();
+                    }
+                }, LONG_PRESS_MS);
+            }
+            function cancelLongPress() {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            }
             function playTrack(item) {
                 if (!item) return;
                 if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
@@ -1515,7 +1567,27 @@
                 fileInput.value = '';
             });
 
+            btn.addEventListener('pointerdown', function(e) {
+                if (e.button !== 0) return;
+                startLongPress();
+            });
+            ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev) {
+                btn.addEventListener(ev, function() {
+                    if (longPressTriggered) {
+                        longPressTriggered = false;
+                        cancelLongPress();
+                        btn.dataset.ignoreClickOnce = '1';
+                    } else {
+                        cancelLongPress();
+                    }
+                });
+            });
+
             btn.addEventListener('click', function() {
+                if (btn.dataset.ignoreClickOnce === '1') {
+                    delete btn.dataset.ignoreClickOnce;
+                    return;
+                }
                 if (breakMusicList.length === 0) {
                     fileInput.click();
                     return;
