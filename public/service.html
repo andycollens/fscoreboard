@@ -617,17 +617,24 @@
             opacity: 0.6;
         }
         .break-music-play.playing { opacity: 1; }
-        .break-music-queue-panel { width: 100%; max-width: 220px; margin: 0 auto; }
+        .break-music-track-wrap { position: relative; cursor: pointer; max-width: 220px; margin: 0 auto; }
         .break-music-now-row {
             font-size: 11px; color: #555; max-width: 100%; overflow: hidden; white-space: nowrap;
-            margin-bottom: 4px; min-height: 18px;
+            min-height: 18px;
         }
         .break-music-now-row.playing { color: #aaa; }
         .break-music-now-inner { display: inline-block; white-space: nowrap; }
         .break-music-now-row.scroll .break-music-now-inner {
             animation: break-track-scroll 20s ease-in-out infinite;
         }
-        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; }
+        .break-music-queue-dropdown {
+            display: none; position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 4px;
+            background: #2a2a2a; border: 1px solid #555; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100;
+            min-width: 240px; max-width: 280px; max-height: 280px; overflow-y: auto;
+        }
+        .break-music-queue-dropdown.open { display: block; }
+        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; padding: 6px; }
         .break-music-queue-row {
             display: flex; align-items: center; gap: 4px;
             font-size: 11px; color: #666; background: #252525; border-radius: 4px;
@@ -692,9 +699,11 @@
                             <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
                             <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
                         </div>
-                        <div class="break-music-queue-panel" id="breakMusicQueuePanel">
-                            <div class="break-music-now-row" id="breakMusicNowRow"><span class="break-music-now-inner" id="breakMusicNowInner"></span></div>
-                            <div class="break-music-queue-list" id="breakMusicQueueList"></div>
+                        <div class="break-music-track-wrap" id="breakMusicTrackWrap">
+                            <div class="break-music-now-row" id="breakMusicNowRow" title="Очередь"><span class="break-music-now-inner" id="breakMusicNowInner"></span></div>
+                            <div class="break-music-queue-dropdown" id="breakMusicQueueDropdown">
+                                <div class="break-music-queue-list" id="breakMusicQueueList"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1243,6 +1252,8 @@
             const nowRow = document.getElementById('breakMusicNowRow');
             const nowInner = document.getElementById('breakMusicNowInner');
             const queueListEl = document.getElementById('breakMusicQueueList');
+            const queueDropdown = document.getElementById('breakMusicQueueDropdown');
+            const trackWrap = document.getElementById('breakMusicTrackWrap');
             if (!btn || !fileInput) return;
 
             let breakMusicList = [];
@@ -1304,6 +1315,7 @@
                     nowRow.style.setProperty('--track-scroll-dx', (nowRow.clientWidth - nowInner.offsetWidth) + 'px');
                 }
             }
+            function closeQueueDropdown() { if (queueDropdown) queueDropdown.classList.remove('open'); }
             function renderQueueRows() {
                 if (!queueListEl) return;
                 queueListEl.innerHTML = '';
@@ -1316,12 +1328,11 @@
                     row.innerHTML = '<span class="queue-row-name">' + (name || '—') + '</span>' +
                         '<button type="button" class="queue-row-move" data-dir="up" title="Выше" aria-label="Up">▲</button>' +
                         '<button type="button" class="queue-row-move" data-dir="down" title="Ниже" aria-label="Down">▼</button>';
-                    const nameEl = row.querySelector('.queue-row-name');
                     const upBtn = row.querySelector('[data-dir="up"]');
                     const downBtn = row.querySelector('[data-dir="down"]');
                     if (upBtn) {
                         upBtn.disabled = i === 0;
-                        upBtn.addEventListener('click', function() {
+                        upBtn.addEventListener('click', function(e) { e.stopPropagation();
                             if (i === 0) return;
                             [queueNext5[i - 1], queueNext5[i]] = [queueNext5[i], queueNext5[i - 1]];
                             renderQueueRows();
@@ -1329,7 +1340,7 @@
                     }
                     if (downBtn) {
                         downBtn.disabled = i === QUEUE_SIZE - 1;
-                        downBtn.addEventListener('click', function() {
+                        downBtn.addEventListener('click', function(e) { e.stopPropagation();
                             if (i >= queueNext5.length - 1) return;
                             [queueNext5[i], queueNext5[i + 1]] = [queueNext5[i + 1], queueNext5[i]];
                             renderQueueRows();
@@ -1344,6 +1355,7 @@
                     if (nowRow) nowRow.classList.remove('playing');
                     queueNext5 = [];
                     renderQueueRows();
+                    closeQueueDropdown();
                 }
                 btn.disabled = false;
                 const playing = btn.classList.contains('playing');
@@ -1444,6 +1456,20 @@
             if (nextBtn) nextBtn.addEventListener('click', function() {
                 if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
                 advanceToNext();
+            });
+            if (trackWrap) {
+                trackWrap.addEventListener('click', function(e) {
+                    if (e.target.closest('.break-music-queue-dropdown')) return;
+                    if (queueDropdown.classList.contains('open')) closeQueueDropdown();
+                    else {
+                        if (breakMusicList.length === 0) return;
+                        renderQueueRows();
+                        queueDropdown.classList.add('open');
+                    }
+                });
+            }
+            document.addEventListener('click', function(e) {
+                if (trackWrap && !trackWrap.contains(e.target)) closeQueueDropdown();
             });
         })();
 
