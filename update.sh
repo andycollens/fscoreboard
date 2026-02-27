@@ -102,6 +102,20 @@ check_installation() {
     print_success "FSCOREBOARD обнаружен, продолжаем обновление"
 }
 
+# Подтянуть origin и при необходимости починить ecosystem.config.js (чтобы curl | bash всегда всё чинил)
+fetch_and_repair_ecosystem() {
+    [ ! -d /opt/fscoreboard ] && return 0
+    cd /opt/fscoreboard
+    git fetch origin 2>/dev/null || true
+    if [ -f ecosystem.config.js ] && ! node -e "require('./ecosystem.config.js')" 2>/dev/null; then
+        print_info "Восстановление повреждённого ecosystem.config.js из репозитория..."
+        git checkout origin/main -- ecosystem.config.js 2>/dev/null || true
+        port=$(grep -o 'PORT=[0-9]*' .env 2>/dev/null | cut -d'=' -f2 || echo "3002")
+        sed -i "s/PORT: [0-9]*/PORT: $port/" ecosystem.config.js 2>/dev/null || true
+        print_success "ecosystem.config.js восстановлен"
+    fi
+}
+
 # Определение типа изменений
 detect_changes() {
     print_step "Анализ изменений..."
@@ -553,6 +567,7 @@ main() {
     
     check_root
     check_installation
+    fetch_and_repair_ecosystem
     detect_changes
     update_code
     update_dependencies
