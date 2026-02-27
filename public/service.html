@@ -617,32 +617,31 @@
             opacity: 0.6;
         }
         .break-music-play.playing { opacity: 1; }
-        .break-music-track-name-wrap { position: relative; }
-        .break-music-track-name {
-            font-size: 11px; color: #555; max-width: 180px;
-            overflow: hidden; white-space: nowrap;
-            cursor: pointer;
+        .break-music-queue-panel { width: 100%; max-width: 220px; margin: 0 auto; }
+        .break-music-now-row {
+            font-size: 11px; color: #555; max-width: 100%; overflow: hidden; white-space: nowrap;
+            margin-bottom: 4px; min-height: 18px;
         }
-        .break-music-track-name.playing { color: #aaa; }
-        .break-music-queue-dropdown {
-            display: none; position: absolute; left: 50%; transform: translateX(-50%); top: 100%; margin-top: 4px;
-            background: #2a2a2a; border: 1px solid #555; border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100;
-            min-width: 220px; max-width: 280px; min-height: 0; max-height: 220px; overflow-y: auto;
-        }
-        .break-music-queue-dropdown.open { display: block; }
-        .break-music-queue-item {
-            display: block; width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 12px; color: #aaa;
-            background: none; border: none; cursor: pointer; text-align: left; font-family: inherit;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 38px; line-height: 1.2;
-        }
-        .break-music-queue-item:hover { background: #3a3a3a; color: #fff; }
-        .break-music-queue-item.current { color: #7ab; font-weight: bold; }
-        .break-music-queue-item.next { color: #8bc; }
-        .break-music-track-name-inner { display: inline-block; white-space: nowrap; }
-        .break-music-track-name.scroll .break-music-track-name-inner {
+        .break-music-now-row.playing { color: #aaa; }
+        .break-music-now-inner { display: inline-block; white-space: nowrap; }
+        .break-music-now-row.scroll .break-music-now-inner {
             animation: break-track-scroll 20s ease-in-out infinite;
         }
+        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; }
+        .break-music-queue-row {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 11px; color: #666; background: #252525; border-radius: 4px;
+            padding: 4px 6px; min-height: 26px; box-sizing: border-box;
+        }
+        .break-music-queue-row .queue-row-name {
+            flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .break-music-queue-row .queue-row-move {
+            flex-shrink: 0; background: none; border: none; color: #555; cursor: pointer;
+            font-size: 10px; padding: 0 2px; font-family: inherit; line-height: 1;
+        }
+        .break-music-queue-row .queue-row-move:hover { color: #888; }
+        .break-music-queue-row .queue-row-move:disabled { color: #333; cursor: default; }
         @keyframes break-track-scroll {
             0%, 100% { transform: translateX(0); }
             50% { transform: translateX(var(--track-scroll-dx, 0)); }
@@ -693,9 +692,9 @@
                             <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
                             <button type="button" class="break-music-nav-btn" id="breakMusicNextBtn" title="Следующий трек" aria-label="Следующий">›</button>
                         </div>
-                        <div class="break-music-track-name-wrap" id="breakMusicTrackNameWrap">
-                            <div class="break-music-track-name" id="breakMusicTrackName" title="Следующие треки"><span class="break-music-track-name-inner"></span></div>
-                            <div class="break-music-queue-dropdown" id="breakMusicQueueDropdown"></div>
+                        <div class="break-music-queue-panel" id="breakMusicQueuePanel">
+                            <div class="break-music-now-row" id="breakMusicNowRow"><span class="break-music-now-inner" id="breakMusicNowInner"></span></div>
+                            <div class="break-music-queue-list" id="breakMusicQueueList"></div>
                         </div>
                     </div>
                 </div>
@@ -1236,18 +1235,19 @@
         (function initBreakMusic() {
             const DB_NAME = 'fscoreboard-break-music';
             const STORE_KEY = 'list';
+            const QUEUE_SIZE = 5;
             const btn = document.getElementById('breakMusicPlayBtn');
             const prevBtn = document.getElementById('breakMusicPrevBtn');
             const nextBtn = document.getElementById('breakMusicNextBtn');
             const fileInput = document.getElementById('breakMusicFileInput');
-            const trackNameEl = document.getElementById('breakMusicTrackName');
-            const trackNameWrap = document.getElementById('breakMusicTrackNameWrap');
-            const queueDropdown = document.getElementById('breakMusicQueueDropdown');
+            const nowRow = document.getElementById('breakMusicNowRow');
+            const nowInner = document.getElementById('breakMusicNowInner');
+            const queueListEl = document.getElementById('breakMusicQueueList');
             if (!btn || !fileInput) return;
 
             let breakMusicList = [];
-            let breakMusicOrder = [];
-            let breakMusicIndex = 0;
+            let playingNow = null;
+            let queueNext5 = [];
             let currentBlobUrl = null;
             const breakMusicAudio = new Audio();
             const getVolume = () => (jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7);
@@ -1283,58 +1283,107 @@
                     });
                 });
             }
-            function shuffle(a) {
-                const out = a.slice();
-                for (let i = out.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [out[i], out[j]] = [out[j], out[i]];
+            function getRandomTrack() {
+                if (breakMusicList.length === 0) return null;
+                return breakMusicList[Math.floor(Math.random() * breakMusicList.length)];
+            }
+            function fillQueueToFive() {
+                while (queueNext5.length < QUEUE_SIZE) {
+                    const t = getRandomTrack();
+                    if (t) queueNext5.push(t);
+                    else break;
                 }
-                return out;
+            }
+            function setNowPlayingDisplay(text) {
+                if (!nowRow || !nowInner) return;
+                nowInner.textContent = text || '';
+                nowRow.classList.remove('scroll');
+                nowRow.style.removeProperty('--track-scroll-dx');
+                if (text && nowInner.offsetWidth > nowRow.clientWidth) {
+                    nowRow.classList.add('scroll');
+                    nowRow.style.setProperty('--track-scroll-dx', (nowRow.clientWidth - nowInner.offsetWidth) + 'px');
+                }
+            }
+            function renderQueueRows() {
+                if (!queueListEl) return;
+                queueListEl.innerHTML = '';
+                for (let i = 0; i < QUEUE_SIZE; i++) {
+                    const item = queueNext5[i];
+                    const name = item ? (item.name || '').replace(/\.(mp3|MP3)$/i, '') : '';
+                    const row = document.createElement('div');
+                    row.className = 'break-music-queue-row';
+                    row.dataset.index = String(i);
+                    row.innerHTML = '<span class="queue-row-name">' + (name || '—') + '</span>' +
+                        '<button type="button" class="queue-row-move" data-dir="up" title="Выше" aria-label="Up">▲</button>' +
+                        '<button type="button" class="queue-row-move" data-dir="down" title="Ниже" aria-label="Down">▼</button>';
+                    const nameEl = row.querySelector('.queue-row-name');
+                    const upBtn = row.querySelector('[data-dir="up"]');
+                    const downBtn = row.querySelector('[data-dir="down"]');
+                    if (upBtn) {
+                        upBtn.disabled = i === 0;
+                        upBtn.addEventListener('click', function() {
+                            if (i === 0) return;
+                            [queueNext5[i - 1], queueNext5[i]] = [queueNext5[i], queueNext5[i - 1]];
+                            renderQueueRows();
+                        });
+                    }
+                    if (downBtn) {
+                        downBtn.disabled = i === QUEUE_SIZE - 1;
+                        downBtn.addEventListener('click', function() {
+                            if (i >= queueNext5.length - 1) return;
+                            [queueNext5[i], queueNext5[i + 1]] = [queueNext5[i + 1], queueNext5[i]];
+                            renderQueueRows();
+                        });
+                    }
+                    queueListEl.appendChild(row);
+                }
             }
             function setState() {
-                if (breakMusicList.length === 0 && trackNameEl) { setTrackName(''); trackNameEl.classList.remove('playing'); }
+                if (breakMusicList.length === 0) {
+                    setNowPlayingDisplay('');
+                    if (nowRow) nowRow.classList.remove('playing');
+                    queueNext5 = [];
+                    renderQueueRows();
+                }
                 btn.disabled = false;
                 const playing = btn.classList.contains('playing');
                 if (prevBtn) prevBtn.disabled = !playing || breakMusicList.length === 0;
                 if (nextBtn) nextBtn.disabled = !playing || breakMusicList.length === 0;
             }
-            function setTrackName(text) {
-                if (!trackNameEl) return;
-                const inner = trackNameEl.querySelector('.break-music-track-name-inner');
-                if (inner) inner.textContent = text;
-                else trackNameEl.textContent = text;
-                trackNameEl.classList.remove('scroll');
-                trackNameEl.style.removeProperty('--track-scroll-dx');
-                if (text && inner && inner.offsetWidth > trackNameEl.clientWidth) {
-                    trackNameEl.classList.add('scroll');
-                    trackNameEl.style.setProperty('--track-scroll-dx', (trackNameEl.clientWidth - inner.offsetWidth) + 'px');
-                }
-            }
-            function playNextBreakTrack() {
-                if (breakMusicOrder.length === 0) return;
+            function playTrack(item) {
+                if (!item) return;
                 if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
-                const item = breakMusicOrder[breakMusicIndex];
-                breakMusicIndex = (breakMusicIndex + 1) % breakMusicOrder.length;
-                if (trackNameEl) { setTrackName((item.name || '').replace(/\.(mp3|MP3)$/i, '')); trackNameEl.classList.add('playing'); }
+                playingNow = item;
+                setNowPlayingDisplay((item.name || '').replace(/\.(mp3|MP3)$/i, ''));
+                if (nowRow) nowRow.classList.add('playing');
                 const blob = new Blob([item.data], { type: 'audio/mpeg' });
                 currentBlobUrl = URL.createObjectURL(blob);
                 breakMusicAudio.src = currentBlobUrl;
                 breakMusicAudio.volume = getVolume();
                 breakMusicAudio.play().catch(() => {});
             }
+            function advanceToNext() {
+                if (queueNext5.length === 0) return;
+                const next = queueNext5.shift();
+                fillQueueToFive();
+                renderQueueRows();
+                playTrack(next);
+            }
             function stopBreakMusic() {
                 if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
                 breakMusicAudio.pause();
                 breakMusicAudio.currentTime = 0;
                 breakMusicAudio.removeAttribute('src');
+                playingNow = null;
                 btn.classList.remove('playing');
                 btn.textContent = '▶';
-                if (trackNameEl) trackNameEl.classList.remove('playing');
+                setNowPlayingDisplay('');
+                if (nowRow) nowRow.classList.remove('playing');
                 setState();
             }
 
             breakMusicAudio.addEventListener('ended', function() {
-                if (btn.classList.contains('playing')) playNextBreakTrack();
+                if (btn.classList.contains('playing')) advanceToNext();
             });
             if (jingleVolumeEl) jingleVolumeEl.addEventListener('input', function() {
                 breakMusicAudio.volume = getVolume();
@@ -1343,6 +1392,7 @@
             loadFromDB().then(list => {
                 breakMusicList = list;
                 setState();
+                renderQueueRows();
             });
 
             fileInput.addEventListener('change', function() {
@@ -1361,7 +1411,10 @@
                 }
                 Promise.all(promises).then(items => {
                     breakMusicList = items;
-                    saveToDB(breakMusicList).then(setState);
+                    saveToDB(breakMusicList).then(function() {
+                        setState();
+                        renderQueueRows();
+                    });
                 }).catch(() => {});
                 fileInput.value = '';
             });
@@ -1375,67 +1428,22 @@
                     stopBreakMusic();
                     return;
                 }
-                breakMusicIndex = 0;
-                breakMusicOrder = shuffle(breakMusicList);
+                playingNow = null;
+                queueNext5 = [];
+                fillQueueToFive();
+                renderQueueRows();
                 btn.classList.add('playing');
                 btn.textContent = '❚❚';
                 setState();
-                playNextBreakTrack();
+                playTrack(getRandomTrack());
             });
             if (prevBtn) prevBtn.addEventListener('click', function() {
                 if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
-                if (breakMusicOrder.length <= 1) return;
-                if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
-                breakMusicAudio.pause();
-                breakMusicAudio.removeAttribute('src');
-                breakMusicIndex = (breakMusicIndex - 2 + breakMusicOrder.length) % breakMusicOrder.length;
-                playNextBreakTrack();
+                if (playingNow) playTrack(playingNow);
             });
             if (nextBtn) nextBtn.addEventListener('click', function() {
                 if (breakMusicList.length === 0 || !btn.classList.contains('playing')) return;
-                if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
-                breakMusicAudio.pause();
-                breakMusicAudio.removeAttribute('src');
-                playNextBreakTrack();
-            });
-
-            function openQueueDropdown() {
-                if (breakMusicList.length === 0) return;
-                if (breakMusicOrder.length === 0) { breakMusicOrder = shuffle(breakMusicList); breakMusicIndex = 0; }
-                const L = breakMusicOrder.length;
-                const playing = btn.classList.contains('playing');
-                const currentOrderIndex = playing ? (breakMusicIndex - 1 + L) % L : -1;
-                queueDropdown.innerHTML = '';
-                for (let i = 0; i < Math.min(5, L); i++) {
-                    const idx = (breakMusicIndex + i) % L;
-                    const item = breakMusicOrder[idx];
-                    const name = (item.name || '').replace(/\.(mp3|MP3)$/i, '');
-                    const b = document.createElement('button');
-                    b.type = 'button';
-                    b.className = 'break-music-queue-item' + (idx === currentOrderIndex ? ' current' : (i === 0 ? ' next' : ''));
-                    b.textContent = name;
-                    b.dataset.queueIndex = String(i);
-                    b.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const i = parseInt(this.dataset.queueIndex, 10);
-                        breakMusicIndex = (breakMusicIndex + i) % breakMusicOrder.length;
-                        queueDropdown.classList.remove('open');
-                        /* Selected track is now next in queue; no immediate play */
-                    });
-                    queueDropdown.appendChild(b);
-                }
-                queueDropdown.classList.add('open');
-            }
-            function closeQueueDropdown() { if (queueDropdown) queueDropdown.classList.remove('open'); }
-            if (trackNameWrap) {
-                trackNameWrap.addEventListener('click', function(e) {
-                    if (e.target.closest('.break-music-queue-dropdown')) return;
-                    if (queueDropdown.classList.contains('open')) closeQueueDropdown();
-                    else openQueueDropdown();
-                });
-            }
-            document.addEventListener('click', function(e) {
-                if (trackNameWrap && !trackNameWrap.contains(e.target)) closeQueueDropdown();
+                advanceToNext();
             });
         })();
 
