@@ -588,26 +588,39 @@
         }
         .football-anthem-btn:hover { color: #aaa; border-color: #666; }
         .football-anthem-btn.playing { color: #fff; background: #4a7fc7; border-color: #4a7fc7; }
-        .break-music-row {
+        .break-music-spacer { height: 30px; }
+        .break-music-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .break-music-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-top: 8px;
+            gap: 8px;
         }
-        .break-music-label { font-size: 12px; color: #888; }
+        .break-music-title { font-size: 11px; color: #888; letter-spacing: 0.05em; }
         .break-music-select-btn {
-            font-size: 11px; color: #888; background: transparent; border: 1px solid #555;
-            border-radius: 6px; padding: 4px 8px; cursor: pointer; font-family: inherit;
+            font-size: 10px; color: #666; background: transparent; border: 1px solid #555;
+            border-radius: 4px; padding: 2px 6px; cursor: pointer; font-family: inherit;
         }
         .break-music-select-btn:hover { color: #aaa; border-color: #666; }
-        .break-music-count { font-size: 11px; color: #666; margin-left: 4px; }
+        .break-music-play {
+            width: 44px; height: 44px; font-size: 18px;
+        }
         .break-music-play:disabled {
             background: #444 !important;
             cursor: not-allowed;
             opacity: 0.6;
         }
         .break-music-play.playing { opacity: 1; }
+        .break-music-track-name {
+            font-size: 11px; color: #555; max-width: 180px;
+            text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+        }
+        .break-music-track-name.playing { color: #aaa; }
     </style>
 </head>
 <body class="rosters-mode">
@@ -644,14 +657,17 @@
                         </div>
                         <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                     </div>
-                    <div class="break-music-row">
-                        <span class="break-music-label">Музыка перерыва</span>
-                        <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" multiple hidden>
-                        <button type="button" class="break-music-select-btn" id="breakMusicSelectBtn" title="Выбрать MP3 с этого компьютера">Файлы…</button>
-                        <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
-                        <span class="break-music-count" id="breakMusicCount"></span>
-                    </div>
                     <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
+                    <div class="break-music-spacer"></div>
+                    <div class="break-music-block">
+                        <div class="break-music-header">
+                            <span class="break-music-title">МУЗЫКА ПЕРЕРЫВА</span>
+                            <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" multiple hidden>
+                            <button type="button" class="break-music-select-btn" id="breakMusicSelectBtn" title="Выбрать MP3 с этого компьютера">Файлы…</button>
+                        </div>
+                        <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
+                        <div class="break-music-track-name" id="breakMusicTrackName"></div>
+                    </div>
                 </div>
                 <div class="team2-section">
                     <div class="team2-logo-wrap">
@@ -1193,7 +1209,7 @@
             const btn = document.getElementById('breakMusicPlayBtn');
             const selectBtn = document.getElementById('breakMusicSelectBtn');
             const fileInput = document.getElementById('breakMusicFileInput');
-            const countEl = document.getElementById('breakMusicCount');
+            const trackNameEl = document.getElementById('breakMusicTrackName');
             if (!btn || !fileInput) return;
 
             let breakMusicList = [];
@@ -1245,10 +1261,9 @@
             function setState() {
                 if (breakMusicList.length > 0) {
                     btn.disabled = false;
-                    if (countEl) countEl.textContent = breakMusicList.length + ' треков';
                 } else {
                     btn.disabled = true;
-                    if (countEl) countEl.textContent = '';
+                    if (trackNameEl) { trackNameEl.textContent = ''; trackNameEl.classList.remove('playing'); }
                 }
             }
             function playNextBreakTrack() {
@@ -1256,6 +1271,7 @@
                 if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
                 const item = breakMusicOrder[breakMusicIndex];
                 breakMusicIndex = (breakMusicIndex + 1) % breakMusicOrder.length;
+                if (trackNameEl) { trackNameEl.textContent = item.name || ''; trackNameEl.classList.add('playing'); }
                 const blob = new Blob([item.data], { type: 'audio/mpeg' });
                 currentBlobUrl = URL.createObjectURL(blob);
                 breakMusicAudio.src = currentBlobUrl;
@@ -1269,6 +1285,7 @@
                 breakMusicAudio.removeAttribute('src');
                 btn.classList.remove('playing');
                 btn.textContent = '▶';
+                if (trackNameEl) trackNameEl.classList.remove('playing');
             }
 
             breakMusicAudio.addEventListener('ended', function() {
