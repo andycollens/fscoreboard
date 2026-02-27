@@ -588,6 +588,26 @@
         }
         .football-anthem-btn:hover { color: #aaa; border-color: #666; }
         .football-anthem-btn.playing { color: #fff; background: #4a7fc7; border-color: #4a7fc7; }
+        .break-music-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .break-music-label { font-size: 12px; color: #888; }
+        .break-music-select-btn {
+            font-size: 11px; color: #888; background: transparent; border: 1px solid #555;
+            border-radius: 6px; padding: 4px 8px; cursor: pointer; font-family: inherit;
+        }
+        .break-music-select-btn:hover { color: #aaa; border-color: #666; }
+        .break-music-count { font-size: 11px; color: #666; margin-left: 4px; }
+        .break-music-play:disabled {
+            background: #444 !important;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .break-music-play.playing { opacity: 1; }
     </style>
 </head>
 <body class="rosters-mode">
@@ -623,6 +643,13 @@
                             <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Volume">
                         </div>
                         <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
+                    </div>
+                    <div class="break-music-row">
+                        <span class="break-music-label">Музыка перерыва</span>
+                        <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" multiple hidden>
+                        <button type="button" class="break-music-select-btn" id="breakMusicSelectBtn" title="Выбрать MP3 с этого компьютера">Файлы…</button>
+                        <button type="button" class="jingle-play-btn break-music-play" id="breakMusicPlayBtn" title="Музыка перерыва" disabled>▶</button>
+                        <span class="break-music-count" id="breakMusicCount"></span>
                     </div>
                     <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
                 </div>
@@ -1158,6 +1185,138 @@
             if (jinglePlay2) jinglePlay2.addEventListener('click', () => playJingle(2));
             if (jingleSelect1) jingleSelect1.addEventListener('change', () => onJingleSelect(1));
             if (jingleSelect2) jingleSelect2.addEventListener('change', () => onJingleSelect(2));
+        })();
+
+        (function initBreakMusic() {
+            const DB_NAME = 'fscoreboard-break-music';
+            const STORE_KEY = 'list';
+            const btn = document.getElementById('breakMusicPlayBtn');
+            const selectBtn = document.getElementById('breakMusicSelectBtn');
+            const fileInput = document.getElementById('breakMusicFileInput');
+            const countEl = document.getElementById('breakMusicCount');
+            if (!btn || !fileInput) return;
+
+            let breakMusicList = [];
+            let breakMusicOrder = [];
+            let breakMusicIndex = 0;
+            let currentBlobUrl = null;
+            const breakMusicAudio = new Audio();
+            const getVolume = () => (jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7);
+
+            function openDB() {
+                return new Promise((resolve, reject) => {
+                    const r = indexedDB.open(DB_NAME, 1);
+                    r.onerror = () => reject(r.error);
+                    r.onsuccess = () => resolve(r.result);
+                    r.onupgradeneeded = function(e) {
+                        if (!e.target.result.objectStoreNames.contains('tracks')) e.target.result.createObjectStore('tracks');
+                    };
+                });
+            }
+            function loadFromDB() {
+                return openDB().then(db => {
+                    return new Promise((resolve, reject) => {
+                        const tx = db.transaction('tracks', 'readonly');
+                        const store = tx.objectStore('tracks');
+                        const req = store.get(STORE_KEY);
+                        req.onsuccess = () => resolve(req.result || []);
+                        req.onerror = () => reject(req.error);
+                    });
+                }).catch(() => []);
+            }
+            function saveToDB(list) {
+                return openDB().then(db => {
+                    return new Promise((resolve, reject) => {
+                        const tx = db.transaction('tracks', 'readwrite');
+                        tx.objectStore('tracks').put(list, STORE_KEY);
+                        tx.oncomplete = () => resolve();
+                        tx.onerror = () => reject(tx.error);
+                    });
+                });
+            }
+            function shuffle(a) {
+                const out = a.slice();
+                for (let i = out.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [out[i], out[j]] = [out[j], out[i]];
+                }
+                return out;
+            }
+            function setState() {
+                if (breakMusicList.length > 0) {
+                    btn.disabled = false;
+                    if (countEl) countEl.textContent = breakMusicList.length + ' треков';
+                } else {
+                    btn.disabled = true;
+                    if (countEl) countEl.textContent = '';
+                }
+            }
+            function playNextBreakTrack() {
+                if (breakMusicOrder.length === 0) return;
+                if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+                const item = breakMusicOrder[breakMusicIndex];
+                breakMusicIndex = (breakMusicIndex + 1) % breakMusicOrder.length;
+                const blob = new Blob([item.data], { type: 'audio/mpeg' });
+                currentBlobUrl = URL.createObjectURL(blob);
+                breakMusicAudio.src = currentBlobUrl;
+                breakMusicAudio.volume = getVolume();
+                breakMusicAudio.play().catch(() => {});
+            }
+            function stopBreakMusic() {
+                if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
+                breakMusicAudio.pause();
+                breakMusicAudio.currentTime = 0;
+                breakMusicAudio.removeAttribute('src');
+                btn.classList.remove('playing');
+                btn.textContent = '▶';
+            }
+
+            breakMusicAudio.addEventListener('ended', function() {
+                if (btn.classList.contains('playing')) playNextBreakTrack();
+            });
+            if (jingleVolumeEl) jingleVolumeEl.addEventListener('input', function() {
+                breakMusicAudio.volume = getVolume();
+            });
+
+            loadFromDB().then(list => {
+                breakMusicList = list;
+                setState();
+            });
+
+            if (selectBtn) selectBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', function() {
+                const files = this.files;
+                if (!files || files.length === 0) return;
+                const promises = [];
+                for (let i = 0; i < files.length; i++) {
+                    const f = files[i];
+                    if (!/\.mp3$/i.test(f.name)) continue;
+                    promises.push(new Promise((resolve, reject) => {
+                        const r = new FileReader();
+                        r.onload = () => resolve({ name: f.name, data: r.result });
+                        r.onerror = () => reject();
+                        r.readAsArrayBuffer(f);
+                    }));
+                }
+                Promise.all(promises).then(items => {
+                    breakMusicList = items;
+                    saveToDB(breakMusicList).then(setState);
+                }).catch(() => {});
+                fileInput.value = '';
+            });
+
+            btn.addEventListener('click', function() {
+                if (breakMusicList.length === 0) return;
+                if (btn.classList.contains('playing')) {
+                    stopBreakMusic();
+                    return;
+                }
+                breakMusicIndex = 0;
+                breakMusicOrder = shuffle(breakMusicList);
+                btn.classList.add('playing');
+                btn.textContent = '❚❚';
+                playNextBreakTrack();
+            });
         })();
 
         socket.on('connect', () => socket.emit('getCurrentState'));

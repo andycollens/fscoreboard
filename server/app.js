@@ -530,6 +530,48 @@ app.get('/api/jingles', (_, res) => {
   }
 });
 
+// ----- Музыка для перерывов (локальная папка с MP3) -----
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+function getBreakMusicDir() {
+  let cfg = {};
+  try {
+    if (fs.existsSync(CONFIG_PATH)) cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+  } catch (e) { return null; }
+  const raw = (cfg.radioMusicPath || '').trim();
+  if (!raw) return null;
+  const resolved = path.resolve(PROJECT_ROOT, raw);
+  if (!resolved.startsWith(PROJECT_ROOT)) return null;
+  try {
+    if (!fs.existsSync(resolved) || !fs.statSync(resolved).isDirectory()) return null;
+    return resolved;
+  } catch (e) { return null; }
+}
+
+app.get('/api/break-music/list', (req, res) => {
+  const token = req.query.token;
+  if (token !== getActualServiceToken() && token !== getActualToken()) return res.status(403).json({ files: [] });
+  const dir = getBreakMusicDir();
+  if (!dir) return res.json({ files: [] });
+  try {
+    const list = fs.readdirSync(dir).filter(f => /\.mp3$/i.test(f));
+    res.json({ files: list });
+  } catch (e) {
+    res.json({ files: [] });
+  }
+});
+
+app.get('/api/break-music/stream', (req, res) => {
+  const token = req.query.token;
+  if (token !== getActualServiceToken() && token !== getActualToken()) return res.status(403).end();
+  const dir = getBreakMusicDir();
+  if (!dir) return res.status(404).end();
+  const file = req.query.file;
+  if (!file || !/^[a-zA-Z0-9_.\-]+\.mp3$/i.test(file)) return res.status(400).end();
+  const filePath = path.join(dir, file);
+  if (!filePath.startsWith(dir) || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) return res.status(404).end();
+  res.sendFile(filePath, { headers: { 'Content-Type': 'audio/mpeg' } });
+});
+
 app.get('/control', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   res.sendFile(path.join(__dirname, '../private', 'control.html'));
@@ -1833,6 +1875,9 @@ app.put('/api/config', (req, res) => {
   if (req.body.adsPauseSeconds !== undefined) {
     const sec = parseInt(req.body.adsPauseSeconds, 10);
     currentConfig.adsPauseSeconds = (sec >= 1 && sec <= 600) ? sec : 30;
+  }
+  if (req.body.radioMusicPath !== undefined) {
+    currentConfig.radioMusicPath = String(req.body.radioMusicPath || '').trim();
   }
   if (req.body.graphicStyle !== undefined) {
     // Сохраняем стиль графического оформления

@@ -3865,7 +3865,6 @@
             serviceLink.href = serviceUrl;
             serviceLink.textContent = serviceUrl;
           }
-          
           const stadiumTournamentTitleInput = document.getElementById('stadiumTournamentTitleInput');
           if (stadiumTournamentTitleInput) {
             stadiumTournamentTitleInput.value = config.tournamentTitle || 'ISKRA CUP 2025';
@@ -3981,7 +3980,6 @@
       if (serviceTokenInput) serviceTokenInput.value = '';
       await saveServiceToken();
     }
-
     // Сохранение секрета для Stadium
     async function saveStadiumToken() {
       const stadiumTokenInput = document.getElementById('stadiumTokenInput');
