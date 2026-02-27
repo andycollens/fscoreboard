@@ -1383,11 +1383,16 @@
                 return t;
             }
             function fillQueueToFive(excludeForNew) {
-                while (queueNext5.length < QUEUE_SIZE) {
-                    const prev = queueNext5.length > 0 ? queueNext5[queueNext5.length - 1] : (playingNow || null);
-                    const t = getRandomTrack(excludeForNew || prev);
-                    if (t) queueNext5.push(t);
-                    else break;
+                const maxUnique = Math.min(QUEUE_SIZE, breakMusicList.length);
+                while (queueNext5.length < maxUnique) {
+                    const usedNames = new Set(queueNext5.filter(Boolean).map(function(it) { return it && it.name; }));
+                    const excludeName = excludeForNew && excludeForNew.name;
+                    const available = breakMusicList.filter(function(it) {
+                        return it && (!usedNames.has(it.name)) && (!excludeName || it.name !== excludeName);
+                    });
+                    if (available.length === 0) break;
+                    const t = available[Math.floor(Math.random() * available.length)];
+                    queueNext5.push(t);
                 }
             }
             const LABEL_IDLE = 'МУЗЫКА ПЕРЕРЫВА';
