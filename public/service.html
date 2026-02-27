@@ -622,12 +622,13 @@
             overflow: hidden; white-space: nowrap;
         }
         .break-music-now-row.playing { color: #aaa; }
-        .break-music-track-wrap { max-width: 220px; margin: 0 auto; margin-top: 2px; }
+        .break-music-track-wrap { max-width: 220px; margin: 0 auto; margin-top: 2px; display: none; }
+        .break-music-track-wrap.break-music-queue-ready { display: block; }
         .break-music-now-inner { display: inline-block; white-space: nowrap; }
         .break-music-now-row.scroll .break-music-now-inner {
             animation: break-track-scroll 20s ease-in-out infinite;
         }
-        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; }
+        .break-music-queue-list { display: flex; flex-direction: column; gap: 2px; max-height: 130px; overflow-y: auto; overflow-x: hidden; }
         .break-music-queue-row {
             display: flex; align-items: center; gap: 4px;
             font-size: 10px; color: #666;
@@ -1250,6 +1251,7 @@
             const nowRow = document.getElementById('breakMusicNowRow');
             const nowInner = document.getElementById('breakMusicNowInner');
             const queueListEl = document.getElementById('breakMusicQueueList');
+            const trackWrap = document.getElementById('breakMusicTrackWrap');
             if (!btn || !fileInput) return;
             window.breakMusicPlaying = false;
 
@@ -1373,6 +1375,7 @@
                 renderQueueRows();
             }
             function setState() {
+                if (trackWrap) trackWrap.classList.toggle('break-music-queue-ready', breakMusicList.length > 0);
                 if (breakMusicList.length === 0) {
                     setNowPlayingDisplay('', false);
                     queueNext5 = [];
