@@ -969,7 +969,9 @@
                 p1: data.team1Players || data.players1 || [],
                 p2: data.team2Players || data.players2 || []
             });
+            let rosterContentChanged = false;
             if (rosterSig !== lastRosterSignature && rosterTeam1Coach && rosterTeam1Players && rosterTeam2Coach && rosterTeam2Players) {
+                rosterContentChanged = true;
                 lastRosterSignature = rosterSig;
                 const team1Id = data.team1Id || null;
                 const team2Id = data.team2Id || null;
@@ -1005,8 +1007,10 @@
                     rosterTeam2Players.classList.remove('many-players');
                     stopRosterAutoScroll();
                 }
-                adjustRosterFont(rosterTeam1Players);
-                adjustRosterFont(rosterTeam2Players);
+                if (rosterContentChanged) {
+                    adjustRosterFont(rosterTeam1Players);
+                    adjustRosterFont(rosterTeam2Players);
+                }
             }
             if (data.tournamentTitle && tournamentTitle) {
                 tournamentTitle.textContent = data.tournamentTitle;
