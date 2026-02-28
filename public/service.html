@@ -1131,13 +1131,17 @@
             const maxHeight = playersEl.clientHeight;
             if (!maxHeight) return;
             const baseContent = 1.6;
-            const minFont = 1.1;
+            const minFont = 0.9;
             let font = baseContent;
             while (font >= minFont) {
                 content.style.fontSize = font + 'vw';
                 const h = content.scrollHeight;
                 if (h <= maxHeight) break;
                 font -= 0.1;
+            }
+            if (font < minFont) {
+                font = minFont;
+                content.style.fontSize = font + 'vw';
             }
             const scale = Math.max(minFont / baseContent, Math.min(1, font / baseContent));
             const teamBlock = playersEl.closest('.roster-team1, .roster-team2');
