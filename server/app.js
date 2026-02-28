@@ -144,18 +144,28 @@ function _presetMatchesCurrent(p, state) {
   return (n1 === p1 && n2 === p2) || (n1 === p2 && n2 === p1);
 }
 
-// Следующий пресет: показываем только если загружен пресет (текущие команды = один из пресетов на сегодня).
-// Тогда внизу — следующий за ним пресет в этот же день. Если следующего нет или команды выставлены вручную — не показываем.
+// Минуты с полуночи по времени из названия пресета ("09:00 / ..." -> 540)
+function _presetMinutes(p) {
+  if (!p || typeof p.name !== 'string') return 0;
+  const part = p.name.split(' / ')[0];
+  if (!part) return 0;
+  const m = part.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return 0;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
+// Следующий пресет: только если загружен пресет на сегодня; показываем следующий по времени в этот же день.
 function getNextPreset(state) {
   if (!matchPresets.length) return null;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayPresets = matchPresets.filter((p) => p.matchDate === today);
   if (!todayPresets.length) return null;
-  const idx = todayPresets.findIndex((p) => _presetMatchesCurrent(p, state));
+  const sorted = [...todayPresets].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
+  const idx = sorted.findIndex((p) => _presetMatchesCurrent(p, state));
   if (idx === -1) return null;
-  if (idx >= todayPresets.length - 1) return null;
-  return todayPresets[idx + 1];
+  if (idx >= sorted.length - 1) return null;
+  return sorted[idx + 1];
 }
 
 // Функция для добавления tournamentTitle и nextPreset к state перед отправкой
