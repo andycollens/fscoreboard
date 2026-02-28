@@ -716,6 +716,20 @@
             letter-spacing: 0.05em;
             text-align: center;
         }
+        .service-jingles-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 4px;
+        }
+        .service-jingle-cell {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body class="rosters-mode">
@@ -736,10 +750,6 @@
                         <div class="team1-city" id="team1City">Город 1</div>
                     </div>
                     <div class="team1-logo-wrap">
-                        <div class="jingle-select-row">
-                            <select class="jingle-select" id="jingleSelect1" title="Jingle team 1"></select>
-                            <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
-                        </div>
                         <img id="team1Logo" class="team1-logo" alt="Team 1 logo">
                         <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
                     </div>
@@ -747,6 +757,24 @@
                 <div class="jingle-player-block">
                     <div class="service-score-row" id="serviceScoreRow">0 : 0</div>
                     <div class="service-timer-row" id="serviceTimerRow">00:00</div>
+                    <div class="service-jingles-row">
+                        <div class="service-jingle-cell">
+                            <select class="jingle-select" id="jingleSelect1" title="Jingle team 1"></select>
+                            <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
+                        </div>
+                        <div class="service-jingle-cell">
+                            <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
+                            <select class="jingle-select" id="jingleSelect2" title="Jingle team 2"></select>
+                        </div>
+                    </div>
+                    <div class="jingle-volume-row">
+                        <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
+                        <div class="jingle-volume-track-wrap">
+                            <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Volume">
+                        </div>
+                        <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
+                    </div>
+                    <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
                     <div class="break-music-spacer"></div>
                     <div class="break-music-block">
                         <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
@@ -769,22 +797,9 @@
                             <div class="break-music-queue-list" id="breakMusicQueueList"></div>
                         </div>
                     </div>
-                    <div class="break-music-spacer"></div>
-                    <div class="jingle-volume-row">
-                        <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
-                        <div class="jingle-volume-track-wrap">
-                            <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Volume">
-                        </div>
-                        <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
-                    </div>
-                    <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
                 </div>
                 <div class="team2-section">
                     <div class="team2-logo-wrap">
-                        <div class="jingle-select-row">
-                            <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
-                            <select class="jingle-select" id="jingleSelect2" title="Jingle team 2"></select>
-                        </div>
                         <img id="team2Logo" class="team2-logo" alt="Team 2 logo">
                         <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
                     </div>
