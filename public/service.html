@@ -639,9 +639,11 @@
             animation: break-track-scroll 20s ease-in-out infinite;
         }
         .break-music-progress-wrap {
-            display: none; width: 100%; margin: 0 auto 6px; box-sizing: border-box;
+            width: 100%; margin: 0 auto 6px; box-sizing: border-box;
+            min-height: 3px;
+            visibility: hidden;
         }
-        .break-music-progress-wrap.visible { display: block; }
+        .break-music-progress-wrap.visible { visibility: visible; }
         .break-music-progress-track {
             width: 100%; height: 3px; background: #444; border-radius: 2px;
             position: relative;
