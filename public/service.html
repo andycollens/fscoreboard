@@ -112,24 +112,58 @@
         .next-game-block {
             position: fixed;
             bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: row;
+            left: 0;
+            right: 0;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 60px 1fr;
             align-items: center;
-            flex-wrap: nowrap;
-            gap: 0.6vw;
-            max-width: 90%;
             font-size: 1.1vw;
             line-height: 1;
             color: #fff;
             text-shadow: 0 0 4px rgba(0,0,0,0.8);
             pointer-events: none;
             z-index: 10;
+            box-sizing: border-box;
         }
 
         .next-game-block.hidden {
             display: none;
+        }
+
+        .next-game-left {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5vw;
+            padding-right: 0.5vw;
+            min-width: 0;
+        }
+
+        .next-game-right {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.5vw;
+            padding-left: 0.5vw;
+            min-width: 0;
+        }
+
+        .next-game-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .next-game-divider-inner {
+            width: 8px;
+            height: 1.2em;
+            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, #fff 50%, rgba(255,255,255,0) 100%);
+            border-radius: 4px;
         }
 
         .next-game-time {
@@ -160,18 +194,10 @@
             align-items: center;
         }
 
-        .next-game-sep {
+        .next-game-sep-slash {
             flex-shrink: 0;
-            margin: 0 0.2vw;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .next-game-row {
-            display: inline-flex;
-            align-items: center;
-            flex-wrap: nowrap;
-            gap: 0.5vw;
+            margin: 0 0.3vw;
+            opacity: 0.9;
         }
 
         .tournament-title {
@@ -928,8 +954,11 @@
             </div>
         </div>
         <div class="next-game-block hidden" id="nextGameBlock">
-            <span class="next-game-time" id="nextGameTime"></span>
-            <span class="next-game-row" id="nextGameRow"></span>
+            <div class="next-game-left" id="nextGameLeft"></div>
+            <div class="next-game-divider">
+                <div class="next-game-divider-inner"></div>
+            </div>
+            <div class="next-game-right" id="nextGameRight"></div>
         </div>
     </div>
 
@@ -1184,16 +1213,16 @@
             if (jingleSelect2El) jingleSelect2El.dataset.fillColor = data.kit2Color || '#4a7fc7';
 
             const nextGameBlock = document.getElementById('nextGameBlock');
-            const nextGameTime = document.getElementById('nextGameTime');
-            const nextGameRow = document.getElementById('nextGameRow');
-            if (nextGameBlock && nextGameTime && nextGameRow) {
+            const nextGameLeft = document.getElementById('nextGameLeft');
+            const nextGameRight = document.getElementById('nextGameRight');
+            if (nextGameBlock && nextGameLeft && nextGameRight) {
                 const p = data.nextPreset;
                 if (p && typeof p === 'object') {
                     const timeStr = (typeof p.name === 'string' && p.name.includes(' / ')) ? p.name.split(' / ')[0].trim() : (p.matchDate || '');
-                    nextGameTime.textContent = timeStr || '—';
                     const logo1 = (p.team1Logo && p.team1Logo.trim()) ? `<img src="${escapeHtml(p.team1Logo)}" alt="">` : '';
                     const logo2 = (p.team2Logo && p.team2Logo.trim()) ? `<img src="${escapeHtml(p.team2Logo)}" alt="">` : '';
-                    nextGameRow.innerHTML = `${logo1}<span class="next-game-team-name">${escapeHtml(p.team1Name || '')}</span><span class="next-game-sep">:</span><span class="next-game-team-name">${escapeHtml(p.team2Name || '')}</span>${logo2}`;
+                    nextGameLeft.innerHTML = `<span class="next-game-time">${escapeHtml(timeStr || '—')}</span><span class="next-game-sep-slash">/</span><span class="next-game-team-name">${escapeHtml(p.team1Name || '')}</span>${logo1}`;
+                    nextGameRight.innerHTML = `${logo2}<span class="next-game-team-name">${escapeHtml(p.team2Name || '')}</span>`;
                     nextGameBlock.classList.remove('hidden');
                 } else {
                     nextGameBlock.classList.add('hidden');
