@@ -130,13 +130,26 @@ function getCountdownEnabled() {
   return false;
 }
 
-// Функция для добавления tournamentTitle к state перед отправкой
+// Следующий пресет по расписанию: если текущие команды совпадают с одним из пресетов — берём следующий в списке
+function getNextPreset(state) {
+  if (!state.team1Id || !state.team2Id || !matchPresets.length) return null;
+  const idx = matchPresets.findIndex(
+    (p) =>
+      (String(p.team1Id) === String(state.team1Id) && String(p.team2Id) === String(state.team2Id)) ||
+      (String(p.team1Id) === String(state.team2Id) && String(p.team2Id) === String(state.team1Id))
+  );
+  if (idx === -1 || idx >= matchPresets.length - 1) return null;
+  return matchPresets[idx + 1];
+}
+
+// Функция для добавления tournamentTitle и nextPreset к state перед отправкой
 function enrichStateWithConfig(state) {
   const tournamentTitle = getTournamentTitle();
-  if (tournamentTitle) {
-    return { ...state, tournamentTitle };
-  }
-  return state;
+  const nextPreset = getNextPreset(state);
+  let out = state;
+  if (tournamentTitle) out = { ...out, tournamentTitle };
+  if (nextPreset) out = { ...out, nextPreset };
+  return out;
 }
 
 // Используем токены из конфигурации для инициализации

@@ -106,6 +106,53 @@
             height: 30px;
             width: 100%;
             background: transparent;
+            position: relative;
+        }
+
+        .next-game-block {
+            position: absolute;
+            right: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            max-width: 28vw;
+            font-size: 1.1vw;
+            color: #fff;
+            text-shadow: 0 0 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .next-game-block.hidden {
+            display: none;
+        }
+
+        .next-game-time {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .next-game-teams {
+            display: flex;
+            align-items: center;
+            gap: 0.4vw;
+            flex-wrap: nowrap;
+        }
+
+        .next-game-teams img {
+            width: 1.8vw;
+            height: 1.8vw;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .next-game-team-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 10vw;
         }
 
         .tournament-title {
@@ -762,6 +809,10 @@
         <div class="top-section">
             <div class="tournament-title" id="tournamentTitle">ISKRA CUP 2025</div>
             <div class="rosters-subtitle" id="rostersSubtitle">Составы команд</div>
+            <div class="next-game-block hidden" id="nextGameBlock">
+                <div class="next-game-time" id="nextGameTime"></div>
+                <div class="next-game-teams" id="nextGameTeams"></div>
+            </div>
         </div>
 
         <!-- Средняя область: слева название | лого+выпадайки, центр громкость+гимн, справа лого+выпадайки | название -->
@@ -1110,6 +1161,23 @@
             if (jinglePlay2El) jinglePlay2El.style.backgroundColor = data.kit2Color || '#555';
             if (jingleSelect1El) jingleSelect1El.dataset.fillColor = data.kit1Color || '#4a7fc7';
             if (jingleSelect2El) jingleSelect2El.dataset.fillColor = data.kit2Color || '#4a7fc7';
+
+            const nextGameBlock = document.getElementById('nextGameBlock');
+            const nextGameTime = document.getElementById('nextGameTime');
+            const nextGameTeams = document.getElementById('nextGameTeams');
+            if (nextGameBlock && nextGameTime && nextGameTeams) {
+                const p = data.nextPreset;
+                if (p && (p.team1Name || p.team2Name)) {
+                    const timeStr = (typeof p.name === 'string' && p.name.includes(' / ')) ? p.name.split(' / ')[0].trim() : (p.matchDate || '');
+                    nextGameTime.textContent = timeStr;
+                    const logo1 = p.team1Logo ? `<img src="${escapeHtml(p.team1Logo)}" alt="">` : '';
+                    const logo2 = p.team2Logo ? `<img src="${escapeHtml(p.team2Logo)}" alt="">` : '';
+                    nextGameTeams.innerHTML = `${logo1}<span class="next-game-team-name">${escapeHtml(p.team1Name || '')}</span> : ${logo2}<span class="next-game-team-name">${escapeHtml(p.team2Name || '')}</span>`;
+                    nextGameBlock.classList.remove('hidden');
+                } else {
+                    nextGameBlock.classList.add('hidden');
+                }
+            }
         }
 
         const team1Logo = document.getElementById('team1Logo');
