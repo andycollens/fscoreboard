@@ -144,7 +144,8 @@ function _presetMatchesCurrent(p, state) {
   return (n1 === p1 && n2 === p2) || (n1 === p2 && n2 === p1);
 }
 
-// Следующий пресет: приоритет — пресеты на сегодня; если таких нет — из всего списка. Текущий матч — по ID или по названиям команд.
+// Следующий пресет: приоритет — пресеты на сегодня; если таких нет — из всего списка.
+// Если текущие команды совпадают с пресетом — показываем следующий в списке; иначе — первый пресет (чтобы блок всегда был заполнен при наличии пресетов).
 function getNextPreset(state) {
   if (!matchPresets.length) return null;
   const now = new Date();
@@ -152,7 +153,8 @@ function getNextPreset(state) {
   const todayPresets = matchPresets.filter((p) => p.matchDate === today);
   const list = todayPresets.length > 0 ? todayPresets : matchPresets;
   const idx = list.findIndex((p) => _presetMatchesCurrent(p, state));
-  if (idx === -1 || idx >= list.length - 1) return null;
+  if (idx === -1) return list[0];
+  if (idx >= list.length - 1) return null;
   return list[idx + 1];
 }
 
