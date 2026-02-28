@@ -144,18 +144,18 @@ function _presetMatchesCurrent(p, state) {
   return (n1 === p1 && n2 === p2) || (n1 === p2 && n2 === p1);
 }
 
-// Следующий пресет: приоритет — пресеты на сегодня; если таких нет — из всего списка.
-// Если текущие команды совпадают с пресетом — показываем следующий в списке; иначе — первый пресет (чтобы блок всегда был заполнен при наличии пресетов).
+// Следующий пресет: показываем только если загружен пресет (текущие команды = один из пресетов на сегодня).
+// Тогда внизу — следующий за ним пресет в этот же день. Если следующего нет или команды выставлены вручную — не показываем.
 function getNextPreset(state) {
   if (!matchPresets.length) return null;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayPresets = matchPresets.filter((p) => p.matchDate === today);
-  const list = todayPresets.length > 0 ? todayPresets : matchPresets;
-  const idx = list.findIndex((p) => _presetMatchesCurrent(p, state));
-  if (idx === -1) return list[0];
-  if (idx >= list.length - 1) return null;
-  return list[idx + 1];
+  if (!todayPresets.length) return null;
+  const idx = todayPresets.findIndex((p) => _presetMatchesCurrent(p, state));
+  if (idx === -1) return null;
+  if (idx >= todayPresets.length - 1) return null;
+  return todayPresets[idx + 1];
 }
 
 // Функция для добавления tournamentTitle и nextPreset к state перед отправкой
