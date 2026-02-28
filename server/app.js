@@ -154,14 +154,29 @@ function _presetMinutes(p) {
   return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
 }
 
-// Следующий пресет: только если загружен пресет на сегодня; показываем следующий по времени в этот же день.
+// Нормализуем дату к YYYY-MM-DD для сравнения
+function _normalizeDateStr(d) {
+  if (!d) return null;
+  const s = String(d).trim();
+  if (!s) return null;
+  const parts = s.split(/[-/]/);
+  if (parts.length < 3) return s;
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const day = parseInt(parts[2], 10);
+  if (isNaN(y) || isNaN(m) || isNaN(day)) return s;
+  return `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+// Следующий пресет: только если загружен пресет; показываем следующий по времени (приоритет — пресеты на сегодня, иначе все).
 function getNextPreset(state) {
   if (!matchPresets.length) return null;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const todayPresets = matchPresets.filter((p) => p.matchDate === today);
-  if (!todayPresets.length) return null;
-  const sorted = [...todayPresets].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
+  const todayNorm = _normalizeDateStr(today);
+  const todayPresets = matchPresets.filter((p) => _normalizeDateStr(p.matchDate) === todayNorm);
+  const list = todayPresets.length > 0 ? todayPresets : matchPresets;
+  const sorted = [...list].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
   const idx = sorted.findIndex((p) => _presetMatchesCurrent(p, state));
   if (idx === -1) return null;
   if (idx >= sorted.length - 1) return null;
