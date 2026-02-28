@@ -787,7 +787,7 @@
                     </div>
                     <div class="service-score-timer-overlay">
                         <div class="service-score-row" id="serviceScoreRow">0 : 0</div>
-                        <div class="service-timer-row" id="serviceTimerRow">0:00</div>
+                        <div class="service-timer-row" id="serviceTimerRow">00:00</div>
                     </div>
                 </div>
                 <div class="team2-section">
@@ -1056,11 +1056,11 @@
                 serviceScoreRow.textContent = s1 + ' : ' + s2;
             }
             if (serviceTimerRow) {
-                let timerText = '0:00';
+                let timerText = '00:00';
                 if (typeof data.timerSeconds === 'number' && isFinite(data.timerSeconds)) {
                     const m = Math.floor(Math.max(0, data.timerSeconds) / 60);
                     const s = Math.floor(Math.max(0, data.timerSeconds) % 60);
-                    timerText = m + ':' + (s < 10 ? '0' : '') + s;
+                    timerText = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
                 } else if (typeof data.time === 'string' && data.time !== '') {
                     timerText = data.time;
                 }
