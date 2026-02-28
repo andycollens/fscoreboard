@@ -168,19 +168,28 @@ function _normalizeDateStr(d) {
   return `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// Следующий пресет: только если загружен пресет; показываем следующий по времени (приоритет — пресеты на сегодня, иначе все).
+// Следующий пресет: только если загружен пресет из того же турнира и той же даты; следующий по времени. Не показываем записи из удалённых/других пресетов.
 function getNextPreset(state) {
   if (!matchPresets.length) return null;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayNorm = _normalizeDateStr(today);
   const todayPresets = matchPresets.filter((p) => _normalizeDateStr(p.matchDate) === todayNorm);
-  const list = todayPresets.length > 0 ? todayPresets : matchPresets;
+  const list = todayPresets.length > 0 ? todayPresets : matchPresets.filter((p) => p.matchDate != null && String(p.matchDate).trim() !== '');
+  if (!list.length) return null;
   const sorted = [...list].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
   const idx = sorted.findIndex((p) => _presetMatchesCurrent(p, state));
   if (idx === -1) return null;
-  if (idx >= sorted.length - 1) return null;
-  return sorted[idx + 1];
+  const currentPreset = sorted[idx];
+  const sameTournamentAndDate = list.filter(
+    (p) =>
+      String(p.tournamentId || '') === String(currentPreset.tournamentId || '') &&
+      _normalizeDateStr(p.matchDate) === _normalizeDateStr(currentPreset.matchDate)
+  );
+  const sortedSame = [...sameTournamentAndDate].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
+  const idxSame = sortedSame.findIndex((p) => _presetMatchesCurrent(p, state));
+  if (idxSame === -1 || idxSame >= sortedSame.length - 1) return null;
+  return sortedSame[idxSame + 1];
 }
 
 // Функция для добавления tournamentTitle и nextPreset к state перед отправкой
