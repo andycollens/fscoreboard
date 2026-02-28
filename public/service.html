@@ -137,7 +137,7 @@
             align-items: center;
             justify-content: flex-end;
             gap: 0.5vw;
-            padding-right: 0.5vw;
+            padding-right: max(0, 0.5vw - 10px);
             min-width: 0;
         }
 
@@ -147,7 +147,7 @@
             align-items: center;
             justify-content: flex-start;
             gap: 0.5vw;
-            padding-left: 0.5vw;
+            padding-left: max(0, 0.5vw - 10px);
             min-width: 0;
         }
 
@@ -157,13 +157,9 @@
             justify-content: center;
             width: 60px;
             flex-shrink: 0;
-        }
-
-        .next-game-divider-inner {
-            width: 8px;
-            height: 1.2em;
-            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, #fff 50%, rgba(255,255,255,0) 100%);
-            border-radius: 4px;
+            font-size: 1.4vw;
+            font-weight: 600;
+            color: #fff;
         }
 
         .next-game-time {
@@ -172,6 +168,7 @@
             flex-shrink: 0;
             display: inline-flex;
             align-items: center;
+            margin-right: -5px;
         }
 
         .next-game-block img {
@@ -955,9 +952,7 @@
         </div>
         <div class="next-game-block hidden" id="nextGameBlock">
             <div class="next-game-left" id="nextGameLeft"></div>
-            <div class="next-game-divider">
-                <div class="next-game-divider-inner"></div>
-            </div>
+            <div class="next-game-divider">Х</div>
             <div class="next-game-right" id="nextGameRight"></div>
         </div>
     </div>
