@@ -394,11 +394,16 @@
 
         .roster-players-scroll {
             font-size: 1.6vw;
-            column-count: 2;
-            column-gap: 2vw;
-            column-fill: balance;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2vw;
             width: 100%;
             will-change: transform;
+        }
+
+        .roster-players-col {
+            flex: 1;
+            min-width: 0;
         }
 
         .roster-players-list.many-players {
@@ -956,7 +961,10 @@
                             }
                         })
                         .filter(Boolean);
-                    playersEl.innerHTML = `<div class="roster-players-scroll">${playerItems.join('')}</div>`;
+                    const mid = Math.floor(playerItems.length / 2);
+                    const col1 = playerItems.slice(0, mid);
+                    const col2 = playerItems.slice(mid);
+                    playersEl.innerHTML = `<div class="roster-players-scroll"><div class="roster-players-col">${col1.join('')}</div><div class="roster-players-col">${col2.join('')}</div></div>`;
                 } else {
                     playersEl.innerHTML = '';
                 }
