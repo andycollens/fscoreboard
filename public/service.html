@@ -700,19 +700,6 @@
             white-space: pre-line;
             text-align: left;
         }
-        .service-score-timer-overlay {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            transform: translateY(-215px);
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            pointer-events: none;
-        }
         .service-score-row {
             font-size: 27.5px;
             font-weight: 700;
@@ -756,14 +743,8 @@
                     </div>
                 </div>
                 <div class="jingle-player-block">
-                    <div class="jingle-volume-row">
-                        <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
-                        <div class="jingle-volume-track-wrap">
-                            <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Volume">
-                        </div>
-                        <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
-                    </div>
-                    <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
+                    <div class="service-score-row" id="serviceScoreRow">0 : 0</div>
+                    <div class="service-timer-row" id="serviceTimerRow">00:00</div>
                     <div class="break-music-spacer"></div>
                     <div class="break-music-block">
                         <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
@@ -786,10 +767,15 @@
                             <div class="break-music-queue-list" id="breakMusicQueueList"></div>
                         </div>
                     </div>
-                    <div class="service-score-timer-overlay">
-                        <div class="service-score-row" id="serviceScoreRow">0 : 0</div>
-                        <div class="service-timer-row" id="serviceTimerRow">00:00</div>
+                    <div class="break-music-spacer"></div>
+                    <div class="jingle-volume-row">
+                        <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
+                        <div class="jingle-volume-track-wrap">
+                            <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Volume">
+                        </div>
+                        <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                     </div>
+                    <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
                 </div>
                 <div class="team2-section">
                     <div class="team2-logo-wrap">
