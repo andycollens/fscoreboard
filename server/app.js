@@ -130,18 +130,28 @@ function getCountdownEnabled() {
   return false;
 }
 
-// Следующий пресет: приоритет — пресеты на сегодня; если таких нет — берём из всего списка (как раньше)
+function _presetMatchesCurrent(p, state) {
+  const byId =
+    (state.team1Id != null && state.team2Id != null) &&
+    ((String(p.team1Id) === String(state.team1Id) && String(p.team2Id) === String(state.team2Id)) ||
+     (String(p.team1Id) === String(state.team2Id) && String(p.team2Id) === String(state.team1Id)));
+  if (byId) return true;
+  const n1 = (state.team1Name || '').trim();
+  const n2 = (state.team2Name || '').trim();
+  if (!n1 && !n2) return false;
+  const p1 = (p.team1Name || '').trim();
+  const p2 = (p.team2Name || '').trim();
+  return (n1 === p1 && n2 === p2) || (n1 === p2 && n2 === p1);
+}
+
+// Следующий пресет: приоритет — пресеты на сегодня; если таких нет — из всего списка. Текущий матч — по ID или по названиям команд.
 function getNextPreset(state) {
-  if (!state.team1Id || !state.team2Id || !matchPresets.length) return null;
+  if (!matchPresets.length) return null;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayPresets = matchPresets.filter((p) => p.matchDate === today);
   const list = todayPresets.length > 0 ? todayPresets : matchPresets;
-  const idx = list.findIndex(
-    (p) =>
-      (String(p.team1Id) === String(state.team1Id) && String(p.team2Id) === String(state.team2Id)) ||
-      (String(p.team1Id) === String(state.team2Id) && String(p.team2Id) === String(state.team1Id))
-  );
+  const idx = list.findIndex((p) => _presetMatchesCurrent(p, state));
   if (idx === -1 || idx >= list.length - 1) return null;
   return list[idx + 1];
 }
