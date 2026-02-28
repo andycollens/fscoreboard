@@ -716,19 +716,33 @@
             letter-spacing: 0.05em;
             text-align: center;
         }
-        .service-jingles-row {
+        .service-top-row {
             display: flex;
             flex-direction: row;
             align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 4px;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+            width: 100%;
+        }
+        .service-top-row .jingle-select {
+            width: 100px;
+            min-width: 100px;
+            max-width: 100px;
+        }
+        .service-score-timer-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
         }
         .service-jingle-cell {
             display: flex;
             flex-direction: row;
             align-items: center;
             gap: 8px;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -755,12 +769,14 @@
                     </div>
                 </div>
                 <div class="jingle-player-block">
-                    <div class="service-score-row" id="serviceScoreRow">0 : 0</div>
-                    <div class="service-timer-row" id="serviceTimerRow">00:00</div>
-                    <div class="service-jingles-row">
+                    <div class="service-top-row">
                         <div class="service-jingle-cell">
                             <select class="jingle-select" id="jingleSelect1" title="Jingle team 1"></select>
                             <button type="button" class="jingle-play-btn" id="jinglePlay1" title="Play">▶</button>
+                        </div>
+                        <div class="service-score-timer-cell">
+                            <div class="service-score-row" id="serviceScoreRow">0 : 0</div>
+                            <div class="service-timer-row" id="serviceTimerRow">00:00</div>
                         </div>
                         <div class="service-jingle-cell">
                             <button type="button" class="jingle-play-btn" id="jinglePlay2" title="Play">▶</button>
