@@ -110,19 +110,20 @@
         }
 
         .next-game-block {
-            position: absolute;
-            right: 0;
-            top: 0;
+            position: fixed;
+            top: 10px;
+            right: 10px;
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-            max-width: 28vw;
+            flex-direction: row;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 0.5vw;
+            max-width: 90%;
             font-size: 1.1vw;
             color: #fff;
             text-shadow: 0 0 4px rgba(0,0,0,0.8);
             pointer-events: none;
-            z-index: 2;
+            z-index: 10;
         }
 
         .next-game-block.hidden {
@@ -132,16 +133,10 @@
         .next-game-time {
             font-weight: 600;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        .next-game-teams {
-            display: flex;
-            align-items: center;
-            gap: 0.4vw;
-            flex-wrap: nowrap;
-        }
-
-        .next-game-teams img {
+        .next-game-block img {
             width: 1.8vw;
             height: 1.8vw;
             object-fit: contain;
@@ -152,7 +147,12 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 10vw;
+            max-width: 12vw;
+        }
+
+        .next-game-sep {
+            flex-shrink: 0;
+            margin: 0 0.2vw;
         }
 
         .tournament-title {
@@ -815,8 +815,8 @@
             <div class="tournament-title" id="tournamentTitle">ISKRA CUP 2025</div>
             <div class="rosters-subtitle" id="rostersSubtitle">Составы команд</div>
             <div class="next-game-block hidden" id="nextGameBlock">
-                <div class="next-game-time" id="nextGameTime"></div>
-                <div class="next-game-teams" id="nextGameTeams"></div>
+                <span class="next-game-time" id="nextGameTime"></span>
+                <span class="next-game-row" id="nextGameRow"></span>
             </div>
         </div>
 
@@ -1166,15 +1166,15 @@
 
             const nextGameBlock = document.getElementById('nextGameBlock');
             const nextGameTime = document.getElementById('nextGameTime');
-            const nextGameTeams = document.getElementById('nextGameTeams');
-            if (nextGameBlock && nextGameTime && nextGameTeams) {
+            const nextGameRow = document.getElementById('nextGameRow');
+            if (nextGameBlock && nextGameTime && nextGameRow) {
                 const p = data.nextPreset;
                 if (p && typeof p === 'object') {
                     const timeStr = (typeof p.name === 'string' && p.name.includes(' / ')) ? p.name.split(' / ')[0].trim() : (p.matchDate || '');
                     nextGameTime.textContent = timeStr || '—';
                     const logo1 = (p.team1Logo && p.team1Logo.trim()) ? `<img src="${escapeHtml(p.team1Logo)}" alt="">` : '';
                     const logo2 = (p.team2Logo && p.team2Logo.trim()) ? `<img src="${escapeHtml(p.team2Logo)}" alt="">` : '';
-                    nextGameTeams.innerHTML = `${logo1}<span class="next-game-team-name">${escapeHtml(p.team1Name || '')}</span> : ${logo2}<span class="next-game-team-name">${escapeHtml(p.team2Name || '')}</span>`;
+                    nextGameRow.innerHTML = `${logo1}<span class="next-game-team-name">${escapeHtml(p.team1Name || '')}</span><span class="next-game-sep">:</span><span class="next-game-team-name">${escapeHtml(p.team2Name || '')}</span>${logo2}`;
                     nextGameBlock.classList.remove('hidden');
                 } else {
                     nextGameBlock.classList.add('hidden');
