@@ -1368,6 +1368,15 @@
         let lastGoalJinglePlayedAt = 0;
         let lastGoalJingleScoreSnapshot = null;
 
+        function isAnyJinglePlaying() {
+            return (currentTeam1Audio && !currentTeam1Audio.paused) || (currentTeam2Audio && !currentTeam2Audio.paused);
+        }
+
+        function stopAllJingles() {
+            if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; currentTeam1Audio = null; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } setProgressFill(1, 0); }
+            if (currentTeam2Audio) { currentTeam2Audio.pause(); currentTeam2Audio.currentTime = 0; currentTeam2Audio = null; if (jinglePlay2) { jinglePlay2.textContent = '▶'; jinglePlay2.classList.remove('playing'); } setProgressFill(2, 0); }
+        }
+
         function setProgressFill(teamNum, percent) {
             const sel = teamNum === 1 ? jingleSelect1 : jingleSelect2;
             if (!sel) return;
@@ -1491,6 +1500,11 @@
             }
             const filename = select && select.value ? select.value : '';
             if (!filename) return;
+            var otherJinglePlaying = (teamNum === 1 && currentTeam2Audio && !currentTeam2Audio.paused) || (teamNum === 2 && currentTeam1Audio && !currentTeam1Audio.paused);
+            if (otherJinglePlaying) {
+                stopAllJingles();
+                return;
+            }
             if (window.breakMusicPlaying) {
                 alert('Джингл можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                 return;
@@ -1539,6 +1553,10 @@
             }
             footballAnthemAudio.volume = jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7;
             if (footballAnthemAudio.paused) {
+                if (isAnyJinglePlaying()) {
+                    stopAllJingles();
+                    return;
+                }
                 if (window.breakMusicPlaying) {
                     alert('Гимн можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                     return;
@@ -2035,6 +2053,10 @@
                 }
                 if (btn.classList.contains('playing')) {
                     stopBreakMusic();
+                    return;
+                }
+                if (typeof isAnyJinglePlaying === 'function' && isAnyJinglePlaying()) {
+                    if (typeof stopAllJingles === 'function') stopAllJingles();
                     return;
                 }
                 playingNow = null;
