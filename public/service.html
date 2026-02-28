@@ -111,15 +111,17 @@
 
         .next-game-block {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             flex-direction: row;
             align-items: center;
             flex-wrap: nowrap;
-            gap: 0.5vw;
+            gap: 0.6vw;
             max-width: 90%;
             font-size: 1.1vw;
+            line-height: 1;
             color: #fff;
             text-shadow: 0 0 4px rgba(0,0,0,0.8);
             pointer-events: none;
@@ -134,13 +136,19 @@
             font-weight: 600;
             white-space: nowrap;
             flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
         }
 
         .next-game-block img {
             width: 1.8vw;
             height: 1.8vw;
+            min-width: 1.8vw;
+            min-height: 1.8vw;
             object-fit: contain;
             flex-shrink: 0;
+            display: block;
+            vertical-align: middle;
         }
 
         .next-game-team-name {
@@ -148,11 +156,22 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 12vw;
+            display: inline-flex;
+            align-items: center;
         }
 
         .next-game-sep {
             flex-shrink: 0;
             margin: 0 0.2vw;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .next-game-row {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 0.5vw;
         }
 
         .tournament-title {
@@ -814,10 +833,6 @@
         <div class="top-section">
             <div class="tournament-title" id="tournamentTitle">ISKRA CUP 2025</div>
             <div class="rosters-subtitle" id="rostersSubtitle">Составы команд</div>
-            <div class="next-game-block hidden" id="nextGameBlock">
-                <span class="next-game-time" id="nextGameTime"></span>
-                <span class="next-game-row" id="nextGameRow"></span>
-            </div>
         </div>
 
         <!-- Средняя область: слева название | лого+выпадайки, центр громкость+гимн, справа лого+выпадайки | название -->
@@ -911,6 +926,10 @@
                 <div class="roster-players-label">Игроки:</div>
                 <div class="roster-players-list" id="rosterTeam2Players"></div>
             </div>
+        </div>
+        <div class="next-game-block hidden" id="nextGameBlock">
+            <span class="next-game-time" id="nextGameTime"></span>
+            <span class="next-game-row" id="nextGameRow"></span>
         </div>
     </div>
 
