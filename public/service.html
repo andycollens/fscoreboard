@@ -438,17 +438,10 @@
             color: #fff;
             flex: 1;
             min-height: 0;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: hidden;
             position: relative;
-            padding-bottom: 1.5vh;
+            padding-bottom: 1vh;
             box-sizing: border-box;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .roster-players-list::-webkit-scrollbar {
-            display: none;
         }
 
         .roster-players-scroll {
@@ -1126,14 +1119,11 @@
             const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
             if (rosterTeam1Players && rosterTeam2Players) {
                 if (maxPlayersCount > 24) {
-                    const alreadyHadMany = rosterTeam1Players.classList.contains('many-players');
                     rosterTeam1Players.classList.add('many-players');
                     rosterTeam2Players.classList.add('many-players');
-                    if (!alreadyHadMany) initRosterAutoScroll();
                 } else {
                     rosterTeam1Players.classList.remove('many-players');
                     rosterTeam2Players.classList.remove('many-players');
-                    stopRosterAutoScroll();
                 }
                 if (rosterContentChanged) {
                     adjustRosterFont(rosterTeam1Players);
@@ -1220,13 +1210,13 @@
             const maxHeight = playersEl.clientHeight;
             if (!maxHeight) return;
             const baseContent = 1.6;
-            const minFont = 0.9;
+            const minFont = 0.5;
             let font = baseContent;
             while (font >= minFont) {
                 content.style.fontSize = font + 'vw';
                 const h = content.scrollHeight;
                 if (h <= maxHeight) break;
-                font -= 0.1;
+                font -= 0.05;
             }
             if (font < minFont) {
                 font = minFont;
