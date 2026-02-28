@@ -130,16 +130,20 @@ function getCountdownEnabled() {
   return false;
 }
 
-// Следующий пресет по расписанию: если текущие команды совпадают с одним из пресетов — берём следующий в списке
+// Следующий пресет по расписанию: только пресеты на сегодня; если текущие команды совпадают с одним из них — показываем следующий матч в этот же день
 function getNextPreset(state) {
   if (!state.team1Id || !state.team2Id || !matchPresets.length) return null;
-  const idx = matchPresets.findIndex(
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayPresets = matchPresets.filter((p) => p.matchDate === today);
+  if (!todayPresets.length) return null;
+  const idx = todayPresets.findIndex(
     (p) =>
       (String(p.team1Id) === String(state.team1Id) && String(p.team2Id) === String(state.team2Id)) ||
       (String(p.team1Id) === String(state.team2Id) && String(p.team2Id) === String(state.team1Id))
   );
-  if (idx === -1 || idx >= matchPresets.length - 1) return null;
-  return matchPresets[idx + 1];
+  if (idx === -1 || idx >= todayPresets.length - 1) return null;
+  return todayPresets[idx + 1];
 }
 
 // Функция для добавления tournamentTitle и nextPreset к state перед отправкой
