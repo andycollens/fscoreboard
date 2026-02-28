@@ -200,16 +200,16 @@
         .team2-logo,
         .team1-no-logo,
         .team2-no-logo {
-            width: 200px;
-            height: 200px;
+            width: 100px;
+            height: 100px;
             flex-shrink: 0;
         }
         .middle-section .team1-logo,
         .middle-section .team2-logo,
         .middle-section .team1-no-logo,
         .middle-section .team2-no-logo {
-            width: 170px;
-            height: 170px;
+            width: 85px;
+            height: 85px;
         }
 
         .team1-logo,
@@ -229,7 +229,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4vw;
+            font-size: 2vw;
             color: #fff;
             font-weight: bold;
         }
@@ -272,9 +272,9 @@
 
         .team1-name,
         .team2-name {
-            font-size: 3vw;
+            font-size: 1.5vw;
             margin: 0;
-            margin-top: 40px;
+            margin-top: 20px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -292,9 +292,9 @@
 
         .team1-city,
         .team2-city {
-            font-size: 2.5vw;
+            font-size: 1.25vw;
             margin: 0;
-            margin-top: 40px;
+            margin-top: 20px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -698,6 +698,22 @@
             white-space: pre-line;
             text-align: left;
         }
+        .service-score-row {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+            text-align: center;
+        }
+        .service-timer-row {
+            font-size: 18px;
+            font-weight: 600;
+            color: #aaa;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="rosters-mode">
@@ -727,6 +743,7 @@
                     </div>
                 </div>
                 <div class="jingle-player-block">
+                    <div class="service-score-row" id="serviceScoreRow">0 : 0</div>
                     <div class="jingle-volume-row">
                         <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
                         <div class="jingle-volume-track-wrap">
@@ -735,6 +752,7 @@
                         <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                     </div>
                     <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
+                    <div class="service-timer-row" id="serviceTimerRow">0:00</div>
                     <div class="break-music-spacer"></div>
                     <div class="break-music-block">
                         <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
@@ -1012,6 +1030,28 @@
                     adjustRosterFont(rosterTeam2Players);
                 }
             }
+            if (serviceScoreRow) {
+                let s1 = 0, s2 = 0;
+                if (typeof data.score1 === 'number' || typeof data.score2 === 'number') {
+                    s1 = Number(data.score1) || 0;
+                    s2 = Number(data.score2) || 0;
+                } else {
+                    if (data.team1 && typeof data.team1.score !== 'undefined') s1 = Number(data.team1.score) || 0;
+                    if (data.team2 && typeof data.team2.score !== 'undefined') s2 = Number(data.team2.score) || 0;
+                }
+                serviceScoreRow.textContent = s1 + ' : ' + s2;
+            }
+            if (serviceTimerRow) {
+                let timerText = '0:00';
+                if (typeof data.timerSeconds === 'number' && isFinite(data.timerSeconds)) {
+                    const m = Math.floor(Math.max(0, data.timerSeconds) / 60);
+                    const s = Math.floor(Math.max(0, data.timerSeconds) % 60);
+                    timerText = m + ':' + (s < 10 ? '0' : '') + s;
+                } else if (typeof data.time === 'string' && data.time !== '') {
+                    timerText = data.time;
+                }
+                serviceTimerRow.textContent = timerText;
+            }
             if (data.tournamentTitle && tournamentTitle) {
                 tournamentTitle.textContent = data.tournamentTitle;
             }
@@ -1040,6 +1080,8 @@
         const rosterTeam2Coach = document.getElementById('rosterTeam2Coach');
         const rosterTeam2Players = document.getElementById('rosterTeam2Players');
         const tournamentTitle = document.getElementById('tournamentTitle');
+        const serviceScoreRow = document.getElementById('serviceScoreRow');
+        const serviceTimerRow = document.getElementById('serviceTimerRow');
 
         let rosterScrollAnimations = [];
 
