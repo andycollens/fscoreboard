@@ -712,14 +712,19 @@
             align-items: center;
             justify-content: center;
             gap: 20px;
+            position: relative;
+            z-index: 1;
         }
         .break-music-nav-btn {
             background: none; border: none; color: #666; cursor: pointer;
             font-size: 24px; font-weight: bold; line-height: 1; padding: 6px; font-family: inherit;
+            box-sizing: border-box; min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center;
         }
         #breakMusicPrevBtn.break-music-nav-btn {
             font-size: 18px;
             padding: 4px;
+            min-width: 28px;
+            min-height: 28px;
         }
         .break-music-nav-btn:hover { color: #aaa; }
         .break-music-nav-btn:disabled { color: #333; cursor: default; }
@@ -764,6 +769,7 @@
             position: absolute; top: 50%; transform: translateY(-50%);
             font-size: 11px; color: #666; min-width: 36px;
             visibility: hidden; margin-top: 3px;
+            pointer-events: none;
         }
         .break-music-progress-time.elapsed { left: 0; text-align: left; }
         .break-music-progress-time.remaining { right: 0; text-align: right; }
