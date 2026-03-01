@@ -1266,7 +1266,7 @@
             if (!content) return;
             content.style.fontSize = '';
             const count = typeof playerCount === 'number' ? playerCount : (content.querySelectorAll('.roster-player-item').length || 0);
-            const vw = count <= 26 ? 1.5 : 1.0;
+            const vw = count <= 20 ? 1.5 : (count <= 26 ? 1.2 : 1.0);
             const viewportW = typeof window !== 'undefined' && window.innerWidth ? window.innerWidth : 1024;
             const fontPx = Math.max(ROSTER_FONT_MIN_PX, (viewportW * vw) / 100);
             content.style.fontSize = fontPx + 'px';
