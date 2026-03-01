@@ -1154,11 +1154,16 @@
                 const team2PlayersCount = (data.team2Players || data.players2 || []).length;
                 const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
                 if (maxPlayersCount > 20) {
+                    const staff1 = data.team1Staff || data.staff1 || [];
+                    const players1 = data.team1Players || data.players1 || [];
                     const staff2 = data.team2Staff || data.staff2 || [];
                     const players2 = data.team2Players || data.players2 || [];
+                    const needScroll = maxPlayersCount > 24;
                     requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
+                            renderRostersMode(rosterTeam1Coach, rosterTeam1Players, staff1, players1, false, team1Id);
                             renderRostersMode(rosterTeam2Coach, rosterTeam2Players, staff2, players2, true, team2Id);
+                            if (needScroll) initRosterAutoScroll();
                         });
                     });
                 }
