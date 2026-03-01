@@ -477,7 +477,8 @@
         .roster-players-list {
             font-weight: 500;
             line-height: 1.5;
-            display: block;
+            display: flex;
+            flex-direction: column;
             width: 100%;
             color: #fff;
             flex: 1;
@@ -494,6 +495,9 @@
             flex-wrap: wrap;
             gap: 2vw;
             width: 100%;
+            flex: 1;
+            min-height: 0;
+            align-content: flex-start;
             will-change: transform;
         }
 
