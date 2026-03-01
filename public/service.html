@@ -490,13 +490,12 @@
 
         .roster-players-scroll {
             font-size: 1.6vw;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            align-items: flex-start;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 2vw;
             width: 100%;
             will-change: transform;
+            align-content: start;
         }
 
         .roster-players-col {
@@ -504,8 +503,7 @@
             flex-direction: column;
             flex-wrap: nowrap;
             gap: 0.2em;
-            flex: 1 1 0%;
-            min-width: 28%;
+            min-width: 0;
         }
 
         .roster-players-list.many-players {
