@@ -499,6 +499,10 @@
         }
 
         .roster-players-col {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            gap: 0.2em;
             flex: 1 1 0%;
             min-width: 0;
         }
@@ -513,8 +517,10 @@
 
         .roster-player-item {
             display: flex;
+            flex-shrink: 0;
             align-items: baseline;
             gap: 0.5vw;
+            line-height: 1.5;
         }
 
         .roster-player-number {
