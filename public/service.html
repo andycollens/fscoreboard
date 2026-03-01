@@ -491,13 +491,15 @@
         .roster-players-scroll {
             font-size: 1.6vw;
             display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
             gap: 2vw;
             width: 100%;
             will-change: transform;
         }
 
         .roster-players-col {
-            flex: 1;
+            flex: 1 1 0%;
             min-width: 0;
         }
 
@@ -542,7 +544,7 @@
         }
 
         .roster-team2 .roster-player-item {
-            flex-direction: row;
+            flex-direction: row-reverse;
             gap: 0.5vw;
             justify-content: flex-end;
         }
@@ -556,6 +558,11 @@
         .roster-team2 .roster-player-name {
             text-align: right;
             flex: 1;
+            min-width: 0;
+        }
+
+        .roster-team1 .roster-player-name {
+            min-width: 0;
         }
 
         .divider-section,
@@ -1049,17 +1056,10 @@
                                 }
                             }
                             const numDisplay = (num === '' || num == null) ? '—' : num;
-                            if (isRightSide) {
-                                return `<div class="roster-player-item">
-                                    <span class="roster-player-name">${escapeHtml(name)}</span>
-                                    <span class="roster-player-number">${escapeHtml(numDisplay)}</span>
-                                </div>`;
-                            } else {
-                                return `<div class="roster-player-item">
-                                    <span class="roster-player-number">${escapeHtml(numDisplay)}</span>
-                                    <span class="roster-player-name">${escapeHtml(name)}</span>
-                                </div>`;
-                            }
+                            return `<div class="roster-player-item">
+                                <span class="roster-player-number">${escapeHtml(numDisplay)}</span>
+                                <span class="roster-player-name">${escapeHtml(name)}</span>
+                            </div>`;
                         })
                         .filter(Boolean);
                     const mid = Math.ceil(playerItems.length / 2);
