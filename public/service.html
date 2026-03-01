@@ -1158,12 +1158,11 @@
                     const players1 = data.team1Players || data.players1 || [];
                     const staff2 = data.team2Staff || data.staff2 || [];
                     const players2 = data.team2Players || data.players2 || [];
-                    const needScroll = maxPlayersCount > 24;
                     requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
                             renderRostersMode(rosterTeam1Coach, rosterTeam1Players, staff1, players1, false, team1Id);
                             renderRostersMode(rosterTeam2Coach, rosterTeam2Players, staff2, players2, true, team2Id);
-                            if (needScroll) initRosterAutoScroll();
+                            applyManyPlayersByOverflow();
                         });
                     });
                 }
@@ -1183,19 +1182,12 @@
             team2City.textContent = data.team2City || 'Город 2';
             updateStripe('team2', data.kit2Color);
 
-            const team1PlayersCount = (data.team1Players || data.players1 || []).length;
-            const team2PlayersCount = (data.team2Players || data.players2 || []).length;
             if (rosterTeam1Players && rosterTeam2Players) {
-                const hadMany1 = rosterTeam1Players.classList.contains('many-players');
-                const hadMany2 = rosterTeam2Players.classList.contains('many-players');
-                if (team1PlayersCount > 24) rosterTeam1Players.classList.add('many-players');
-                else rosterTeam1Players.classList.remove('many-players');
-                if (team2PlayersCount > 24) rosterTeam2Players.classList.add('many-players');
-                else rosterTeam2Players.classList.remove('many-players');
-                if (hadMany1 !== rosterTeam1Players.classList.contains('many-players') || hadMany2 !== rosterTeam2Players.classList.contains('many-players')) {
-                    stopRosterAutoScroll();
-                    if (rosterTeam1Players.classList.contains('many-players') || rosterTeam2Players.classList.contains('many-players')) initRosterAutoScroll();
-                }
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        applyManyPlayersByOverflow();
+                    });
+                });
             }
             if (serviceScoreRow) {
                 let s1 = 0, s2 = 0;
@@ -1269,12 +1261,29 @@
 
         let rosterScrollAnimations = [];
 
+        function hasRosterOverflow(el) {
+            if (!el) return false;
+            const content = el.querySelector('.roster-players-scroll');
+            if (!content) return false;
+            return content.scrollHeight - el.clientHeight > 20;
+        }
+
+        function applyManyPlayersByOverflow() {
+            if (!rosterTeam1Players || !rosterTeam2Players) return;
+            [rosterTeam1Players, rosterTeam2Players].forEach(el => {
+                if (hasRosterOverflow(el)) el.classList.add('many-players');
+                else el.classList.remove('many-players');
+            });
+            stopRosterAutoScroll();
+            if (rosterTeam1Players.classList.contains('many-players') || rosterTeam2Players.classList.contains('many-players')) initRosterAutoScroll();
+        }
+
         function ensureRosterOverflow(el) {
             if (!el) return false;
             const content = el.querySelector('.roster-players-scroll');
             if (!content) return false;
             let extra = content.scrollHeight - el.clientHeight;
-            if (extra > 2) return true;
+            if (extra > 20) return true;
             let filler = content.querySelector('.roster-scroll-filler');
             if (!filler) {
                 filler = document.createElement('div');
@@ -1287,7 +1296,7 @@
             } else {
                 filler.style.height = (parseInt(filler.style.height || '160', 10) + 80) + 'px';
             }
-            return content.scrollHeight - el.clientHeight > 2;
+            return content.scrollHeight - el.clientHeight > 20;
         }
 
         function initRosterAutoScroll() {
