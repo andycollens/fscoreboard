@@ -1172,6 +1172,28 @@ app.delete('/api/tournaments/:id', (req, res) => {
     });
   }
   
+  // Удаляем все пресеты игр (match presets), привязанные к этому турниру
+  const presetsToRemove = matchPresets.filter((p) => String(p.tournamentId || '') === String(tournamentId));
+  presetsToRemove.forEach((preset) => {
+    [preset.team1Logo, preset.team2Logo].forEach((logoUrl) => {
+      if (!logoUrl) return;
+      const filename = logoUrl.split('/').pop();
+      if (filename && filename.startsWith('preset_')) {
+        const logoPath = path.join(LOGOS_PATH, filename);
+        if (fs.existsSync(logoPath)) {
+          try {
+            fs.unlinkSync(logoPath);
+            console.log('Deleted preset logo:', logoPath);
+          } catch (err) {
+            console.error('Error deleting preset logo:', err);
+          }
+        }
+      }
+    });
+  });
+  matchPresets = matchPresets.filter((p) => String(p.tournamentId || '') !== String(tournamentId));
+  fs.writeFileSync(PRESETS_PATH, JSON.stringify(matchPresets, null, 2));
+
   tournaments = tournaments.filter(t => t.id !== tournamentId);
   fs.writeFileSync(TOURNAMENTS_PATH, JSON.stringify(tournaments, null, 2));
   
