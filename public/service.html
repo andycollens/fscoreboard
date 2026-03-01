@@ -1183,17 +1183,16 @@
 
             const team1PlayersCount = (data.team1Players || data.players1 || []).length;
             const team2PlayersCount = (data.team2Players || data.players2 || []).length;
-            const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
             if (rosterTeam1Players && rosterTeam2Players) {
-                if (maxPlayersCount > 24) {
-                    const alreadyHadMany = rosterTeam1Players.classList.contains('many-players');
-                    rosterTeam1Players.classList.add('many-players');
-                    rosterTeam2Players.classList.add('many-players');
-                    if (!alreadyHadMany) initRosterAutoScroll();
-                } else {
-                    rosterTeam1Players.classList.remove('many-players');
-                    rosterTeam2Players.classList.remove('many-players');
+                const hadMany1 = rosterTeam1Players.classList.contains('many-players');
+                const hadMany2 = rosterTeam2Players.classList.contains('many-players');
+                if (team1PlayersCount > 24) rosterTeam1Players.classList.add('many-players');
+                else rosterTeam1Players.classList.remove('many-players');
+                if (team2PlayersCount > 24) rosterTeam2Players.classList.add('many-players');
+                else rosterTeam2Players.classList.remove('many-players');
+                if (hadMany1 !== rosterTeam1Players.classList.contains('many-players') || hadMany2 !== rosterTeam2Players.classList.contains('many-players')) {
                     stopRosterAutoScroll();
+                    if (rosterTeam1Players.classList.contains('many-players') || rosterTeam2Players.classList.contains('many-players')) initRosterAutoScroll();
                 }
             }
             if (serviceScoreRow) {
