@@ -393,10 +393,10 @@
             color: #fff;
         }
 
-        /* Нижняя секция: от текущей верхней позиции (как при margin-top -130px) до низа экрана, без зазора ~130px */
+        /* Нижняя секция: сдвинута вверх на 50px (top 130px), до низа экрана */
         .bottom-section {
             position: absolute;
-            top: 180px;
+            top: 130px;
             bottom: 0;
             left: 0;
             right: 0;
@@ -448,7 +448,7 @@
 
         .roster-colon {
             width: 8px;
-            height: calc(100% - 50px);
+            height: calc(100% - 150px);
             background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #ffffff 50%, rgba(255, 255, 255, 0) 100%);
             border-radius: 8px;
             opacity: 1;
