@@ -168,14 +168,20 @@ function _normalizeDateStr(d) {
   return `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// Следующий пресет: только если загружен пресет из того же турнира и той же даты; следующий по времени. Не показываем записи из удалённых/других пресетов.
+// Следующий пресет: только из существующих турниров; тот же турнир и дата; следующий по времени.
 function getNextPreset(state) {
-  if (!matchPresets.length) return null;
+  const validTournamentIds = new Set((tournaments || []).map((t) => String(t.id)));
+  const presetsFromExistingTournaments = matchPresets.filter((p) => {
+    const tid = p.tournamentId;
+    if (tid == null || tid === '') return false;
+    return validTournamentIds.has(String(tid));
+  });
+  if (!presetsFromExistingTournaments.length) return null;
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const todayNorm = _normalizeDateStr(today);
-  const todayPresets = matchPresets.filter((p) => _normalizeDateStr(p.matchDate) === todayNorm);
-  const list = todayPresets.length > 0 ? todayPresets : matchPresets.filter((p) => p.matchDate != null && String(p.matchDate).trim() !== '');
+  const todayPresets = presetsFromExistingTournaments.filter((p) => _normalizeDateStr(p.matchDate) === todayNorm);
+  const list = todayPresets.length > 0 ? todayPresets : presetsFromExistingTournaments.filter((p) => p.matchDate != null && String(p.matchDate).trim() !== '');
   if (!list.length) return null;
   const sorted = [...list].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
   const idx = sorted.findIndex((p) => _presetMatchesCurrent(p, state));
