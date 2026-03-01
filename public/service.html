@@ -1181,8 +1181,8 @@
                     rosterTeam2Players.classList.remove('many-players');
                 }
                 if (rosterContentChanged) {
-                    adjustRosterFont(rosterTeam1Players);
-                    adjustRosterFont(rosterTeam2Players);
+                    adjustRosterFont(rosterTeam1Players, team1PlayersCount);
+                    adjustRosterFont(rosterTeam2Players, team2PlayersCount);
                 }
             }
             if (serviceScoreRow) {
@@ -1257,20 +1257,18 @@
 
         let rosterScrollAnimations = [];
 
-        // Подгонка шрифта под высоту: помещается 40 записей (20 в колонку), минимальный читаемый размер
-        const ROSTER_LINES_PER_COLUMN = 20;
-        const ROSTER_LINE_HEIGHT = 1.5;
-        const ROSTER_FONT_MIN_PX = 9;
-        const ROSTER_FONT_MAX_PX = 18;
+        // Размер шрифта списка по количеству игроков: ≤26 → 1.5vw, >26 → 1.0vw; нижний порог в px, чтобы не было нечитаемого текста
+        const ROSTER_FONT_MIN_PX = 11;
 
-        function adjustRosterFont(playersEl) {
+        function adjustRosterFont(playersEl, playerCount) {
             if (!playersEl) return;
             const content = playersEl.querySelector('.roster-players-scroll');
             if (!content) return;
             content.style.fontSize = '';
-            const maxHeight = playersEl.clientHeight;
-            if (!maxHeight) return;
-            const fontPx = Math.max(ROSTER_FONT_MIN_PX, Math.min(ROSTER_FONT_MAX_PX, maxHeight / (ROSTER_LINES_PER_COLUMN * ROSTER_LINE_HEIGHT)));
+            const count = typeof playerCount === 'number' ? playerCount : (content.querySelectorAll('.roster-player-item').length || 0);
+            const vw = count <= 26 ? 1.5 : 1.0;
+            const viewportW = typeof window !== 'undefined' && window.innerWidth ? window.innerWidth : 1024;
+            const fontPx = Math.max(ROSTER_FONT_MIN_PX, (viewportW * vw) / 100);
             content.style.fontSize = fontPx + 'px';
             const teamBlock = playersEl.closest('.roster-team1, .roster-team2');
             if (teamBlock) {
@@ -1281,9 +1279,9 @@
                 const baseCoachLabel = 18;
                 const baseCoachName = 17;
                 const basePlayersLabel = 18;
-                if (coachLabel) coachLabel.style.fontSize = Math.round(baseCoachLabel * scale) + 'px';
-                if (coachName) coachName.style.fontSize = Math.round(baseCoachName * scale) + 'px';
-                if (playersLabel) playersLabel.style.fontSize = Math.round(basePlayersLabel * scale) + 'px';
+                if (coachLabel) coachLabel.style.fontSize = Math.round(Math.max(ROSTER_FONT_MIN_PX, baseCoachLabel * scale)) + 'px';
+                if (coachName) coachName.style.fontSize = Math.round(Math.max(ROSTER_FONT_MIN_PX, baseCoachName * scale)) + 'px';
+                if (playersLabel) playersLabel.style.fontSize = Math.round(Math.max(ROSTER_FONT_MIN_PX, basePlayersLabel * scale)) + 'px';
             }
         }
 
