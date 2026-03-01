@@ -393,17 +393,19 @@
             color: #fff;
         }
 
-        /* Нижний отступ уменьшен: раньше 2vh давало мёртвую зону снизу, которая при малой высоте окна «съедала» место под игроков и не использовалась */
+        /* Нижняя секция: от текущей верхней позиции (как при margin-top -130px) до низа экрана, без зазора ~130px */
         .bottom-section {
+            position: absolute;
+            top: 180px;
+            bottom: 0;
+            left: 0;
+            right: 0;
             display: grid !important;
             grid-template-columns: 1fr auto 1fr;
-            width: 100%;
-            height: 100%;
             min-height: 0;
             background: transparent;
             overflow: visible;
             gap: 0;
-            margin-top: -130px;
             padding-bottom: 8px;
             box-sizing: border-box;
         }
