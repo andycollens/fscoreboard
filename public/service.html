@@ -393,6 +393,7 @@
             color: #fff;
         }
 
+        /* Нижний отступ уменьшен: раньше 2vh давало мёртвую зону снизу, которая при малой высоте окна «съедала» место под игроков и не использовалась */
         .bottom-section {
             display: grid !important;
             grid-template-columns: 1fr auto 1fr;
@@ -403,7 +404,7 @@
             overflow: visible;
             gap: 0;
             margin-top: -130px;
-            padding-bottom: 2vh;
+            padding-bottom: 8px;
             box-sizing: border-box;
         }
 
@@ -1181,8 +1182,9 @@
                     rosterTeam2Players.classList.remove('many-players');
                 }
                 if (rosterContentChanged) {
-                    adjustRosterFont(rosterTeam1Players, team1PlayersCount);
-                    adjustRosterFont(rosterTeam2Players, team2PlayersCount);
+                    // Единый шрифт для обоих списков по максимуму игроков (ориентир на «самый мелкий» при большом составе)
+                    adjustRosterFont(rosterTeam1Players, maxPlayersCount);
+                    adjustRosterFont(rosterTeam2Players, maxPlayersCount);
                 }
             }
             if (serviceScoreRow) {
@@ -2125,6 +2127,11 @@
                 }
                 if (rosterTeam2Coach && rosterTeam2Players && team2Id && String(team2Id) === String(teamId)) {
                     renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
+                }
+                const maxPlayersCount = Math.max((latestData.team1Players || latestData.players1 || []).length, (latestData.team2Players || latestData.players2 || []).length);
+                if (rosterTeam1Players && rosterTeam2Players && maxPlayersCount > 0) {
+                    adjustRosterFont(rosterTeam1Players, maxPlayersCount);
+                    adjustRosterFont(rosterTeam2Players, maxPlayersCount);
                 }
             }
         });
