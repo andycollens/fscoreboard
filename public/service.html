@@ -470,24 +470,27 @@
         }
 
         .roster-players-label-row {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 0.4em;
             margin: 0 0 0.5vh 0;
-            font-weight: 700;
-            font-size: 2.1vw;
-            color: #b0b0b0;
             cursor: pointer;
         }
 
-        .roster-players-label-row:hover {
-            color: #d0d0d0;
+        .roster-players-label-row .roster-players-label {
+            margin: 0;
         }
 
-        .roster-players-label-row.hide-active {
-            color: rgba(176, 176, 176, 0.45);
+        .roster-players-label-row.roster-players-label-row--hidden .roster-players-label {
+            color: rgba(176, 176, 176, 0.4);
         }
 
-        .roster-players-label-row.hide-active:hover {
-            color: rgba(176, 176, 176, 0.65);
+        .roster-players-label-row:hover .roster-players-label {
+            color: #fff;
+        }
+
+        .roster-players-label-row.roster-players-label-row--hidden:hover .roster-players-label {
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .roster-player-item.roster-player-dimmed {
@@ -582,7 +585,7 @@
         }
 
         .roster-team2 .roster-players-label-row {
-            text-align: right;
+            justify-content: flex-end;
         }
 
         .roster-team2 .roster-coach-label,
@@ -995,7 +998,9 @@
             <div class="roster-team1" id="rosterTeam1">
                 <div class="roster-coach-label">Тренер:</div>
                 <div class="roster-coach-name" id="rosterTeam1Coach"></div>
-                <div class="roster-players-label-row" data-team="team1" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Клик: скрыть или показать отмеченных">Игроки:</div>
+                <div class="roster-players-label-row" data-team="team1" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Клик: скрыть или показать отмеченных">
+                    <span class="roster-players-label">Игроки:</span>
+                </div>
                 <div class="roster-players-list" id="rosterTeam1Players"></div>
             </div>
             <div class="roster-divider" id="rosterDivider">
@@ -1004,7 +1009,9 @@
             <div class="roster-team2" id="rosterTeam2">
                 <div class="roster-coach-label">Тренер:</div>
                 <div class="roster-coach-name" id="rosterTeam2Coach"></div>
-                <div class="roster-players-label-row" data-team="team2" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Клик: скрыть или показать отмеченных">Игроки:</div>
+                <div class="roster-players-label-row" data-team="team2" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Клик: скрыть или показать отмеченных">
+                    <span class="roster-players-label">Игроки:</span>
+                </div>
                 <div class="roster-players-list" id="rosterTeam2Players"></div>
             </div>
         </div>
@@ -1336,7 +1343,7 @@
                 window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
                 const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
                 if (list) list.classList.toggle('hide-excluded', window.rosterEyeClosedByTeam[teamKey]);
-                labelRow.classList.toggle('hide-active', window.rosterEyeClosedByTeam[teamKey]);
+                labelRow.classList.toggle('roster-players-label-row--hidden', window.rosterEyeClosedByTeam[teamKey]);
                 labelRow.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
                 requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
             }
@@ -1346,16 +1353,24 @@
             const labelRow = e.target.closest('.roster-players-label-row');
             if (!labelRow || (e.key !== 'Enter' && e.key !== ' ')) return;
             e.preventDefault();
-            labelRow.click();
+            const teamKey = labelRow.getAttribute('data-team');
+            if (!teamKey) return;
+            if (window.rosterEyeClosedByTeam[teamKey] === undefined) window.rosterEyeClosedByTeam[teamKey] = false;
+            window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
+            const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
+            if (list) list.classList.toggle('hide-excluded', window.rosterEyeClosedByTeam[teamKey]);
+            labelRow.classList.toggle('roster-players-label-row--hidden', window.rosterEyeClosedByTeam[teamKey]);
+            labelRow.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
+            requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
         });
 
-        function syncRosterLabelRows() {
+        function syncRosterLabelRowState() {
             ['team1', 'team2'].forEach(teamKey => {
                 const row = document.querySelector('.roster-players-label-row[data-team="' + teamKey + '"]');
                 const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
                 if (row && list) {
                     const closed = window.rosterEyeClosedByTeam[teamKey];
-                    row.classList.toggle('hide-active', !!closed);
+                    row.classList.toggle('roster-players-label-row--hidden', !!closed);
                     row.setAttribute('aria-label', closed ? 'Показать отмеченных' : 'Скрыть отмеченных');
                     list.classList.toggle('hide-excluded', !!closed);
                 }
