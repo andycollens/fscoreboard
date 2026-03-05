@@ -1330,6 +1330,19 @@
                     set.delete(key);
                     item.classList.remove('roster-player-dimmed');
                 } else {
+                    let s1 = 0, s2 = 0;
+                    if (latestData) {
+                        if (typeof latestData.score1 === 'number' || typeof latestData.score2 === 'number') {
+                            s1 = Number(latestData.score1) || 0;
+                            s2 = Number(latestData.score2) || 0;
+                        } else {
+                            if (latestData.team1 && typeof latestData.team1.score !== 'undefined') s1 = Number(latestData.team1.score) || 0;
+                            if (latestData.team2 && typeof latestData.team2.score !== 'undefined') s2 = Number(latestData.team2.score) || 0;
+                        }
+                    }
+                    if (s1 !== 0 || s2 !== 0) {
+                        if (!confirm('На табло не нулевой счёт. Вы уверены, что хотите отметить игрока как не участвующего в матче?')) return;
+                    }
                     set.add(key);
                     item.classList.add('roster-player-dimmed');
                 }
