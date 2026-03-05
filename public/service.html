@@ -1215,11 +1215,13 @@
                         requestAnimationFrame(() => {
                             renderRostersMode(rosterTeam1Coach, rosterTeam1Players, staff1, players1, false, team1Id);
                             renderRostersMode(rosterTeam2Coach, rosterTeam2Players, staff2, players2, true, team2Id);
+                            syncRosterLabelRowState();
                             applyManyPlayersByOverflow();
                         });
                     });
                 }
             }
+            syncRosterLabelRowState();
 
             // Команда 2
             if (data.team2Logo && data.team2Logo !== '') {
@@ -1342,7 +1344,16 @@
                 if (window.rosterEyeClosedByTeam[teamKey] === undefined) window.rosterEyeClosedByTeam[teamKey] = false;
                 window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
                 const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
-                if (list) list.classList.toggle('hide-excluded', window.rosterEyeClosedByTeam[teamKey]);
+                if (window.rosterEyeClosedByTeam[teamKey]) {
+                    rebuildRosterListVisibleOnly(teamKey);
+                    list.classList.remove('hide-excluded');
+                } else if (latestData) {
+                    const team1Id = latestData.team1Id || null;
+                    const team2Id = latestData.team2Id || null;
+                    if (teamKey === 'team1') renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
+                    else renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
+                    list.classList.remove('hide-excluded');
+                }
                 labelRow.classList.toggle('roster-players-label-row--hidden', window.rosterEyeClosedByTeam[teamKey]);
                 labelRow.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
                 requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
@@ -1358,11 +1369,38 @@
             if (window.rosterEyeClosedByTeam[teamKey] === undefined) window.rosterEyeClosedByTeam[teamKey] = false;
             window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
             const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
-            if (list) list.classList.toggle('hide-excluded', window.rosterEyeClosedByTeam[teamKey]);
+            if (window.rosterEyeClosedByTeam[teamKey]) {
+                rebuildRosterListVisibleOnly(teamKey);
+                list.classList.remove('hide-excluded');
+            } else if (latestData) {
+                const team1Id = latestData.team1Id || null;
+                const team2Id = latestData.team2Id || null;
+                if (teamKey === 'team1') renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
+                else renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
+                list.classList.remove('hide-excluded');
+            }
             labelRow.classList.toggle('roster-players-label-row--hidden', window.rosterEyeClosedByTeam[teamKey]);
             labelRow.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
             requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
         });
+
+        function rebuildRosterListVisibleOnly(teamKey) {
+            const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
+            if (!list) return;
+            const scroll = list.querySelector('.roster-players-scroll');
+            if (!scroll) return;
+            const cols = scroll.querySelectorAll('.roster-players-col');
+            const visible = [];
+            cols.forEach(col => {
+                col.querySelectorAll('.roster-player-item').forEach(item => {
+                    if (!item.classList.contains('roster-player-dimmed')) visible.push(item.outerHTML);
+                });
+            });
+            const mid = Math.ceil(visible.length / 2);
+            const col1 = visible.slice(0, mid);
+            const col2 = visible.slice(mid);
+            scroll.innerHTML = '<div class="roster-players-col">' + col1.join('') + '</div><div class="roster-players-col">' + col2.join('') + '</div>';
+        }
 
         function syncRosterLabelRowState() {
             ['team1', 'team2'].forEach(teamKey => {
@@ -1372,7 +1410,8 @@
                     const closed = window.rosterEyeClosedByTeam[teamKey];
                     row.classList.toggle('roster-players-label-row--hidden', !!closed);
                     row.setAttribute('aria-label', closed ? 'Показать отмеченных' : 'Скрыть отмеченных');
-                    list.classList.toggle('hide-excluded', !!closed);
+                    if (closed) rebuildRosterListVisibleOnly(teamKey);
+                    list.classList.remove('hide-excluded');
                 }
             });
         }
