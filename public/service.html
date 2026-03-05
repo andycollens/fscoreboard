@@ -1006,7 +1006,7 @@
                 <div class="roster-coach-name" id="rosterTeam1Coach"></div>
                 <div class="roster-players-label-row">
                     <span class="roster-players-label">Игроки:</span>
-                    <button type="button" class="roster-eye-btn" data-team="team1" aria-label="Скрыть отмеченных" title="Скрыть/показать отмеченных игроков">👁</button>
+                    <button type="button" class="roster-eye-btn" data-team="team1" aria-label="Скрыть отмеченных" title="Скрыть/показать отмеченных игроков">○</button>
                 </div>
                 <div class="roster-players-list" id="rosterTeam1Players"></div>
             </div>
@@ -1018,7 +1018,7 @@
                 <div class="roster-coach-name" id="rosterTeam2Coach"></div>
                 <div class="roster-players-label-row">
                     <span class="roster-players-label">Игроки:</span>
-                    <button type="button" class="roster-eye-btn" data-team="team2" aria-label="Скрыть отмеченных" title="Скрыть/показать отмеченных игроков">👁</button>
+                    <button type="button" class="roster-eye-btn" data-team="team2" aria-label="Скрыть отмеченных" title="Скрыть/показать отмеченных игроков">○</button>
                 </div>
                 <div class="roster-players-list" id="rosterTeam2Players"></div>
             </div>
@@ -1352,7 +1352,7 @@
                 window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
                 const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
                 if (list) list.classList.toggle('hide-excluded', window.rosterEyeClosedByTeam[teamKey]);
-                eyeBtn.textContent = window.rosterEyeClosedByTeam[teamKey] ? '🙈' : '👁';
+                eyeBtn.textContent = window.rosterEyeClosedByTeam[teamKey] ? '●' : '○';
                 eyeBtn.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
                 requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
             }
@@ -1364,7 +1364,7 @@
                 const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
                 if (btn && list) {
                     const closed = window.rosterEyeClosedByTeam[teamKey];
-                    btn.textContent = closed ? '🙈' : '👁';
+                    btn.textContent = closed ? '●' : '○';
                     btn.setAttribute('aria-label', closed ? 'Показать отмеченных' : 'Скрыть отмеченных');
                     list.classList.toggle('hide-excluded', !!closed);
                 }
