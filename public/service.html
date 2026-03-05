@@ -1340,8 +1340,10 @@
                             if (latestData.team2 && typeof latestData.team2.score !== 'undefined') s2 = Number(latestData.team2.score) || 0;
                         }
                     }
-                    if (s1 !== 0 || s2 !== 0) {
-                        if (!confirm('На табло не нулевой счёт. Вы уверены, что хотите отметить игрока как не участвующего в матче?')) return;
+                    const scoreNotZero = s1 !== 0 || s2 !== 0;
+                    const timerRunning = latestData && isTimerRunningFromData(latestData);
+                    if (scoreNotZero || timerRunning) {
+                        if (!confirm('На табло выставлен счёт или идёт таймер. Вы уверены, что хотите отметить игрока как не участвующего в матче?')) return;
                     }
                     set.add(key);
                     item.classList.add('roster-player-dimmed');
