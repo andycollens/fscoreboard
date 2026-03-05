@@ -469,6 +469,52 @@
             color: #b0b0b0;
         }
 
+        .roster-players-label-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4em;
+            margin: 0 0 0.5vh 0;
+        }
+
+        .roster-players-label-row .roster-players-label {
+            margin: 0;
+        }
+
+        .roster-eye-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6em;
+            height: 1.6em;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: #b0b0b0;
+            cursor: pointer;
+            font-size: 1.1em;
+            border-radius: 4px;
+        }
+
+        .roster-eye-btn:hover {
+            color: #fff;
+        }
+
+        .roster-player-item.roster-player-dimmed {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .roster-player-item.roster-player-dimmed .roster-player-number {
+            color: rgba(176, 176, 176, 0.5);
+        }
+
+        .roster-player-item {
+            cursor: pointer;
+        }
+
+        .roster-players-list.hide-excluded .roster-player-item.roster-player-dimmed {
+            display: none !important;
+        }
+
         .roster-coach-name {
             font-size: 2.0vw;
             font-weight: 500;
@@ -539,8 +585,13 @@
         .roster-team1 .roster-coach-label,
         .roster-team1 .roster-coach-name,
         .roster-team1 .roster-players-label,
-        .roster-team1 .roster-players-list {
+        .roster-team1 .roster-players-list,
+        .roster-team1 .roster-players-label-row {
             text-align: left;
+        }
+
+        .roster-team2 .roster-players-label-row {
+            justify-content: flex-end;
         }
 
         .roster-team2 .roster-coach-label,
@@ -953,7 +1004,10 @@
             <div class="roster-team1" id="rosterTeam1">
                 <div class="roster-coach-label">Тренер:</div>
                 <div class="roster-coach-name" id="rosterTeam1Coach"></div>
-                <div class="roster-players-label">Игроки:</div>
+                <div class="roster-players-label-row">
+                    <span class="roster-players-label">Игроки:</span>
+                    <button type="button" class="roster-eye-btn" data-team="team1" aria-label="Скрыть отмеченных" title="Скрыть/показать отмеченных игроков">👁</button>
+                </div>
                 <div class="roster-players-list" id="rosterTeam1Players"></div>
             </div>
             <div class="roster-divider" id="rosterDivider">
@@ -962,7 +1016,10 @@
             <div class="roster-team2" id="rosterTeam2">
                 <div class="roster-coach-label">Тренер:</div>
                 <div class="roster-coach-name" id="rosterTeam2Coach"></div>
-                <div class="roster-players-label">Игроки:</div>
+                <div class="roster-players-label-row">
+                    <span class="roster-players-label">Игроки:</span>
+                    <button type="button" class="roster-eye-btn" data-team="team2" aria-label="Скрыть отмеченных" title="Скрыть/показать отмеченных игроков">👁</button>
+                </div>
                 <div class="roster-players-list" id="rosterTeam2Players"></div>
             </div>
         </div>
@@ -1063,7 +1120,11 @@
                                 }
                             }
                             const numDisplay = (num === '' || num == null) ? '—' : num;
-                            return `<div class="roster-player-item">
+                            const teamKey = playersEl.id === 'rosterTeam1Players' ? 'team1' : 'team2';
+                            const playerKey = numDisplay + '|' + name;
+                            const isDimmed = (window.rosterExcludedByTeam && window.rosterExcludedByTeam[teamKey] && window.rosterExcludedByTeam[teamKey].has(playerKey));
+                            const dimmedClass = isDimmed ? ' roster-player-dimmed' : '';
+                            return `<div class="roster-player-item${dimmedClass}" data-player-key="${escapeHtml(playerKey)}">
                                 <span class="roster-player-number">${escapeHtml(numDisplay)}</span>
                                 <span class="roster-player-name">${escapeHtml(name)}</span>
                             </div>`;
@@ -1256,6 +1317,60 @@
         const rosterTeam2Coach = document.getElementById('rosterTeam2Coach');
         const rosterTeam2Players = document.getElementById('rosterTeam2Players');
         const tournamentTitle = document.getElementById('tournamentTitle');
+
+        if (typeof window.rosterExcludedByTeam === 'undefined') {
+            window.rosterExcludedByTeam = { team1: new Set(), team2: new Set() };
+            window.rosterEyeClosedByTeam = { team1: false, team2: false };
+        }
+
+        document.addEventListener('click', function(e) {
+            const item = e.target.closest('.roster-player-item');
+            if (item) {
+                const list = item.closest('.roster-players-list');
+                if (!list || !list.id) return;
+                const teamKey = list.id === 'rosterTeam1Players' ? 'team1' : 'team2';
+                const key = item.getAttribute('data-player-key');
+                if (!key) return;
+                const set = window.rosterExcludedByTeam[teamKey];
+                if (set.has(key)) {
+                    set.delete(key);
+                    item.classList.remove('roster-player-dimmed');
+                } else {
+                    set.add(key);
+                    item.classList.add('roster-player-dimmed');
+                }
+                requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
+                return;
+            }
+            const eyeBtn = e.target.closest('.roster-eye-btn');
+            if (eyeBtn) {
+                e.preventDefault();
+                const teamKey = eyeBtn.getAttribute('data-team');
+                if (!teamKey || !window.rosterEyeClosedByTeam[teamKey]) {
+                    window.rosterEyeClosedByTeam[teamKey] = false;
+                }
+                window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
+                const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
+                if (list) list.classList.toggle('hide-excluded', window.rosterEyeClosedByTeam[teamKey]);
+                eyeBtn.textContent = window.rosterEyeClosedByTeam[teamKey] ? '🙈' : '👁';
+                eyeBtn.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
+                requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
+            }
+        });
+
+        function syncRosterEyeButtons() {
+            ['team1', 'team2'].forEach(teamKey => {
+                const btn = document.querySelector('.roster-eye-btn[data-team="' + teamKey + '"]');
+                const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
+                if (btn && list) {
+                    const closed = window.rosterEyeClosedByTeam[teamKey];
+                    btn.textContent = closed ? '🙈' : '👁';
+                    btn.setAttribute('aria-label', closed ? 'Показать отмеченных' : 'Скрыть отмеченных');
+                    list.classList.toggle('hide-excluded', !!closed);
+                }
+            });
+        }
+
         const serviceScoreRow = document.getElementById('serviceScoreRow');
         const serviceTimerRow = document.getElementById('serviceTimerRow');
 
