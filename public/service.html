@@ -1342,8 +1342,13 @@
                     }
                     const scoreNotZero = s1 !== 0 || s2 !== 0;
                     const timerRunning = latestData && isTimerRunningFromData(latestData);
-                    if (scoreNotZero || timerRunning) {
-                        if (!confirm('На табло выставлен счёт или идёт таймер. Вы уверены, что хотите отметить игрока как не участвующего в матче?')) return;
+                    let timerHasTime = false;
+                    if (latestData) {
+                        if (typeof latestData.timerSeconds === 'number' && isFinite(latestData.timerSeconds) && latestData.timerSeconds > 0) timerHasTime = true;
+                        else if (typeof latestData.time === 'string' && latestData.time.trim() !== '' && latestData.time.trim() !== '00:00') timerHasTime = true;
+                    }
+                    if (scoreNotZero || timerRunning || timerHasTime) {
+                        if (!confirm('На табло выставлен счёт или на таймере не нулевое время. Вы уверены, что хотите отметить игрока как не участвующего в матче?')) return;
                     }
                     set.add(key);
                     item.classList.add('roster-player-dimmed');
