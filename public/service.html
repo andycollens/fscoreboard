@@ -1074,6 +1074,11 @@
             if (el) el.innerHTML = '<pre style="padding:20px;white-space:pre-wrap;color:#c00;font-family:monospace;">Ошибка: ' + (msg || '') + '\n' + (err && err.stack ? err.stack : '') + '</pre>';
             return false;
         };
+        // Показываем контент не позднее чем через 300 ms (на случай долгой загрузки фона или ошибки скрипта)
+        setTimeout(function() {
+            document.body.classList.add('background-loaded');
+            document.body.classList.add('content-ready');
+        }, 300);
         // Ждем загрузки фонового изображения перед началом анимации
         const bgImage = new Image();
         bgImage.onload = function() {
