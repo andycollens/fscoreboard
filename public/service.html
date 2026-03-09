@@ -2624,11 +2624,15 @@
                     if (!latestData) return;
                     var trackUrl = teamNum === 1 ? latestData.team1TrackUrl : latestData.team2TrackUrl;
                     var teamId = teamNum === 1 ? latestData.team1Id : latestData.team2Id;
-                    var name = (teamNum === 1 ? (latestData.team1 && latestData.team1.name) : (latestData.team2 && latestData.team2.name)) || '';
+                    var teamName = (teamNum === 1 ? (latestData.team1Name || (latestData.team1 && latestData.team1.name)) : (latestData.team2Name || (latestData.team2 && latestData.team2.name))) || '';
+                    var city = (teamNum === 1 ? latestData.team1City : latestData.team2City) || '';
+                    var year = (teamNum === 1 ? latestData.team1BirthYear : latestData.team2BirthYear) || '';
+                    var parts = [teamName, year].filter(Boolean);
+                    var displayName = parts.join(' ') + (city ? ' (' + city + ')' : '');
                     var logoEl = teamNum === 1 ? team1Logo : team2Logo;
                     var logoUrl = (logoEl && logoEl.src) || '';
                     if (trackUrl && teamId && typeof window.addBreakMusicTeamTrackNext === 'function')
-                        window.addBreakMusicTeamTrackNext(teamId, trackUrl, name, logoUrl);
+                        window.addBreakMusicTeamTrackNext(teamId, trackUrl, displayName || ('Команда ' + teamId), logoUrl);
                 }
             }
             if (team1Logo) team1Logo.addEventListener('click', function(e) { checkTriple(1); });

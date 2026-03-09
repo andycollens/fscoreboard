@@ -211,11 +211,17 @@ function enrichStateWithConfig(state) {
   if (tournamentTitle) out.tournamentTitle = tournamentTitle;
   if (state.team1Id) {
     const t1 = teams.find((t) => String(t.id) === String(state.team1Id));
-    if (t1 && t1.teamTrack) out.team1TrackUrl = t1.teamTrack;
+    if (t1) {
+      if (t1.teamTrack) out.team1TrackUrl = t1.teamTrack;
+      if (t1.birthYear) out.team1BirthYear = t1.birthYear;
+    }
   }
   if (state.team2Id) {
     const t2 = teams.find((t) => String(t.id) === String(state.team2Id));
-    if (t2 && t2.teamTrack) out.team2TrackUrl = t2.teamTrack;
+    if (t2) {
+      if (t2.teamTrack) out.team2TrackUrl = t2.teamTrack;
+      if (t2.birthYear) out.team2BirthYear = t2.birthYear;
+    }
   }
   if (nextPreset) {
     const np = { ...nextPreset };
