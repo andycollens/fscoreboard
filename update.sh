@@ -339,7 +339,7 @@ patch_nginx_ads_config() {
         return 0
     fi
     local port=$(grep -o 'PORT=[0-9]*' /opt/fscoreboard/.env 2>/dev/null | cut -d'=' -f2 || echo "3002")
-    print_step "Добавление в Nginx лимита загрузки рекламы (1 ГБ)..."
+    print_step "Добавление в Nginx лимитов загрузки (реклама 1 ГБ, треки команд 50 МБ)..."
     local tmpblock=$(mktemp)
     cat > "$tmpblock" << PATCHEOF
     # Загрузка рекламных роликов — лимит 1 ГБ (иначе 413)
@@ -354,6 +354,20 @@ patch_nginx_ads_config() {
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_read_timeout 3600;
         proxy_send_timeout 3600;
+    }
+
+    # Загрузка командных треков (MP3) — лимит 50 МБ
+    location ~ ^/api/teams/[^/]+/track\$ {
+        client_max_body_size 50M;
+        proxy_request_buffering off;
+        proxy_pass http://localhost:$port;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 300;
+        proxy_send_timeout 300;
     }
 
 PATCHEOF
@@ -373,10 +387,56 @@ PATCHEOF
     fi
 }
 
+# Добавить в Nginx лимит загрузки командных треков (50 МБ), если ещё нет
+patch_nginx_team_track_config() {
+    local cfg=""
+    for f in /etc/nginx/sites-enabled/fscoreboard /etc/nginx/sites-available/fscoreboard; do
+        if [ -f "$f" ]; then cfg="$f"; break; fi
+    done
+    [ -n "$cfg" ] || return 0
+    if grep -q "api/teams.*track" "$cfg" 2>/dev/null; then
+        return 0
+    fi
+    local port=$(grep -o 'PORT=[0-9]*' /opt/fscoreboard/.env 2>/dev/null | cut -d'=' -f2 || echo "3002")
+    print_step "Добавление в Nginx лимита загрузки командных треков (50 МБ)..."
+    local tmpblock=$(mktemp)
+    cat > "$tmpblock" << PATCHEOF
+    # Загрузка командных треков (MP3) — лимит 50 МБ
+    location ~ ^/api/teams/[^/]+/track\$ {
+        client_max_body_size 50M;
+        proxy_request_buffering off;
+        proxy_pass http://localhost:$port;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 300;
+        proxy_send_timeout 300;
+    }
+
+PATCHEOF
+    awk -v blockfile="$tmpblock" '
+        /^[[:space:]]*location \/ \{/ && !done {
+            while ((getline line < blockfile) > 0) print line
+            close(blockfile)
+            done=1
+        }
+        { print }
+    ' "$cfg" > "$cfg.new" && mv "$cfg.new" "$cfg"
+    rm -f "$tmpblock"
+    if grep -q "api/teams.*track" "$cfg" 2>/dev/null; then
+        print_success "Блок загрузки треков команд добавлен в конфиг Nginx"
+    else
+        print_warning "Добавьте вручную location для /api/teams/.../track с client_max_body_size 50M (см. nginx-scoreboard.conf)"
+    fi
+}
+
 # Перезагрузка Nginx (всегда после обновления — подхватывает лимит для /api/ads и др.)
 reload_nginx() {
     if [ -f "/etc/nginx/sites-enabled/fscoreboard" ] || [ -f "/etc/nginx/sites-available/fscoreboard" ]; then
         patch_nginx_ads_config
+        patch_nginx_team_track_config
         print_step "Перезагрузка Nginx..."
         if nginx -t 2>/dev/null; then
             systemctl reload nginx

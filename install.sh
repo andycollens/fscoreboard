@@ -503,6 +503,20 @@ server {
         proxy_send_timeout 3600;
     }
 
+    # Загрузка командных треков (MP3) — лимит 50 МБ
+    location ~ ^/api/teams/[^/]+/track\$ {
+        client_max_body_size 50M;
+        proxy_request_buffering off;
+        proxy_pass http://localhost:$PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 300;
+        proxy_send_timeout 300;
+    }
+
     # Все остальные запросы проксируются на Express сервер
     location / {
         proxy_pass http://localhost:$PORT;
