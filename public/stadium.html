@@ -2800,6 +2800,7 @@ body.penalty-mode .penalty-score {
         pendingMode = null;
         lastAppliedMode = mode;
         if (prevMode === 'ad' && mode !== 'ad') {
+            adModeInitialized = false;
             if (adPauseTimeoutId) { clearTimeout(adPauseTimeoutId); adPauseTimeoutId = null; }
             stopAdVideo();
         }
@@ -2880,7 +2881,10 @@ body.penalty-mode .penalty-score {
         } else if (mode === 'logo') {
             applyLogoMode();
         } else if (mode === 'ad') {
-            applyAdMode();
+            if (!adModeInitialized) {
+                applyAdMode();
+                adModeInitialized = true;
+            }
         }
     }
 
@@ -2908,6 +2912,7 @@ body.penalty-mode .penalty-score {
     let adsMutedState = true;
     let adPauseSecondsState = 30;
     let adPauseTimeoutId = null;
+    let adModeInitialized = false; // true, пока уже в режиме Реклама — не перезапускать цикл при scoreboardUpdate (смена пресета)
 
     function stopAdVideo() {
         if (adTimeoutId) {
