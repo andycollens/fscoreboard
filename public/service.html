@@ -279,7 +279,18 @@
             align-items: center;
             gap: 8px;
             flex-shrink: 0;
+            position: relative;
         }
+        .team-track-note {
+            position: absolute;
+            font-size: 14px;
+            line-height: 1;
+            opacity: 0.32;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .team1-logo-wrap .team-track-note { top: 2px; right: 2px; }
+        .team2-logo-wrap .team-track-note { top: 2px; left: 2px; }
         .jingle-select-row {
             display: flex;
             flex-direction: row;
@@ -964,6 +975,7 @@
                         <div class="team1-city" id="team1City">Город 1</div>
                     </div>
                     <div class="team1-logo-wrap">
+                        <span id="team1TrackNote" class="team-track-note" aria-hidden="true" title="Есть трек команды (тройной клик — в плейлист)" style="display: none;">♪</span>
                         <img id="team1Logo" class="team1-logo" alt="Team 1 logo">
                         <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
                     </div>
@@ -1022,6 +1034,7 @@
                 </div>
                 <div class="team2-section">
                     <div class="team2-logo-wrap">
+                        <span id="team2TrackNote" class="team-track-note" aria-hidden="true" title="Есть трек команды (тройной клик — в плейлист)" style="display: none;">♪</span>
                         <img id="team2Logo" class="team2-logo" alt="Team 2 logo">
                         <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
                     </div>
@@ -1242,6 +1255,7 @@
                 team1NoLogo.style.display = 'flex';
                 if (data.kit1Color) team1NoLogo.style.backgroundColor = data.kit1Color;
             }
+            if (team1TrackNote) team1TrackNote.style.display = (data.team1TrackUrl && String(data.team1TrackUrl).trim()) ? '' : 'none';
             team1Name.textContent = data.team1Name || 'Команда 1';
             team1City.textContent = data.team1City || 'Город 1';
             updateStripe('team1', data.kit1Color);
@@ -1290,6 +1304,7 @@
                 team2NoLogo.style.display = 'flex';
                 if (data.kit2Color) team2NoLogo.style.backgroundColor = data.kit2Color;
             }
+            if (team2TrackNote) team2TrackNote.style.display = (data.team2TrackUrl && String(data.team2TrackUrl).trim()) ? '' : 'none';
             team2Name.textContent = data.team2Name || 'Команда 2';
             team2City.textContent = data.team2City || 'Город 2';
             updateStripe('team2', data.kit2Color);
@@ -1355,11 +1370,13 @@
 
         const team1Logo = document.getElementById('team1Logo');
         const team1NoLogo = document.getElementById('team1NoLogo');
+        const team1TrackNote = document.getElementById('team1TrackNote');
         const team1Name = document.getElementById('team1Name');
         const team1City = document.getElementById('team1City');
         const team1Stripe = document.getElementById('team1Stripe');
         const team2Logo = document.getElementById('team2Logo');
         const team2NoLogo = document.getElementById('team2NoLogo');
+        const team2TrackNote = document.getElementById('team2TrackNote');
         const team2Name = document.getElementById('team2Name');
         const team2City = document.getElementById('team2City');
         const team2Stripe = document.getElementById('team2Stripe');

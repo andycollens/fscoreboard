@@ -567,6 +567,9 @@
       margin-bottom: 15px;
     }
     
+    .team-block {
+      margin-bottom: 14px;
+    }
     .team-item {
       display: flex;
       flex-direction: column;
@@ -1612,22 +1615,24 @@
             : '<div class="team-logo-mini" style="background: #ddd;"></div>';
           
           return `
-            <div class="team-item" data-team-id="${team.id}">
-              <div class="team-row">
-                <div class="team-item-info" id="team-info-${team.id}" onclick="toggleBaseTeamRoster('${team.id}', event)">
-                  ${logoHtml}
-                <div class="team-short">${team.short || ''}</div>
-                <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
-                <div class="team-details">
-                  <div class="team-name">${team.name}</div>
-                  <div class="team-city">${team.city || ''}</div>
+            <div class="team-block" data-team-block-id="${team.id}">
+              <div class="team-item" data-team-id="${team.id}">
+                <div class="team-row">
+                  <div class="team-item-info" id="team-info-${team.id}" onclick="toggleBaseTeamRoster('${team.id}', event)">
+                    ${logoHtml}
+                    <div class="team-short">${team.short || ''}</div>
+                    <div class="team-kit-color" style="background-color: ${team.kitColor || '#2b2b2b'}"></div>
+                    <div class="team-details">
+                      <div class="team-name">${team.name}</div>
+                      <div class="team-city">${team.city || ''}</div>
+                    </div>
+                  </div>
+                  <div class="team-actions">
+                    <span class="team-edit-link" onclick="editBaseTeam('${team.id}')">edit</span>
+                    <span class="team-delete-link" onclick="deleteBaseTeam('${team.id}')">delete</span>
+                  </div>
                 </div>
               </div>
-              <div class="team-actions">
-                  <span class="team-edit-link" onclick="editBaseTeam('${team.id}')">edit</span>
-                  <span class="team-delete-link" onclick="deleteBaseTeam('${team.id}')">delete</span>
-              </div>
-            </div>
               <div id="team-edit-form-${team.id}" class="team-edit-form-inline hidden"></div>
               <div id="team-roster-${team.id}" class="team-roster-view hidden"></div>
             </div>
@@ -1831,6 +1836,17 @@
               <div id="editTeamLogoPreview-${teamId}" class="logo-preview"></div>
             </div>
           </div>
+          <div class="form-row team-track-edit-section" style="margin-top: 16px; padding: 12px; background: #f0f7ff; border: 1px solid #c5d9ff; border-radius: 8px;">
+            <div class="form-group" style="flex: 1;">
+              <label style="font-weight: 600; color: #163d74;">Командный трек</label>
+              <div style="font-size: 12px; color: #61708a; margin: 6px 0 10px 0;">Трек для музыки перерыва при игре этой команды (тройной клик по лого на сервисной странице). Один MP3 на команду.</div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                <input type="file" id="editTeamTrack-${teamId}" accept="audio/mpeg,.mp3" style="margin-bottom: 0;" onchange="uploadTeamTrack('${teamId}')">
+                <span id="editTeamTrackStatus-${teamId}">${team.teamTrack ? 'Загружен' : 'Не загружен'}</span>
+                ${team.teamTrack ? `<button type="button" class="btn btn-secondary btn-small" id="editTeamTrackRemove-${teamId}" onclick="removeTeamTrack('${teamId}')">Удалить трек</button>` : ''}
+              </div>
+            </div>
+          </div>
           <div class="roster-grid">
             <div class="roster-card" style="grid-column: 1 / -1;">
               <div class="roster-switch">
@@ -1965,6 +1981,67 @@
       // Очищаем составы
       renderRosterList([], `playersList-edit-${teamId}`, true);
       renderRosterList([], `staffList-edit-${teamId}`, false);
+    }
+
+    async function uploadTeamTrack(teamId) {
+      const input = document.getElementById(`editTeamTrack-${teamId}`);
+      if (!input || !input.files || input.files.length === 0) return;
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+      try {
+        const response = await fetch(`/api/teams/${encodeURIComponent(teamId)}/track?token=${getToken()}`, {
+          method: 'POST',
+          body: formData
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const team = teams.find(t => t.id === teamId);
+          if (team) team.teamTrack = data.teamTrack;
+          const statusEl = document.getElementById(`editTeamTrackStatus-${teamId}`);
+          if (statusEl) statusEl.textContent = 'Загружен';
+          let removeBtn = document.getElementById(`editTeamTrackRemove-${teamId}`);
+          if (!removeBtn) {
+            removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-secondary btn-small';
+            removeBtn.id = `editTeamTrackRemove-${teamId}`;
+            removeBtn.style.marginLeft = '8px';
+            removeBtn.textContent = 'Удалить трек';
+            removeBtn.onclick = () => removeTeamTrack(teamId);
+            if (statusEl) statusEl.after(removeBtn);
+          }
+          input.value = '';
+          showNotification('Командный трек загружен', 'success');
+        } else {
+          const err = await response.json().catch(() => ({}));
+          showNotification(err.error || 'Ошибка загрузки трека', 'error');
+        }
+      } catch (e) {
+        console.error(e);
+        showNotification('Ошибка загрузки трека', 'error');
+      }
+    }
+
+    async function removeTeamTrack(teamId) {
+      if (!confirm('Удалить командный трек?')) return;
+      try {
+        const response = await fetch(`/api/teams/${encodeURIComponent(teamId)}/track?token=${getToken()}`, { method: 'DELETE' });
+        if (response.ok) {
+          const data = await response.json();
+          const team = teams.find(t => t.id === teamId);
+          if (team) delete team.teamTrack;
+          const statusEl = document.getElementById(`editTeamTrackStatus-${teamId}`);
+          if (statusEl) statusEl.textContent = 'Не загружен';
+          const removeBtn = document.getElementById(`editTeamTrackRemove-${teamId}`);
+          if (removeBtn) removeBtn.remove();
+          showNotification('Командный трек удалён', 'success');
+        } else {
+          showNotification('Ошибка удаления трека', 'error');
+        }
+      } catch (e) {
+        console.error(e);
+        showNotification('Ошибка удаления трека', 'error');
+      }
     }
     
     // Удаление команды
