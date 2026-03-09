@@ -318,6 +318,27 @@ const restoreUpload = multer({
   limits: { fileSize: 300 * 1024 * 1024 }
 });
 
+// Командный трек (MP3) — один файл на команду
+const teamTrackStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, TEAM_TRACKS_DIR);
+  },
+  filename: function (req, file, cb) {
+    const teamId = (req.params && req.params.id) || 'unknown';
+    const safeId = String(teamId).replace(/[^a-zA-Z0-9-_]/g, '_');
+    cb(null, `team_${safeId}.mp3`);
+  }
+});
+const uploadTeamTrackMiddleware = multer({
+  storage: teamTrackStorage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: function (req, file, cb) {
+    const ok = /audio\/mpeg|audio\/mp3/.test(file.mimetype) || (file.originalname && /\.mp3$/i.test(file.originalname));
+    if (ok) return cb(null, true);
+    cb(new Error('Разрешены только MP3'));
+  }
+});
+
 // ====== Состояние табло ======
 let state = {
   timerRunning: false,
@@ -2133,27 +2154,6 @@ const uploadAdMiddleware = multer({
     const mimetypeOk = allowed.test(file.mimetype);
     if (mimetypeOk) return cb(null, true);
     cb(new Error('Разрешены только видеофайлы (mp4, webm, ogg, mov, mkv)'));
-  }
-});
-
-// ====== Team tracks (командный трек) ======
-const teamTrackStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, TEAM_TRACKS_DIR);
-  },
-  filename: function (req, file, cb) {
-    const teamId = (req.params && req.params.id) || 'unknown';
-    const safeId = String(teamId).replace(/[^a-zA-Z0-9-_]/g, '_');
-    cb(null, `team_${safeId}.mp3`);
-  }
-});
-const uploadTeamTrackMiddleware = multer({
-  storage: teamTrackStorage,
-  limits: { fileSize: 50 * 1024 * 1024 },
-  fileFilter: function (req, file, cb) {
-    const ok = /audio\/mpeg|audio\/mp3/.test(file.mimetype) || (file.originalname && /\.mp3$/i.test(file.originalname));
-    if (ok) return cb(null, true);
-    cb(new Error('Разрешены только MP3'));
   }
 });
 
