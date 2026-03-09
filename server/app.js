@@ -318,7 +318,9 @@ const restoreUpload = multer({
   limits: { fileSize: 300 * 1024 * 1024 }
 });
 
-// Командный трек (MP3) — один файл на команду
+// Командный трек (MP3): у каждой команды свой файл team_<teamId>.mp3 (как логотипы team_*).
+// Один и тот же исходный файл, загруженный для разных команд, даёт разные файлы; при удалении
+// одной команды удаляется только её файл, остальные не затрагиваются.
 const teamTrackStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, TEAM_TRACKS_DIR);
@@ -1706,7 +1708,23 @@ app.delete('/api/teams/:id', (req, res) => {
       }
     }
   }
-  
+
+  // Удаляем файл командного трека (team_<id>.mp3 — уникален для этой команды, не используется другими)
+  if (team.teamTrack) {
+    const filename = team.teamTrack.split('/').pop();
+    if (filename && filename.startsWith('team_')) {
+      const trackPath = path.join(TEAM_TRACKS_DIR, filename);
+      if (fs.existsSync(trackPath)) {
+        try {
+          fs.unlinkSync(trackPath);
+          console.log('Deleted team track:', trackPath);
+        } catch (error) {
+          console.error('Error deleting team track:', error);
+        }
+      }
+    }
+  }
+
   teams = teams.filter(t => t.id !== teamId);
   fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
   
