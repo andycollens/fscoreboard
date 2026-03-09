@@ -816,6 +816,7 @@
             position: absolute; width: 8px; height: 8px; border-radius: 50%;
             background: #888; top: 50%; margin-top: -4px; margin-left: -4px;
             left: 0%; transition: left 0.15s linear;
+            pointer-events: none;
         }
         .break-music-controls-row { position: relative; display: flex; justify-content: center; width: 100%; }
         .break-music-progress-time {
@@ -2380,6 +2381,7 @@
                 progressTrack.addEventListener('pointerdown', function(ev) {
                     if (ev.button !== 0) return;
                     isSeeking = true;
+                    if (progressThumb) progressThumb.style.transition = 'none';
                     ev.preventDefault();
                     seekFromEvent(ev);
                     try { progressTrack.setPointerCapture(ev.pointerId); } catch (e) {}
@@ -2393,6 +2395,7 @@
                     progressTrack.addEventListener(type, function(ev) {
                         if (!isSeeking) return;
                         isSeeking = false;
+                        if (progressThumb) progressThumb.style.transition = '';
                         try { progressTrack.releasePointerCapture(ev.pointerId); } catch (e) {}
                     });
                 });
