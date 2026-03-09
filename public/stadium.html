@@ -697,10 +697,20 @@
 
         body.rosters-mode .roster-players-scroll {
             font-size: 1.7vw;
-            column-count: 2;
-            column-gap: 2vw;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2vw;
             width: 100%;
             will-change: transform;
+            align-content: start;
+        }
+
+        body.rosters-mode .roster-players-col {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            gap: 0;
+            min-width: 0;
         }
 
         body.rosters-mode .roster-players-list.many-players {
@@ -1188,9 +1198,13 @@
         .roster-lines {
             font-size: 2vw;
             font-weight: 500;
-            display: block;
-            column-count: 2;
-            column-gap: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            align-content: start;
+        }
+
+        .roster-lines-col {
             break-inside: avoid;
             page-break-inside: avoid;
         }
@@ -2509,20 +2523,24 @@ body.penalty-mode .penalty-score {
 
             if (staff && Array.isArray(staff) && staff.length > 0) {
                 parts.push(`<div class="roster-title">Тренерский состав</div>`);
-                const staffLines = staff
+                const staffItems = staff
                     .map(item => {
                         if (!item) return '';
                         if (typeof item === 'string') return escapeHtml(item);
                         return escapeHtml(item.name || '');
                     })
-                    .filter(Boolean)
-                    .join('<br>');
-                if (staffLines) parts.push(`<div class="roster-lines">${staffLines}</div>`);
+                    .filter(Boolean);
+                if (staffItems.length) {
+                    const mid = Math.ceil(staffItems.length / 2);
+                    const col1 = staffItems.slice(0, mid).join('<br>');
+                    const col2 = staffItems.slice(mid).join('<br>');
+                    parts.push(`<div class="roster-lines"><div class="roster-lines-col">${col1}</div><div class="roster-lines-col">${col2}</div></div>`);
+                }
             }
 
             if (players && Array.isArray(players) && players.length > 0) {
                 parts.push(`<div class="roster-title">Игроки</div>`);
-                const playerLines = players
+                const playerItems = players
                     .map(item => {
                         if (!item) return '';
                         if (typeof item === 'string') return escapeHtml(item);
@@ -2533,9 +2551,13 @@ body.penalty-mode .penalty-score {
                             : `${num} ${name}`;   // № ФИО
                         return escapeHtml(line.trim());
                     })
-                    .filter(Boolean)
-                    .join('<br>');
-                if (playerLines) parts.push(`<div class="roster-lines">${playerLines}</div>`);
+                    .filter(Boolean);
+                if (playerItems.length) {
+                    const mid = Math.ceil(playerItems.length / 2);
+                    const col1 = playerItems.slice(0, mid).join('<br>');
+                    const col2 = playerItems.slice(mid).join('<br>');
+                    parts.push(`<div class="roster-lines"><div class="roster-lines-col">${col1}</div><div class="roster-lines-col">${col2}</div></div>`);
+                }
             }
 
             el.innerHTML = parts.join('');
@@ -2617,7 +2639,10 @@ body.penalty-mode .penalty-score {
                             }
                         })
                         .filter(Boolean);
-                    playersEl.innerHTML = `<div class="roster-players-scroll">${playerItems.join('')}</div>`;
+                    const mid = Math.ceil(playerItems.length / 2);
+                    const col1 = playerItems.slice(0, mid);
+                    const col2 = playerItems.slice(mid);
+                    playersEl.innerHTML = `<div class="roster-players-scroll"><div class="roster-players-col">${col1.join('')}</div><div class="roster-players-col">${col2.join('')}</div></div>`;
                 } else {
                     playersEl.innerHTML = '';
                 }
