@@ -1581,6 +1581,10 @@
         function isAnyJinglePlaying() {
             return (currentTeam1Audio && !currentTeam1Audio.paused) || (currentTeam2Audio && !currentTeam2Audio.paused);
         }
+        function isFootballAnthemPlaying() {
+            return footballAnthemAudio && !footballAnthemAudio.paused;
+        }
+        window.isFootballAnthemPlaying = isFootballAnthemPlaying;
 
         function stopAllJingles() {
             if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; currentTeam1Audio = null; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } setProgressFill(1, 0); }
@@ -1712,6 +1716,10 @@
             var otherJinglePlaying = (teamNum === 1 && currentTeam2Audio && !currentTeam2Audio.paused) || (teamNum === 2 && currentTeam1Audio && !currentTeam1Audio.paused);
             if (otherJinglePlaying) {
                 stopAllJingles();
+                return;
+            }
+            if (isFootballAnthemPlaying()) {
+                alert('Во время проигрывания футбольного гимна другие звуки отключены. Дождитесь окончания гимна.');
                 return;
             }
             if (window.breakMusicPlaying) {
@@ -2443,6 +2451,10 @@
                 }
                 if (btn.classList.contains('playing')) {
                     stopBreakMusic();
+                    return;
+                }
+                if (typeof window.isFootballAnthemPlaying === 'function' && window.isFootballAnthemPlaying()) {
+                    alert('Во время проигрывания футбольного гимна музыка перерыва недоступна. Дождитесь окончания гимна.');
                     return;
                 }
                 if (typeof isAnyJinglePlaying === 'function' && isAnyJinglePlaying()) {
