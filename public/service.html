@@ -1069,6 +1069,11 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+        window.onerror = function(msg, url, line, col, err) {
+            var el = document.body || document.documentElement;
+            if (el) el.innerHTML = '<pre style="padding:20px;white-space:pre-wrap;color:#c00;font-family:monospace;">Ошибка: ' + (msg || '') + '\n' + (err && err.stack ? err.stack : '') + '</pre>';
+            return false;
+        };
         // Ждем загрузки фонового изображения перед началом анимации
         const bgImage = new Image();
         bgImage.onload = function() {
@@ -1085,6 +1090,10 @@
         };
         bgImage.src = '/public/img/memberspage_bg.jpg';
 
+        if (typeof io === 'undefined') {
+            document.body.innerHTML = '<pre style="padding:20px;color:#c00;">Не удалось загрузить Socket.IO. Проверьте, что страница открыта с того же домена, что и сервер (не file://).</pre>';
+            throw new Error('Socket.IO not loaded');
+        }
         const socket = io();
         let latestData = null;
         let lastRosterSignature = '';
