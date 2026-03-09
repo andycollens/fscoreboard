@@ -883,8 +883,7 @@
         .break-music-playlist-row.current { background: #333; color: #fff; }
         .break-music-playlist-row .pl-num { flex-shrink: 0; font-size: 12px; color: #666; min-width: 1.5em; }
         .break-music-playlist-row.current .pl-num { color: #999; }
-        .break-music-playlist-row .pl-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: grab; }
-        .break-music-playlist-row .pl-name:active { cursor: grabbing; }
+        .break-music-playlist-row .pl-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
         .break-music-playlist-row .pl-artist { font-weight: 700; color: #b0b0b0; }
         .break-music-playlist-row .pl-title { color: #888; }
         .break-music-playlist-row.current .pl-artist { color: #fff; }
@@ -893,7 +892,6 @@
         .break-music-playlist-row .pl-duration:hover { color: #ccc; }
         .break-music-playlist-row.current .pl-duration { color: #aaa; }
         .break-music-playlist-row.current .pl-duration:hover { color: #fff; }
-        .break-music-playlist-row.dragging { opacity: 0.6; }
         .service-score-row {
             font-size: 27.5px;
             font-weight: 700;
@@ -2135,7 +2133,6 @@
                     numEl.textContent = String(i + 1);
                     const nameEl = document.createElement('span');
                     nameEl.className = 'pl-name';
-                    nameEl.draggable = true;
                     if (artist) {
                         const artistSpan = document.createElement('span');
                         artistSpan.className = 'pl-artist';
@@ -2161,48 +2158,17 @@
                     row.appendChild(durEl);
                     playlistListEl.appendChild(row);
                 }
-                setupPlaylistModalDrag();
                 setupPlaylistModalDurationClick();
             }
-            function setupPlaylistModalDrag() {
+            function setupPlaylistModalNameDblclick() {
                 if (!playlistListEl) return;
-                let dragOrderIndex = null;
-                playlistListEl.querySelectorAll('.break-music-playlist-row .pl-name').forEach(function(nameEl) {
-                    const row = nameEl.closest('.break-music-playlist-row');
+                playlistListEl.addEventListener('dblclick', function(e) {
+                    var nameEl = e.target.closest('.pl-name');
+                    if (!nameEl) return;
+                    var row = nameEl.closest('.break-music-playlist-row');
                     if (!row) return;
-                    nameEl.addEventListener('dragstart', function(e) {
-                        dragOrderIndex = parseInt(row.getAttribute('data-order-index'), 10);
-                        row.classList.add('dragging');
-                        e.dataTransfer.setData('text/plain', String(dragOrderIndex));
-                        e.dataTransfer.effectAllowed = 'move';
-                    });
-                    nameEl.addEventListener('dragend', function() {
-                        row.classList.remove('dragging');
-                        dragOrderIndex = null;
-                    });
-                });
-                playlistListEl.querySelectorAll('.break-music-playlist-row').forEach(function(row) {
-                    row.addEventListener('dragover', function(e) {
-                        e.preventDefault();
-                        if (dragOrderIndex == null) return;
-                        e.dataTransfer.dropEffect = 'move';
-                    });
-                    row.addEventListener('drop', function(e) {
-                        e.preventDefault();
-                        var toIndex = parseInt(row.getAttribute('data-order-index'), 10);
-                        var fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                        if (fromIndex === toIndex || isNaN(fromIndex) || isNaN(toIndex)) return;
-                        var val = playlistOrder[fromIndex];
-                        playlistOrder.splice(fromIndex, 1);
-                        var insertAt = fromIndex < toIndex ? toIndex - 1 : toIndex;
-                        if (fromIndex === playlistIndex) playlistIndex = insertAt;
-                        else if (fromIndex < playlistIndex) playlistIndex = insertAt <= playlistIndex - 1 ? playlistIndex : playlistIndex - 1;
-                        else playlistIndex = insertAt <= playlistIndex ? playlistIndex + 1 : playlistIndex;
-                        playlistOrder.splice(insertAt, 0, val);
-                        savePlaylistState();
-                        renderQueueRows();
-                        renderPlaylistModalContent();
-                    });
+                    var orderIndex = parseInt(row.getAttribute('data-order-index'), 10);
+                    reorderPlaylistMoveToNextAfterCurrent(orderIndex);
                 });
             }
             function reorderPlaylistMoveToNextAfterCurrent(orderIndex) {
@@ -2486,6 +2452,7 @@
                     if (e.key === 'Escape' && playlistOverlay.classList.contains('visible')) closePlaylistModal();
                 });
             }
+            if (playlistListEl) setupPlaylistModalNameDblclick();
             window.stopBreakMusicFromTimer = function() {
                 stopBreakMusic();
             };
