@@ -723,22 +723,9 @@
             team2City.textContent = data.team2City || 'Город 2';
             updateStripe('team2', data.kit2Color);
 
-            // Устанавливаем размер шрифта для обеих команд в зависимости от максимального количества игроков
-            const team1PlayersCount = (data.team1Players || data.players1 || []).length;
-            const team2PlayersCount = (data.team2Players || data.players2 || []).length;
-            const maxPlayersCount = Math.max(team1PlayersCount, team2PlayersCount);
-            
+            // Auto-scroll only when content really overflows vertically
             if (rosterTeam1Players && rosterTeam2Players) {
-                if (maxPlayersCount > 24) {
-                    const alreadyHadMany = rosterTeam1Players.classList.contains('many-players');
-                    rosterTeam1Players.classList.add('many-players');
-                    rosterTeam2Players.classList.add('many-players');
-                    if (!alreadyHadMany) initRosterAutoScroll();
-                } else {
-                    rosterTeam1Players.classList.remove('many-players');
-                    rosterTeam2Players.classList.remove('many-players');
-                    stopRosterAutoScroll();
-                }
+                applyManyPlayersByOverflow();
             }
 
             // Название турнира
@@ -766,15 +753,23 @@
         const rosterTeam2Players = document.getElementById('rosterTeam2Players');
         const tournamentTitle = document.getElementById('tournamentTitle');
 
-        // Auto-scroll для списков игроков при >24 игроков
+        // Auto-scroll for rosters: only when content really overflows vertically
         let rosterScrollAnimations = [];
+
+        function hasRosterOverflow(el) {
+            if (!el) return false;
+            const content = el.querySelector('.roster-players-scroll');
+            if (!content) return false;
+            const extra = content.scrollHeight - el.clientHeight;
+            return extra > 80;
+        }
 
         function ensureRosterOverflow(el) {
             if (!el) return false;
             const content = el.querySelector('.roster-players-scroll');
             if (!content) return false;
             let extra = content.scrollHeight - el.clientHeight;
-            if (extra > 2) return true;
+            if (extra > 80) return true;
             let filler = content.querySelector('.roster-scroll-filler');
             if (!filler) {
                 filler = document.createElement('div');
@@ -789,7 +784,20 @@
                 filler.style.height = (current + 80) + 'px';
             }
             extra = content.scrollHeight - el.clientHeight;
-            return extra > 2;
+            return extra > 80;
+        }
+
+        function applyManyPlayersByOverflow() {
+            [rosterTeam1Players, rosterTeam2Players].forEach(el => {
+                if (!el) return;
+                if (hasRosterOverflow(el)) el.classList.add('many-players');
+                else el.classList.remove('many-players');
+            });
+            stopRosterAutoScroll();
+            if ((rosterTeam1Players && rosterTeam1Players.classList.contains('many-players')) ||
+                (rosterTeam2Players && rosterTeam2Players.classList.contains('many-players'))) {
+                initRosterAutoScroll();
+            }
         }
 
         function initRosterAutoScroll() {
