@@ -2168,15 +2168,15 @@
                 }
                 const blob = new Blob([track.data], { type: 'audio/mpeg' });
                 const url = URL.createObjectURL(blob);
-                const audio = new Audio();
-                audio.addEventListener('loadedmetadata', function onMeta() {
-                    audio.removeEventListener('loadedmetadata', onMeta);
+                const a = new Audio();
+                a.addEventListener('loadedmetadata', function onMeta() {
+                    a.removeEventListener('loadedmetadata', onMeta);
                     URL.revokeObjectURL(url);
-                    track.duration = audio.duration;
+                    track.duration = a.duration;
                     cb(track.duration);
                 });
-                audio.addEventListener('error', function() { URL.revokeObjectURL(url); cb(0); });
-                audio.src = url;
+                a.addEventListener('error', function() { URL.revokeObjectURL(url); cb(0); });
+                a.src = url;
             }
             function formatDuration(sec) {
                 if (!isFinite(sec) || sec < 0) return '0:00';
