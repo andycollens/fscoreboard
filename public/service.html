@@ -1601,6 +1601,7 @@
         function getOrCreateAudio(filename) {
             if (jingleCache[filename]) return jingleCache[filename];
             const a = new Audio(jingleBase + filename);
+            a.volume = 1;
             jingleCache[filename] = a;
             a.addEventListener('timeupdate', () => updateProgressFromAudio(a));
             a.addEventListener('loadedmetadata', () => updateProgressFromAudio(a));
@@ -1612,7 +1613,7 @@
         }
         function preloadJingle(filename) {
             const a = getOrCreateAudio(filename);
-            a.volume = jingleVolume;
+            a.volume = 1;
             a.load();
         }
         const JINGLE_STORAGE_VOLUME = 'serviceJingleVolume';
@@ -1620,8 +1621,6 @@
         const JINGLE_STORAGE_SELECT2 = 'serviceJingleSelect2';
         function applyVolumeToAll() {
             if (jingleVolumeEl) jingleVolume = parseFloat(jingleVolumeEl.value);
-            Object.keys(jingleCache).forEach(f => { jingleCache[f].volume = jingleVolume; });
-            if (footballAnthemAudio) footballAnthemAudio.volume = jingleVolume;
             try { localStorage.setItem(JINGLE_STORAGE_VOLUME, String(jingleVolumeEl ? jingleVolumeEl.value : jingleVolume)); } catch (e) {}
         }
         function shouldWarnGoalWithoutRecentScoreChange() {
@@ -1723,7 +1722,7 @@
                 }
             }
             const a = getOrCreateAudio(filename);
-            a.volume = jingleVolume;
+            a.volume = 1;
             if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } currentTeam1Audio = null; setProgressFill(1, 0); }
             if (currentTeam2Audio) { currentTeam2Audio.pause(); currentTeam2Audio.currentTime = 0; if (jinglePlay2) { jinglePlay2.textContent = '▶'; jinglePlay2.classList.remove('playing'); } currentTeam2Audio = null; setProgressFill(2, 0); }
             if (teamNum === 1) currentTeam1Audio = a; else currentTeam2Audio = a;
@@ -1754,7 +1753,7 @@
                     if (footballAnthemBtn) { footballAnthemBtn.classList.remove('playing'); footballAnthemBtn.textContent = 'Футбольный гимн'; }
                 });
             }
-            footballAnthemAudio.volume = jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7;
+            footballAnthemAudio.volume = 1;
             if (footballAnthemAudio.paused) {
                 if (isAnyJinglePlaying()) {
                     stopAllJingles();
