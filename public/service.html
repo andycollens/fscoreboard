@@ -2158,7 +2158,6 @@
                     row.appendChild(durEl);
                     playlistListEl.appendChild(row);
                 }
-                setupPlaylistModalDurationClick();
             }
             function setupPlaylistModalNameDblclick() {
                 if (!playlistListEl) return;
@@ -2452,7 +2451,10 @@
                     if (e.key === 'Escape' && playlistOverlay.classList.contains('visible')) closePlaylistModal();
                 });
             }
-            if (playlistListEl) setupPlaylistModalNameDblclick();
+            if (playlistListEl) {
+                setupPlaylistModalNameDblclick();
+                setupPlaylistModalDurationClick();
+            }
             window.stopBreakMusicFromTimer = function() {
                 stopBreakMusic();
             };
