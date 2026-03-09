@@ -2188,7 +2188,11 @@ body.penalty-mode .penalty-score {
             if (!el) return false;
             const content = el.querySelector('.roster-players-scroll');
             if (!content) return false;
-            return content.scrollHeight - el.clientHeight > 20;
+            // Only treat it as overflow when there is a noticeable hidden area.
+            // Small differences (< ~80px) often come from line-height/margins and
+            // выглядят как полностью помещающиеся списки на экране.
+            const extra = content.scrollHeight - el.clientHeight;
+            return extra > 80;
         }
 
         function ensureRosterOverflow(el) {
