@@ -876,7 +876,8 @@
             display: flex; flex-direction: column; box-sizing: border-box; font-size: 13px;
         }
         .break-music-playlist-box h3 { margin: 0 0 8px 0; font-size: 14px; color: #fff; }
-        .break-music-playlist-list { overflow-y: auto; flex: 1; min-height: 0; }
+        .break-music-playlist-list { overflow-y: auto; flex: 1; min-height: 0; scrollbar-width: none; -ms-overflow-style: none; }
+        .break-music-playlist-list::-webkit-scrollbar { display: none; }
         .break-music-playlist-row {
             display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: default;
         }
