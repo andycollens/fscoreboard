@@ -1208,6 +1208,7 @@
         }
 
         function updateDisplay(data) {
+            if (!data || typeof data !== 'object') return;
             if (typeof window.pruneBreakMusicTeamTracks === 'function') window.pruneBreakMusicTeamTracks(data.team1Id, data.team2Id);
             trackScoreChangeFromData(data);
             const nowTimerRunning = isTimerRunningFromData(data);
@@ -2561,7 +2562,7 @@
                 renderQueueRows();
             };
             window.pruneBreakMusicTeamTracks = function(team1Id, team2Id) {
-                var allowed = new Set([String(team1Id), String(team2Id)].filter(Boolean));
+                var allowed = new Set([].concat(team1Id != null ? [String(team1Id)] : [], team2Id != null ? [String(team2Id)] : []).filter(Boolean));
                 var before = playlistOrder.length;
                 playlistOrder = playlistOrder.filter(function(entry) {
                     if (typeof entry === 'object' && entry && entry.type === 'team')
