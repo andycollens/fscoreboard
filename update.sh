@@ -227,7 +227,9 @@ update_code() {
     # Сохраняем файлы данных
     [ -f "server/state.json" ] && cp "server/state.json" "$backup_dir/"
     [ -f "server/presets.json" ] && cp "server/presets.json" "$backup_dir/"
+    [ -f "server/teams.json" ] && cp "server/teams.json" "$backup_dir/" 2>/dev/null || true
     [ -d "public/logos" ] && cp -r "public/logos" "$backup_dir/" 2>/dev/null || true
+    [ -d "public/team-tracks" ] && cp -r "public/team-tracks" "$backup_dir/" 2>/dev/null || true
     [ -f ".env" ] && cp ".env" "$backup_dir/"
     [ -f "server/config.json" ] && cp "server/config.json" "$backup_dir/" 2>/dev/null || true
     [ -f "server/ads.json" ] && cp "server/ads.json" "$backup_dir/" 2>/dev/null || true
@@ -241,7 +243,9 @@ update_code() {
     print_info "Восстановление пользовательских данных..."
     [ -f "$backup_dir/state.json" ] && cp "$backup_dir/state.json" "server/"
     [ -f "$backup_dir/presets.json" ] && cp "$backup_dir/presets.json" "server/"
+    [ -f "$backup_dir/teams.json" ] && cp "$backup_dir/teams.json" "server/" 2>/dev/null || true
     [ -d "$backup_dir/logos" ] && cp -r "$backup_dir/logos" "public/" 2>/dev/null || true
+    [ -d "$backup_dir/team-tracks" ] && cp -r "$backup_dir/team-tracks" "public/" 2>/dev/null || true
     [ -f "$backup_dir/.env" ] && cp "$backup_dir/.env" "."
     [ -f "$backup_dir/config.json" ] && cp "$backup_dir/config.json" "server/" 2>/dev/null || true
     [ -f "$backup_dir/ads.json" ] && cp "$backup_dir/ads.json" "server/" 2>/dev/null || true
@@ -253,8 +257,8 @@ update_code() {
     sed -i "s/PORT: [0-9]*/PORT: $port/" /opt/fscoreboard/ecosystem.config.js 2>/dev/null || true
     
     # Устанавливаем правильные права
-    chown -R root:root server/state.json server/presets.json server/ads.json 2>/dev/null || true
-    chown -R root:root public/logos public/ads 2>/dev/null || true
+    chown -R root:root server/state.json server/presets.json server/teams.json server/ads.json 2>/dev/null || true
+    chown -R root:root public/logos public/ads public/team-tracks 2>/dev/null || true
     chown root:root .env 2>/dev/null || true
     chown root:root server/config.json 2>/dev/null || true
     
@@ -264,16 +268,12 @@ update_code() {
     print_success "Код обновлен, пользовательские данные сохранены"
 }
 
-# Обновление зависимостей
+# Обновление зависимостей (всегда после обновления кода — гарантирует совместимость и устраняет 502)
 update_dependencies() {
-    if [ "$UPDATE_DEPENDENCIES" = true ]; then
-        print_step "Обновление зависимостей..."
-        
-        cd /opt/fscoreboard
-        npm install
-        
-        print_success "Зависимости обновлены"
-    fi
+    print_step "Обновление зависимостей npm..."
+    cd /opt/fscoreboard
+    npm install
+    print_success "Зависимости обновлены"
 }
 
 # Перезапуск приложения
@@ -324,6 +324,7 @@ restart_application() {
                 print_success "Приложение запущено после повторной попытки"
             else
                 print_error "Не удалось запустить приложение"
+                print_info "Проверьте ошибку вручную: cd /opt/fscoreboard && node server/app.js"
                 return 1
             fi
         fi
