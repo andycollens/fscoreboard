@@ -1760,7 +1760,8 @@
         }
         const FOOTBALL_ANTHEM_PATH = 'special/football.mp3';
         let footballAnthemAudio = null;
-        let footballAnthemRafId = null;
+        let footballAnthemProgressIntervalId = null;
+        const FOOTBALL_ANTHEM_PROGRESS_MS = 50;
         const footballAnthemBtn = document.getElementById('footballAnthemBtn');
         function updateFootballAnthemProgress() {
             if (!footballAnthemBtn || !footballAnthemAudio) return;
@@ -1769,16 +1770,18 @@
             var pct = (d && isFinite(d) && d > 0) ? Math.min(100, (ct / d) * 100) : 0;
             footballAnthemBtn.style.setProperty('--anthem-progress', pct + '%');
         }
-        function anthemProgressLoop() {
+        function startAnthemProgressUpdates() {
+            if (footballAnthemProgressIntervalId != null) return;
             updateFootballAnthemProgress();
-            if (footballAnthemAudio && !footballAnthemAudio.paused) {
-                footballAnthemRafId = requestAnimationFrame(anthemProgressLoop);
-            }
+            footballAnthemProgressIntervalId = setInterval(function() {
+                if (!footballAnthemAudio || footballAnthemAudio.paused) return;
+                updateFootballAnthemProgress();
+            }, FOOTBALL_ANTHEM_PROGRESS_MS);
         }
         function stopAnthemProgressLoop() {
-            if (footballAnthemRafId != null) {
-                cancelAnimationFrame(footballAnthemRafId);
-                footballAnthemRafId = null;
+            if (footballAnthemProgressIntervalId != null) {
+                clearInterval(footballAnthemProgressIntervalId);
+                footballAnthemProgressIntervalId = null;
             }
         }
         function toggleFootballAnthem() {
@@ -1815,7 +1818,7 @@
                 if (footballAnthemBtn) footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
                 footballAnthemAudio.play();
                 if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); }
-                anthemProgressLoop();
+                startAnthemProgressUpdates();
             } else {
                 stopAnthemProgressLoop();
                 footballAnthemAudio.pause();
