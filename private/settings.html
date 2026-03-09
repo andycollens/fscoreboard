@@ -717,6 +717,18 @@
       color: #c82333;
     }
 
+    .roster-content.roster-content--with-track {
+      padding-right: 140px;
+    }
+    .roster-content .team-track-badge {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 12px;
+      color: #475569;
+      white-space: nowrap;
+    }
+
     .team-roster-view {
       padding: 0;
       margin-top: 12px;
@@ -725,6 +737,7 @@
     }
     
     .roster-content {
+      position: relative;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
@@ -2222,8 +2235,10 @@
         playersHtml = '<div class="roster-players-empty">Игроки не добавлены</div>';
       }
       
+      const hasTrack = !!(team.teamTrack && String(team.teamTrack).trim());
       rosterDiv.innerHTML = `
-        <div class="roster-content">
+        <div class="roster-content${hasTrack ? ' roster-content--with-track' : ''}">
+          ${hasTrack ? '<div class="team-track-badge" title="Командный трек загружен (тройной клик по лого на сервисной странице — в плейлист)">♪ Командный трек</div>' : ''}
           <div class="roster-section">
             <div class="roster-section-title">Тренерский состав</div>
             ${staffHtml}
