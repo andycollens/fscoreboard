@@ -204,6 +204,7 @@ function getNextPreset(state) {
 
 // Функция для добавления tournamentTitle и nextPreset к state перед отправкой
 function enrichStateWithConfig(state) {
+  if (!state || typeof state !== 'object') return state || {};
   const tournamentTitle = getTournamentTitle();
   const nextPreset = getNextPreset(state);
   let out = { ...state };
