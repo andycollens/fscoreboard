@@ -822,33 +822,53 @@
         }
         .break-music-progress-wrap {
             width: 100%; margin: 0 auto 6px; box-sizing: border-box;
-            min-height: 3px;
+            min-height: 6px;
             visibility: hidden;
         }
         .break-music-progress-wrap.visible { visibility: visible; }
-        .break-music-progress-track {
-            width: 100%;
-            height: 16px; /* кликабельная зона, визуально оставим тонкую линию */
+        .break-music-progress-track-wrap {
             position: relative;
-            cursor: pointer;
+            flex: 1;
+            height: 6px;
+            min-width: 80px;
+        }
+        .break-music-progress-wrap input[type="range"] {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
             background: transparent;
+            outline: none;
         }
-        .break-music-progress-track::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            height: 3px; /* как было визуально */
+        .break-music-progress-wrap input[type="range"]::-webkit-slider-runnable-track {
+            height: 6px;
             background: #444;
-            border-radius: 2px;
-            transform: translateY(-50%);
+            border-radius: 3px;
         }
-        .break-music-progress-thumb {
-            position: absolute; width: 12px; height: 12px; border-radius: 50%;
-            background: #bbb; top: 50%; margin-top: -6px; margin-left: -6px;
-            left: 0%; transition: left 0.15s linear;
-            pointer-events: auto;
+        .break-music-progress-wrap input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            border: none;
+            margin-top: -4px;
+        }
+        .break-music-progress-wrap input[type="range"]::-moz-range-track {
+            height: 6px;
+            background: #444;
+            border-radius: 3px;
+        }
+        .break-music-progress-wrap input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            border: none;
         }
         .break-music-controls-row { position: relative; display: flex; justify-content: center; width: 100%; }
         .break-music-progress-time {
@@ -1024,8 +1044,8 @@
                         <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
                         <div class="break-music-now-row" id="breakMusicNowRow"><span class="break-music-now-inner" id="breakMusicNowInner"></span></div>
                         <div class="break-music-progress-wrap" id="breakMusicProgressWrap">
-                            <div class="break-music-progress-track">
-                                <div class="break-music-progress-thumb" id="breakMusicProgressThumb"></div>
+                            <div class="break-music-progress-track-wrap">
+                                <input type="range" id="breakMusicSeek" min="0" max="1000" step="1" value="0" title="Перемотка трека">
                             </div>
                         </div>
                         <div class="break-music-controls-row">
@@ -1992,8 +2012,7 @@
             const playlistOverlay = document.getElementById('breakMusicPlaylistOverlay');
             const playlistListEl = document.getElementById('breakMusicPlaylistList');
             const progressWrap = document.getElementById('breakMusicProgressWrap');
-            const progressThumb = document.getElementById('breakMusicProgressThumb');
-            const progressTrack = progressWrap ? progressWrap.querySelector('.break-music-progress-track') : null;
+            const progressSeek = document.getElementById('breakMusicSeek');
             const progressTimeRemainingEl = document.getElementById('breakMusicProgressTime');
             const progressTimeElapsedEl = document.getElementById('breakMusicElapsedTime');
             if (!btn || !fileInput) return;
@@ -2008,7 +2027,6 @@
             const getVolume = () => (jingleVolumeEl ? parseFloat(jingleVolumeEl.value) : 0.7);
             const SECRET_CLICK_WINDOW_MS = 1500;
             let secretClicks = [];
-            let isSeeking = false;
             const BREAK_MUSIC_FADE_MS = 700;
             let breakMusicFadeTimer = null;
 
@@ -2350,9 +2368,9 @@
                 var ct = breakMusicAudio.currentTime;
                 var d = breakMusicAudio.duration;
                 if (progressWrap && progressWrap.classList.contains('visible')) {
-                    if (progressThumb) {
-                        var pct = (d && isFinite(d) && d > 0) ? Math.min(100, (ct / d) * 100) : 0;
-                        progressThumb.style.left = pct + '%';
+                    if (progressSeek) {
+                        var val = (d && isFinite(d) && d > 0) ? Math.min(1000, Math.max(0, Math.round((ct / d) * 1000))) : 0;
+                        progressSeek.value = String(val);
                     }
                     if (progressTimeRemainingEl) {
                         progressTimeRemainingEl.textContent = (d && isFinite(d)) ? formatRemaining(d - ct) : '0:00';
@@ -2362,18 +2380,13 @@
                     }
                 }
             }
-            function seekFromEvent(ev) {
-                if (!progressTrack) return;
+            function seekToFraction(frac) {
                 var d = breakMusicAudio.duration;
                 if (!d || !isFinite(d) || d <= 0) return;
-                var rect = progressTrack.getBoundingClientRect();
-                if (!rect || !rect.width) return;
-                var x = ev.clientX;
-                var pct = (x - rect.left) / rect.width;
-                if (!isFinite(pct)) return;
-                if (pct < 0) pct = 0;
-                if (pct > 1) pct = 1;
-                breakMusicAudio.currentTime = d * pct;
+                if (!isFinite(frac)) return;
+                if (frac < 0) frac = 0;
+                if (frac > 1) frac = 1;
+                breakMusicAudio.currentTime = d * frac;
                 updateProgress();
             }
             function showProgress() {
@@ -2392,7 +2405,7 @@
                     progressTimeElapsedEl.classList.remove('visible');
                     progressTimeElapsedEl.textContent = '';
                 }
-                if (progressThumb) progressThumb.style.left = '0%';
+                if (progressSeek) progressSeek.value = '0';
             }
             function handleNowRowSecretClick() {
                 if (!nowRow || window.breakMusicPlaying) return;
@@ -2513,27 +2526,11 @@
                 fileInput.value = '';
             });
 
-            if (progressTrack) {
-                progressTrack.addEventListener('pointerdown', function(ev) {
-                    if (ev.button !== 0) return;
-                    isSeeking = true;
-                    if (progressThumb) progressThumb.style.transition = 'none';
-                    ev.preventDefault();
-                    seekFromEvent(ev);
-                    try { progressTrack.setPointerCapture(ev.pointerId); } catch (e) {}
-                });
-                progressTrack.addEventListener('pointermove', function(ev) {
-                    if (!isSeeking) return;
-                    ev.preventDefault();
-                    seekFromEvent(ev);
-                });
-                ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(type) {
-                    progressTrack.addEventListener(type, function(ev) {
-                        if (!isSeeking) return;
-                        isSeeking = false;
-                        if (progressThumb) progressThumb.style.transition = '';
-                        try { progressTrack.releasePointerCapture(ev.pointerId); } catch (e) {}
-                    });
+            if (progressSeek) {
+                progressSeek.addEventListener('input', function () {
+                    var v = parseInt(progressSeek.value, 10);
+                    if (!isFinite(v)) return;
+                    seekToFraction(v / 1000);
                 });
             }
 
