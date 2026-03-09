@@ -1615,7 +1615,7 @@ app.put('/api/teams/:id', upload.single('logo'), (req, res) => {
   res.json(teams[teamIndex]);
 });
 
-// Загрузить командный трек (один MP3 на команду)
+// Загрузить командный трек (один MP3 на команду). originalName — как в рекламе (кодировка + санитизация).
 app.post('/api/teams/:id/track', uploadTeamTrackMiddleware.single('file'), (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   const teamId = req.params.id;
@@ -1623,10 +1623,13 @@ app.post('/api/teams/:id/track', uploadTeamTrackMiddleware.single('file'), (req,
   if (teamIndex === -1) return res.status(404).json({ error: 'Team not found' });
   if (!req.file) return res.status(400).json({ error: 'Файл не получен' });
   const trackUrl = `/public/team-tracks/${req.file.filename}`;
+  let originalName = fixAdsOriginalName((req.file.originalname || '').trim());
+  originalName = (originalName || '').replace(/[\x00-\x1f\\/:*?"<>|]/g, '').slice(0, 200) || req.file.filename;
   teams[teamIndex].teamTrack = trackUrl;
+  teams[teamIndex].teamTrackOriginalName = originalName;
   fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
   console.log('Team track uploaded:', teamId);
-  res.json({ success: true, teamTrack: trackUrl, team: teams[teamIndex] });
+  res.json({ success: true, teamTrack: trackUrl, teamTrackOriginalName: originalName, team: teams[teamIndex] });
 });
 
 // Удалить командный трек
@@ -1651,6 +1654,7 @@ app.delete('/api/teams/:id/track', (req, res) => {
       }
     }
     delete teams[teamIndex].teamTrack;
+    if (teams[teamIndex].teamTrackOriginalName !== undefined) delete teams[teamIndex].teamTrackOriginalName;
   }
   fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
   res.json({ success: true, team: teams[teamIndex] });

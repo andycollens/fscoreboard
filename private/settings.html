@@ -727,6 +727,9 @@
       font-size: 12px;
       color: #475569;
       white-space: nowrap;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .team-roster-view {
@@ -1855,7 +1858,7 @@
               <div style="font-size: 12px; color: #61708a; margin: 6px 0 10px 0;">Трек для музыки перерыва при игре этой команды (тройной клик по лого на сервисной странице). Один MP3 на команду.</div>
               <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
                 <input type="file" id="editTeamTrack-${teamId}" accept="audio/mpeg,.mp3" style="margin-bottom: 0;" onchange="uploadTeamTrack('${teamId}')">
-                <span id="editTeamTrackStatus-${teamId}">${team.teamTrack ? 'Загружен' : 'Не загружен'}</span>
+                <span id="editTeamTrackStatus-${teamId}">${(team.teamTrack ? (team.teamTrackOriginalName || (team.teamTrack || '').split('/').pop() || 'Загружен') : 'Не загружен').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}</span>
                 ${team.teamTrack ? `<button type="button" class="btn btn-secondary btn-small" id="editTeamTrackRemove-${teamId}" onclick="removeTeamTrack('${teamId}')">Удалить трек</button>` : ''}
               </div>
             </div>
@@ -2009,9 +2012,12 @@
         if (response.ok) {
           const data = await response.json();
           const team = teams.find(t => t.id === teamId);
-          if (team) team.teamTrack = data.teamTrack;
+          if (team) {
+            team.teamTrack = data.teamTrack;
+            if (data.teamTrackOriginalName !== undefined) team.teamTrackOriginalName = data.teamTrackOriginalName;
+          }
           const statusEl = document.getElementById(`editTeamTrackStatus-${teamId}`);
-          if (statusEl) statusEl.textContent = 'Загружен';
+          if (statusEl) statusEl.textContent = data.teamTrackOriginalName || (data.teamTrack ? (data.teamTrack.split('/').pop() || '') : '') || 'Загружен';
           let removeBtn = document.getElementById(`editTeamTrackRemove-${teamId}`);
           if (!removeBtn) {
             removeBtn = document.createElement('button');
@@ -2042,7 +2048,10 @@
         if (response.ok) {
           const data = await response.json();
           const team = teams.find(t => t.id === teamId);
-          if (team) delete team.teamTrack;
+          if (team) {
+            delete team.teamTrack;
+            if (team.teamTrackOriginalName !== undefined) delete team.teamTrackOriginalName;
+          }
           const statusEl = document.getElementById(`editTeamTrackStatus-${teamId}`);
           if (statusEl) statusEl.textContent = 'Не загружен';
           const removeBtn = document.getElementById(`editTeamTrackRemove-${teamId}`);
@@ -2236,9 +2245,11 @@
       }
       
       const hasTrack = !!(team.teamTrack && String(team.teamTrack).trim());
+      const trackDisplayName = hasTrack ? (team.teamTrackOriginalName || (team.teamTrack || '').split('/').pop() || 'Командный трек') : '';
+      const trackDisplaySafe = trackDisplayName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       rosterDiv.innerHTML = `
         <div class="roster-content${hasTrack ? ' roster-content--with-track' : ''}">
-          ${hasTrack ? '<div class="team-track-badge" title="Командный трек загружен (тройной клик по лого на сервисной странице — в плейлист)">♪ Командный трек</div>' : ''}
+          ${hasTrack ? `<div class="team-track-badge" title="Командный трек загружен (тройной клик по лого на сервисной странице — в плейлист)">♪ ${trackDisplaySafe}</div>` : ''}
           <div class="roster-section">
             <div class="roster-section-title">Тренерский состав</div>
             ${staffHtml}
