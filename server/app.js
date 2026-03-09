@@ -28,6 +28,7 @@ const CUSTOM_STYLES_DIR = path.join(__dirname, '..', 'public', 'img', 'custom-st
 const ADS_DIR = path.join(__dirname, '..', 'public', 'ads');
 const ADS_META_PATH = path.join(__dirname, 'ads.json');
 const SOUND_DIR = path.join(__dirname, '..', 'public', 'sound');
+const TEAM_TRACKS_DIR = path.join(__dirname, '..', 'public', 'team-tracks');
 
 // Ensure custom styles and ads directories exist
 if (!fs.existsSync(CUSTOM_STYLES_DIR)) {
@@ -38,6 +39,9 @@ if (!fs.existsSync(ADS_DIR)) {
 }
 if (!fs.existsSync(SOUND_DIR)) {
   fs.mkdirSync(SOUND_DIR, { recursive: true });
+}
+if (!fs.existsSync(TEAM_TRACKS_DIR)) {
+  fs.mkdirSync(TEAM_TRACKS_DIR, { recursive: true });
 }
 
 // Загрузка конфигурации (токены)
@@ -202,9 +206,28 @@ function getNextPreset(state) {
 function enrichStateWithConfig(state) {
   const tournamentTitle = getTournamentTitle();
   const nextPreset = getNextPreset(state);
-  let out = state;
-  if (tournamentTitle) out = { ...out, tournamentTitle };
-  if (nextPreset) out = { ...out, nextPreset };
+  let out = { ...state };
+  if (tournamentTitle) out.tournamentTitle = tournamentTitle;
+  if (state.team1Id) {
+    const t1 = teams.find((t) => String(t.id) === String(state.team1Id));
+    if (t1 && t1.teamTrack) out.team1TrackUrl = t1.teamTrack;
+  }
+  if (state.team2Id) {
+    const t2 = teams.find((t) => String(t.id) === String(state.team2Id));
+    if (t2 && t2.teamTrack) out.team2TrackUrl = t2.teamTrack;
+  }
+  if (nextPreset) {
+    const np = { ...nextPreset };
+    if (np.team1Id) {
+      const t1 = teams.find((t) => String(t.id) === String(np.team1Id));
+      if (t1 && t1.teamTrack) np.team1TrackUrl = t1.teamTrack;
+    }
+    if (np.team2Id) {
+      const t2 = teams.find((t) => String(t.id) === String(np.team2Id));
+      if (t2 && t2.teamTrack) np.team2TrackUrl = t2.teamTrack;
+    }
+    out.nextPreset = np;
+  }
   return out;
 }
 
@@ -1568,6 +1591,47 @@ app.put('/api/teams/:id', upload.single('logo'), (req, res) => {
   res.json(teams[teamIndex]);
 });
 
+// Загрузить командный трек (один MP3 на команду)
+app.post('/api/teams/:id/track', uploadTeamTrackMiddleware.single('file'), (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  const teamId = req.params.id;
+  const teamIndex = teams.findIndex(t => t.id === teamId);
+  if (teamIndex === -1) return res.status(404).json({ error: 'Team not found' });
+  if (!req.file) return res.status(400).json({ error: 'Файл не получен' });
+  const trackUrl = `/public/team-tracks/${req.file.filename}`;
+  teams[teamIndex].teamTrack = trackUrl;
+  fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
+  console.log('Team track uploaded:', teamId);
+  res.json({ success: true, teamTrack: trackUrl, team: teams[teamIndex] });
+});
+
+// Удалить командный трек
+app.delete('/api/teams/:id/track', (req, res) => {
+  if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
+  const teamId = req.params.id;
+  const teamIndex = teams.findIndex(t => t.id === teamId);
+  if (teamIndex === -1) return res.status(404).json({ error: 'Team not found' });
+  const team = teams[teamIndex];
+  const existing = team.teamTrack;
+  if (existing) {
+    const filename = existing.split('/').pop();
+    if (filename && filename.startsWith('team_')) {
+      const filePath = path.join(TEAM_TRACKS_DIR, filename);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+          console.log('Deleted team track:', filePath);
+        } catch (e) {
+          console.error('Error deleting team track:', e);
+        }
+      }
+    }
+    delete teams[teamIndex].teamTrack;
+  }
+  fs.writeFileSync(TEAMS_PATH, JSON.stringify(teams, null, 2));
+  res.json({ success: true, team: teams[teamIndex] });
+});
+
 // Обновить только состояние альтернативных номеров команды
 app.put('/api/teams/:id/useAltNumbers', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
@@ -2068,6 +2132,27 @@ const uploadAdMiddleware = multer({
     const mimetypeOk = allowed.test(file.mimetype);
     if (mimetypeOk) return cb(null, true);
     cb(new Error('Разрешены только видеофайлы (mp4, webm, ogg, mov, mkv)'));
+  }
+});
+
+// ====== Team tracks (командный трек) ======
+const teamTrackStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, TEAM_TRACKS_DIR);
+  },
+  filename: function (req, file, cb) {
+    const teamId = (req.params && req.params.id) || 'unknown';
+    const safeId = String(teamId).replace(/[^a-zA-Z0-9-_]/g, '_');
+    cb(null, `team_${safeId}.mp3`);
+  }
+});
+const uploadTeamTrackMiddleware = multer({
+  storage: teamTrackStorage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: function (req, file, cb) {
+    const ok = /audio\/mpeg|audio\/mp3/.test(file.mimetype) || (file.originalname && /\.mp3$/i.test(file.originalname));
+    if (ok) return cb(null, true);
+    cb(new Error('Разрешены только MP3'));
   }
 });
 
