@@ -747,7 +747,14 @@
             white-space: nowrap;
         }
         .football-anthem-btn:hover { color: #aaa; border-color: #666; }
-        .football-anthem-btn.playing { color: #fff; background: #4a7fc7; border-color: #4a7fc7; }
+        .football-anthem-btn { position: relative; overflow: hidden; }
+        .football-anthem-btn .football-anthem-fill {
+            position: absolute; left: 0; top: 0; bottom: 0; width: var(--anthem-progress, 0%);
+            background: #4a7fc7; border-radius: 999px; pointer-events: none; z-index: 0;
+        }
+        .football-anthem-btn .football-anthem-btn-text { position: relative; z-index: 1; }
+        .football-anthem-btn.playing { color: #fff; border-color: #3a5f9a; background: #2a4a72; }
+        .football-anthem-btn.playing:hover { color: #fff; border-color: #3a5f9a; }
         .break-music-spacer { height: 30px; }
         .break-music-block {
             display: flex;
@@ -982,7 +989,7 @@
                         </div>
                         <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                     </div>
-                    <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem">Футбольный гимн</button>
+                    <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">Футбольный гимн</span></button>
                     <div class="break-music-spacer"></div>
                     <div class="break-music-block">
                         <input type="file" id="breakMusicFileInput" accept=".mp3,audio/mpeg" webkitdirectory directory hidden>
@@ -1746,11 +1753,26 @@
         const FOOTBALL_ANTHEM_PATH = 'special/football.mp3';
         let footballAnthemAudio = null;
         const footballAnthemBtn = document.getElementById('footballAnthemBtn');
+        function updateFootballAnthemProgress() {
+            if (!footballAnthemBtn || !footballAnthemAudio) return;
+            var d = footballAnthemAudio.duration;
+            var ct = footballAnthemAudio.currentTime;
+            var pct = (d && isFinite(d) && d > 0) ? Math.min(100, (ct / d) * 100) : 0;
+            footballAnthemBtn.style.setProperty('--anthem-progress', pct + '%');
+        }
         function toggleFootballAnthem() {
             if (!footballAnthemAudio) {
                 footballAnthemAudio = new Audio(jingleBase + FOOTBALL_ANTHEM_PATH);
+                footballAnthemAudio.addEventListener('timeupdate', updateFootballAnthemProgress);
+                footballAnthemAudio.addEventListener('loadedmetadata', updateFootballAnthemProgress);
                 footballAnthemAudio.addEventListener('ended', function() {
-                    if (footballAnthemBtn) { footballAnthemBtn.classList.remove('playing'); footballAnthemBtn.textContent = 'Футбольный гимн'; }
+                    if (footballAnthemBtn) {
+                        footballAnthemBtn.style.setProperty('--anthem-progress', '100%');
+                        footballAnthemBtn.classList.remove('playing');
+                        var txt = footballAnthemBtn.querySelector('.football-anthem-btn-text');
+                        if (txt) txt.textContent = 'Футбольный гимн';
+                        setTimeout(function() { footballAnthemBtn.style.removeProperty('--anthem-progress'); }, 300);
+                    }
                 });
             }
             footballAnthemAudio.volume = 1;
@@ -1769,11 +1791,17 @@
                     }
                 }
                 footballAnthemAudio.currentTime = 0;
+                if (footballAnthemBtn) footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
                 footballAnthemAudio.play();
                 if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); }
             } else {
                 footballAnthemAudio.pause();
-                if (footballAnthemBtn) { footballAnthemBtn.classList.remove('playing'); footballAnthemBtn.textContent = 'Футбольный гимн'; }
+                if (footballAnthemBtn) {
+                    footballAnthemBtn.classList.remove('playing');
+                    footballAnthemBtn.style.removeProperty('--anthem-progress');
+                    var txt = footballAnthemBtn.querySelector('.football-anthem-btn-text');
+                    if (txt) txt.textContent = 'Футбольный гимн';
+                }
             }
         }
         if (footballAnthemBtn) footballAnthemBtn.addEventListener('click', toggleFootballAnthem);
