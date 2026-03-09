@@ -281,17 +281,17 @@
             flex-shrink: 0;
             position: relative;
         }
-        .team-track-note {
-            position: absolute;
-            font-size: 16px;
+        .team-track-note-in-name {
+            font-size: 1em;
             line-height: 1;
-            opacity: 0.55;
-            pointer-events: none;
-            z-index: 5;
-            min-width: 1em;
+            color: #475569;
+            opacity: 0.7;
+            margin-left: 6px;
         }
-        .team1-logo-wrap .team-track-note { top: 4px; right: 4px; }
-        .team2-logo-wrap .team-track-note { top: 4px; left: 4px; }
+        .team2-meta .team-track-note-in-name {
+            margin-left: 0;
+            margin-right: 6px;
+        }
         .jingle-select-row {
             display: flex;
             flex-direction: row;
@@ -971,12 +971,14 @@
             <div class="middle-content">
                 <div class="team1-section">
                     <div class="team1-meta">
-                        <div class="team1-name" id="team1Name">Команда 1</div>
+                        <div style="display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 4px;">
+                            <div class="team1-name" id="team1Name">Команда 1</div>
+                            <span id="team1TrackNote" class="team-track-note-in-name" aria-hidden="true" title="Есть трек команды (тройной клик по лого — в плейлист)" style="display: none;">♪</span>
+                        </div>
                         <div id="team1Stripe" class="team1-stripe"></div>
                         <div class="team1-city" id="team1City">Город 1</div>
                     </div>
                     <div class="team1-logo-wrap">
-                        <span id="team1TrackNote" class="team-track-note" aria-hidden="true" title="Есть трек команды (тройной клик — в плейлист)" style="display: none;">♪</span>
                         <img id="team1Logo" class="team1-logo" alt="Team 1 logo">
                         <div id="team1NoLogo" class="team1-no-logo" style="background-color: #2b2b2b;"></div>
                     </div>
@@ -1035,12 +1037,14 @@
                 </div>
                 <div class="team2-section">
                     <div class="team2-logo-wrap">
-                        <span id="team2TrackNote" class="team-track-note" aria-hidden="true" title="Есть трек команды (тройной клик — в плейлист)" style="display: none;">♪</span>
                         <img id="team2Logo" class="team2-logo" alt="Team 2 logo">
                         <div id="team2NoLogo" class="team2-no-logo" style="background-color: #2b2b2b;"></div>
                     </div>
                     <div class="team2-meta">
-                        <div class="team2-name" id="team2Name">Команда 2</div>
+                        <div style="display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 4px;">
+                            <span id="team2TrackNote" class="team-track-note-in-name" aria-hidden="true" title="Есть трек команды (тройной клик по лого — в плейлист)" style="display: none;">♪</span>
+                            <div class="team2-name" id="team2Name">Команда 2</div>
+                        </div>
                         <div id="team2Stripe" class="team2-stripe"></div>
                         <div class="team2-city" id="team2City">Город 2</div>
                     </div>
@@ -1256,7 +1260,7 @@
                 team1NoLogo.style.display = 'flex';
                 if (data.kit1Color) team1NoLogo.style.backgroundColor = data.kit1Color;
             }
-            if (team1TrackNote) team1TrackNote.style.display = (data.team1TrackUrl && String(data.team1TrackUrl).trim()) ? 'inline-block' : 'none';
+            if (team1TrackNote) team1TrackNote.style.display = (data.team1TrackUrl && String(data.team1TrackUrl).trim()) ? 'inline' : 'none';
             team1Name.textContent = data.team1Name || 'Команда 1';
             team1City.textContent = data.team1City || 'Город 1';
             updateStripe('team1', data.kit1Color);
@@ -1305,7 +1309,7 @@
                 team2NoLogo.style.display = 'flex';
                 if (data.kit2Color) team2NoLogo.style.backgroundColor = data.kit2Color;
             }
-            if (team2TrackNote) team2TrackNote.style.display = (data.team2TrackUrl && String(data.team2TrackUrl).trim()) ? 'inline-block' : 'none';
+            if (team2TrackNote) team2TrackNote.style.display = (data.team2TrackUrl && String(data.team2TrackUrl).trim()) ? 'inline' : 'none';
             team2Name.textContent = data.team2Name || 'Команда 2';
             team2City.textContent = data.team2City || 'Город 2';
             updateStripe('team2', data.kit2Color);
