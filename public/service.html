@@ -1760,6 +1760,7 @@
         }
         const FOOTBALL_ANTHEM_PATH = 'special/football.mp3';
         let footballAnthemAudio = null;
+        let footballAnthemRafId = null;
         const footballAnthemBtn = document.getElementById('footballAnthemBtn');
         function updateFootballAnthemProgress() {
             if (!footballAnthemBtn || !footballAnthemAudio) return;
@@ -1768,12 +1769,24 @@
             var pct = (d && isFinite(d) && d > 0) ? Math.min(100, (ct / d) * 100) : 0;
             footballAnthemBtn.style.setProperty('--anthem-progress', pct + '%');
         }
+        function anthemProgressLoop() {
+            updateFootballAnthemProgress();
+            if (footballAnthemAudio && !footballAnthemAudio.paused) {
+                footballAnthemRafId = requestAnimationFrame(anthemProgressLoop);
+            }
+        }
+        function stopAnthemProgressLoop() {
+            if (footballAnthemRafId != null) {
+                cancelAnimationFrame(footballAnthemRafId);
+                footballAnthemRafId = null;
+            }
+        }
         function toggleFootballAnthem() {
             if (!footballAnthemAudio) {
                 footballAnthemAudio = new Audio(jingleBase + FOOTBALL_ANTHEM_PATH);
-                footballAnthemAudio.addEventListener('timeupdate', updateFootballAnthemProgress);
                 footballAnthemAudio.addEventListener('loadedmetadata', updateFootballAnthemProgress);
                 footballAnthemAudio.addEventListener('ended', function() {
+                    stopAnthemProgressLoop();
                     if (footballAnthemBtn) {
                         footballAnthemBtn.style.setProperty('--anthem-progress', '100%');
                         footballAnthemBtn.classList.remove('playing');
@@ -1802,7 +1815,9 @@
                 if (footballAnthemBtn) footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
                 footballAnthemAudio.play();
                 if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); }
+                anthemProgressLoop();
             } else {
+                stopAnthemProgressLoop();
                 footballAnthemAudio.pause();
                 if (footballAnthemBtn) {
                     footballAnthemBtn.classList.remove('playing');
