@@ -872,7 +872,7 @@
         }
         .break-music-playlist-overlay.visible { display: flex; }
         .break-music-playlist-box {
-            background: #1e1e1e; color: #ddd; padding: 12px; border-radius: 8px; max-width: 480px; width: 90%; max-height: 80vh;
+            background: #1e1e1e; color: #ddd; padding: 12px; border-radius: 8px; width: 600px; height: 50vh;
             display: flex; flex-direction: column; box-sizing: border-box; font-size: 13px;
         }
         .break-music-playlist-box h3 { margin: 0 0 8px 0; font-size: 14px; color: #fff; }
@@ -881,10 +881,18 @@
             display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: default;
         }
         .break-music-playlist-row.current { background: #333; color: #fff; }
+        .break-music-playlist-row .pl-num { flex-shrink: 0; font-size: 12px; color: #666; min-width: 1.5em; }
+        .break-music-playlist-row.current .pl-num { color: #999; }
         .break-music-playlist-row .pl-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: grab; }
         .break-music-playlist-row .pl-name:active { cursor: grabbing; }
+        .break-music-playlist-row .pl-artist { font-weight: 700; color: #b0b0b0; }
+        .break-music-playlist-row .pl-title { color: #888; }
+        .break-music-playlist-row.current .pl-artist { color: #fff; }
+        .break-music-playlist-row.current .pl-title { color: #ccc; }
         .break-music-playlist-row .pl-duration { flex-shrink: 0; color: #888; cursor: pointer; padding: 2px 6px; }
         .break-music-playlist-row .pl-duration:hover { color: #ccc; }
+        .break-music-playlist-row.current .pl-duration { color: #aaa; }
+        .break-music-playlist-row.current .pl-duration:hover { color: #fff; }
         .break-music-playlist-row.dragging { opacity: 0.6; }
         .service-score-row {
             font-size: 27.5px;
@@ -2058,6 +2066,25 @@
                 savePlaylistState();
                 renderQueueRows();
             }
+            function addDurationToTrackItem(item) {
+                return new Promise(function(resolve) {
+                    const blob = new Blob([item.data], { type: 'audio/mpeg' });
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio();
+                    audio.addEventListener('loadedmetadata', function onMeta() {
+                        audio.removeEventListener('loadedmetadata', onMeta);
+                        URL.revokeObjectURL(url);
+                        item.duration = isFinite(audio.duration) ? audio.duration : 0;
+                        resolve(item);
+                    });
+                    audio.addEventListener('error', function() {
+                        URL.revokeObjectURL(url);
+                        item.duration = 0;
+                        resolve(item);
+                    });
+                    audio.src = url;
+                });
+            }
             function ensureTrackDuration(track, cb) {
                 if (track.duration != null && isFinite(track.duration)) { cb(track.duration); return; }
                 const blob = new Blob([track.data], { type: 'audio/mpeg' });
@@ -2095,14 +2122,32 @@
                 for (let i = 0; i < playlistOrder.length; i++) {
                     const listIdx = playlistOrder[i];
                     const track = breakMusicList[listIdx];
-                    const name = track ? (track.name || '').replace(/\.(mp3|MP3)$/i, '') : '—';
+                    const rawName = track ? (track.name || '').replace(/\.(mp3|MP3)$/i, '') : '';
+                    const name = rawName || '—';
+                    const parts = name.split(/\s*[-–—]\s+/);
+                    const artist = parts.length >= 2 ? parts[0].trim() : '';
+                    const title = parts.length >= 2 ? parts.slice(1).join(' – ').trim() : name;
                     const row = document.createElement('div');
                     row.className = 'break-music-playlist-row' + (i === playlistIndex ? ' current' : '');
                     row.setAttribute('data-order-index', String(i));
+                    const numEl = document.createElement('span');
+                    numEl.className = 'pl-num';
+                    numEl.textContent = String(i + 1);
                     const nameEl = document.createElement('span');
                     nameEl.className = 'pl-name';
-                    nameEl.textContent = name || '—';
                     nameEl.draggable = true;
+                    if (artist) {
+                        const artistSpan = document.createElement('span');
+                        artistSpan.className = 'pl-artist';
+                        artistSpan.textContent = artist;
+                        const titleSpan = document.createElement('span');
+                        titleSpan.className = 'pl-title';
+                        titleSpan.textContent = (artist ? ' – ' : '') + title;
+                        nameEl.appendChild(artistSpan);
+                        nameEl.appendChild(titleSpan);
+                    } else {
+                        nameEl.textContent = title;
+                    }
                     const durEl = document.createElement('span');
                     durEl.className = 'pl-duration';
                     durEl.textContent = '…';
@@ -2111,6 +2156,7 @@
                             durEl.textContent = formatDuration(sec);
                         });
                     } else { durEl.textContent = '0:00'; }
+                    row.appendChild(numEl);
                     row.appendChild(nameEl);
                     row.appendChild(durEl);
                     playlistListEl.appendChild(row);
@@ -2163,9 +2209,9 @@
                 if (orderIndex === playlistIndex || orderIndex === playlistIndex + 1) return;
                 var val = playlistOrder[orderIndex];
                 playlistOrder.splice(orderIndex, 1);
-                var nextPos = playlistIndex + 1;
-                var insertAt = orderIndex < nextPos ? nextPos - 1 : nextPos;
+                var insertAt = orderIndex < playlistIndex ? playlistIndex : playlistIndex + 1;
                 playlistOrder.splice(insertAt, 0, val);
+                if (orderIndex < playlistIndex) playlistIndex--;
                 savePlaylistState();
                 renderQueueRows();
                 if (playlistListEl && playlistOverlay && playlistOverlay.classList.contains('visible')) renderPlaylistModalContent();
@@ -2350,6 +2396,8 @@
                     }));
                 }
                 Promise.all(promises).then(items => {
+                    return Promise.all(items.map(addDurationToTrackItem));
+                }).then(items => {
                     breakMusicList = items;
                     buildPlaylistOrder();
                     saveToDB(breakMusicList).then(function() {
