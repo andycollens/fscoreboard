@@ -1814,7 +1814,7 @@ io.on('connection', (socket) => {
       }
     }
 
-    // Остальные параметры
+    // Остальные параметры (presetId/matchDate/tournamentId — для однозначного «следующего матча» по пресету и году)
     const keys = [
       'score1', 'score2', 'team1', 'team2',
       'team1Short', 'team2Short', 'kit1Color', 'kit2Color',
@@ -1822,7 +1822,8 @@ io.on('connection', (socket) => {
       'team1Logo', 'team2Logo',
       'team1Id', 'team2Id',
       'team1Players', 'team1Staff', 'team2Players', 'team2Staff',
-      'penaltyActive', 'penaltyMode', 'penaltyMaxAttempts', 'penaltySeries'
+      'penaltyActive', 'penaltyMode', 'penaltyMaxAttempts', 'penaltySeries',
+      'presetId', 'matchDate', 'tournamentId'
     ];
     keys.forEach(k => {
       if (k in newState) state[k] = newState[k];

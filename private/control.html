@@ -7279,6 +7279,11 @@
       if (preset.team1Id) stateUpdate.team1Id = preset.team1Id;
       if (preset.team2Id) stateUpdate.team2Id = preset.team2Id;
       
+      // Критично для блока «следующая игра» на service: по presetId определяем день и турнир (2013 vs 2014)
+      stateUpdate.presetId = preset.id;
+      stateUpdate.matchDate = preset.matchDate != null ? preset.matchDate : null;
+      stateUpdate.tournamentId = preset.tournamentId != null ? preset.tournamentId : null;
+      
       // Добавляем составы команд
       if (state.team1Players) stateUpdate.team1Players = state.team1Players;
       if (state.team1Staff) stateUpdate.team1Staff = state.team1Staff;
