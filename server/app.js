@@ -173,19 +173,33 @@ function _normalizeDateStr(d) {
 }
 
 // Следующий пресет: в рамках одного игрового дня (тот же турнир и дата), следующий по времени.
-// Используется только state.presetId — по нему однозначно определяется день и турнир.
-// Без presetId не показываем «следующий»: названия команд могут совпадать в разных днях/годах.
+// Если есть state.presetId — текущий пресет и день определяем по нему (однозначно для любого турнира).
+// Иначе — fallback по совпадению команд (как раньше), чтобы блок не пропадал при старом state без presetId.
 function getNextPreset(state) {
-  if (state.presetId == null || String(state.presetId).trim() === '') return null;
-
   const validTournamentIds = new Set((tournaments || []).map((t) => String(t.id)));
   const presetsFromExistingTournaments = matchPresets.filter((p) => {
     const tid = p.tournamentId;
     if (tid == null || tid === '') return false;
     return validTournamentIds.has(String(tid));
   });
-  const currentPreset = presetsFromExistingTournaments.find((p) => String(p.id) === String(state.presetId));
-  if (!currentPreset) return null;
+  if (!presetsFromExistingTournaments.length) return null;
+
+  let currentPreset = null;
+  if (state.presetId != null && String(state.presetId).trim() !== '') {
+    currentPreset = presetsFromExistingTournaments.find((p) => String(p.id) === String(state.presetId));
+  }
+  if (!currentPreset) {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayNorm = _normalizeDateStr(today);
+    const todayPresets = presetsFromExistingTournaments.filter((p) => _normalizeDateStr(p.matchDate) === todayNorm);
+    const list = todayPresets.length > 0 ? todayPresets : presetsFromExistingTournaments.filter((p) => p.matchDate != null && String(p.matchDate).trim() !== '');
+    if (!list.length) return null;
+    const sorted = [...list].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
+    const idx = sorted.findIndex((p) => _presetMatchesCurrent(p, state));
+    if (idx === -1) return null;
+    currentPreset = sorted[idx];
+  }
 
   const sameDayPresets = presetsFromExistingTournaments.filter(
     (p) =>
@@ -193,7 +207,9 @@ function getNextPreset(state) {
       _normalizeDateStr(p.matchDate) === _normalizeDateStr(currentPreset.matchDate)
   );
   const sortedSame = [...sameDayPresets].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
-  const idxSame = sortedSame.findIndex((p) => String(p.id) === String(state.presetId));
+  const idxSame = sortedSame.findIndex(
+    (p) => (state.presetId != null && String(p.id) === String(state.presetId)) || _presetMatchesCurrent(p, state)
+  );
   if (idxSame === -1 || idxSame >= sortedSame.length - 1) return null;
   return sortedSame[idxSame + 1];
 }
