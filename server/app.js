@@ -172,32 +172,28 @@ function _normalizeDateStr(d) {
   return `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-// Следующий пресет: только из существующих турниров; тот же турнир и дата; следующий по времени.
+// Следующий пресет: в рамках одного игрового дня (тот же турнир и дата), следующий по времени.
+// Используется только state.presetId — по нему однозначно определяется день и турнир.
+// Без presetId не показываем «следующий»: названия команд могут совпадать в разных днях/годах.
 function getNextPreset(state) {
+  if (state.presetId == null || String(state.presetId).trim() === '') return null;
+
   const validTournamentIds = new Set((tournaments || []).map((t) => String(t.id)));
   const presetsFromExistingTournaments = matchPresets.filter((p) => {
     const tid = p.tournamentId;
     if (tid == null || tid === '') return false;
     return validTournamentIds.has(String(tid));
   });
-  if (!presetsFromExistingTournaments.length) return null;
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const todayNorm = _normalizeDateStr(today);
-  const todayPresets = presetsFromExistingTournaments.filter((p) => _normalizeDateStr(p.matchDate) === todayNorm);
-  const list = todayPresets.length > 0 ? todayPresets : presetsFromExistingTournaments.filter((p) => p.matchDate != null && String(p.matchDate).trim() !== '');
-  if (!list.length) return null;
-  const sorted = [...list].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
-  const idx = sorted.findIndex((p) => _presetMatchesCurrent(p, state));
-  if (idx === -1) return null;
-  const currentPreset = sorted[idx];
-  const sameTournamentAndDate = list.filter(
+  const currentPreset = presetsFromExistingTournaments.find((p) => String(p.id) === String(state.presetId));
+  if (!currentPreset) return null;
+
+  const sameDayPresets = presetsFromExistingTournaments.filter(
     (p) =>
       String(p.tournamentId || '') === String(currentPreset.tournamentId || '') &&
       _normalizeDateStr(p.matchDate) === _normalizeDateStr(currentPreset.matchDate)
   );
-  const sortedSame = [...sameTournamentAndDate].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
-  const idxSame = sortedSame.findIndex((p) => _presetMatchesCurrent(p, state));
+  const sortedSame = [...sameDayPresets].sort((a, b) => _presetMinutes(a) - _presetMinutes(b));
+  const idxSame = sortedSame.findIndex((p) => String(p.id) === String(state.presetId));
   if (idxSame === -1 || idxSame >= sortedSame.length - 1) return null;
   return sortedSame[idxSame + 1];
 }
@@ -1855,7 +1851,10 @@ io.on('connection', (socket) => {
     state.team2Short = preset.team2Short;
     state.kit1Color = preset.kit1Color;
     state.kit2Color = preset.kit2Color;
-    
+    state.presetId = preset.id;
+    state.matchDate = preset.matchDate != null ? preset.matchDate : null;
+    state.tournamentId = preset.tournamentId != null ? preset.tournamentId : null;
+
     // Сбрасываем счет и таймер
     state.score1 = 0;
     state.score2 = 0;
