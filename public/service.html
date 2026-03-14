@@ -2030,6 +2030,7 @@
             const SECRET_CLICK_WINDOW_MS = 1500;
             let secretClicks = [];
             const BREAK_MUSIC_FADE_MS = 700;
+            const BREAK_MUSIC_PLAYED_THRESHOLD_SEC = 30;
             let breakMusicFadeTimer = null;
 
             function clearBreakMusicFade() {
@@ -2451,7 +2452,13 @@
                 if (next) playTrack(next);
             }
             function stopBreakMusic() {
+                const elapsed = breakMusicAudio.currentTime;
                 const finishStop = function() {
+                    if (elapsed >= BREAK_MUSIC_PLAYED_THRESHOLD_SEC && playlistOrder.length > 0) {
+                        playlistIndex = (playlistIndex + 1) % playlistOrder.length;
+                        savePlaylistState();
+                        renderQueueRows();
+                    }
                     if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
                     breakMusicAudio.pause();
                     breakMusicAudio.currentTime = 0;
