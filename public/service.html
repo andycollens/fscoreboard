@@ -977,6 +977,49 @@
             min-width: 100px;
             max-width: 100px;
         }
+        .operator-hint-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 500;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(30, 30, 30, 0.85);
+            color: #ccc;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            pointer-events: auto;
+        }
+        .operator-hint-btn:hover { background: rgba(50, 50, 50, 0.9); color: #fff; }
+        .operator-hint-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001;
+        }
+        .operator-hint-overlay.visible { display: flex; }
+        .operator-hint-box {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 32px 40px;
+            border-radius: 12px;
+            width: 92vw;
+            max-width: 92vw;
+            height: 88vh;
+            max-height: 88vh;
+            overflow-y: auto;
+            font-size: 26px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+        .operator-hint-box .oh-header { font-weight: 700; color: #fff; font-size: 30px; margin-top: 20px; margin-bottom: 10px; }
+        .operator-hint-box .oh-header:first-child { margin-top: 0; }
+        .operator-hint-box .oh-var { color: #7dd3fc; font-weight: 600; }
+        .operator-hint-box .oh-score { color: #fcd34d; font-weight: 700; font-size: 1.15em; }
         .service-score-timer-cell {
             display: flex;
             flex-direction: column;
@@ -1116,6 +1159,11 @@
         </div>
     </div>
 
+    <button type="button" class="operator-hint-btn" id="operatorHintBtn" title="Подсказка для оператора" aria-label="Подсказка для оператора">📄</button>
+    <div id="operatorHintOverlay" class="operator-hint-overlay" aria-hidden="true">
+        <div class="operator-hint-box" id="operatorHintBox"></div>
+    </div>
+
     <div id="jingleConfirmOverlay" class="jingle-confirm-overlay">
         <div class="jingle-confirm-box" id="jingleConfirmText"></div>
     </div>
@@ -1166,6 +1214,58 @@
                 .replace(/>/g, '&gt;')
                 .replace(/\"/g, '&quot;')
                 .replace(/'/g, '&#39;');
+        }
+
+        function getOperatorHintHtml(data) {
+            if (!data || typeof data !== 'object') data = {};
+            var v = function(s) { return '<span class="oh-var">' + escapeHtml(String(s || '')) + '</span>'; };
+            var tournament = data.tournamentTitle || '';
+            var y1 = data.team1BirthYear || '';
+            var y2 = data.team2BirthYear || '';
+            var birthYearText = [y1, y2].filter(Boolean);
+            if (birthYearText.length === 0) birthYearText = ['год рождения играющих команд'];
+            else if (birthYearText.length === 2 && birthYearText[0] === birthYearText[1]) birthYearText = [birthYearText[0]];
+            var birthYearStr = birthYearText.join(' и ');
+            var team1 = data.team1Name || 'Команда 1';
+            var team2 = data.team2Name || 'Команда 2';
+            var city1 = data.team1City || '';
+            var city2 = data.team2City || '';
+            var short1 = data.team1Short || '';
+            var short2 = data.team2Short || '';
+            var team1WithCity = city1 ? (team1 + ' (' + city1 + ')') : team1;
+            var team2WithCity = city2 ? (team2 + ' (' + city2 + ')') : team2;
+            var kit1 = data.kit1Color || '—';
+            var kit2 = data.kit2Color || '—';
+            var staff1 = data.team1Staff || data.staff1 || [];
+            var staff2 = data.team2Staff || data.staff2 || [];
+            var coach1 = (staff1[0] && (typeof staff1[0] === 'string' ? staff1[0] : staff1[0].name)) || '—';
+            var coach2 = (staff2[0] && (typeof staff2[0] === 'string' ? staff2[0] : staff2[0].name)) || '—';
+            var s1 = typeof data.score1 === 'number' ? data.score1 : 0;
+            var s2 = typeof data.score2 === 'number' ? data.score2 : 0;
+            var winnerName = s1 > s2 ? team1 : (s2 > s1 ? team2 : '—');
+            var lines = [
+                '<span class="oh-header">Начало матча:</span>',
+                'Уважаемые болельщики! Мы рады приветствовать вас на очередном матче турнира ' + v(tournament || 'Название турнира') + ' среди игроков ' + v(birthYearStr) + ' года рождения.',
+                '',
+                'В матче встречаются ' + v(team1WithCity) + ' и ' + v(team2WithCity),
+                '',
+                'Прослушайте составы играющих команд:',
+                v(team1WithCity) + ', форма ' + v(kit1) + ' — перечисляются составы —',
+                'Главный тренер команды — ' + v(coach1),
+                '',
+                v(team2WithCity) + ', форма ' + v(kit2) + ' — перечисляются составы —',
+                'Главный тренер команды — ' + v(coach2),
+                '',
+                '<span class="oh-header">При забитом голе:</span>',
+                (short1 || short2) ? ('Команды: ' + v(short1 || team1) + ' — ' + v(team1) + ', ' + v(short2 || team2) + ' — ' + v(team2)) : '',
+                (short1 || short2) ? '' : '',
+                'Мяч в ворота команды _______ забил игрок № ______ ________ команды ____',
+                '',
+                '<span class="oh-header">После матча:</span>',
+                'Матч окончен со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span> победу одержала команда ' + v(winnerName),
+                'Матч окончен со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span>'
+            ];
+            return lines.join('\n');
         }
 
         function renderRostersMode(coachEl, playersEl, staff, players, isRightSide = false, teamId = null) {
@@ -2661,6 +2761,35 @@
             }
             if (team1Logo) team1Logo.addEventListener('click', function(e) { checkTriple(1); });
             if (team2Logo) team2Logo.addEventListener('click', function(e) { checkTriple(2); });
+        })();
+
+        (function initOperatorHint() {
+            var btn = document.getElementById('operatorHintBtn');
+            var overlay = document.getElementById('operatorHintOverlay');
+            var box = document.getElementById('operatorHintBox');
+            if (!btn || !overlay || !box) return;
+            function openHint() {
+                box.innerHTML = getOperatorHintHtml(latestData);
+                overlay.classList.add('visible');
+                overlay.setAttribute('aria-hidden', 'false');
+            }
+            function closeHint() {
+                overlay.classList.remove('visible');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+            btn.addEventListener('click', function() {
+                if (overlay.classList.contains('visible')) closeHint();
+                else openHint();
+            });
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeHint();
+            });
+            box.addEventListener('click', function(e) { e.stopPropagation(); });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && overlay.classList.contains('visible')) {
+                    closeHint();
+                }
+            });
         })();
 
         (function initKeyboardShortcuts() {
