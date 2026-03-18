@@ -1836,7 +1836,7 @@ body.penalty-mode .penalty-score {
     white-space: nowrap;
     text-shadow: 0 0 18px rgba(255,255,255,0.65);
     transform: translateX(110%);
-    animation: goal-marquee-move 2.05s linear forwards;
+    animation: goal-marquee-move 4.1s linear forwards;
 }
 .goal-stage-marquee.centered .goal-marquee-text {
     transform: none;
@@ -3873,7 +3873,7 @@ body.penalty-mode .penalty-score {
             marqueeEl.classList.add('active');
             void marqueeEl.offsetWidth;
             marqueeTextEl.textContent = 'ГОООООООЛ';
-            marqueeTextEl.style.animation = 'goal-marquee-move 2.05s linear forwards';
+            marqueeTextEl.style.animation = 'goal-marquee-move 4.1s linear forwards';
         }, 120));
         goalAnimationTimeouts.push(setTimeout(() => {
             marqueeEl.classList.remove('active');
