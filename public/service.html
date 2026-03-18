@@ -1331,6 +1331,8 @@
                 var col2 = items.slice(mid).join('');
                 return '<div class="oh-roster-cols"><div class="oh-roster-col">' + col1 + '</div><div class="oh-roster-col">' + col2 + '</div></div>';
             }
+            var drawText = 'Матч окончен <b>вничью</b> со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span>';
+            var winnerText = 'Матч окончен со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span> победу одержала команда ' + v(winnerName);
             var lines = [
                 '<span class="oh-header">Начало матча:</span>',
                 'Уважаемые болельщики! Мы рады приветствовать вас на очередном матче турнира ' + v(tournament || 'Название турнира') + ' среди игроков ' + v(birthYearStr) + ' года рождения.',
@@ -1351,8 +1353,7 @@
                 'Мяч в ворота команды _______ забил игрок № ______ ________ команды ____',
                 '',
                 '<span class="oh-header">После матча:</span>',
-                'Матч окончен со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span> победу одержала команда ' + v(winnerName),
-                'Матч окончен <b>вничью</b> со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span>'
+                (s1 === s2 ? drawText : winnerText)
             ];
             return lines.join('\n');
         }
