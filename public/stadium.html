@@ -1830,13 +1830,14 @@ body.penalty-mode .penalty-score {
     justify-content: center;
 }
 .goal-marquee-text {
-    font-size: clamp(120px, 18vw, 340px);
+    font-size: clamp(220px, 30vw, 540px);
     font-weight: 700;
     letter-spacing: 0.06em;
+    line-height: 0.9;
     white-space: nowrap;
     text-shadow: 0 0 18px rgba(255,255,255,0.65);
     transform: translateX(110%);
-    animation: goal-marquee-move 4.1s linear forwards;
+    animation: goal-marquee-move 3s linear forwards;
 }
 .goal-stage-marquee.centered .goal-marquee-text {
     transform: none;
@@ -1847,7 +1848,7 @@ body.penalty-mode .penalty-score {
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    gap: 18px;
+    gap: 22px;
     color: #fff;
     opacity: 0;
     transform: scale(0.92);
@@ -1859,8 +1860,8 @@ body.penalty-mode .penalty-score {
     animation: goal-team-fade-out 0.5s ease-in forwards;
 }
 .goal-stage-logo {
-    width: clamp(140px, 14vw, 240px);
-    height: clamp(140px, 14vw, 240px);
+    width: clamp(210px, 21vw, 360px);
+    height: clamp(210px, 21vw, 360px);
     object-fit: contain;
     filter: drop-shadow(0 0 24px rgba(255,255,255,0.5));
 }
@@ -1869,25 +1870,27 @@ body.penalty-mode .penalty-score {
     border-radius: 24px;
 }
 .goal-stage-team-name {
-    font-size: clamp(56px, 7vw, 130px);
+    font-size: clamp(84px, 11vw, 195px);
     font-weight: 700;
     line-height: 1.05;
     text-shadow: 0 0 18px rgba(0, 0, 0, 0.8);
     text-align: center;
 }
-.goal-stage-score {
-    font-size: clamp(56px, 8vw, 130px);
-    font-weight: 700;
-    color: #fff;
-    text-shadow: 0 0 16px rgba(255,255,255,0.75);
-    opacity: 0;
-    transform: scale(0.55);
+.goal-stage-city {
+    font-size: clamp(46px, 5.5vw, 98px);
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: center;
+    opacity: 0.95;
 }
-.goal-stage-score.active {
-    animation: goal-score-big 0.9s ease-out forwards;
+.goal-stage-stripe {
+    width: min(36vw, 620px);
+    height: clamp(14px, 1.2vw, 24px);
+    background: #2b2b2b;
+    border-radius: 999px;
 }
-.goal-stage-score.shrink {
-    animation: goal-score-shrink 0.7s ease-in forwards;
+.goal-stage-stripe.active {
+    opacity: 1;
 }
 .goal-score-pulse {
     animation: goal-digit-pulse 0.8s ease-out;
@@ -1933,15 +1936,6 @@ body.penalty-mode .penalty-score {
 @keyframes goal-team-fade-out {
     0% { opacity: 1; transform: scale(1); }
     100% { opacity: 0; transform: scale(1.06); }
-}
-@keyframes goal-score-big {
-    0% { opacity: 0; transform: scale(0.5); }
-    60% { opacity: 1; transform: scale(1.12); }
-    100% { opacity: 1; transform: scale(1); }
-}
-@keyframes goal-score-shrink {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 1; transform: scale(0.18); }
 }
 @keyframes goal-digit-pulse {
     0% { transform: scale(1) rotate(0deg); }
@@ -2164,8 +2158,9 @@ body.penalty-mode .penalty-score {
         <div class="goal-overlay-particles" id="goalOverlayParticles"></div>
         <div class="goal-stage goal-stage-team" id="goalOverlayTeam">
             <img class="goal-stage-logo no-logo" id="goalOverlayLogo" alt="">
+            <div class="goal-stage-stripe" id="goalOverlayStripe"></div>
             <div class="goal-stage-team-name" id="goalOverlayTeamName"></div>
-            <div class="goal-stage-score" id="goalOverlayScore"></div>
+            <div class="goal-stage-city" id="goalOverlayCity"></div>
         </div>
     </div>
 
@@ -3756,15 +3751,16 @@ body.penalty-mode .penalty-score {
         const marqueeTextEl = document.getElementById('goalOverlayMarqueeText');
         const teamEl = document.getElementById('goalOverlayTeam');
         const teamLogoEl = document.getElementById('goalOverlayLogo');
+        const stripeEl = document.getElementById('goalOverlayStripe');
         const teamNameEl = document.getElementById('goalOverlayTeamName');
-        const scoreEl = document.getElementById('goalOverlayScore');
+        const cityEl = document.getElementById('goalOverlayCity');
         const particlesEl = document.getElementById('goalOverlayParticles');
         if (goalAnimationTimeouts.length) {
             goalAnimationTimeouts.forEach(t => clearTimeout(t));
             goalAnimationTimeouts = [];
         }
         goalAnimationActive = false;
-        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !teamEl || !teamLogoEl || !teamNameEl || !scoreEl || !particlesEl) return;
+        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !teamEl || !teamLogoEl || !stripeEl || !teamNameEl || !cityEl || !particlesEl) return;
         overlay.classList.remove('visible');
         overlay.setAttribute('aria-hidden', 'true');
         stageBlack.classList.remove('active');
@@ -3773,8 +3769,6 @@ body.penalty-mode .penalty-score {
         marqueeTextEl.classList.remove('active');
         teamEl.classList.remove('active');
         teamEl.classList.remove('leaving');
-        scoreEl.classList.remove('active');
-        scoreEl.classList.remove('shrink');
         particlesEl.innerHTML = '';
         particlesEl.classList.remove('active');
         marqueeTextEl.textContent = 'ГОООООЛ';
@@ -3782,7 +3776,8 @@ body.penalty-mode .penalty-score {
         teamLogoEl.removeAttribute('src');
         teamLogoEl.alt = '';
         teamNameEl.textContent = '';
-        scoreEl.textContent = '';
+        stripeEl.style.background = '#2b2b2b';
+        cityEl.textContent = '';
     }
 
     function createGoalParticles(container) {
@@ -3833,12 +3828,18 @@ body.penalty-mode .penalty-score {
         const scoringTeam = payload && payload.scoringTeam ? payload.scoringTeam : null;
         const team1Name = state.team1Name || 'Команда 1';
         const team2Name = state.team2Name || 'Команда 2';
+        const team1City = state.team1City || '';
+        const team2City = state.team2City || '';
         const team1Logo = state.team1Logo || '';
         const team2Logo = state.team2Logo || '';
+        const team1Kit = state.kit1Color || '#2b2b2b';
+        const team2Kit = state.kit2Color || '#2b2b2b';
         const score1 = (payload && typeof payload.score1 === 'number') ? payload.score1 : (typeof state.score1 === 'number' ? state.score1 : 0);
         const score2 = (payload && typeof payload.score2 === 'number') ? payload.score2 : (typeof state.score2 === 'number' ? state.score2 : 0);
         const teamName = scoringTeam === 'team2' ? team2Name : team1Name;
+        const teamCity = scoringTeam === 'team2' ? team2City : team1City;
         const teamLogo = scoringTeam === 'team2' ? team2Logo : team1Logo;
+        const teamKit = scoringTeam === 'team2' ? team2Kit : team1Kit;
         const scoreText = `${score1} : ${score2}`;
         const changedScoreEl = scoringTeam === 'team2' ? team2ScoreEl : team1ScoreEl;
 
@@ -3855,8 +3856,9 @@ body.penalty-mode .penalty-score {
             logoEl.removeAttribute('src');
             logoEl.alt = teamName;
         }
+        stripeEl.style.background = teamKit || '#2b2b2b';
         teamNameEl.textContent = teamName;
-        scoreEl.textContent = scoreText;
+        cityEl.textContent = teamCity;
         createGoalParticles(particlesEl);
 
         if (changedScoreEl) {
@@ -3873,7 +3875,7 @@ body.penalty-mode .penalty-score {
             marqueeEl.classList.add('active');
             void marqueeEl.offsetWidth;
             marqueeTextEl.textContent = 'ГОООООООЛ';
-            marqueeTextEl.style.animation = 'goal-marquee-move 4.1s linear forwards';
+            marqueeTextEl.style.animation = 'goal-marquee-move 3s linear forwards';
         }, 120));
         goalAnimationTimeouts.push(setTimeout(() => {
             marqueeEl.classList.remove('active');
@@ -3881,20 +3883,14 @@ body.penalty-mode .penalty-score {
             marqueeTextEl.style.animation = 'none';
             marqueeTextEl.textContent = 'ГОЛ';
             teamEl.classList.add('active');
-        }, 2200));
+        }, 3000));
         goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.remove('active');
-            scoreEl.classList.add('active');
-        }, 3200));
-        goalAnimationTimeouts.push(setTimeout(() => {
-            scoreEl.classList.add('shrink');
-        }, 4200));
-        goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.add('leaving');
-        }, 4700));
+        }, 4500));
         goalAnimationTimeouts.push(setTimeout(() => {
             clearGoalOverlay();
-        }, 5400));
+        }, 6000));
     }
 
     socket.on('startCountdown', () => {
