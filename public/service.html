@@ -1011,7 +1011,7 @@
             height: 88vh;
             max-height: 88vh;
             overflow-y: auto;
-            font-size: 26px;
+            font-size: 23px;
             line-height: 1.6;
             white-space: pre-wrap;
             box-sizing: border-box;
@@ -1021,6 +1021,10 @@
         .operator-hint-box .oh-var { color: #7dd3fc; font-weight: 600; }
         .operator-hint-box .oh-score { color: #fcd34d; font-weight: 700; font-size: 1.15em; }
         .operator-hint-box .oh-kit-swatch { display: inline-block; width: 0.9em; height: 0.9em; vertical-align: middle; border: 1px solid rgba(255,255,255,0.3); border-radius: 2px; }
+        .operator-hint-box .oh-roster { margin: 8px 0 6px 0; line-height: 1.25; white-space: normal; }
+        .operator-hint-box .oh-roster .roster-player-item { display: flex; gap: 0.4em; align-items: baseline; }
+        .operator-hint-box .oh-roster .roster-player-number { min-width: 1.8em; color: #b0b0b0; }
+        .operator-hint-box .oh-roster .roster-player-name { color: #fff; }
         .service-score-timer-cell {
             display: flex;
             flex-direction: column;
@@ -1247,6 +1251,46 @@
             var s1 = typeof data.score1 === 'number' ? data.score1 : 0;
             var s2 = typeof data.score2 === 'number' ? data.score2 : 0;
             var winnerName = s1 > s2 ? team1 : (s2 > s1 ? team2 : '—');
+            function formatRoster(teamKey, players) {
+                if (!Array.isArray(players) || players.length === 0) return '—';
+                var excluded = (window.rosterExcludedByTeam && window.rosterExcludedByTeam[teamKey]) ? window.rosterExcludedByTeam[teamKey] : null;
+                var hasAltNumbers = players.some(function(p) {
+                    return p && typeof p !== 'string' && p.number && String(p.number).includes('/');
+                });
+                var useAltNumbers = false;
+                if (hasAltNumbers) {
+                    var teamId = teamKey === 'team1' ? data.team1Id : data.team2Id;
+                    useAltNumbers = teamId
+                        ? localStorage.getItem('team-' + teamId + '-useAltNumbers') === 'true'
+                        : localStorage.getItem('globalUseAltNumbers') === 'true';
+                }
+                var visible = players
+                    .map(function(item) {
+                        if (!item) return null;
+                        var num = '';
+                        var name = '';
+                        if (typeof item === 'string') {
+                            var parts = item.trim().split(/\s+/);
+                            num = parts[0] && /^\d+$/.test(parts[0]) ? parts[0] : '—';
+                            name = num !== '—' ? parts.slice(1).join(' ') : item;
+                        } else {
+                            num = item.number != null && item.number !== '' ? String(item.number) : '—';
+                            name = item.name || '';
+                            if (num && num !== '—' && num.includes('/')) {
+                                var split = num.split('/');
+                                num = useAltNumbers ? (split[1] || split[0]) : (split[0] || '');
+                            }
+                        }
+                        var displayNum = (num === '' || num == null) ? '—' : num;
+                        var key = displayNum + '|' + name;
+                        if (excluded && excluded.has(key)) return null;
+                        return '<div class="roster-player-item"><span class="roster-player-number">' + escapeHtml(displayNum) + '</span><span class="roster-player-name">' + escapeHtml(name) + '</span></div>';
+                    })
+                    .filter(Boolean);
+                return visible.length ? visible.join('') : '—';
+            }
+            var roster1Html = formatRoster('team1', data.team1Players || data.players1 || []);
+            var roster2Html = formatRoster('team2', data.team2Players || data.players2 || []);
             var lines = [
                 '<span class="oh-header">Начало матча:</span>',
                 'Уважаемые болельщики! Мы рады приветствовать вас на очередном матче турнира ' + v(tournament || 'Название турнира') + ' среди игроков ' + v(birthYearStr) + ' года рождения.',
@@ -1254,10 +1298,10 @@
                 'В матче встречаются ' + v(team1WithCity) + ' и ' + v(team2WithCity),
                 '',
                 'Прослушайте составы играющих команд:',
-                v(team1WithCity) + ', форма ' + kit1Html + ' — перечисляются составы —',
+                v(team1WithCity) + ', форма ' + kit1Html + '<div class="oh-roster">' + roster1Html + '</div>',
                 'Главный тренер команды — ' + v(coach1),
                 '',
-                v(team2WithCity) + ', форма ' + kit2Html + ' — перечисляются составы —',
+                v(team2WithCity) + ', форма ' + kit2Html + '<div class="oh-roster">' + roster2Html + '</div>',
                 'Главный тренер команды — ' + v(coach2),
                 '',
                 '<span class="oh-header">При забитом голе:</span>',
@@ -1265,7 +1309,7 @@
                 '',
                 '<span class="oh-header">После матча:</span>',
                 'Матч окончен со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span> победу одержала команда ' + v(winnerName),
-                'Матч окончен со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span>'
+                'Матч окончен внисью со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span>'
             ];
             return lines.join('\n');
         }
