@@ -1836,7 +1836,7 @@ body.penalty-mode .penalty-score {
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: clamp(180px, 22vw, 850px);
+    font-size: clamp(260px, 36vw, 720px);
     font-weight: 700;
     letter-spacing: 0.04em;
     text-shadow: 0 0 24px rgba(255,255,255,0.75);
@@ -1874,6 +1874,7 @@ body.penalty-mode .penalty-score {
     color: #fff;
     opacity: 0;
     transform: scale(0.92);
+    text-align: center;
 }
 .goal-stage-team.active {
     animation: goal-team-fade-in 0.55s ease-out forwards;
@@ -1882,8 +1883,8 @@ body.penalty-mode .penalty-score {
     animation: goal-team-fade-out 0.5s ease-in forwards;
 }
 .goal-stage-logo {
-    width: clamp(750px, 84vw, 1080px);
-    height: clamp(750px, 84vw, 1080px);
+    width: min(800px, 84vw);
+    height: min(800px, 84vw);
     object-fit: contain;
     filter: drop-shadow(0 0 24px rgba(255,255,255,0.5));
 }
@@ -3910,14 +3911,14 @@ body.penalty-mode .penalty-score {
             golEl.classList.remove('active');
             golEl.classList.add('leaving');
             teamEl.classList.add('active');
-        }, 3620));
+        }, 4120));
         goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.remove('active');
             teamEl.classList.add('leaving');
-        }, 6120));
+        }, 7120));
         goalAnimationTimeouts.push(setTimeout(() => {
             clearGoalOverlay();
-        }, 7220));
+        }, 8220));
     }
 
     socket.on('startCountdown', () => {
