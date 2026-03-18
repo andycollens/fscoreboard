@@ -1015,7 +1015,10 @@
             line-height: 1.6;
             white-space: pre-wrap;
             box-sizing: border-box;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
+        .operator-hint-box::-webkit-scrollbar { width: 0; height: 0; }
         .operator-hint-box .oh-header { font-weight: 700; color: #fff; font-size: 30px; margin-top: 20px; margin-bottom: 10px; }
         .operator-hint-box .oh-header:first-child { margin-top: 0; }
         .operator-hint-box .oh-var { color: #7dd3fc; font-weight: 600; }
