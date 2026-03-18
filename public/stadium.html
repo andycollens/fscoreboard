@@ -3873,6 +3873,10 @@ body.penalty-mode .penalty-score {
         const teamCity = scoringTeam === 'team2' ? team2City : team1City;
         const teamLogo = scoringTeam === 'team2' ? team2Logo : team1Logo;
         const teamKit = scoringTeam === 'team2' ? team2Kit : team1Kit;
+        const stripeDirection = 'to right';
+        const stripeBackground = teamKit && teamKit !== ''
+            ? `linear-gradient(${stripeDirection}, transparent, ${teamKit} 70px, ${teamKit} 130px, transparent 200px)`
+            : `linear-gradient(${stripeDirection}, transparent, #2b2b2b 70px, #2b2b2b 130px, transparent 200px)`;
 
         overlay.classList.add('visible');
         overlay.setAttribute('aria-hidden', 'false');
@@ -3887,7 +3891,7 @@ body.penalty-mode .penalty-score {
             logoEl.removeAttribute('src');
             logoEl.alt = teamName;
         }
-        stripeEl.style.background = teamKit || '#2b2b2b';
+        stripeEl.style.background = stripeBackground;
         teamNameEl.textContent = teamName;
         cityEl.textContent = teamCity;
         createGoalParticles(particlesEl);
