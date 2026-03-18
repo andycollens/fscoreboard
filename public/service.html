@@ -1331,7 +1331,7 @@
                 var col2 = items.slice(mid).join('');
                 return '<div class="oh-roster-cols"><div class="oh-roster-col">' + col1 + '</div><div class="oh-roster-col">' + col2 + '</div></div>';
             }
-            var drawText = 'Матч окончен <b>вничью</b> со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span>';
+            var drawText = 'Матч между командами ' + v(team1) + ' и ' + v(team2) + ' завершен <b>вничью</b> со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span>';
             var winnerText = 'Матч окончен со счётом <span class="oh-score">' + escapeHtml(String(s1)) + ' : ' + escapeHtml(String(s2)) + '</span> победу одержала команда ' + v(winnerName);
             var lines = [
                 '<span class="oh-header">Начало матча:</span>',
