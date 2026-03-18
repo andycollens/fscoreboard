@@ -3899,26 +3899,26 @@ body.penalty-mode .penalty-score {
             marqueeEl.classList.add('active');
             void marqueeEl.offsetWidth;
             marqueeTextEl.innerHTML = 'ГОООЛ';
-            marqueeTextEl.style.animation = 'goal-marquee-move 5.5s linear forwards';
+            marqueeTextEl.style.animation = 'goal-marquee-move 3s linear forwards';
         }, 120));
         goalAnimationTimeouts.push(setTimeout(() => {
             marqueeEl.classList.remove('active');
             marqueeEl.classList.add('centered');
             marqueeTextEl.style.animation = 'none';
             golEl.classList.add('active');
-        }, 2120));
+        }, 3120));
         goalAnimationTimeouts.push(setTimeout(() => {
             golEl.classList.remove('active');
             golEl.classList.add('leaving');
             teamEl.classList.add('active');
-        }, 4120));
+        }, 5120));
         goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.remove('active');
             teamEl.classList.add('leaving');
-        }, 7120));
+        }, 8120));
         goalAnimationTimeouts.push(setTimeout(() => {
             clearGoalOverlay();
-        }, 8220));
+        }, 9220));
     }
 
     socket.on('startCountdown', () => {
