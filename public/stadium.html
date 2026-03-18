@@ -3816,10 +3816,7 @@ body.penalty-mode .penalty-score {
         const teamEl = document.getElementById('goalOverlayTeam');
         const logoEl = document.getElementById('goalOverlayLogo');
         const teamNameEl = document.getElementById('goalOverlayTeamName');
-        const scoreEl = document.getElementById('goalOverlayScore');
-        const team1ScoreEl = document.getElementById('team1Score');
-        const team2ScoreEl = document.getElementById('team2Score');
-        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !particlesEl || !teamEl || !logoEl || !teamNameEl || !scoreEl) return;
+        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !particlesEl || !teamEl || !logoEl || !teamNameEl || !stripeEl || !cityEl) return;
 
         clearGoalOverlay();
         goalAnimationActive = true;
@@ -3834,14 +3831,10 @@ body.penalty-mode .penalty-score {
         const team2Logo = state.team2Logo || '';
         const team1Kit = state.kit1Color || '#2b2b2b';
         const team2Kit = state.kit2Color || '#2b2b2b';
-        const score1 = (payload && typeof payload.score1 === 'number') ? payload.score1 : (typeof state.score1 === 'number' ? state.score1 : 0);
-        const score2 = (payload && typeof payload.score2 === 'number') ? payload.score2 : (typeof state.score2 === 'number' ? state.score2 : 0);
         const teamName = scoringTeam === 'team2' ? team2Name : team1Name;
         const teamCity = scoringTeam === 'team2' ? team2City : team1City;
         const teamLogo = scoringTeam === 'team2' ? team2Logo : team1Logo;
         const teamKit = scoringTeam === 'team2' ? team2Kit : team1Kit;
-        const scoreText = `${score1} : ${score2}`;
-        const changedScoreEl = scoringTeam === 'team2' ? team2ScoreEl : team1ScoreEl;
 
         overlay.classList.add('visible');
         overlay.setAttribute('aria-hidden', 'false');
@@ -3860,13 +3853,6 @@ body.penalty-mode .penalty-score {
         teamNameEl.textContent = teamName;
         cityEl.textContent = teamCity;
         createGoalParticles(particlesEl);
-
-        if (changedScoreEl) {
-            changedScoreEl.classList.remove('goal-score-pulse');
-            void changedScoreEl.offsetWidth;
-            changedScoreEl.classList.add('goal-score-pulse');
-            goalAnimationTimeouts.push(setTimeout(() => changedScoreEl.classList.remove('goal-score-pulse'), 900));
-        }
 
         goalAnimationTimeouts.push(setTimeout(() => {
             stageBlack.classList.add('active');
