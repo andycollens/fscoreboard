@@ -2190,7 +2190,6 @@ body.penalty-mode .penalty-score {
         <div class="goal-overlay-particles" id="goalOverlayParticles"></div>
         <div class="goal-stage goal-stage-team" id="goalOverlayTeam">
             <img class="goal-stage-logo no-logo" id="goalOverlayLogo" alt="">
-            <div class="goal-stage-stripe" id="goalOverlayStripe"></div>
             <div class="goal-stage-team-name" id="goalOverlayTeamName"></div>
             <div class="goal-stage-city" id="goalOverlayCity"></div>
         </div>
@@ -3784,7 +3783,6 @@ body.penalty-mode .penalty-score {
         const golEl = document.getElementById('goalOverlayGol');
         const teamEl = document.getElementById('goalOverlayTeam');
         const teamLogoEl = document.getElementById('goalOverlayLogo');
-        const stripeEl = document.getElementById('goalOverlayStripe');
         const teamNameEl = document.getElementById('goalOverlayTeamName');
         const cityEl = document.getElementById('goalOverlayCity');
         const particlesEl = document.getElementById('goalOverlayParticles');
@@ -3793,7 +3791,7 @@ body.penalty-mode .penalty-score {
             goalAnimationTimeouts = [];
         }
         goalAnimationActive = false;
-        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !golEl || !teamEl || !teamLogoEl || !stripeEl || !teamNameEl || !cityEl || !particlesEl) return;
+        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !golEl || !teamEl || !teamLogoEl || !teamNameEl || !cityEl || !particlesEl) return;
         overlay.classList.remove('visible');
         overlay.setAttribute('aria-hidden', 'true');
         stageBlack.classList.remove('active');
@@ -3811,7 +3809,6 @@ body.penalty-mode .penalty-score {
         teamLogoEl.removeAttribute('src');
         teamLogoEl.alt = '';
         teamNameEl.textContent = '';
-        stripeEl.style.background = '#2b2b2b';
         cityEl.textContent = '';
     }
 
@@ -3851,10 +3848,9 @@ body.penalty-mode .penalty-score {
         const particlesEl = document.getElementById('goalOverlayParticles');
         const teamEl = document.getElementById('goalOverlayTeam');
         const logoEl = document.getElementById('goalOverlayLogo');
-        const stripeEl = document.getElementById('goalOverlayStripe');
         const teamNameEl = document.getElementById('goalOverlayTeamName');
         const cityEl = document.getElementById('goalOverlayCity');
-        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !golEl || !particlesEl || !teamEl || !logoEl || !teamNameEl || !stripeEl || !cityEl) return;
+        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !golEl || !particlesEl || !teamEl || !logoEl || !teamNameEl || !cityEl) return;
 
         clearGoalOverlay();
         goalAnimationActive = true;
@@ -3867,17 +3863,10 @@ body.penalty-mode .penalty-score {
         const team2City = state.team2City || '';
         const team1Logo = state.team1Logo || '';
         const team2Logo = state.team2Logo || '';
-        const team1Kit = state.kit1Color || '#2b2b2b';
-        const team2Kit = state.kit2Color || '#2b2b2b';
         const teamName = scoringTeam === 'team2' ? team2Name : team1Name;
         const teamCity = scoringTeam === 'team2' ? team2City : team1City;
         const teamLogo = scoringTeam === 'team2' ? team2Logo : team1Logo;
-        const teamKit = scoringTeam === 'team2' ? team2Kit : team1Kit;
         const stripeDirection = 'to right';
-        const stripeBackground = teamKit && teamKit !== ''
-            ? `linear-gradient(${stripeDirection}, transparent, ${teamKit} 70px, ${teamKit} 130px, transparent 200px)`
-            : `linear-gradient(${stripeDirection}, transparent, #2b2b2b 70px, #2b2b2b 130px, transparent 200px)`;
-
         overlay.classList.add('visible');
         overlay.setAttribute('aria-hidden', 'false');
         particlesEl.classList.add('active');
@@ -3891,7 +3880,6 @@ body.penalty-mode .penalty-score {
             logoEl.removeAttribute('src');
             logoEl.alt = teamName;
         }
-        stripeEl.style.background = stripeBackground;
         teamNameEl.textContent = teamName;
         cityEl.textContent = teamCity;
         createGoalParticles(particlesEl);
