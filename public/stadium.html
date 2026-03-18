@@ -1830,13 +1830,13 @@ body.penalty-mode .penalty-score {
     justify-content: center;
 }
 .goal-marquee-text {
-    font-size: clamp(68px, 9vw, 180px);
+    font-size: clamp(120px, 18vw, 340px);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     white-space: nowrap;
     text-shadow: 0 0 18px rgba(255,255,255,0.65);
     transform: translateX(110%);
-    animation: goal-marquee-move 1.7s linear forwards;
+    animation: goal-marquee-move 2.05s linear forwards;
 }
 .goal-stage-marquee.centered .goal-marquee-text {
     transform: none;
@@ -3873,7 +3873,7 @@ body.penalty-mode .penalty-score {
             marqueeEl.classList.add('active');
             void marqueeEl.offsetWidth;
             marqueeTextEl.textContent = 'ГОООООООЛ';
-            marqueeTextEl.style.animation = 'goal-marquee-move 1.55s linear forwards';
+            marqueeTextEl.style.animation = 'goal-marquee-move 2.05s linear forwards';
         }, 120));
         goalAnimationTimeouts.push(setTimeout(() => {
             marqueeEl.classList.remove('active');
@@ -3881,20 +3881,20 @@ body.penalty-mode .penalty-score {
             marqueeTextEl.style.animation = 'none';
             marqueeTextEl.textContent = 'ГОЛ';
             teamEl.classList.add('active');
-        }, 1900));
+        }, 2200));
         goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.remove('active');
             scoreEl.classList.add('active');
-        }, 2900));
+        }, 3200));
         goalAnimationTimeouts.push(setTimeout(() => {
             scoreEl.classList.add('shrink');
-        }, 4100));
+        }, 4200));
         goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.add('leaving');
-        }, 4550));
+        }, 4700));
         goalAnimationTimeouts.push(setTimeout(() => {
             clearGoalOverlay();
-        }, 5200));
+        }, 5400));
     }
 
     socket.on('startCountdown', () => {
