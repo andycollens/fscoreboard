@@ -1829,6 +1829,31 @@ body.penalty-mode .penalty-score {
 .goal-stage-marquee.centered {
     justify-content: center;
 }
+.goal-stage-letters {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: clamp(10px, 2vw, 28px);
+    opacity: 0;
+    pointer-events: none;
+}
+.goal-stage-letters.active {
+    animation: goal-letters-fade 0.15s ease-out forwards;
+}
+.goal-stage-letter {
+    font-size: clamp(160px, 24vw, 420px);
+    font-weight: 700;
+    line-height: 0.9;
+    opacity: 0;
+    transform: translateY(-60px) scale(0.2);
+    text-shadow: 0 0 18px rgba(255,255,255,0.75);
+}
+.goal-stage-letter.active {
+    animation: goal-letter-drop 0.42s cubic-bezier(.18,.9,.22,1.2) forwards;
+}
 .goal-marquee-text {
     font-size: clamp(220px, 30vw, 540px);
     font-weight: 700;
@@ -1928,6 +1953,15 @@ body.penalty-mode .penalty-score {
 @keyframes goal-marquee-fade {
     0% { opacity: 0; }
     100% { opacity: 1; }
+}
+@keyframes goal-letters-fade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes goal-letter-drop {
+    0% { opacity: 0; transform: translateY(-70px) scale(0.2); }
+    60% { opacity: 1; transform: translateY(8px) scale(1.05); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes goal-team-fade-in {
     0% { opacity: 0; transform: scale(0.88); }
@@ -2152,6 +2186,11 @@ body.penalty-mode .penalty-score {
     <div id="goalOverlay" aria-hidden="true">
         <div class="goal-stage goal-stage-white" id="goalOverlayWhite"></div>
         <div class="goal-stage goal-stage-blackwipe" id="goalOverlayBlack"></div>
+        <div class="goal-stage-letters" id="goalOverlayLetters">
+            <div class="goal-stage-letter" id="goalOverlayLetter1">Г</div>
+            <div class="goal-stage-letter" id="goalOverlayLetter2">О</div>
+            <div class="goal-stage-letter" id="goalOverlayLetter3">Л</div>
+        </div>
         <div class="goal-stage goal-stage-marquee" id="goalOverlayMarquee">
             <div class="goal-marquee-text" id="goalOverlayMarqueeText">ГОООООЛ</div>
         </div>
@@ -3747,6 +3786,10 @@ body.penalty-mode .penalty-score {
     function clearGoalOverlay() {
         const overlay = document.getElementById('goalOverlay');
         const stageBlack = document.getElementById('goalOverlayBlack');
+        const lettersEl = document.getElementById('goalOverlayLetters');
+        const letter1El = document.getElementById('goalOverlayLetter1');
+        const letter2El = document.getElementById('goalOverlayLetter2');
+        const letter3El = document.getElementById('goalOverlayLetter3');
         const marqueeEl = document.getElementById('goalOverlayMarquee');
         const marqueeTextEl = document.getElementById('goalOverlayMarqueeText');
         const teamEl = document.getElementById('goalOverlayTeam');
@@ -3760,10 +3803,14 @@ body.penalty-mode .penalty-score {
             goalAnimationTimeouts = [];
         }
         goalAnimationActive = false;
-        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !teamEl || !teamLogoEl || !stripeEl || !teamNameEl || !cityEl || !particlesEl) return;
+        if (!overlay || !stageBlack || !lettersEl || !letter1El || !letter2El || !letter3El || !marqueeEl || !marqueeTextEl || !teamEl || !teamLogoEl || !stripeEl || !teamNameEl || !cityEl || !particlesEl) return;
         overlay.classList.remove('visible');
         overlay.setAttribute('aria-hidden', 'true');
         stageBlack.classList.remove('active');
+        lettersEl.classList.remove('active');
+        letter1El.classList.remove('active');
+        letter2El.classList.remove('active');
+        letter3El.classList.remove('active');
         marqueeEl.classList.remove('active');
         marqueeEl.classList.remove('centered');
         marqueeTextEl.classList.remove('active');
@@ -3860,25 +3907,37 @@ body.penalty-mode .penalty-score {
             stageBlack.classList.add('active');
         }, 20));
         goalAnimationTimeouts.push(setTimeout(() => {
+            lettersEl.classList.add('active');
+            void lettersEl.offsetWidth;
+            letter1El.classList.add('active');
+        }, 120));
+        goalAnimationTimeouts.push(setTimeout(() => {
+            letter2El.classList.add('active');
+        }, 420));
+        goalAnimationTimeouts.push(setTimeout(() => {
+            letter3El.classList.add('active');
+        }, 720));
+        goalAnimationTimeouts.push(setTimeout(() => {
+            lettersEl.classList.remove('active');
             marqueeEl.classList.add('active');
             void marqueeEl.offsetWidth;
             marqueeTextEl.textContent = 'ГОООООООЛ';
-            marqueeTextEl.style.animation = 'goal-marquee-move 3s linear forwards';
-        }, 120));
+            marqueeTextEl.style.animation = 'goal-marquee-move 4.5s linear forwards';
+        }, 1050));
         goalAnimationTimeouts.push(setTimeout(() => {
             marqueeEl.classList.remove('active');
             marqueeEl.classList.add('centered');
             marqueeTextEl.style.animation = 'none';
             marqueeTextEl.textContent = 'ГОЛ';
             teamEl.classList.add('active');
-        }, 3000));
+        }, 5100));
         goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.remove('active');
             teamEl.classList.add('leaving');
-        }, 4500));
+        }, 6600));
         goalAnimationTimeouts.push(setTimeout(() => {
             clearGoalOverlay();
-        }, 6000));
+        }, 7800));
     }
 
     socket.on('startCountdown', () => {
