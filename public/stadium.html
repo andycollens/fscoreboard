@@ -1829,6 +1829,26 @@ body.penalty-mode .penalty-score {
 .goal-stage-marquee.centered {
     justify-content: center;
 }
+.goal-stage-gol {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: clamp(180px, 22vw, 850px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 24px rgba(255,255,255,0.75);
+    opacity: 0;
+    transform: scale(0.96);
+}
+.goal-stage-gol.active {
+    animation: goal-gol-in 0.35s ease-out forwards;
+}
+.goal-stage-gol.leaving {
+    animation: goal-gol-out 0.35s ease-in forwards;
+}
 .goal-marquee-text {
     font-size: clamp(260px, 36vw, 720px);
     font-weight: 700;
@@ -1862,8 +1882,8 @@ body.penalty-mode .penalty-score {
     animation: goal-team-fade-out 0.5s ease-in forwards;
 }
 .goal-stage-logo {
-    width: clamp(420px, 42vw, 720px);
-    height: clamp(420px, 42vw, 720px);
+    width: clamp(750px, 84vw, 1080px);
+    height: clamp(750px, 84vw, 1080px);
     object-fit: contain;
     filter: drop-shadow(0 0 24px rgba(255,255,255,0.5));
 }
@@ -1930,6 +1950,14 @@ body.penalty-mode .penalty-score {
 @keyframes goal-marquee-fade {
     0% { opacity: 0; }
     100% { opacity: 1; }
+}
+@keyframes goal-gol-in {
+    0% { opacity: 0; transform: scale(0.78); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes goal-gol-out {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.03); }
 }
 @keyframes goal-team-fade-in {
     0% { opacity: 0; transform: scale(0.88); }
@@ -2157,6 +2185,7 @@ body.penalty-mode .penalty-score {
         <div class="goal-stage goal-stage-marquee" id="goalOverlayMarquee">
             <div class="goal-marquee-text" id="goalOverlayMarqueeText">ГОООООЛ</div>
         </div>
+        <div class="goal-stage goal-stage-gol" id="goalOverlayGol">ГОЛ</div>
         <div class="goal-overlay-particles" id="goalOverlayParticles"></div>
         <div class="goal-stage goal-stage-team" id="goalOverlayTeam">
             <img class="goal-stage-logo no-logo" id="goalOverlayLogo" alt="">
@@ -3751,6 +3780,7 @@ body.penalty-mode .penalty-score {
         const stageBlack = document.getElementById('goalOverlayBlack');
         const marqueeEl = document.getElementById('goalOverlayMarquee');
         const marqueeTextEl = document.getElementById('goalOverlayMarqueeText');
+        const golEl = document.getElementById('goalOverlayGol');
         const teamEl = document.getElementById('goalOverlayTeam');
         const teamLogoEl = document.getElementById('goalOverlayLogo');
         const stripeEl = document.getElementById('goalOverlayStripe');
@@ -3762,13 +3792,15 @@ body.penalty-mode .penalty-score {
             goalAnimationTimeouts = [];
         }
         goalAnimationActive = false;
-        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !teamEl || !teamLogoEl || !stripeEl || !teamNameEl || !cityEl || !particlesEl) return;
+        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !golEl || !teamEl || !teamLogoEl || !stripeEl || !teamNameEl || !cityEl || !particlesEl) return;
         overlay.classList.remove('visible');
         overlay.setAttribute('aria-hidden', 'true');
         stageBlack.classList.remove('active');
         marqueeEl.classList.remove('active');
         marqueeEl.classList.remove('centered');
         marqueeTextEl.classList.remove('active');
+        golEl.classList.remove('active');
+        golEl.classList.remove('leaving');
         teamEl.classList.remove('active');
         teamEl.classList.remove('leaving');
         particlesEl.innerHTML = '';
@@ -3814,13 +3846,14 @@ body.penalty-mode .penalty-score {
         const stageBlack = document.getElementById('goalOverlayBlack');
         const marqueeEl = document.getElementById('goalOverlayMarquee');
         const marqueeTextEl = document.getElementById('goalOverlayMarqueeText');
+        const golEl = document.getElementById('goalOverlayGol');
         const particlesEl = document.getElementById('goalOverlayParticles');
         const teamEl = document.getElementById('goalOverlayTeam');
         const logoEl = document.getElementById('goalOverlayLogo');
         const stripeEl = document.getElementById('goalOverlayStripe');
         const teamNameEl = document.getElementById('goalOverlayTeamName');
         const cityEl = document.getElementById('goalOverlayCity');
-        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !particlesEl || !teamEl || !logoEl || !teamNameEl || !stripeEl || !cityEl) return;
+        if (!overlay || !stageBlack || !marqueeEl || !marqueeTextEl || !golEl || !particlesEl || !teamEl || !logoEl || !teamNameEl || !stripeEl || !cityEl) return;
 
         clearGoalOverlay();
         goalAnimationActive = true;
@@ -3865,22 +3898,26 @@ body.penalty-mode .penalty-score {
             marqueeEl.classList.add('active');
             void marqueeEl.offsetWidth;
             marqueeTextEl.innerHTML = 'ГОООООООЛ';
-            marqueeTextEl.style.animation = 'goal-marquee-move 4.5s linear forwards';
+            marqueeTextEl.style.animation = 'goal-marquee-move 5.5s linear forwards';
         }, 120));
         goalAnimationTimeouts.push(setTimeout(() => {
             marqueeEl.classList.remove('active');
             marqueeEl.classList.add('centered');
             marqueeTextEl.style.animation = 'none';
-            marqueeTextEl.innerHTML = 'ГОЛ';
+            golEl.classList.add('active');
+        }, 5620));
+        goalAnimationTimeouts.push(setTimeout(() => {
+            golEl.classList.remove('active');
+            golEl.classList.add('leaving');
             teamEl.classList.add('active');
-        }, 4620));
+        }, 7120));
         goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.remove('active');
             teamEl.classList.add('leaving');
-        }, 7620));
+        }, 9620));
         goalAnimationTimeouts.push(setTimeout(() => {
             clearGoalOverlay();
-        }, 8620));
+        }, 10720));
     }
 
     socket.on('startCountdown', () => {
