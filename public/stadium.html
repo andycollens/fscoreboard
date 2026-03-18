@@ -1783,6 +1783,126 @@ body.penalty-mode .penalty-score {
     line-height: 1.1;
     animation: countdown-match-started 1.2s ease-out forwards;
 }
+/* Goal overlay — cinematic full-screen celebration */
+#goalOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    font-family: 'RPL', Arial, sans-serif;
+    overflow: hidden;
+    background: radial-gradient(circle at center, rgba(40, 40, 40, 0.85) 0%, rgba(0, 0, 0, 0.98) 55%, #000 100%);
+}
+#goalOverlay.visible {
+    display: block;
+}
+.goal-overlay-flash {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 12%, rgba(255,255,255,0) 38%);
+    opacity: 0;
+    transform: scale(0.8);
+}
+.goal-overlay-flash.active {
+    animation: goal-flash 0.8s ease-out forwards;
+}
+.goal-overlay-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.goal-particle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    opacity: 0;
+    animation: goal-particle-fly 1.8s ease-out forwards;
+}
+.goal-overlay-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 24px;
+    color: #fff;
+    text-align: center;
+}
+.goal-overlay-badge {
+    font-size: clamp(96px, 12vw, 220px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 24px rgba(255, 255, 255, 0.9), 0 0 48px rgba(90, 180, 255, 0.55);
+    opacity: 0;
+    transform: scale(0.4);
+}
+.goal-overlay-badge.active {
+    animation: goal-badge-in 0.75s cubic-bezier(.2,.9,.2,1.2) forwards;
+}
+.goal-overlay-team {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    opacity: 0;
+    transform: translateY(30px);
+}
+.goal-overlay-team.active {
+    animation: goal-team-in 0.8s ease-out forwards;
+}
+.goal-overlay-logo {
+    width: clamp(120px, 12vw, 220px);
+    height: clamp(120px, 12vw, 220px);
+    object-fit: contain;
+    filter: drop-shadow(0 0 24px rgba(255,255,255,0.5));
+}
+.goal-overlay-logo.no-logo {
+    background: rgba(255,255,255,0.08);
+    border-radius: 24px;
+}
+.goal-overlay-team-name {
+    font-size: clamp(48px, 6vw, 110px);
+    font-weight: 700;
+    line-height: 1.05;
+    text-shadow: 0 0 18px rgba(0, 0, 0, 0.8);
+}
+.goal-overlay-score {
+    font-size: clamp(54px, 7vw, 120px);
+    font-weight: 700;
+    color: #fcd34d;
+    text-shadow: 0 0 18px rgba(252, 211, 77, 0.85), 0 0 36px rgba(252, 211, 77, 0.45);
+    opacity: 0;
+    transform: scale(0.6);
+}
+.goal-overlay-score.active {
+    animation: goal-score-in 0.8s ease-out forwards;
+}
+@keyframes goal-flash {
+    0% { opacity: 0; transform: scale(0.8); }
+    18% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.15); }
+}
+@keyframes goal-badge-in {
+    0% { opacity: 0; transform: scale(0.35) rotate(-8deg); filter: blur(6px); }
+    50% { opacity: 1; transform: scale(1.12) rotate(2deg); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes goal-team-in {
+    0% { opacity: 0; transform: translateY(30px) scale(0.92); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes goal-score-in {
+    0% { opacity: 0; transform: scale(0.5); filter: blur(8px); }
+    60% { opacity: 1; transform: scale(1.15); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes goal-particle-fly {
+    0% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.6); }
+    10% { opacity: 1; }
+    100% { opacity: 0; transform: translate3d(var(--dx), var(--dy), 0) scale(1.2); }
+}
 @keyframes countdown-pop {
     0% {
         transform: translateY(-100px) scale(0);
@@ -1986,6 +2106,20 @@ body.penalty-mode .penalty-score {
         <div id="countdownOverlayText">5</div>
     </div>
 
+    <!-- Оверлей гола -->
+    <div id="goalOverlay" aria-hidden="true">
+        <div class="goal-overlay-flash" id="goalOverlayFlash"></div>
+        <div class="goal-overlay-particles" id="goalOverlayParticles"></div>
+        <div class="goal-overlay-content">
+            <div class="goal-overlay-badge" id="goalOverlayBadge">ГОООООЛ!</div>
+            <div class="goal-overlay-team" id="goalOverlayTeam">
+                <img class="goal-overlay-logo no-logo" id="goalOverlayLogo" alt="">
+                <div class="goal-overlay-team-name" id="goalOverlayTeamName"></div>
+            </div>
+            <div class="goal-overlay-score" id="goalOverlayScore"></div>
+        </div>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
@@ -1999,6 +2133,9 @@ body.penalty-mode .penalty-score {
         let pendingMode = null;
         let lastAppliedMode = null;
         let latestData = null;
+        let goalAnimationTimeouts = [];
+        let goalAnimationActive = false;
+        let goalAnimationEnabledState = false;
 
         function getPenaltyMaxAttemptsFromData(data) {
             if (data && typeof data.penaltyMaxAttempts === 'number' && data.penaltyMaxAttempts > 0) {
@@ -2345,6 +2482,16 @@ body.penalty-mode .penalty-score {
  
             updateWinners(data); // обновляем структуру победителей, если пришли
             refreshDisplayForMode(currentMode, data);
+        });
+
+        socket.on('goalScored', (data) => {
+            console.log('Received goalScored in stadium:', data);
+            if (!goalAnimationEnabledState || currentMode !== 'scoreboard') return;
+            if (data && data.state) {
+                latestData = data.state;
+                window.lastScoreboardData = data.state;
+            }
+            startGoalAnimation(data || {});
         });
         
         // Слушаем обновления useAltNumbers с других устройств
@@ -2872,6 +3019,10 @@ body.penalty-mode .penalty-score {
             winnersMode.classList.add('active');
         } else if (mode === 'logo' || mode === 'ad') {
             logoMode.classList.add('active');
+        }
+
+        if (mode !== 'scoreboard') {
+            clearGoalOverlay();
         }
 
         // Переключаем заголовок / подзаголовок
@@ -3487,6 +3638,8 @@ body.penalty-mode .penalty-score {
                     currentGraphicStyle = config.graphicStyle || 'default';
                     console.log('Loaded graphic style:', currentGraphicStyle);
                 }
+
+                goalAnimationEnabledState = !!config.goalAnimationEnabled;
                 
                 // Затем загружаем сохраненный режим (по умолчанию 'scoreboard')
                 const mode = config.stadiumMode || 'scoreboard';
@@ -3547,6 +3700,117 @@ body.penalty-mode .penalty-score {
         textEl.classList.remove('countdown-pop', 'countdown-match-started');
     }
 
+    function clearGoalOverlay() {
+        const overlay = document.getElementById('goalOverlay');
+        const badgeEl = document.getElementById('goalOverlayBadge');
+        const teamEl = document.getElementById('goalOverlayTeam');
+        const scoreEl = document.getElementById('goalOverlayScore');
+        const flashEl = document.getElementById('goalOverlayFlash');
+        const particlesEl = document.getElementById('goalOverlayParticles');
+        if (goalAnimationTimeouts.length) {
+            goalAnimationTimeouts.forEach(t => clearTimeout(t));
+            goalAnimationTimeouts = [];
+        }
+        goalAnimationActive = false;
+        if (!overlay || !badgeEl || !teamEl || !scoreEl || !flashEl || !particlesEl) return;
+        overlay.classList.remove('visible');
+        overlay.setAttribute('aria-hidden', 'true');
+        badgeEl.classList.remove('active');
+        teamEl.classList.remove('active');
+        scoreEl.classList.remove('active');
+        flashEl.classList.remove('active');
+        particlesEl.innerHTML = '';
+        badgeEl.textContent = 'ГОООООЛ!';
+        teamEl.style.display = 'flex';
+        scoreEl.textContent = '';
+        scoreEl.style.display = 'block';
+    }
+
+    function createGoalParticles(container) {
+        if (!container) return;
+        container.innerHTML = '';
+        const colors = ['#ffffff', '#fcd34d', '#60a5fa', '#22c55e', '#fb7185'];
+        const count = 24;
+        for (let i = 0; i < count; i++) {
+            const particle = document.createElement('span');
+            particle.className = 'goal-particle';
+            const size = 6 + Math.random() * 10;
+            const x = 15 + Math.random() * 70;
+            const y = 20 + Math.random() * 60;
+            const dx = (Math.random() - 0.5) * 700 + 'px';
+            const dy = (Math.random() - 0.5) * 500 + 'px';
+            particle.style.left = x + '%';
+            particle.style.top = y + '%';
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.boxShadow = '0 0 10px rgba(255,255,255,0.8)';
+            particle.style.setProperty('--dx', dx);
+            particle.style.setProperty('--dy', dy);
+            particle.style.animationDelay = (Math.random() * 0.25) + 's';
+            container.appendChild(particle);
+        }
+    }
+
+    function startGoalAnimation(payload) {
+        if (!goalAnimationEnabledState || currentMode !== 'scoreboard') return;
+        const overlay = document.getElementById('goalOverlay');
+        const flashEl = document.getElementById('goalOverlayFlash');
+        const particlesEl = document.getElementById('goalOverlayParticles');
+        const badgeEl = document.getElementById('goalOverlayBadge');
+        const teamEl = document.getElementById('goalOverlayTeam');
+        const logoEl = document.getElementById('goalOverlayLogo');
+        const teamNameEl = document.getElementById('goalOverlayTeamName');
+        const scoreEl = document.getElementById('goalOverlayScore');
+        if (!overlay || !flashEl || !particlesEl || !badgeEl || !teamEl || !logoEl || !teamNameEl || !scoreEl) return;
+
+        clearGoalOverlay();
+        goalAnimationActive = true;
+
+        const state = payload && payload.state ? payload.state : (latestData || window.lastScoreboardData || {});
+        const scoringTeam = payload && payload.scoringTeam ? payload.scoringTeam : null;
+        const team1Name = state.team1Name || 'Команда 1';
+        const team2Name = state.team2Name || 'Команда 2';
+        const team1Logo = state.team1Logo || '';
+        const team2Logo = state.team2Logo || '';
+        const score1 = (payload && typeof payload.score1 === 'number') ? payload.score1 : (typeof state.score1 === 'number' ? state.score1 : 0);
+        const score2 = (payload && typeof payload.score2 === 'number') ? payload.score2 : (typeof state.score2 === 'number' ? state.score2 : 0);
+        const teamName = scoringTeam === 'team2' ? team2Name : team1Name;
+        const teamLogo = scoringTeam === 'team2' ? team2Logo : team1Logo;
+        const scoreText = `${score1} : ${score2}`;
+
+        overlay.classList.add('visible');
+        overlay.setAttribute('aria-hidden', 'false');
+        flashEl.classList.add('active');
+        badgeEl.classList.remove('active');
+        teamEl.classList.remove('active');
+        scoreEl.classList.remove('active');
+        teamEl.style.display = 'flex';
+        scoreEl.style.display = 'block';
+        teamNameEl.textContent = teamName;
+        scoreEl.textContent = scoreText;
+        if (teamLogo) {
+            logoEl.classList.remove('no-logo');
+            logoEl.src = teamLogo;
+            logoEl.alt = teamName;
+        } else {
+            logoEl.classList.add('no-logo');
+            logoEl.removeAttribute('src');
+            logoEl.alt = '';
+        }
+        createGoalParticles(particlesEl);
+
+        goalAnimationTimeouts.push(setTimeout(() => badgeEl.classList.add('active'), 80));
+        goalAnimationTimeouts.push(setTimeout(() => teamEl.classList.add('active'), 900));
+        goalAnimationTimeouts.push(setTimeout(() => scoreEl.classList.add('active'), 1450));
+        goalAnimationTimeouts.push(setTimeout(() => {
+            flashEl.classList.remove('active');
+        }, 2600));
+        goalAnimationTimeouts.push(setTimeout(() => {
+            clearGoalOverlay();
+        }, 7000));
+    }
+
     socket.on('startCountdown', () => {
         if (currentMode !== 'scoreboard') return;
         const overlay = document.getElementById('countdownOverlay');
@@ -3597,6 +3861,12 @@ body.penalty-mode .penalty-score {
             console.log('Stadium: graphic style updated to', currentGraphicStyle);
             if (currentMode === 'logo') {
                 applyLogoMode();
+            }
+        }
+        if (data && data.goalAnimationEnabled !== undefined) {
+            goalAnimationEnabledState = !!data.goalAnimationEnabled;
+            if (!goalAnimationEnabledState) {
+                clearGoalOverlay();
             }
         }
     });

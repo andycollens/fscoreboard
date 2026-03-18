@@ -134,6 +134,18 @@ function getCountdownEnabled() {
   return false;
 }
 
+function getGoalAnimationEnabled() {
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      return !!savedConfig.goalAnimationEnabled;
+    } catch (error) {
+      return false;
+    }
+  }
+  return false;
+}
+
 function _presetMatchesCurrent(p, state) {
   const byId =
     (state.team1Id != null && state.team2Id != null) &&
@@ -1769,6 +1781,10 @@ io.on('connection', (socket) => {
 
   // Изменение состояния с панели управления
   socket.on('updateScoreboard', (newState) => {
+    const prevScore1 = Number(state.score1) || 0;
+    const prevScore2 = Number(state.score2) || 0;
+    let goalCandidate = null;
+
     // Управление таймером
     if ('timerRunning' in newState) {
       if (newState.timerRunning && !state.timerRunning) {
@@ -1829,10 +1845,31 @@ io.on('connection', (socket) => {
       if (k in newState) state[k] = newState[k];
     });
 
+    const nextScore1 = Number(state.score1) || 0;
+    const nextScore2 = Number(state.score2) || 0;
+    const delta1 = nextScore1 - prevScore1;
+    const delta2 = nextScore2 - prevScore2;
+    if (delta1 > 0 || delta2 > 0) {
+      goalCandidate = {
+        scoringTeam: delta1 > delta2 ? 'team1' : delta2 > delta1 ? 'team2' : null,
+        prevScore1,
+        prevScore2,
+        score1: nextScore1,
+        score2: nextScore2
+      };
+    }
+
     // Пересчитываем строку времени
     const mm = Math.floor(state.timerSeconds / 60).toString().padStart(2, '0');
     const ss = (state.timerSeconds % 60).toString().padStart(2, '0');
     state.time = `${mm}:${ss}`;
+
+    if (goalCandidate && getGoalAnimationEnabled()) {
+      io.emit('goalScored', {
+        ...goalCandidate,
+        state: enrichStateWithConfig(state)
+      });
+    }
 
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
     fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
@@ -2092,6 +2129,12 @@ app.put('/api/config', (req, res) => {
   }
   if (req.body.countdownEnabled !== undefined) {
     currentConfig.countdownEnabled = !!req.body.countdownEnabled;
+  }
+  if (req.body.goalAnimationEnabled !== undefined) {
+    currentConfig.goalAnimationEnabled = !!req.body.goalAnimationEnabled;
+    io.emit('configUpdate', {
+      goalAnimationEnabled: currentConfig.goalAnimationEnabled
+    });
   }
   if (req.body.adsPauseSeconds !== undefined) {
     const sec = parseInt(req.body.adsPauseSeconds, 10);
