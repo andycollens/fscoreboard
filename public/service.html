@@ -1036,6 +1036,14 @@
             box-shadow: none;
             padding: 0;
         }
+        .operator-hint-box .oh-team-block {
+            margin: 14px 0 18px 0;
+        }
+        .operator-hint-box .oh-team-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.28), transparent);
+            margin: 14px 0 18px 0;
+        }
         .operator-hint-box .oh-roster { margin: 8px 0 6px 0; line-height: 1.25; white-space: normal; }
         .operator-hint-box .oh-roster-cols { display: flex; gap: 18px; align-items: flex-start; }
         .operator-hint-box .oh-roster-col { flex: 1 1 0; min-width: 0; }
@@ -1330,10 +1338,11 @@
                 'В матче встречаются ' + v(team1WithCity) + ' и ' + v(team2WithCity),
                 '',
                 'Прослушайте составы играющих команд:',
-                logo1Html + v(team1WithCity) + ', форма ' + kit1Html + '<div class="oh-roster">' + splitRosterColumns(roster1Html) + '</div>',
+                '<div class="oh-team-block">' + logo1Html + v(team1WithCity) + ', форма ' + kit1Html + '<div class="oh-roster">' + splitRosterColumns(roster1Html) + '</div></div>',
+                '<div class="oh-team-divider"></div>',
                 'Главный тренер команды — ' + v(coach1),
                 '',
-                logo2Html + v(team2WithCity) + ', форма ' + kit2Html + '<div class="oh-roster">' + splitRosterColumns(roster2Html) + '</div>',
+                '<div class="oh-team-block">' + logo2Html + v(team2WithCity) + ', форма ' + kit2Html + '<div class="oh-roster">' + splitRosterColumns(roster2Html) + '</div></div>',
                 'Главный тренер команды — ' + v(coach2),
                 '',
                 '<span class="oh-header">При забитом голе:</span>',
