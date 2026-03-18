@@ -1872,14 +1872,14 @@ body.penalty-mode .penalty-score {
     border-radius: 24px;
 }
 .goal-stage-team-name {
-    font-size: clamp(84px, 11vw, 195px);
+    font-size: 4vw;
     font-weight: 700;
     line-height: 1.05;
     text-shadow: 0 0 18px rgba(0, 0, 0, 0.8);
     text-align: center;
 }
 .goal-stage-city {
-    font-size: clamp(46px, 5.5vw, 98px);
+    font-size: 2vw;
     font-weight: 600;
     line-height: 1.1;
     text-align: center;
@@ -3877,10 +3877,10 @@ body.penalty-mode .penalty-score {
         goalAnimationTimeouts.push(setTimeout(() => {
             teamEl.classList.remove('active');
             teamEl.classList.add('leaving');
-        }, 6120));
+        }, 7620));
         goalAnimationTimeouts.push(setTimeout(() => {
             clearGoalOverlay();
-        }, 7300));
+        }, 8620));
     }
 
     socket.on('startCountdown', () => {
