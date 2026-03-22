@@ -32,32 +32,6 @@
             background-attachment: fixed;
             opacity: 0.9375;
             z-index: -2;
-            clip-path: inset(0 0 100% 0);
-            animation: none;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: -1;
-            clip-path: inset(0 0 100% 0);
-            animation: none;
-        }
-
-        body.background-loaded::before,
-        body.background-loaded::after {
-            animation: slideDownBackground 0.5s ease-out forwards;
-        }
-
-        @keyframes slideDownBackground {
-            from {
-                clip-path: inset(0 0 100% 0);
-            }
-            to {
-                clip-path: inset(0 0 0 0);
-            }
         }
 
         body::after {
@@ -84,21 +58,6 @@
             height: 100vh;
             width: 100vw;
             background: transparent;
-            opacity: 0;
-            animation: none;
-        }
-
-        body.content-ready .stadium-container {
-            animation: fadeInContent 0.4s ease-in 0.5s forwards;
-        }
-
-        @keyframes fadeInContent {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
         }
 
         .top-section {
@@ -1205,27 +1164,6 @@
             if (el) el.innerHTML = '<pre style="padding:20px;white-space:pre-wrap;color:#c00;font-family:monospace;">Ошибка: ' + (msg || '') + '\n' + (err && err.stack ? err.stack : '') + '</pre>';
             return false;
         };
-        // Показываем контент не позднее чем через 300 ms (на случай долгой загрузки фона или ошибки скрипта)
-        setTimeout(function() {
-            document.body.classList.add('background-loaded');
-            document.body.classList.add('content-ready');
-        }, 300);
-        // Ждем загрузки фонового изображения перед началом анимации
-        const bgImage = new Image();
-        bgImage.onload = function() {
-            document.body.classList.add('background-loaded');
-            setTimeout(() => {
-                document.body.classList.add('content-ready');
-            }, 500);
-        };
-        bgImage.onerror = function() {
-            document.body.classList.add('background-loaded');
-            setTimeout(() => {
-                document.body.classList.add('content-ready');
-            }, 500);
-        };
-        bgImage.src = '/public/img/memberspage_bg.jpg';
-
         if (typeof io === 'undefined') {
             document.body.innerHTML = '<pre style="padding:20px;color:#c00;">Не удалось загрузить Socket.IO. Проверьте, что страница открыта с того же домена, что и сервер (не file://).</pre>';
             throw new Error('Socket.IO not loaded');
