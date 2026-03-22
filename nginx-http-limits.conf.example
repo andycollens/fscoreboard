@@ -1,0 +1,6 @@
+# Скопируйте эти строки ОДИН раз в блок http { } файла /etc/nginx/nginx.conf
+# (или подключите через include в http {}), затем в server {} можно использовать
+# limit_req zone=api ... и limit_req zone=control ...
+#
+# limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+# limit_req_zone $binary_remote_addr zone=control:10m rate=5r/s;

@@ -26,6 +26,18 @@ pm2 save
 pm2 startup
 ```
 
+## Ошибка в браузере: `net::ERR_CONTENT_LENGTH_MISMATCH` (картинки, MP3, логотипы)
+
+Чаще всего это **не баг Node**, а **прокси Nginx**: при `proxy_buffering on` (по умолчанию) ответ со статикой или с **Range (206)** для аудио может обрезаться, и длина тела не совпадает с заголовком `Content-Length`.
+
+**Что сделать на сервере:**
+
+1. В конфиге сайта добавьте блок `location ^~ /public/` с **`proxy_buffering off`** и **`gzip off`** (см. актуальный `nginx-scoreboard.conf` в репозитории). Префикс `^~` важен, чтобы запросы к `/public/...` не перехватывались regex-локацией для `*.jpg` без отключения буферизации.
+
+2. Проверка: `sudo nginx -t && sudo systemctl reload nginx`
+
+3. Убедитесь, что директивы `limit_req_zone` объявлены в **`http {}`**, а не внутри `server {}` (пример — `nginx-http-limits.conf.example`).
+
 ## Мониторинг системы
 
 ### Проверка состояния
