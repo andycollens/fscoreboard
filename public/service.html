@@ -1130,7 +1130,7 @@
             <div class="roster-team1" id="rosterTeam1">
                 <div class="roster-coach-label">Тренер:</div>
                 <div class="roster-coach-name" id="rosterTeam1Coach"></div>
-                <div class="roster-players-label-row" data-team="team1" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Один клик — скрыть/показать отмеченных. Четыре быстрых — все вычеркнуть или снова все в игре">
+                <div class="roster-players-label-row" data-team="team1" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Один клик — скрыть/показать отмеченных (если все отмечены как не играющие — список не скрывается). Четыре быстрых — все отметить или снова все в игре">
                     <span class="roster-players-label">Игроки:</span>
                 </div>
                 <div class="roster-players-list" id="rosterTeam1Players"></div>
@@ -1141,7 +1141,7 @@
             <div class="roster-team2" id="rosterTeam2">
                 <div class="roster-coach-label">Тренер:</div>
                 <div class="roster-coach-name" id="rosterTeam2Coach"></div>
-                <div class="roster-players-label-row" data-team="team2" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Один клик — скрыть/показать отмеченных. Четыре быстрых — все вычеркнуть или снова все в игре">
+                <div class="roster-players-label-row" data-team="team2" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Один клик — скрыть/показать отмеченных (если все отмечены как не играющие — список не скрывается). Четыре быстрых — все отметить или снова все в игре">
                     <span class="roster-players-label">Игроки:</span>
                 </div>
                 <div class="roster-players-list" id="rosterTeam2Players"></div>
@@ -1421,6 +1421,13 @@
             return rosterPlayerKeysFromList(players, teamId);
         }
 
+        function allPlayersDimmed(teamKey) {
+            const keys = collectPlayerKeysForTeam(teamKey);
+            if (keys.length === 0) return false;
+            const set = window.rosterExcludedByTeam[teamKey];
+            return keys.every(k => set.has(k));
+        }
+
         function trackScoreChangeFromData(data) {
             if (!data) return;
             let s1 = 0;
@@ -1619,6 +1626,9 @@
 
         function toggleRosterEyeForTeam(teamKey) {
             if (window.rosterEyeClosedByTeam[teamKey] === undefined) window.rosterEyeClosedByTeam[teamKey] = false;
+            const currentlyClosed = !!window.rosterEyeClosedByTeam[teamKey];
+            /* Не переводим в «скрыть неиграющих», если все отмечены — иначе список пустой; оставляем всех видимыми тускло */
+            if (!currentlyClosed && allPlayersDimmed(teamKey)) return;
             window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
             const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
             const labelRow = document.querySelector('.roster-players-label-row[data-team="' + teamKey + '"]');
@@ -1671,6 +1681,10 @@
                 set.clear();
             } else {
                 keys.forEach(k => set.add(k));
+                /* После «все не играют» не держим режим скрытия — иначе пустой список и лишний клик по метке */
+                if (keys.length > 0 && keys.every(k => set.has(k))) {
+                    window.rosterEyeClosedByTeam[teamKey] = false;
+                }
             }
             if (!latestData) return;
             const team1Id = latestData.team1Id || null;
@@ -1778,8 +1792,17 @@
                 const row = document.querySelector('.roster-players-label-row[data-team="' + teamKey + '"]');
                 const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
                 if (row && list) {
-                    const closed = window.rosterEyeClosedByTeam[teamKey];
-                    row.classList.toggle('roster-players-label-row--hidden', !!closed);
+                    if (window.rosterEyeClosedByTeam[teamKey] && allPlayersDimmed(teamKey)) {
+                        window.rosterEyeClosedByTeam[teamKey] = false;
+                        if (latestData) {
+                            const team1Id = latestData.team1Id || null;
+                            const team2Id = latestData.team2Id || null;
+                            if (teamKey === 'team1') renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
+                            else renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
+                        }
+                    }
+                    const closed = !!window.rosterEyeClosedByTeam[teamKey];
+                    row.classList.toggle('roster-players-label-row--hidden', closed);
                     row.setAttribute('aria-label', closed ? 'Показать отмеченных' : 'Скрыть отмеченных');
                     if (closed) rebuildRosterListVisibleOnly(teamKey);
                     list.classList.remove('hide-excluded');
