@@ -471,6 +471,11 @@
             color: rgba(176, 176, 176, 0.5);
         }
 
+        .roster-player-item.roster-player-dimmed .roster-player-name {
+            text-decoration: line-through;
+            text-decoration-color: rgba(255, 255, 255, 0.45);
+        }
+
         .roster-player-item {
             cursor: pointer;
         }
@@ -1130,7 +1135,7 @@
             <div class="roster-team1" id="rosterTeam1">
                 <div class="roster-coach-label">Тренер:</div>
                 <div class="roster-coach-name" id="rosterTeam1Coach"></div>
-                <div class="roster-players-label-row" data-team="team1" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Клик: скрыть или показать отмеченных">
+                <div class="roster-players-label-row" data-team="team1" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Один клик — скрыть/показать отмеченных. Четыре быстрых — все вычеркнуть или снова все в игре">
                     <span class="roster-players-label">Игроки:</span>
                 </div>
                 <div class="roster-players-list" id="rosterTeam1Players"></div>
@@ -1141,7 +1146,7 @@
             <div class="roster-team2" id="rosterTeam2">
                 <div class="roster-coach-label">Тренер:</div>
                 <div class="roster-coach-name" id="rosterTeam2Coach"></div>
-                <div class="roster-players-label-row" data-team="team2" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Клик: скрыть или показать отмеченных">
+                <div class="roster-players-label-row" data-team="team2" role="button" tabindex="0" aria-label="Скрыть/показать отмеченных игроков" title="Один клик — скрыть/показать отмеченных. Четыре быстрых — все вычеркнуть или снова все в игре">
                     <span class="roster-players-label">Игроки:</span>
                 </div>
                 <div class="roster-players-list" id="rosterTeam2Players"></div>
@@ -1374,6 +1379,53 @@
             }
         }
 
+        /** Ключи игроков в том же формате, что в renderRostersMode (для четырёхкликового «все / снять») */
+        function rosterPlayerKeysFromList(players, teamId) {
+            if (!players || !Array.isArray(players) || players.length === 0) return [];
+            const hasAltNumbers = players.some(p => {
+                if (typeof p === 'string') return false;
+                return p.number && String(p.number).includes('/');
+            });
+            let useAltNumbers = false;
+            if (hasAltNumbers) {
+                if (teamId) {
+                    useAltNumbers = localStorage.getItem(`team-${teamId}-useAltNumbers`) === 'true';
+                } else {
+                    useAltNumbers = localStorage.getItem('globalUseAltNumbers') === 'true';
+                }
+            }
+            const keys = [];
+            players.forEach(item => {
+                if (!item) return;
+                let num = '';
+                let name = '';
+                if (typeof item === 'string') {
+                    const parts = item.trim().split(/\s+/);
+                    num = parts[0].match(/^\d+$/) ? parts[0] : '—';
+                    name = num !== '—' ? parts.slice(1).join(' ') : item;
+                } else {
+                    num = item.number != null && item.number !== '' ? String(item.number) : '—';
+                    name = item.name || '';
+                    if (num && num !== '—' && num.includes('/')) {
+                        const [num1, num2] = num.split('/');
+                        num = useAltNumbers ? (num2 || num1) : (num1 || '');
+                    }
+                }
+                const numDisplay = (num === '' || num == null) ? '—' : num;
+                keys.push(numDisplay + '|' + name);
+            });
+            return keys;
+        }
+
+        function collectPlayerKeysForTeam(teamKey) {
+            if (!latestData) return [];
+            const players = teamKey === 'team1'
+                ? (latestData.team1Players || latestData.players1 || [])
+                : (latestData.team2Players || latestData.players2 || []);
+            const teamId = teamKey === 'team1' ? latestData.team1Id : latestData.team2Id;
+            return rosterPlayerKeysFromList(players, teamId);
+        }
+
         function trackScoreChangeFromData(data) {
             if (!data) return;
             let s1 = 0;
@@ -1565,6 +1617,75 @@
             window.rosterEyeClosedByTeam = { team1: false, team2: false };
         }
 
+        const rosterLabelClickDebounce = {
+            team1: { n: 0, lastAt: 0, timer: null },
+            team2: { n: 0, lastAt: 0, timer: null }
+        };
+
+        function toggleRosterEyeForTeam(teamKey) {
+            if (window.rosterEyeClosedByTeam[teamKey] === undefined) window.rosterEyeClosedByTeam[teamKey] = false;
+            window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
+            const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
+            const labelRow = document.querySelector('.roster-players-label-row[data-team="' + teamKey + '"]');
+            if (window.rosterEyeClosedByTeam[teamKey]) {
+                rebuildRosterListVisibleOnly(teamKey);
+                list.classList.remove('hide-excluded');
+            } else if (latestData) {
+                const team1Id = latestData.team1Id || null;
+                const team2Id = latestData.team2Id || null;
+                if (teamKey === 'team1') renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
+                else renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
+                list.classList.remove('hide-excluded');
+            }
+            if (labelRow) {
+                labelRow.classList.toggle('roster-players-label-row--hidden', window.rosterEyeClosedByTeam[teamKey]);
+                labelRow.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
+            }
+            requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
+        }
+
+        function quadClickRosterLabel(teamKey) {
+            const keys = collectPlayerKeysForTeam(teamKey);
+            if (keys.length === 0) return;
+            const set = window.rosterExcludedByTeam[teamKey];
+            const allExcluded = keys.every(k => set.has(k));
+            if (!allExcluded) {
+                let s1 = 0;
+                let s2 = 0;
+                if (latestData) {
+                    if (typeof latestData.score1 === 'number' || typeof latestData.score2 === 'number') {
+                        s1 = Number(latestData.score1) || 0;
+                        s2 = Number(latestData.score2) || 0;
+                    } else {
+                        if (latestData.team1 && typeof latestData.team1.score !== 'undefined') s1 = Number(latestData.team1.score) || 0;
+                        if (latestData.team2 && typeof latestData.team2.score !== 'undefined') s2 = Number(latestData.team2.score) || 0;
+                    }
+                }
+                const scoreNotZero = s1 !== 0 || s2 !== 0;
+                const timerRunning = latestData && isTimerRunningFromData(latestData);
+                let timerHasTime = false;
+                if (latestData) {
+                    if (typeof latestData.timerSeconds === 'number' && isFinite(latestData.timerSeconds) && latestData.timerSeconds > 0) timerHasTime = true;
+                    else if (typeof latestData.time === 'string' && latestData.time.trim() !== '' && latestData.time.trim() !== '00:00') timerHasTime = true;
+                }
+                if (scoreNotZero || timerRunning || timerHasTime) {
+                    if (!confirm('На табло выставлен счёт или на таймере не нулевое время. Отметить всех игроков этой команды как не участвующих в матче?')) return;
+                }
+            }
+            if (allExcluded) {
+                set.clear();
+            } else {
+                keys.forEach(k => set.add(k));
+            }
+            if (!latestData) return;
+            const team1Id = latestData.team1Id || null;
+            const team2Id = latestData.team2Id || null;
+            if (teamKey === 'team1') renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
+            else renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
+            syncRosterLabelRowState();
+            requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
+        }
+
         document.addEventListener('click', function(e) {
             const item = e.target.closest('.roster-player-item');
             if (item) {
@@ -1609,22 +1730,24 @@
                 e.preventDefault();
                 const teamKey = labelRow.getAttribute('data-team');
                 if (!teamKey) return;
-                if (window.rosterEyeClosedByTeam[teamKey] === undefined) window.rosterEyeClosedByTeam[teamKey] = false;
-                window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
-                const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
-                if (window.rosterEyeClosedByTeam[teamKey]) {
-                    rebuildRosterListVisibleOnly(teamKey);
-                    list.classList.remove('hide-excluded');
-                } else if (latestData) {
-                    const team1Id = latestData.team1Id || null;
-                    const team2Id = latestData.team2Id || null;
-                    if (teamKey === 'team1') renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
-                    else renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
-                    list.classList.remove('hide-excluded');
+                const st = rosterLabelClickDebounce[teamKey];
+                const now = Date.now();
+                clearTimeout(st.timer);
+                if (!st.n || now - st.lastAt > 500) {
+                    st.n = 1;
+                } else {
+                    st.n += 1;
                 }
-                labelRow.classList.toggle('roster-players-label-row--hidden', window.rosterEyeClosedByTeam[teamKey]);
-                labelRow.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
-                requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
+                st.lastAt = now;
+                if (st.n >= 4) {
+                    st.n = 0;
+                    quadClickRosterLabel(teamKey);
+                    return;
+                }
+                st.timer = setTimeout(function() {
+                    if (st.n === 1) toggleRosterEyeForTeam(teamKey);
+                    st.n = 0;
+                }, 420);
             }
         });
 
@@ -1634,22 +1757,7 @@
             e.preventDefault();
             const teamKey = labelRow.getAttribute('data-team');
             if (!teamKey) return;
-            if (window.rosterEyeClosedByTeam[teamKey] === undefined) window.rosterEyeClosedByTeam[teamKey] = false;
-            window.rosterEyeClosedByTeam[teamKey] = !window.rosterEyeClosedByTeam[teamKey];
-            const list = teamKey === 'team1' ? rosterTeam1Players : rosterTeam2Players;
-            if (window.rosterEyeClosedByTeam[teamKey]) {
-                rebuildRosterListVisibleOnly(teamKey);
-                list.classList.remove('hide-excluded');
-            } else if (latestData) {
-                const team1Id = latestData.team1Id || null;
-                const team2Id = latestData.team2Id || null;
-                if (teamKey === 'team1') renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
-                else renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
-                list.classList.remove('hide-excluded');
-            }
-            labelRow.classList.toggle('roster-players-label-row--hidden', window.rosterEyeClosedByTeam[teamKey]);
-            labelRow.setAttribute('aria-label', window.rosterEyeClosedByTeam[teamKey] ? 'Показать отмеченных' : 'Скрыть отмеченных');
-            requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
+            toggleRosterEyeForTeam(teamKey);
         });
 
         function rebuildRosterListVisibleOnly(teamKey) {
