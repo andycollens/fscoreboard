@@ -1181,6 +1181,30 @@
         let lastScoreChangeAt = 0;
         let lastTimerRunningFlag = null;
 
+        function applyRosterExcludedFromServer(data) {
+            if (!data || typeof data !== 'object') return;
+            if (typeof window.rosterExcludedByTeam === 'undefined') {
+                window.rosterExcludedByTeam = { team1: new Set(), team2: new Set() };
+            }
+            if (Array.isArray(data.rosterExcludedTeam1)) {
+                window.rosterExcludedByTeam.team1 = new Set(data.rosterExcludedTeam1.map(String));
+            }
+            if (Array.isArray(data.rosterExcludedTeam2)) {
+                window.rosterExcludedByTeam.team2 = new Set(data.rosterExcludedTeam2.map(String));
+            }
+        }
+
+        function emitRosterExcludedToServer() {
+            try {
+                if (typeof socket === 'undefined' || !socket.connected) return;
+                if (typeof window.rosterExcludedByTeam === 'undefined') return;
+                socket.emit('rosterExcludedUpdate', {
+                    team1: Array.from(window.rosterExcludedByTeam.team1 || []),
+                    team2: Array.from(window.rosterExcludedByTeam.team2 || [])
+                });
+            } catch (e) { console.warn('emitRosterExcludedToServer', e); }
+        }
+
         function escapeHtml(str = '') {
             return str
                 .replace(/&/g, '&amp;')
@@ -1464,6 +1488,7 @@
 
         function updateDisplay(data) {
             if (!data || typeof data !== 'object') return;
+            applyRosterExcludedFromServer(data);
             if (typeof window.pruneBreakMusicTeamTracks === 'function') window.pruneBreakMusicTeamTracks(data.team1Id, data.team2Id);
             trackScoreChangeFromData(data);
             const nowTimerRunning = isTimerRunningFromData(data);
@@ -1492,7 +1517,9 @@
                 t1: data.team1Staff || data.staff1 || [],
                 t2: data.team2Staff || data.staff2 || [],
                 p1: data.team1Players || data.players1 || [],
-                p2: data.team2Players || data.players2 || []
+                p2: data.team2Players || data.players2 || [],
+                ex1: data.rosterExcludedTeam1 || [],
+                ex2: data.rosterExcludedTeam2 || []
             });
             let rosterContentChanged = false;
             if (rosterSig !== lastRosterSignature && rosterTeam1Coach && rosterTeam1Players && rosterTeam2Coach && rosterTeam2Players) {
@@ -1692,6 +1719,7 @@
             if (teamKey === 'team1') renderRostersMode(rosterTeam1Coach, rosterTeam1Players, latestData.team1Staff || latestData.staff1 || [], latestData.team1Players || latestData.players1 || [], false, team1Id);
             else renderRostersMode(rosterTeam2Coach, rosterTeam2Players, latestData.team2Staff || latestData.staff2 || [], latestData.team2Players || latestData.players2 || [], true, team2Id);
             syncRosterLabelRowState();
+            emitRosterExcludedToServer();
             requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
         }
 
@@ -1731,6 +1759,7 @@
                     set.add(key);
                     item.classList.add('roster-player-dimmed');
                 }
+                emitRosterExcludedToServer();
                 requestAnimationFrame(() => requestAnimationFrame(() => applyManyPlayersByOverflow()));
                 return;
             }

@@ -556,7 +556,9 @@
                 .replace(/'/g, '&#39;');
         }
 
-        function renderRostersMode(coachEl, playersEl, staff, players, isRightSide = false, teamId = null) {
+        function renderRostersMode(coachEl, playersEl, staff, players, isRightSide = false, teamId = null, excludedKeys = null) {
+            if (excludedKeys && !Array.isArray(excludedKeys)) excludedKeys = null;
+            const excludedSet = excludedKeys && excludedKeys.length ? new Set(excludedKeys.map(String)) : null;
             // Заполняем тренера
             if (coachEl) {
                 if (staff && Array.isArray(staff) && staff.length > 0) {
@@ -619,6 +621,8 @@
                                 }
                             }
                             const numDisplay = (num === '' || num == null) ? '—' : num;
+                            const playerKey = numDisplay + '|' + name;
+                            if (excludedSet && excludedSet.has(playerKey)) return '';
                             if (isRightSide) {
                                 return `<div class="roster-player-item">
                                     <span class="roster-player-name">${escapeHtml(name)}</span>
@@ -682,7 +686,9 @@
                 t1: data.team1Staff || data.staff1 || [],
                 t2: data.team2Staff || data.staff2 || [],
                 p1: data.team1Players || data.players1 || [],
-                p2: data.team2Players || data.players2 || []
+                p2: data.team2Players || data.players2 || [],
+                ex1: data.rosterExcludedTeam1 || [],
+                ex2: data.rosterExcludedTeam2 || []
             });
             if (rosterSig !== lastRosterSignature && rosterTeam1Coach && rosterTeam1Players && rosterTeam2Coach && rosterTeam2Players) {
                 lastRosterSignature = rosterSig;
@@ -694,7 +700,8 @@
                     data.team1Staff || data.staff1 || [],
                     data.team1Players || data.players1 || [],
                     false,
-                    team1Id
+                    team1Id,
+                    data.rosterExcludedTeam1 || []
                 );
                 renderRostersMode(
                     rosterTeam2Coach,
@@ -702,7 +709,8 @@
                     data.team2Staff || data.staff2 || [],
                     data.team2Players || data.players2 || [],
                     true,
-                    team2Id
+                    team2Id,
+                    data.rosterExcludedTeam2 || []
                 );
             }
 
@@ -951,7 +959,8 @@
                                 latestData.team1Staff || latestData.staff1 || [],
                                 latestData.team1Players || latestData.players1 || [],
                                 false,
-                                team1Id
+                                team1Id,
+                                latestData.rosterExcludedTeam1 || []
                             );
                         }
                         
@@ -964,7 +973,8 @@
                                 latestData.team2Staff || latestData.staff2 || [],
                                 latestData.team2Players || latestData.players2 || [],
                                 true,
-                                team2Id
+                                team2Id,
+                                latestData.rosterExcludedTeam2 || []
                             );
                         }
                         

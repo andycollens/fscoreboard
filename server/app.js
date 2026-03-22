@@ -359,7 +359,9 @@ let state = {
   penaltyActive: false,
   penaltyMode: "adult",
   penaltyMaxAttempts: 5,
-  penaltySeries: null
+  penaltySeries: null,
+  rosterExcludedTeam1: [],
+  rosterExcludedTeam2: []
 };
 
 // Обратный отсчёт перед стартом матча: ждём countdownFinished от табло
@@ -382,6 +384,8 @@ if (fs.existsSync(SAVE_PATH)) {
     // Убеждаемся, что teamId поля инициализированы (для старых файлов)
     if (state.team1Id === undefined) state.team1Id = null;
     if (state.team2Id === undefined) state.team2Id = null;
+    if (!Array.isArray(state.rosterExcludedTeam1)) state.rosterExcludedTeam1 = [];
+    if (!Array.isArray(state.rosterExcludedTeam2)) state.rosterExcludedTeam2 = [];
   } catch (e) {
     console.error("Ошибка чтения state.json", e);
   }
@@ -447,6 +451,8 @@ function reloadStateFromDisk() {
       Object.assign(state, savedData);
       if (state.team1Id === undefined) state.team1Id = null;
       if (state.team2Id === undefined) state.team2Id = null;
+      if (!Array.isArray(state.rosterExcludedTeam1)) state.rosterExcludedTeam1 = [];
+      if (!Array.isArray(state.rosterExcludedTeam2)) state.rosterExcludedTeam2 = [];
     } catch (e) {
       console.error('Ошибка чтения state.json после restore', e);
     }
@@ -1821,7 +1827,8 @@ io.on('connection', (socket) => {
       'team1Id', 'team2Id',
       'team1Players', 'team1Staff', 'team2Players', 'team2Staff',
       'penaltyActive', 'penaltyMode', 'penaltyMaxAttempts', 'penaltySeries',
-      'presetId', 'matchDate', 'tournamentId'
+      'presetId', 'matchDate', 'tournamentId',
+      'rosterExcludedTeam1', 'rosterExcludedTeam2'
     ];
     keys.forEach(k => {
       if (k in newState) state[k] = newState[k];
@@ -1908,7 +1915,18 @@ io.on('connection', (socket) => {
     state.penaltyMode = "adult";
     state.penaltyMaxAttempts = 5;
     state.penaltySeries = null;
+    state.rosterExcludedTeam1 = [];
+    state.rosterExcludedTeam2 = [];
 
+    io.emit('scoreboardUpdate', enrichStateWithConfig(state));
+    scheduleSaveState();
+  });
+
+  // Состав: кто отмечен как не играющий (с панели service) — для табло и members
+  socket.on('rosterExcludedUpdate', (payload) => {
+    if (!payload || typeof payload !== 'object') return;
+    if (Array.isArray(payload.team1)) state.rosterExcludedTeam1 = payload.team1.map((x) => String(x));
+    if (Array.isArray(payload.team2)) state.rosterExcludedTeam2 = payload.team2.map((x) => String(x));
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
     scheduleSaveState();
   });
@@ -1935,7 +1953,9 @@ io.on('connection', (socket) => {
       penaltyActive: false,
       penaltyMode: "adult",
       penaltyMaxAttempts: 5,
-      penaltySeries: null
+      penaltySeries: null,
+      rosterExcludedTeam1: [],
+      rosterExcludedTeam2: []
     };
 
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
