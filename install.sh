@@ -517,6 +517,21 @@ server {
         proxy_send_timeout 300;
     }
 
+    # Статика /public/ — без буферизации прокси (net::ERR_CONTENT_LENGTH_MISMATCH в Chrome)
+    location ^~ /public/ {
+        proxy_pass http://localhost:$PORT;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        gzip off;
+    }
+
     # Все остальные запросы проксируются на Express сервер
     location / {
         proxy_pass http://localhost:$PORT;

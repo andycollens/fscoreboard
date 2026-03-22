@@ -32,11 +32,13 @@ pm2 startup
 
 **Что сделать на сервере:**
 
-1. В конфиге сайта добавьте блок `location ^~ /public/` с **`proxy_buffering off`** и **`gzip off`** (см. актуальный `nginx-scoreboard.conf` в репозитории). Префикс `^~` важен, чтобы запросы к `/public/...` не перехватывались regex-локацией для `*.jpg` без отключения буферизации.
+1. Скрипт **`update.sh`** (команда `curl … | sudo bash`) **автоматически добавляет** блок `location ^~ /public/` с `proxy_buffering off`, если его ещё нет. После обновления выполните обновление ещё раз или добавьте блок вручную по образцу `nginx-scoreboard.conf`.
 
-2. Проверка: `sudo nginx -t && sudo systemctl reload nginx`
+2. В конфиге сайта должен быть блок `location ^~ /public/` с **`proxy_buffering off`** и **`gzip off`**. Префикс `^~` важен, чтобы запросы к `/public/...` не перехватывались regex-локацией для `*.jpg` без отключения буферизации.
 
-3. Убедитесь, что директивы `limit_req_zone` объявлены в **`http {}`**, а не внутри `server {}` (пример — `nginx-http-limits.conf.example`).
+3. Проверка: `sudo nginx -t && sudo systemctl reload nginx`
+
+4. Убедитесь, что директивы `limit_req_zone` объявлены в **`http {}`**, а не внутри `server {}` (пример — `nginx-http-limits.conf.example`).
 
 ## Мониторинг системы
 

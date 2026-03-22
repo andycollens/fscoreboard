@@ -387,6 +387,53 @@ PATCHEOF
     fi
 }
 
+# Отключить proxy_buffering для /public/ (картинки, звук, логотипы) — устраняет
+# net::ERR_CONTENT_LENGTH_MISMATCH в Chrome при проксировании на Node (см. OPERATIONS.md)
+patch_nginx_public_static() {
+    local cfg=""
+    for f in /etc/nginx/sites-enabled/fscoreboard /etc/nginx/sites-available/fscoreboard; do
+        if [ -f "$f" ]; then cfg="$f"; break; fi
+    done
+    [ -n "$cfg" ] || return 0
+    if grep -qE 'location[[:space:]]+\^~[[:space:]]+/public/' "$cfg" 2>/dev/null; then
+        return 0
+    fi
+    local port=$(grep -o 'PORT=[0-9]*' /opt/fscoreboard/.env 2>/dev/null | cut -d'=' -f2 || echo "3002")
+    print_step "Добавление в Nginx: /public/ без proxy_buffering (исправление ERR_CONTENT_LENGTH_MISMATCH)..."
+    local tmpblock=$(mktemp)
+    cat > "$tmpblock" << PATCHEOF
+    # Статика /public/ — без буферизации прокси (иначе Chrome: net::ERR_CONTENT_LENGTH_MISMATCH)
+    location ^~ /public/ {
+        proxy_pass http://127.0.0.1:$port;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        gzip off;
+    }
+
+PATCHEOF
+    awk -v blockfile="$tmpblock" '
+        /^[[:space:]]*location \/ \{/ && !done {
+            while ((getline line < blockfile) > 0) print line
+            close(blockfile)
+            done=1
+        }
+        { print }
+    ' "$cfg" > "$cfg.new" && mv "$cfg.new" "$cfg"
+    rm -f "$tmpblock"
+    if grep -qE 'location[[:space:]]+\^~[[:space:]]+/public/' "$cfg" 2>/dev/null; then
+        print_success "Блок ^~ /public/ добавлен в конфиг Nginx"
+    else
+        print_warning "Не удалось добавить ^~ /public/ автоматически; см. nginx-scoreboard.conf"
+    fi
+}
+
 # Добавить в Nginx лимит загрузки командных треков (50 МБ), если ещё нет
 patch_nginx_team_track_config() {
     local cfg=""
@@ -437,6 +484,7 @@ reload_nginx() {
     if [ -f "/etc/nginx/sites-enabled/fscoreboard" ] || [ -f "/etc/nginx/sites-available/fscoreboard" ]; then
         patch_nginx_ads_config
         patch_nginx_team_track_config
+        patch_nginx_public_static
         print_step "Перезагрузка Nginx..."
         if nginx -t 2>/dev/null; then
             systemctl reload nginx
