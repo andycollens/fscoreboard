@@ -12,6 +12,13 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
+});
+
 // ====== Конфигурация ======
 const PORT = process.env.PORT || 3002;
 const TOKEN = process.env.TOKEN || 'MySecret111';
@@ -44,106 +51,58 @@ if (!fs.existsSync(TEAM_TRACKS_DIR)) {
   fs.mkdirSync(TEAM_TRACKS_DIR, { recursive: true });
 }
 
-// Загрузка конфигурации (токены)
-let config = { token: TOKEN, stadiumToken: STADIUM_TOKEN, serviceToken: SERVICE_TOKEN_DEFAULT };
-if (fs.existsSync(CONFIG_PATH)) {
-  try {
-    const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-    config = { ...config, ...savedConfig };
-  } catch (error) {
-    console.error('Ошибка загрузки конфигурации:', error);
+// ====== Кэш config.json в памяти (избегаем readFileSync на каждый HTTP-запрос) ======
+let _cachedConfig = { token: TOKEN, stadiumToken: STADIUM_TOKEN, serviceToken: SERVICE_TOKEN_DEFAULT };
+
+function _loadConfigFromDisk() {
+  if (fs.existsSync(CONFIG_PATH)) {
+    try {
+      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+      _cachedConfig = { ..._cachedConfig, ...savedConfig };
+    } catch (error) {
+      console.error('Ошибка загрузки конфигурации:', error);
+    }
   }
 }
 
+function _saveConfigToDisk() {
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(_cachedConfig, null, 2));
+}
+
+_loadConfigFromDisk();
+
+let config = _cachedConfig;
 let stadiumModeState = config.stadiumMode || 'scoreboard';
 
-// Функция для получения актуального токена управления
 function getActualToken() {
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      return savedConfig.token || TOKEN;
-    } catch (error) {
-      return TOKEN;
-    }
-  }
-  return TOKEN;
+  return _cachedConfig.token || TOKEN;
 }
 
-// Функция для получения актуального токена stadium
 function getActualStadiumToken() {
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      return savedConfig.stadiumToken || STADIUM_TOKEN;
-    } catch (error) {
-      return STADIUM_TOKEN;
-    }
-  }
-  return STADIUM_TOKEN;
+  return _cachedConfig.stadiumToken || STADIUM_TOKEN;
 }
 
-// Функция для получения актуального токена service (если не задан — генерируем и сохраняем)
 function getActualServiceToken() {
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      let serviceToken = savedConfig.serviceToken || SERVICE_TOKEN_DEFAULT;
-      if (!serviceToken || serviceToken === '') {
-        serviceToken = crypto.randomBytes(16).toString('hex');
-        const toSave = { ...savedConfig, serviceToken };
-        fs.writeFileSync(CONFIG_PATH, JSON.stringify(toSave, null, 2));
-        console.log('Service token сгенерирован и сохранён в config.json');
-      }
-      return serviceToken;
-    } catch (error) {
-      return SERVICE_TOKEN_DEFAULT || crypto.randomBytes(16).toString('hex');
-    }
+  let serviceToken = _cachedConfig.serviceToken || SERVICE_TOKEN_DEFAULT;
+  if (!serviceToken || serviceToken === '') {
+    serviceToken = crypto.randomBytes(16).toString('hex');
+    _cachedConfig.serviceToken = serviceToken;
+    _saveConfigToDisk();
+    console.log('Service token сгенерирован и сохранён в config.json');
   }
-  const generated = SERVICE_TOKEN_DEFAULT || crypto.randomBytes(16).toString('hex');
-  try {
-    const base = { token: TOKEN, stadiumToken: STADIUM_TOKEN };
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify({ ...base, serviceToken: generated }, null, 2));
-  } catch (e) { /* ignore */ }
-  return generated;
+  return serviceToken;
 }
 
-// Функция для получения tournamentTitle из конфига
 function getTournamentTitle() {
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      return savedConfig.tournamentTitle || null;
-    } catch (error) {
-      return null;
-    }
-  }
-  return null;
+  return _cachedConfig.tournamentTitle || null;
 }
 
-// Обратный отсчёт перед стартом матча (5…0 → «МАТЧ НАЧАЛСЯ!»)
 function getCountdownEnabled() {
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      return !!savedConfig.countdownEnabled;
-    } catch (error) {
-      return false;
-    }
-  }
-  return false;
+  return !!_cachedConfig.countdownEnabled;
 }
 
 function getGoalAnimationEnabled() {
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      return !!savedConfig.goalAnimationEnabled;
-    } catch (error) {
-      return false;
-    }
-  }
-  return false;
+  return !!_cachedConfig.goalAnimationEnabled;
 }
 
 function _presetMatchesCurrent(p, state) {
@@ -518,6 +477,7 @@ function reloadStateFromDisk() {
   } else {
     teams = [];
   }
+  _loadConfigFromDisk();
 }
 
 function resolveWinnerTeamById(compositeId) {
@@ -567,6 +527,28 @@ function resolveWinnerTeamById(compositeId) {
   };
 }
 
+// ====== Неблокирующее сохранение state.json ======
+let _stateSavePending = false;
+let _stateSaveInFlight = false;
+
+function scheduleSaveState() {
+  _stateSavePending = true;
+}
+
+function _flushSaveState() {
+  if (!_stateSavePending || _stateSaveInFlight) return;
+  _stateSavePending = false;
+  _stateSaveInFlight = true;
+  const data = JSON.stringify(state);
+  fs.writeFile(SAVE_PATH, data, (err) => {
+    _stateSaveInFlight = false;
+    if (err) console.error('Ошибка сохранения state.json:', err);
+    if (_stateSavePending) _flushSaveState();
+  });
+}
+
+setInterval(_flushSaveState, 2000);
+
 // ====== Таймер — тикает каждую секунду ======
 setInterval(() => {
   // Во время обратного отсчёта 5→0 таймер не тикает
@@ -583,8 +565,7 @@ setInterval(() => {
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
   }
   
-  // Сохраняем состояние
-  fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+  scheduleSaveState();
 }, 1000);
 
 // ====== Middleware ======
@@ -594,6 +575,11 @@ app.use(express.urlencoded({ extended: true }));
 // Ignore favicon requests to avoid 404 errors
 app.get('/favicon.ico', (req, res) => {
   res.status(204).end();
+});
+
+// Healthcheck для nginx/Docker (см. OPERATIONS.md, docker-compose healthcheck)
+app.get('/healthz', (_, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // ====== Раздача статики ======
@@ -679,11 +665,7 @@ app.get('/api/jingles', (_, res) => {
 // ----- Музыка для перерывов (локальная папка с MP3) -----
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 function getBreakMusicDir() {
-  let cfg = {};
-  try {
-    if (fs.existsSync(CONFIG_PATH)) cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-  } catch (e) { return null; }
-  const raw = (cfg.radioMusicPath || '').trim();
+  const raw = (_cachedConfig.radioMusicPath || '').trim();
   if (!raw) return null;
   const resolved = path.resolve(PROJECT_ROOT, raw);
   if (!resolved.startsWith(PROJECT_ROOT)) return null;
@@ -1795,7 +1777,7 @@ io.on('connection', (socket) => {
           state.timerStartTS = null; // тикать начнём после countdownFinished
           io.emit('startCountdown');
           io.emit('scoreboardUpdate', enrichStateWithConfig(state));
-          fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+          scheduleSaveState();
           return;
         }
         state.timerStartTS = Date.now() - (state.timerSeconds * 1000);
@@ -1811,7 +1793,7 @@ io.on('connection', (socket) => {
           const ss = (state.timerSeconds % 60).toString().padStart(2, '0');
           state.time = `${mm}:${ss}`;
           io.emit('scoreboardUpdate', enrichStateWithConfig(state));
-          fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+          scheduleSaveState();
           return;
         }
         state.timerSeconds = state.timerStartTS
@@ -1872,7 +1854,7 @@ io.on('connection', (socket) => {
     }
 
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
-    fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+    scheduleSaveState();
   });
 
   // Табло закончило показ обратного отсчёта 5→0 → «МАТЧ НАЧАЛСЯ!» — стартуем таймер
@@ -1884,10 +1866,10 @@ io.on('connection', (socket) => {
     state.time = '00:00';
     const newState = enrichStateWithConfig(state);
     io.emit('scoreboardUpdate', newState);
-    fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+    scheduleSaveState();
   });
 
-  // Применение предустановки
+  // Применение предустановки (legacy handler — control.html использует updateScoreboard)
   socket.on('applyPreset', (data) => {
     const preset = matchPresets.find(p => p.id === data.presetId);
     
@@ -1896,7 +1878,6 @@ io.on('connection', (socket) => {
       return;
     }
 
-    // Применяем данные из предустановки
     state.team1Name = preset.team1Name;
     state.team1City = preset.team1City;
     state.team1Short = preset.team1Short;
@@ -1905,24 +1886,31 @@ io.on('connection', (socket) => {
     state.team2Short = preset.team2Short;
     state.kit1Color = preset.kit1Color;
     state.kit2Color = preset.kit2Color;
+    state.team1Logo = preset.team1Logo || '';
+    state.team2Logo = preset.team2Logo || '';
+    state.team1Id = preset.team1Id || null;
+    state.team2Id = preset.team2Id || null;
     state.presetId = preset.id;
     state.matchDate = preset.matchDate != null ? preset.matchDate : null;
     state.tournamentId = preset.tournamentId != null ? preset.tournamentId : null;
 
-    // Сбрасываем счет и таймер
     state.score1 = 0;
     state.score2 = 0;
     state.timerSeconds = 0;
     state.timerRunning = false;
     state.timerStartTS = null;
     state.time = "00:00";
+    state.team1Players = [];
+    state.team1Staff = [];
+    state.team2Players = [];
+    state.team2Staff = [];
     state.penaltyActive = false;
     state.penaltyMode = "adult";
     state.penaltyMaxAttempts = 5;
     state.penaltySeries = null;
 
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
-    fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+    scheduleSaveState();
   });
 
   // Сброс табло
@@ -1951,7 +1939,7 @@ io.on('connection', (socket) => {
     };
 
     io.emit('scoreboardUpdate', enrichStateWithConfig(state));
-    fs.writeFileSync(SAVE_PATH, JSON.stringify(state));
+    scheduleSaveState();
   });
 
   socket.on('disconnect', () => {
@@ -2019,16 +2007,7 @@ app.get('/api/config', (req, res) => {
   const actualStadiumToken = getActualStadiumToken();
   const actualServiceToken = getActualServiceToken();
   
-  // Загружаем полную конфигурацию
-  let config = { token: actualToken, stadiumToken: actualStadiumToken, serviceToken: actualServiceToken };
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      const savedConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      config = { ...config, ...savedConfig };
-    } catch (error) {
-      console.error('Ошибка загрузки конфигурации:', error);
-    }
-  }
+  const config = { ..._cachedConfig };
 
   // Если токен не предоставлен или неверный, возвращаем только публичные данные
   if (token !== actualToken && token !== actualStadiumToken && token !== actualServiceToken) {
@@ -2067,15 +2046,7 @@ app.get('/api/config', (req, res) => {
 app.put('/api/config', (req, res) => {
   if (req.query.token !== getActualToken()) return res.status(403).send('Forbidden');
   
-  // Загружаем текущую конфигурацию
-  let currentConfig = { token: TOKEN, stadiumToken: STADIUM_TOKEN, serviceToken: getActualServiceToken() };
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      currentConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-    } catch (error) {
-      console.error('Ошибка загрузки конфигурации:', error);
-    }
-  }
+  let currentConfig = _cachedConfig;
   
   // Обновляем только переданные значения, сохраняя остальные
   if (req.body.token !== undefined) {
@@ -2165,8 +2136,8 @@ app.put('/api/config', (req, res) => {
   }
   // Важно: не перезаписываем winners и stadiumMode, если они не переданы
   
-  // Сохраняем конфигурацию
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(currentConfig, null, 2));
+  _cachedConfig = currentConfig;
+  _saveConfigToDisk();
   
   console.log('Config updated:', { 
     token: req.body.token !== undefined ? '***changed***' : 'unchanged', 
@@ -2429,9 +2400,7 @@ app.delete('/api/custom-styles/:id', (req, res) => {
     return res.status(404).json({ error: 'Style not found' });
   }
   
-  // Check if this style is currently active
-  const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-  const currentGraphicStyle = config.graphicStyle || 'default';
+  const currentGraphicStyle = _cachedConfig.graphicStyle || 'default';
   
   if (currentGraphicStyle === `custom:${styleId}`) {
     return res.status(400).json({ error: 'Cannot delete active style. Please select another style first.' });
@@ -2485,16 +2454,11 @@ app.get('/api/ads', (req, res) => {
   if (token !== actualToken && token !== actualStadiumToken) {
     return res.status(403).send('Forbidden');
   }
-  let configForAds = { adsMuted: true, adsPauseSeconds: 30 };
-  if (fs.existsSync(CONFIG_PATH)) {
-    try {
-      const c = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      configForAds.adsMuted = c.adsMuted !== false;
-      if (typeof c.adsPauseSeconds === 'number' && c.adsPauseSeconds >= 1 && c.adsPauseSeconds <= 600) {
-        configForAds.adsPauseSeconds = c.adsPauseSeconds;
-      }
-    } catch (e) { /* keep default */ }
-  }
+  const configForAds = {
+    adsMuted: _cachedConfig.adsMuted !== false,
+    adsPauseSeconds: (typeof _cachedConfig.adsPauseSeconds === 'number' && _cachedConfig.adsPauseSeconds >= 1 && _cachedConfig.adsPauseSeconds <= 600)
+      ? _cachedConfig.adsPauseSeconds : 30
+  };
   const list = loadAdsMeta().map(ad => ({
     ...ad,
     originalName: fixAdsOriginalName(ad.originalName) || ad.filename
