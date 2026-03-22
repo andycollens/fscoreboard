@@ -779,11 +779,13 @@
         .break-music-now-row.scroll .break-music-now-inner {
             animation: break-track-scroll 20s ease-in-out infinite;
         }
+        /* Перемотка: тонкая вертикальная полоска — не путать с круглым ползунком громкости */
         .break-music-progress-wrap {
             width: 100%;
             margin: -9px auto 6px; /* nudge bar ~5px higher relative to previous position */
             box-sizing: border-box;
-            min-height: 6px;
+            min-height: 14px;
+            padding: 4px 0;
             visibility: hidden;
         }
         .break-music-progress-wrap.visible { visibility: visible; }
@@ -802,34 +804,38 @@
             appearance: none;
             background: transparent;
             outline: none;
+            cursor: ew-resize;
         }
         .break-music-progress-wrap input[type="range"]::-webkit-slider-runnable-track {
             height: 6px;
-            background: #444;
-            border-radius: 3px;
+            background: #3a3a3a;
+            border-radius: 2px;
         }
         .break-music-progress-wrap input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
+            width: 3px;
+            height: 18px;
+            border-radius: 1px;
+            background: #e0e0e0;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.35);
+            cursor: ew-resize;
             border: none;
-            margin-top: -4px;
+            margin-top: -6px;
         }
         .break-music-progress-wrap input[type="range"]::-moz-range-track {
             height: 6px;
-            background: #444;
-            border-radius: 3px;
+            background: #3a3a3a;
+            border-radius: 2px;
         }
         .break-music-progress-wrap input[type="range"]::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
+            width: 3px;
+            height: 18px;
+            border-radius: 1px;
+            background: #e0e0e0;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.35);
+            cursor: ew-resize;
             border: none;
+            box-sizing: border-box;
         }
         .break-music-controls-row { position: relative; display: flex; justify-content: center; width: 100%; }
         .break-music-progress-time {
