@@ -962,6 +962,39 @@
             pointer-events: auto;
         }
         .operator-hint-btn:hover { background: rgba(40, 40, 40, 0.65); color: rgba(220, 220, 220, 0.95); }
+        .fanfare-launcher-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 500;
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(20, 20, 20, 0.45);
+            color: rgba(180, 180, 180, 0.85);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+            pointer-events: auto;
+            padding: 0;
+        }
+        .fanfare-launcher-btn:hover { background: rgba(40, 40, 40, 0.65); color: rgba(220, 220, 220, 0.95); }
+        .fanfare-launcher-btn svg { width: 18px; height: 18px; display: block; }
+        .fanfare-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001;
+        }
+        .fanfare-overlay.visible { display: flex; }
+        .fanfare-box {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 28px 36px 36px;
+            border-radius: 12px;
+            box-sizing: border-box;
+            min-width: 280px;
+        }
         .operator-hint-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001;
         }
@@ -1155,8 +1188,16 @@
     </div>
 
     <button type="button" class="operator-hint-btn" id="operatorHintBtn" title="Подсказка для оператора" aria-label="Подсказка для оператора">📄</button>
+    <button type="button" class="fanfare-launcher-btn" id="fanfareLauncherBtn" title="Фанфара" aria-label="Фанфара">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M5 3h14v2h1.5A2.5 2.5 0 0 1 23 7.5V9a2.5 2.5 0 0 1-2.5 2.5H20v5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-5H3.5A2.5 2.5 0 0 1 1 9V7.5A2.5 2.5 0 0 1 3.5 5H5V3zm2 2v2h10V5H7zM3.5 7A.5.5 0 0 0 3 7.5V9a.5.5 0 0 0 .5.5H5V7H3.5zm17 0H19v2.5h1.5a.5.5 0 0 0 .5-.5V7.5a.5.5 0 0 0-.5-.5zM7 10h10v7a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-7z"/></svg>
+    </button>
     <div id="operatorHintOverlay" class="operator-hint-overlay" aria-hidden="true">
         <div class="operator-hint-box" id="operatorHintBox"></div>
+    </div>
+    <div id="fanfareOverlay" class="fanfare-overlay" aria-hidden="true">
+        <div class="fanfare-box">
+            <button type="button" class="football-anthem-btn" id="fanfareBtn" title="Фанфара"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">Фанфара</span></button>
+        </div>
     </div>
 
     <div id="jingleConfirmOverlay" class="jingle-confirm-overlay">
@@ -1940,6 +1981,7 @@
         let currentTeam2Audio = null;
         let lastGoalJinglePlayedAt = 0;
         let lastGoalJingleScoreSnapshot = null;
+        let fanfareAudio = null;
 
         function isAnyJinglePlaying() {
             return (currentTeam1Audio && !currentTeam1Audio.paused) || (currentTeam2Audio && !currentTeam2Audio.paused);
@@ -1948,6 +1990,10 @@
             return footballAnthemAudio && !footballAnthemAudio.paused;
         }
         window.isFootballAnthemPlaying = isFootballAnthemPlaying;
+        function isFanfarePlaying() {
+            return fanfareAudio && !fanfareAudio.paused;
+        }
+        window.isFanfarePlaying = isFanfarePlaying;
 
         function stopAllJingles() {
             if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; currentTeam1Audio = null; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } setProgressFill(1, 0); }
@@ -2085,6 +2131,10 @@
                 alert('Во время проигрывания футбольного гимна другие звуки отключены. Дождитесь окончания гимна.');
                 return;
             }
+            if (isFanfarePlaying()) {
+                alert('Во время проигрывания фанфары другие звуки отключены. Дождитесь окончания.');
+                return;
+            }
             if (window.breakMusicPlaying) {
                 alert('Джингл можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                 return;
@@ -2168,6 +2218,7 @@
                     stopAllJingles();
                     return;
                 }
+                if (typeof window.stopFanfarePlayback === 'function') window.stopFanfarePlayback();
                 if (window.breakMusicPlaying) {
                     alert('Гимн можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                     return;
@@ -2195,6 +2246,104 @@
             }
         }
         if (footballAnthemBtn) footballAnthemBtn.addEventListener('click', toggleFootballAnthem);
+
+        const FANFARE_PATH = 'special/fanfare.mp3';
+        let fanfareProgressIntervalId = null;
+        const FANFARE_PROGRESS_MS = 50;
+        const fanfareBtn = document.getElementById('fanfareBtn');
+
+        function stopFanfareProgressLoop() {
+            if (fanfareProgressIntervalId != null) {
+                clearInterval(fanfareProgressIntervalId);
+                fanfareProgressIntervalId = null;
+            }
+        }
+
+        function stopFanfarePlayback() {
+            stopFanfareProgressLoop();
+            if (fanfareAudio) {
+                fanfareAudio.pause();
+                fanfareAudio.currentTime = 0;
+            }
+            if (fanfareBtn) {
+                fanfareBtn.classList.remove('playing');
+                fanfareBtn.style.setProperty('--anthem-progress', '0%');
+                fanfareBtn.style.removeProperty('--anthem-progress');
+                var ft = fanfareBtn.querySelector('.football-anthem-btn-text');
+                if (ft) ft.textContent = 'Фанфара';
+            }
+        }
+        window.stopFanfarePlayback = stopFanfarePlayback;
+
+        function updateFanfareProgress() {
+            if (!fanfareBtn || !fanfareAudio) return;
+            var fd = fanfareAudio.duration;
+            var fct = fanfareAudio.currentTime;
+            var fpct = (fd && isFinite(fd) && fd > 0) ? Math.min(100, (fct / fd) * 100) : 0;
+            fanfareBtn.style.setProperty('--anthem-progress', fpct + '%');
+        }
+
+        function startFanfareProgressUpdates() {
+            if (fanfareProgressIntervalId != null) return;
+            updateFanfareProgress();
+            fanfareProgressIntervalId = setInterval(function() {
+                if (!fanfareAudio || fanfareAudio.paused) return;
+                updateFanfareProgress();
+            }, FANFARE_PROGRESS_MS);
+        }
+
+        function toggleFanfare() {
+            if (!fanfareAudio) {
+                fanfareAudio = new Audio(jingleBase + FANFARE_PATH);
+                fanfareAudio.addEventListener('loadedmetadata', updateFanfareProgress);
+                fanfareAudio.addEventListener('ended', function() {
+                    stopFanfareProgressLoop();
+                    if (fanfareBtn) {
+                        fanfareBtn.style.setProperty('--anthem-progress', '100%');
+                        fanfareBtn.classList.remove('playing');
+                        var txtF = fanfareBtn.querySelector('.football-anthem-btn-text');
+                        if (txtF) txtF.textContent = 'Фанфара';
+                        setTimeout(function() { fanfareBtn.style.removeProperty('--anthem-progress'); }, 300);
+                    }
+                });
+            }
+            fanfareAudio.volume = 1;
+            if (fanfareAudio.paused) {
+                if (isAnyJinglePlaying()) {
+                    stopAllJingles();
+                    return;
+                }
+                if (isFootballAnthemPlaying()) {
+                    stopAnthemProgressLoop();
+                    footballAnthemAudio.pause();
+                    footballAnthemAudio.currentTime = 0;
+                    if (footballAnthemBtn) {
+                        footballAnthemBtn.classList.remove('playing');
+                        footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
+                        footballAnthemBtn.style.removeProperty('--anthem-progress');
+                        var atxt = footballAnthemBtn.querySelector('.football-anthem-btn-text');
+                        if (atxt) atxt.textContent = 'Футбольный гимн';
+                    }
+                }
+                if (window.breakMusicPlaying) {
+                    alert('Фанфару можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
+                    return;
+                }
+                if (hasActiveScoreOrTime()) {
+                    if (!confirm('На табло уже выставлены счёт или время. Убедитесь, что фанфара запускается в нужный момент. Продолжить воспроизведение?')) {
+                        return;
+                    }
+                }
+                fanfareAudio.currentTime = 0;
+                if (fanfareBtn) fanfareBtn.style.setProperty('--anthem-progress', '0%');
+                fanfareAudio.play();
+                if (fanfareBtn) fanfareBtn.classList.add('playing');
+                startFanfareProgressUpdates();
+            } else {
+                stopFanfarePlayback();
+            }
+        }
+        if (fanfareBtn) fanfareBtn.addEventListener('click', toggleFanfare);
 
         function handleJingleKey(teamNum) {
             const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
@@ -2853,6 +3002,10 @@
                     alert('Во время проигрывания футбольного гимна музыка перерыва недоступна. Дождитесь окончания гимна.');
                     return;
                 }
+                if (typeof window.isFanfarePlaying === 'function' && window.isFanfarePlaying()) {
+                    alert('Во время проигрывания фанфары музыка перерыва недоступна. Дождитесь окончания.');
+                    return;
+                }
                 if (typeof isAnyJinglePlaying === 'function' && isAnyJinglePlaying()) {
                     if (typeof stopAllJingles === 'function') stopAllJingles();
                     return;
@@ -2977,6 +3130,34 @@
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && overlay.classList.contains('visible')) {
                     closeHint();
+                }
+            });
+        })();
+
+        (function initFanfareOverlay() {
+            var launcher = document.getElementById('fanfareLauncherBtn');
+            var overlay = document.getElementById('fanfareOverlay');
+            var box = overlay && overlay.querySelector('.fanfare-box');
+            if (!launcher || !overlay || !box) return;
+            function openFanfare() {
+                overlay.classList.add('visible');
+                overlay.setAttribute('aria-hidden', 'false');
+            }
+            function closeFanfare() {
+                overlay.classList.remove('visible');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+            launcher.addEventListener('click', function() {
+                if (overlay.classList.contains('visible')) closeFanfare();
+                else openFanfare();
+            });
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closeFanfare();
+            });
+            box.addEventListener('click', function(e) { e.stopPropagation(); });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && overlay.classList.contains('visible')) {
+                    closeFanfare();
                 }
             });
         })();
