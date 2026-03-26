@@ -1020,6 +1020,19 @@
         }
         .fanfare-box .jingle-volume-row {
             width: 100%;
+            justify-content: center;
+        }
+        .fanfare-box .jingle-volume-track-wrap {
+            flex: 0 1 50%;
+            max-width: 50%;
+        }
+        .fanfare-box .award-flag-emoji {
+            font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Twemoji Mozilla", system-ui, sans-serif;
+            font-style: normal;
+            line-height: 1;
+            font-size: 1.12em;
+            vertical-align: -0.08em;
+            margin-right: 0.35em;
         }
         .fanfare-actions-row {
             display: flex;
@@ -1246,7 +1259,7 @@
             </div>
             <div class="fanfare-actions-row">
                 <button type="button" class="football-anthem-btn" id="fanfareBtn" title="🎺 Фанфары"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">🎺 Фанфары</span></button>
-                <button type="button" class="football-anthem-btn" id="russiaAnthemBtn" title="🇷🇺 Гимн РФ"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">🇷🇺 Гимн РФ</span></button>
+                <button type="button" class="football-anthem-btn" id="russiaAnthemBtn" title="🇷🇺 Гимн РФ"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text football-anthem-btn-text--russia"><span class="award-flag-emoji" aria-hidden="true">&#x1F1F7;&#x1F1FA;</span><span class="award-russia-label">Гимн РФ</span></span></button>
             </div>
         </div>
     </div>
@@ -2564,8 +2577,6 @@
                 if (russiaAnthemBtn) {
                     russiaAnthemBtn.style.setProperty('--anthem-progress', '100%');
                     russiaAnthemBtn.classList.remove('playing');
-                    var txtR = russiaAnthemBtn.querySelector('.football-anthem-btn-text');
-                    if (txtR) txtR.textContent = '🇷🇺 Гимн РФ';
                     setTimeout(function() { russiaAnthemBtn.style.removeProperty('--anthem-progress'); }, 300);
                 }
             });
@@ -2604,8 +2615,6 @@
                 russiaAnthemBtn.classList.remove('playing');
                 russiaAnthemBtn.style.setProperty('--anthem-progress', '0%');
                 russiaAnthemBtn.style.removeProperty('--anthem-progress');
-                var rt = russiaAnthemBtn.querySelector('.football-anthem-btn-text');
-                if (rt) rt.textContent = '🇷🇺 Гимн РФ';
             }
         }
         window.stopRussiaAnthemPlayback = stopRussiaAnthemPlayback;
