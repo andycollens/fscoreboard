@@ -663,7 +663,8 @@
             min-width: 80px;
             margin-top: -15px;
         }
-        .jingle-volume-row input[type="range"] {
+        .jingle-volume-row input[type="range"],
+        .fanfare-volume-row input[type="range"] {
             position: relative;
             z-index: 1;
             width: 100%;
@@ -673,12 +674,14 @@
             background: transparent;
             outline: none;
         }
-        .jingle-volume-row input[type="range"]::-webkit-slider-runnable-track {
+        .jingle-volume-row input[type="range"]::-webkit-slider-runnable-track,
+        .fanfare-volume-row input[type="range"]::-webkit-slider-runnable-track {
             height: 6px;
             background: #444;
             border-radius: 3px;
         }
-        .jingle-volume-row input[type="range"]::-webkit-slider-thumb {
+        .jingle-volume-row input[type="range"]::-webkit-slider-thumb,
+        .fanfare-volume-row input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 14px;
             height: 14px;
@@ -688,12 +691,14 @@
             border: none;
             margin-top: -4px;
         }
-        .jingle-volume-row input[type="range"]::-moz-range-track {
+        .jingle-volume-row input[type="range"]::-moz-range-track,
+        .fanfare-volume-row input[type="range"]::-moz-range-track {
             height: 6px;
             background: #444;
             border-radius: 3px;
         }
-        .jingle-volume-row input[type="range"]::-moz-range-thumb {
+        .jingle-volume-row input[type="range"]::-moz-range-thumb,
+        .fanfare-volume-row input[type="range"]::-moz-range-thumb {
             width: 14px;
             height: 14px;
             border-radius: 50%;
@@ -990,10 +995,47 @@
         .fanfare-box {
             background: #1a1a1a;
             color: #e0e0e0;
-            padding: 28px 36px 36px;
+            padding: 36px 44px 44px;
             border-radius: 12px;
             box-sizing: border-box;
-            min-width: 280px;
+            width: 72vw;
+            max-width: 640px;
+            min-width: 360px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 28px;
+        }
+        .fanfare-title {
+            margin: 0;
+            text-align: center;
+            font-size: clamp(22px, 3.2vw, 34px);
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.04em;
+        }
+        .fanfare-volume-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .fanfare-volume-track-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            height: 6px;
+        }
+        .fanfare-volume-pct {
+            flex-shrink: 0;
+            min-width: 3.2em;
+            text-align: right;
+            font-size: 14px;
+            color: #aaa;
+            font-variant-numeric: tabular-nums;
+        }
+        .fanfare-box .football-anthem-btn {
+            align-self: center;
         }
         .operator-hint-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001;
@@ -1196,6 +1238,15 @@
     </div>
     <div id="fanfareOverlay" class="fanfare-overlay" aria-hidden="true">
         <div class="fanfare-box">
+            <h2 class="fanfare-title">Награждение</h2>
+            <div class="fanfare-volume-row" title="Та же громкость, что у джинглов в центре панели">
+                <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
+                <div class="fanfare-volume-track-wrap">
+                    <input type="range" id="fanfareVolumeSlider" min="0" max="1" step="0.01" value="0.7" aria-label="Громкость фанфары">
+                </div>
+                <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
+                <span class="fanfare-volume-pct" id="fanfareVolumePct" aria-live="polite">70%</span>
+            </div>
             <button type="button" class="football-anthem-btn" id="fanfareBtn" title="Фанфара"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">Фанфара</span></button>
         </div>
     </div>
@@ -2014,6 +2065,24 @@
             });
         }
         const jingleVolumeEl = document.getElementById('jingleVolume');
+        function getPlaybackVolume() {
+            if (jingleVolumeEl) {
+                var pv = parseFloat(jingleVolumeEl.value);
+                if (!isNaN(pv)) return Math.max(0, Math.min(1, pv));
+            }
+            var jv = typeof jingleVolume === 'number' ? jingleVolume : 0.7;
+            return Math.max(0, Math.min(1, jv));
+        }
+        function syncFanfareVolumeUI() {
+            var fs = document.getElementById('fanfareVolumeSlider');
+            var pctEl = document.getElementById('fanfareVolumePct');
+            if (jingleVolumeEl && fs) fs.value = jingleVolumeEl.value;
+            if (pctEl && jingleVolumeEl) {
+                var p = Math.round(parseFloat(jingleVolumeEl.value) * 100);
+                if (isNaN(p)) p = Math.round((typeof jingleVolume === 'number' ? jingleVolume : 0.7) * 100);
+                pctEl.textContent = p + '%';
+            }
+        }
         const jinglePlay1 = document.getElementById('jinglePlay1');
         const jinglePlay2 = document.getElementById('jinglePlay2');
         const jingleSelect1 = document.getElementById('jingleSelect1');
@@ -2083,6 +2152,10 @@
         function applyVolumeToAll() {
             if (jingleVolumeEl) jingleVolume = parseFloat(jingleVolumeEl.value);
             try { localStorage.setItem(JINGLE_STORAGE_VOLUME, String(jingleVolumeEl ? jingleVolumeEl.value : jingleVolume)); } catch (e) {}
+            syncFanfareVolumeUI();
+            if (fanfareAudio && !fanfareAudio.paused) {
+                fanfareAudio.volume = getPlaybackVolume();
+            }
         }
         function shouldWarnGoalWithoutRecentScoreChange() {
             if (!latestData) return false;
@@ -2399,7 +2472,7 @@
 
         function toggleFanfare() {
             getFanfareAudio().then(function() {
-                fanfareAudio.volume = 1;
+                fanfareAudio.volume = getPlaybackVolume();
                 if (fanfareAudio.paused) {
                     if (isAnyJinglePlaying()) {
                         stopAllJingles();
@@ -2538,6 +2611,7 @@
                 });
             }).catch(() => {});
             if (jingleVolumeEl) jingleVolumeEl.addEventListener('input', applyVolumeToAll);
+            syncFanfareVolumeUI();
             if (jinglePlay1) jinglePlay1.addEventListener('click', () => { jingleConfirmPending = null; hideJingleConfirm(); playJingle(1); });
             if (jinglePlay2) jinglePlay2.addEventListener('click', () => { jingleConfirmPending = null; hideJingleConfirm(); playJingle(2); });
             if (jingleSelect1) jingleSelect1.addEventListener('change', () => onJingleSelect(1));
@@ -3248,6 +3322,7 @@
             var box = overlay && overlay.querySelector('.fanfare-box');
             if (!launcher || !overlay || !box) return;
             function openFanfare() {
+                syncFanfareVolumeUI();
                 overlay.classList.add('visible');
                 overlay.setAttribute('aria-hidden', 'false');
             }
@@ -3263,6 +3338,13 @@
                 if (e.target === overlay) closeFanfare();
             });
             box.addEventListener('click', function(e) { e.stopPropagation(); });
+            var fvSlider = document.getElementById('fanfareVolumeSlider');
+            if (fvSlider) {
+                fvSlider.addEventListener('input', function() {
+                    if (jingleVolumeEl) jingleVolumeEl.value = fvSlider.value;
+                    applyVolumeToAll();
+                });
+            }
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && overlay.classList.contains('visible')) {
                     closeFanfare();
