@@ -1018,21 +1018,41 @@
             color: #fff;
             letter-spacing: 0.04em;
         }
-        .fanfare-box .jingle-volume-row {
+        .fanfare-box .fanfare-jingle-volume-row {
             width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
             justify-content: center;
+            gap: 12px;
+            box-sizing: border-box;
         }
-        .fanfare-box .jingle-volume-track-wrap {
-            flex: 0 1 50%;
+        .fanfare-box .fanfare-volume-cluster {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 50%;
             max-width: 50%;
+            flex: 0 0 50%;
+            box-sizing: border-box;
+            min-width: 0;
         }
-        .fanfare-box .award-flag-emoji {
-            font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", "Twemoji Mozilla", system-ui, sans-serif;
-            font-style: normal;
-            line-height: 1;
-            font-size: 1.12em;
-            vertical-align: -0.08em;
-            margin-right: 0.35em;
+        .fanfare-box .fanfare-volume-cluster .jingle-volume-track-wrap {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .football-anthem-btn-text--russia {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4em;
+        }
+        .award-flag-svg {
+            width: 1.1em;
+            height: 0.73em;
+            flex-shrink: 0;
+            display: block;
+            border-radius: 1px;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
         }
         .fanfare-actions-row {
             display: flex;
@@ -1249,17 +1269,19 @@
     <div id="fanfareOverlay" class="fanfare-overlay" aria-hidden="true">
         <div class="fanfare-box">
             <h2 class="fanfare-title">Награждение</h2>
-            <div class="jingle-volume-row" title="Та же громкость, что у джинглов в центре панели">
-                <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
-                <div class="jingle-volume-track-wrap">
-                    <input type="range" id="fanfareVolumeSlider" min="0" max="1" step="0.01" value="0.7" aria-label="Громкость фанфар">
+            <div class="jingle-volume-row fanfare-jingle-volume-row" title="Та же громкость, что у джинглов в центре панели">
+                <div class="fanfare-volume-cluster">
+                    <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
+                    <div class="jingle-volume-track-wrap">
+                        <input type="range" id="fanfareVolumeSlider" min="0" max="1" step="0.01" value="0.7" aria-label="Громкость фанфар">
+                    </div>
+                    <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                 </div>
-                <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                 <span class="jingle-volume-pct" id="fanfareVolumePct" aria-live="polite">70%</span>
             </div>
             <div class="fanfare-actions-row">
                 <button type="button" class="football-anthem-btn" id="fanfareBtn" title="🎺 Фанфары"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">🎺 Фанфары</span></button>
-                <button type="button" class="football-anthem-btn" id="russiaAnthemBtn" title="🇷🇺 Гимн РФ"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text football-anthem-btn-text--russia"><span class="award-flag-emoji" aria-hidden="true">&#x1F1F7;&#x1F1FA;</span><span class="award-russia-label">Гимн РФ</span></span></button>
+                <button type="button" class="football-anthem-btn" id="russiaAnthemBtn" title="Гимн РФ"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text football-anthem-btn-text--russia"><svg class="award-flag-svg" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="3" height="0.667" fill="#fff"/><rect y="0.667" width="3" height="0.667" fill="#0039a6"/><rect y="1.333" width="3" height="0.667" fill="#da291c"/></svg><span class="award-russia-label">Гимн РФ</span></span></button>
             </div>
         </div>
     </div>
@@ -2525,7 +2547,10 @@
                             if (atxt) atxt.textContent = 'Футбольный гимн';
                         }
                     }
-                    if (typeof window.stopRussiaAnthemPlayback === 'function') window.stopRussiaAnthemPlayback();
+                    if (isRussiaAnthemPlaying()) {
+                        alert('Чтобы включить фанфару, сначала остановите воспроизведение гимна РФ (повторное нажатие на «Гимн РФ»).');
+                        return;
+                    }
                     if (window.breakMusicPlaying) {
                         alert('Фанфару можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                         return;
@@ -2653,7 +2678,10 @@
                             if (ax) ax.textContent = 'Футбольный гимн';
                         }
                     }
-                    if (typeof window.stopFanfarePlayback === 'function') window.stopFanfarePlayback();
+                    if (isFanfarePlaying()) {
+                        alert('Чтобы включить гимн РФ, сначала остановите воспроизведение фанфар (повторное нажатие на «Фанфары»).');
+                        return;
+                    }
                     if (window.breakMusicPlaying) {
                         alert('Гимн РФ можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                         return;
