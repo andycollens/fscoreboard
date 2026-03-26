@@ -663,8 +663,16 @@
             min-width: 80px;
             margin-top: -15px;
         }
-        .jingle-volume-row input[type="range"],
-        .fanfare-volume-row input[type="range"] {
+        .jingle-volume-pct {
+            flex-shrink: 0;
+            min-width: 3.2em;
+            text-align: right;
+            font-size: 14px;
+            color: #aaa;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+        .jingle-volume-row input[type="range"] {
             position: relative;
             z-index: 1;
             width: 100%;
@@ -674,14 +682,12 @@
             background: transparent;
             outline: none;
         }
-        .jingle-volume-row input[type="range"]::-webkit-slider-runnable-track,
-        .fanfare-volume-row input[type="range"]::-webkit-slider-runnable-track {
+        .jingle-volume-row input[type="range"]::-webkit-slider-runnable-track {
             height: 6px;
             background: #444;
             border-radius: 3px;
         }
-        .jingle-volume-row input[type="range"]::-webkit-slider-thumb,
-        .fanfare-volume-row input[type="range"]::-webkit-slider-thumb {
+        .jingle-volume-row input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 14px;
             height: 14px;
@@ -691,14 +697,12 @@
             border: none;
             margin-top: -4px;
         }
-        .jingle-volume-row input[type="range"]::-moz-range-track,
-        .fanfare-volume-row input[type="range"]::-moz-range-track {
+        .jingle-volume-row input[type="range"]::-moz-range-track {
             height: 6px;
             background: #444;
             border-radius: 3px;
         }
-        .jingle-volume-row input[type="range"]::-moz-range-thumb,
-        .fanfare-volume-row input[type="range"]::-moz-range-thumb {
+        .jingle-volume-row input[type="range"]::-moz-range-thumb {
             width: 14px;
             height: 14px;
             border-radius: 50%;
@@ -1014,25 +1018,8 @@
             color: #fff;
             letter-spacing: 0.04em;
         }
-        .fanfare-volume-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .fanfare-box .jingle-volume-row {
             width: 100%;
-        }
-        .fanfare-volume-track-wrap {
-            position: relative;
-            flex: 1;
-            min-width: 0;
-            height: 6px;
-        }
-        .fanfare-volume-pct {
-            flex-shrink: 0;
-            min-width: 3.2em;
-            text-align: right;
-            font-size: 14px;
-            color: #aaa;
-            font-variant-numeric: tabular-nums;
         }
         .fanfare-box .football-anthem-btn {
             align-self: center;
@@ -1152,6 +1139,7 @@
                             <input type="range" id="jingleVolume" min="0" max="1" step="0.01" value="0.7" title="Volume">
                         </div>
                         <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
+                        <span class="jingle-volume-pct" id="jingleVolumePct" aria-live="polite">70%</span>
                     </div>
                     <button type="button" class="football-anthem-btn" id="footballAnthemBtn" title="Football anthem"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">Футбольный гимн</span></button>
                     <div class="break-music-spacer"></div>
@@ -1230,7 +1218,7 @@
     </div>
 
     <button type="button" class="operator-hint-btn" id="operatorHintBtn" title="Подсказка для оператора" aria-label="Подсказка для оператора">📄</button>
-    <button type="button" class="fanfare-launcher-btn" id="fanfareLauncherBtn" title="Фанфара" aria-label="Фанфара">
+    <button type="button" class="fanfare-launcher-btn" id="fanfareLauncherBtn" title="Фанфары" aria-label="Фанфары">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M5 3h14v2h1.5A2.5 2.5 0 0 1 23 7.5V9a2.5 2.5 0 0 1-2.5 2.5H20v5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-5H3.5A2.5 2.5 0 0 1 1 9V7.5A2.5 2.5 0 0 1 3.5 5H5V3zm2 2v2h10V5H7zM3.5 7A.5.5 0 0 0 3 7.5V9a.5.5 0 0 0 .5.5H5V7H3.5zm17 0H19v2.5h1.5a.5.5 0 0 0 .5-.5V7.5a.5.5 0 0 0-.5-.5zM7 10h10v7a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-7z"/></svg>
     </button>
     <div id="operatorHintOverlay" class="operator-hint-overlay" aria-hidden="true">
@@ -1239,15 +1227,15 @@
     <div id="fanfareOverlay" class="fanfare-overlay" aria-hidden="true">
         <div class="fanfare-box">
             <h2 class="fanfare-title">Награждение</h2>
-            <div class="fanfare-volume-row" title="Та же громкость, что у джинглов в центре панели">
+            <div class="jingle-volume-row" title="Та же громкость, что у джинглов в центре панели">
                 <span class="jingle-volume-icon" aria-hidden="true">🔈</span>
-                <div class="fanfare-volume-track-wrap">
-                    <input type="range" id="fanfareVolumeSlider" min="0" max="1" step="0.01" value="0.7" aria-label="Громкость фанфары">
+                <div class="jingle-volume-track-wrap">
+                    <input type="range" id="fanfareVolumeSlider" min="0" max="1" step="0.01" value="0.7" aria-label="Громкость фанфар">
                 </div>
                 <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
-                <span class="fanfare-volume-pct" id="fanfareVolumePct" aria-live="polite">70%</span>
+                <span class="jingle-volume-pct" id="fanfareVolumePct" aria-live="polite">70%</span>
             </div>
-            <button type="button" class="football-anthem-btn" id="fanfareBtn" title="Фанфара"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">Фанфара</span></button>
+            <button type="button" class="football-anthem-btn" id="fanfareBtn" title="Фанфары"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">Фанфары</span></button>
         </div>
     </div>
 
@@ -2075,13 +2063,17 @@
         }
         function syncFanfareVolumeUI() {
             var fs = document.getElementById('fanfareVolumeSlider');
-            var pctEl = document.getElementById('fanfareVolumePct');
+            var pctFan = document.getElementById('fanfareVolumePct');
+            var pctMain = document.getElementById('jingleVolumePct');
             if (jingleVolumeEl && fs) fs.value = jingleVolumeEl.value;
-            if (pctEl && jingleVolumeEl) {
-                var p = Math.round(parseFloat(jingleVolumeEl.value) * 100);
-                if (isNaN(p)) p = Math.round((typeof jingleVolume === 'number' ? jingleVolume : 0.7) * 100);
-                pctEl.textContent = p + '%';
+            var p = Math.round((typeof jingleVolume === 'number' ? jingleVolume : 0.7) * 100);
+            if (jingleVolumeEl) {
+                var pr = Math.round(parseFloat(jingleVolumeEl.value) * 100);
+                if (!isNaN(pr)) p = pr;
             }
+            var ps = p + '%';
+            if (pctFan) pctFan.textContent = ps;
+            if (pctMain) pctMain.textContent = ps;
         }
         const jinglePlay1 = document.getElementById('jinglePlay1');
         const jinglePlay2 = document.getElementById('jinglePlay2');
@@ -2406,7 +2398,7 @@
                     fanfareBtn.style.setProperty('--anthem-progress', '100%');
                     fanfareBtn.classList.remove('playing');
                     var txtF = fanfareBtn.querySelector('.football-anthem-btn-text');
-                    if (txtF) txtF.textContent = 'Фанфара';
+                    if (txtF) txtF.textContent = 'Фанфары';
                     setTimeout(function() { fanfareBtn.style.removeProperty('--anthem-progress'); }, 300);
                 }
             });
@@ -2448,7 +2440,7 @@
                 fanfareBtn.style.setProperty('--anthem-progress', '0%');
                 fanfareBtn.style.removeProperty('--anthem-progress');
                 var ft = fanfareBtn.querySelector('.football-anthem-btn-text');
-                if (ft) ft.textContent = 'Фанфара';
+                if (ft) ft.textContent = 'Фанфары';
             }
         }
         window.stopFanfarePlayback = stopFanfarePlayback;
