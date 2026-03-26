@@ -1218,7 +1218,7 @@
     </div>
 
     <button type="button" class="operator-hint-btn" id="operatorHintBtn" title="Подсказка для оператора" aria-label="Подсказка для оператора">📄</button>
-    <button type="button" class="fanfare-launcher-btn" id="fanfareLauncherBtn" title="Фанфары" aria-label="Фанфары">
+    <button type="button" class="fanfare-launcher-btn" id="fanfareLauncherBtn" title="🎺 Фанфары" aria-label="🎺 Фанфары">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M5 3h14v2h1.5A2.5 2.5 0 0 1 23 7.5V9a2.5 2.5 0 0 1-2.5 2.5H20v5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-5H3.5A2.5 2.5 0 0 1 1 9V7.5A2.5 2.5 0 0 1 3.5 5H5V3zm2 2v2h10V5H7zM3.5 7A.5.5 0 0 0 3 7.5V9a.5.5 0 0 0 .5.5H5V7H3.5zm17 0H19v2.5h1.5a.5.5 0 0 0 .5-.5V7.5a.5.5 0 0 0-.5-.5zM7 10h10v7a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-7z"/></svg>
     </button>
     <div id="operatorHintOverlay" class="operator-hint-overlay" aria-hidden="true">
@@ -1235,7 +1235,7 @@
                 <span class="jingle-volume-icon" aria-hidden="true">🔊</span>
                 <span class="jingle-volume-pct" id="fanfareVolumePct" aria-live="polite">70%</span>
             </div>
-            <button type="button" class="football-anthem-btn" id="fanfareBtn" title="Фанфары"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">Фанфары</span></button>
+            <button type="button" class="football-anthem-btn" id="fanfareBtn" title="🎺 Фанфары"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">🎺 Фанфары</span></button>
         </div>
     </div>
 
@@ -2398,7 +2398,7 @@
                     fanfareBtn.style.setProperty('--anthem-progress', '100%');
                     fanfareBtn.classList.remove('playing');
                     var txtF = fanfareBtn.querySelector('.football-anthem-btn-text');
-                    if (txtF) txtF.textContent = 'Фанфары';
+                    if (txtF) txtF.textContent = '🎺 Фанфары';
                     setTimeout(function() { fanfareBtn.style.removeProperty('--anthem-progress'); }, 300);
                 }
             });
@@ -2440,7 +2440,7 @@
                 fanfareBtn.style.setProperty('--anthem-progress', '0%');
                 fanfareBtn.style.removeProperty('--anthem-progress');
                 var ft = fanfareBtn.querySelector('.football-anthem-btn-text');
-                if (ft) ft.textContent = 'Фанфары';
+                if (ft) ft.textContent = '🎺 Фанфары';
             }
         }
         window.stopFanfarePlayback = stopFanfarePlayback;
