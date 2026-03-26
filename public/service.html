@@ -2116,6 +2116,7 @@
         function isFanfareOverlaySoundPlaying() {
             return isFanfarePlaying() || isRussiaAnthemPlaying();
         }
+        window.isFanfareOverlaySoundPlaying = isFanfareOverlaySoundPlaying;
 
         function stopAllJingles() {
             if (currentTeam1Audio) { currentTeam1Audio.pause(); currentTeam1Audio.currentTime = 0; currentTeam1Audio = null; if (jinglePlay1) { jinglePlay1.textContent = '▶'; jinglePlay1.classList.remove('playing'); } setProgressFill(1, 0); }
@@ -3481,13 +3482,13 @@
             }
             launcher.addEventListener('click', function() {
                 if (overlay.classList.contains('visible')) {
-                    if (typeof isFanfareOverlaySoundPlaying === 'function' && isFanfareOverlaySoundPlaying()) return;
+                    if (isFanfareOverlaySoundPlaying()) return;
                     closeFanfare();
                 } else openFanfare();
             });
             overlay.addEventListener('click', function(e) {
                 if (e.target !== overlay) return;
-                if (typeof isFanfareOverlaySoundPlaying === 'function' && isFanfareOverlaySoundPlaying()) return;
+                if (isFanfareOverlaySoundPlaying()) return;
                 closeFanfare();
             });
             box.addEventListener('click', function(e) { e.stopPropagation(); });
@@ -3500,7 +3501,7 @@
             }
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && overlay.classList.contains('visible')) {
-                    if (typeof isFanfareOverlaySoundPlaying === 'function' && isFanfareOverlaySoundPlaying()) return;
+                    if (isFanfareOverlaySoundPlaying()) return;
                     closeFanfare();
                 }
             });
