@@ -1972,6 +1972,47 @@
         const jingleCache = {};
         let jingleVolume = 0.7;
         const jingleBase = '/public/sound/';
+        /** Крупные special/*.mp3 — один раз в Cache API + blob URL, без повторной загрузки */
+        const SPECIAL_SOUND_CACHE = 'fscore-special-sound-v1';
+        const specialSoundPlayUrlByPath = {};
+        function ensureSpecialSoundCached(relativePath) {
+            if (specialSoundPlayUrlByPath[relativePath]) {
+                return Promise.resolve(specialSoundPlayUrlByPath[relativePath]);
+            }
+            var abs = new URL(jingleBase + relativePath, window.location.origin).href;
+            function remember(url) {
+                specialSoundPlayUrlByPath[relativePath] = url;
+                return url;
+            }
+            function blobToPlayUrl(blob) {
+                return remember(URL.createObjectURL(blob));
+            }
+            if (typeof caches === 'undefined' || !caches.open) {
+                return fetch(abs).then(function(res) {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.blob();
+                }).then(blobToPlayUrl).catch(function() {
+                    return remember(abs);
+                });
+            }
+            return caches.open(SPECIAL_SOUND_CACHE).then(function(cache) {
+                return cache.match(abs).then(function(hit) {
+                    if (hit) return hit.blob().then(blobToPlayUrl);
+                    return fetch(abs).then(function(res) {
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        var clone = res.clone();
+                        return cache.put(abs, clone).catch(function(e) {
+                            console.warn('fscore: cache.put', relativePath, e);
+                        }).then(function() {
+                            return res.blob();
+                        });
+                    }).then(blobToPlayUrl);
+                });
+            }).catch(function(err) {
+                console.warn('fscore: special sound cache', relativePath, err);
+                return remember(abs);
+            });
+        }
         const jingleVolumeEl = document.getElementById('jingleVolume');
         const jinglePlay1 = document.getElementById('jinglePlay1');
         const jinglePlay2 = document.getElementById('jinglePlay2');
@@ -2176,6 +2217,41 @@
         let footballAnthemProgressIntervalId = null;
         const FOOTBALL_ANTHEM_PROGRESS_MS = 50;
         const footballAnthemBtn = document.getElementById('footballAnthemBtn');
+        let footballAnthemListenersAttached = false;
+        let footballAnthemLoadPromise = null;
+        function attachFootballAnthemListeners() {
+            if (!footballAnthemAudio || footballAnthemListenersAttached) return;
+            footballAnthemListenersAttached = true;
+            footballAnthemAudio.addEventListener('loadedmetadata', updateFootballAnthemProgress);
+            footballAnthemAudio.addEventListener('ended', function() {
+                stopAnthemProgressLoop();
+                if (footballAnthemBtn) {
+                    footballAnthemBtn.style.setProperty('--anthem-progress', '100%');
+                    footballAnthemBtn.classList.remove('playing');
+                    var txtE = footballAnthemBtn.querySelector('.football-anthem-btn-text');
+                    if (txtE) txtE.textContent = 'Футбольный гимн';
+                    setTimeout(function() { footballAnthemBtn.style.removeProperty('--anthem-progress'); }, 300);
+                }
+            });
+        }
+        function getFootballAnthemAudio() {
+            if (footballAnthemAudio) return Promise.resolve(footballAnthemAudio);
+            if (!footballAnthemLoadPromise) {
+                footballAnthemLoadPromise = ensureSpecialSoundCached(FOOTBALL_ANTHEM_PATH).then(function(src) {
+                    footballAnthemAudio = new Audio(src);
+                    attachFootballAnthemListeners();
+                    return footballAnthemAudio;
+                }).catch(function(err) {
+                    console.warn('fscore: football anthem load', err);
+                    footballAnthemAudio = new Audio(new URL(jingleBase + FOOTBALL_ANTHEM_PATH, window.location.origin).href);
+                    attachFootballAnthemListeners();
+                    return footballAnthemAudio;
+                }).finally(function() {
+                    footballAnthemLoadPromise = null;
+                });
+            }
+            return footballAnthemLoadPromise;
+        }
         function updateFootballAnthemProgress() {
             if (!footballAnthemBtn || !footballAnthemAudio) return;
             var d = footballAnthemAudio.duration;
@@ -2198,52 +2274,46 @@
             }
         }
         function toggleFootballAnthem() {
-            if (!footballAnthemAudio) {
-                footballAnthemAudio = new Audio(jingleBase + FOOTBALL_ANTHEM_PATH);
-                footballAnthemAudio.addEventListener('loadedmetadata', updateFootballAnthemProgress);
-                footballAnthemAudio.addEventListener('ended', function() {
-                    stopAnthemProgressLoop();
-                    if (footballAnthemBtn) {
-                        footballAnthemBtn.style.setProperty('--anthem-progress', '100%');
-                        footballAnthemBtn.classList.remove('playing');
-                        var txt = footballAnthemBtn.querySelector('.football-anthem-btn-text');
-                        if (txt) txt.textContent = 'Футбольный гимн';
-                        setTimeout(function() { footballAnthemBtn.style.removeProperty('--anthem-progress'); }, 300);
-                    }
-                });
-            }
-            footballAnthemAudio.volume = 1;
-            if (footballAnthemAudio.paused) {
-                if (isAnyJinglePlaying()) {
-                    stopAllJingles();
-                    return;
-                }
-                if (typeof window.stopFanfarePlayback === 'function') window.stopFanfarePlayback();
-                if (window.breakMusicPlaying) {
-                    alert('Гимн можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
-                    return;
-                }
-                if (hasActiveScoreOrTime()) {
-                    if (!confirm('На табло уже выставлены счёт или время. Убедитесь, что гимн запускается в нужный момент. Продолжить воспроизведение гимна?')) {
+            getFootballAnthemAudio().then(function() {
+                footballAnthemAudio.volume = 1;
+                if (footballAnthemAudio.paused) {
+                    if (isAnyJinglePlaying()) {
+                        stopAllJingles();
                         return;
                     }
+                    if (typeof window.stopFanfarePlayback === 'function') window.stopFanfarePlayback();
+                    if (window.breakMusicPlaying) {
+                        alert('Гимн можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
+                        return;
+                    }
+                    if (hasActiveScoreOrTime()) {
+                        if (!confirm('На табло уже выставлены счёт или время. Убедитесь, что гимн запускается в нужный момент. Продолжить воспроизведение гимна?')) {
+                            return;
+                        }
+                    }
+                    footballAnthemAudio.currentTime = 0;
+                    if (footballAnthemBtn) footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
+                    footballAnthemAudio.play().catch(function(e) {
+                        console.warn('footballAnthem play', e);
+                        alert('Не удалось воспроизвести гимн.');
+                    });
+                    if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); }
+                    startAnthemProgressUpdates();
+                } else {
+                    stopAnthemProgressLoop();
+                    footballAnthemAudio.pause();
+                    if (footballAnthemBtn) {
+                        footballAnthemBtn.classList.remove('playing');
+                        footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
+                        footballAnthemBtn.style.removeProperty('--anthem-progress');
+                        var txt = footballAnthemBtn.querySelector('.football-anthem-btn-text');
+                        if (txt) txt.textContent = 'Футбольный гимн';
+                    }
                 }
-                footballAnthemAudio.currentTime = 0;
-                if (footballAnthemBtn) footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
-                footballAnthemAudio.play();
-                if (footballAnthemBtn) { footballAnthemBtn.classList.add('playing'); }
-                startAnthemProgressUpdates();
-            } else {
-                stopAnthemProgressLoop();
-                footballAnthemAudio.pause();
-                if (footballAnthemBtn) {
-                    footballAnthemBtn.classList.remove('playing');
-                    footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
-                    footballAnthemBtn.style.removeProperty('--anthem-progress');
-                    var txt = footballAnthemBtn.querySelector('.football-anthem-btn-text');
-                    if (txt) txt.textContent = 'Футбольный гимн';
-                }
-            }
+            }).catch(function(e) {
+                console.warn(e);
+                alert('Не удалось загрузить футбольный гимн.');
+            });
         }
         if (footballAnthemBtn) footballAnthemBtn.addEventListener('click', toggleFootballAnthem);
 
@@ -2251,6 +2321,41 @@
         let fanfareProgressIntervalId = null;
         const FANFARE_PROGRESS_MS = 50;
         const fanfareBtn = document.getElementById('fanfareBtn');
+        let fanfareListenersAttached = false;
+        let fanfareLoadPromise = null;
+        function attachFanfareListeners() {
+            if (!fanfareAudio || fanfareListenersAttached) return;
+            fanfareListenersAttached = true;
+            fanfareAudio.addEventListener('loadedmetadata', updateFanfareProgress);
+            fanfareAudio.addEventListener('ended', function() {
+                stopFanfareProgressLoop();
+                if (fanfareBtn) {
+                    fanfareBtn.style.setProperty('--anthem-progress', '100%');
+                    fanfareBtn.classList.remove('playing');
+                    var txtF = fanfareBtn.querySelector('.football-anthem-btn-text');
+                    if (txtF) txtF.textContent = 'Фанфара';
+                    setTimeout(function() { fanfareBtn.style.removeProperty('--anthem-progress'); }, 300);
+                }
+            });
+        }
+        function getFanfareAudio() {
+            if (fanfareAudio) return Promise.resolve(fanfareAudio);
+            if (!fanfareLoadPromise) {
+                fanfareLoadPromise = ensureSpecialSoundCached(FANFARE_PATH).then(function(src) {
+                    fanfareAudio = new Audio(src);
+                    attachFanfareListeners();
+                    return fanfareAudio;
+                }).catch(function(err) {
+                    console.warn('fscore: fanfare load', err);
+                    fanfareAudio = new Audio(new URL(jingleBase + FANFARE_PATH, window.location.origin).href);
+                    attachFanfareListeners();
+                    return fanfareAudio;
+                }).finally(function() {
+                    fanfareLoadPromise = null;
+                });
+            }
+            return fanfareLoadPromise;
+        }
 
         function stopFanfareProgressLoop() {
             if (fanfareProgressIntervalId != null) {
@@ -2293,57 +2398,60 @@
         }
 
         function toggleFanfare() {
-            if (!fanfareAudio) {
-                fanfareAudio = new Audio(jingleBase + FANFARE_PATH);
-                fanfareAudio.addEventListener('loadedmetadata', updateFanfareProgress);
-                fanfareAudio.addEventListener('ended', function() {
-                    stopFanfareProgressLoop();
-                    if (fanfareBtn) {
-                        fanfareBtn.style.setProperty('--anthem-progress', '100%');
-                        fanfareBtn.classList.remove('playing');
-                        var txtF = fanfareBtn.querySelector('.football-anthem-btn-text');
-                        if (txtF) txtF.textContent = 'Фанфара';
-                        setTimeout(function() { fanfareBtn.style.removeProperty('--anthem-progress'); }, 300);
-                    }
-                });
-            }
-            fanfareAudio.volume = 1;
-            if (fanfareAudio.paused) {
-                if (isAnyJinglePlaying()) {
-                    stopAllJingles();
-                    return;
-                }
-                if (isFootballAnthemPlaying()) {
-                    stopAnthemProgressLoop();
-                    footballAnthemAudio.pause();
-                    footballAnthemAudio.currentTime = 0;
-                    if (footballAnthemBtn) {
-                        footballAnthemBtn.classList.remove('playing');
-                        footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
-                        footballAnthemBtn.style.removeProperty('--anthem-progress');
-                        var atxt = footballAnthemBtn.querySelector('.football-anthem-btn-text');
-                        if (atxt) atxt.textContent = 'Футбольный гимн';
-                    }
-                }
-                if (window.breakMusicPlaying) {
-                    alert('Фанфару можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
-                    return;
-                }
-                if (hasActiveScoreOrTime()) {
-                    if (!confirm('На табло уже выставлены счёт или время. Убедитесь, что фанфара запускается в нужный момент. Продолжить воспроизведение?')) {
+            getFanfareAudio().then(function() {
+                fanfareAudio.volume = 1;
+                if (fanfareAudio.paused) {
+                    if (isAnyJinglePlaying()) {
+                        stopAllJingles();
                         return;
                     }
+                    if (isFootballAnthemPlaying()) {
+                        stopAnthemProgressLoop();
+                        footballAnthemAudio.pause();
+                        footballAnthemAudio.currentTime = 0;
+                        if (footballAnthemBtn) {
+                            footballAnthemBtn.classList.remove('playing');
+                            footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
+                            footballAnthemBtn.style.removeProperty('--anthem-progress');
+                            var atxt = footballAnthemBtn.querySelector('.football-anthem-btn-text');
+                            if (atxt) atxt.textContent = 'Футбольный гимн';
+                        }
+                    }
+                    if (window.breakMusicPlaying) {
+                        alert('Фанфару можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
+                        return;
+                    }
+                    if (hasActiveScoreOrTime()) {
+                        if (!confirm('На табло уже выставлены счёт или время. Убедитесь, что фанфара запускается в нужный момент. Продолжить воспроизведение?')) {
+                            return;
+                        }
+                    }
+                    fanfareAudio.currentTime = 0;
+                    if (fanfareBtn) fanfareBtn.style.setProperty('--anthem-progress', '0%');
+                    fanfareAudio.play().catch(function(e) {
+                        console.warn('fanfare play', e);
+                        alert('Не удалось воспроизвести фанфару.');
+                    });
+                    if (fanfareBtn) fanfareBtn.classList.add('playing');
+                    startFanfareProgressUpdates();
+                } else {
+                    stopFanfarePlayback();
                 }
-                fanfareAudio.currentTime = 0;
-                if (fanfareBtn) fanfareBtn.style.setProperty('--anthem-progress', '0%');
-                fanfareAudio.play();
-                if (fanfareBtn) fanfareBtn.classList.add('playing');
-                startFanfareProgressUpdates();
-            } else {
-                stopFanfarePlayback();
-            }
+            }).catch(function(e) {
+                console.warn(e);
+                alert('Не удалось загрузить фанфару.');
+            });
         }
         if (fanfareBtn) fanfareBtn.addEventListener('click', toggleFanfare);
+
+        (function preloadSpecialSounds() {
+            function run() {
+                ensureSpecialSoundCached(FOOTBALL_ANTHEM_PATH).catch(function() {});
+                ensureSpecialSoundCached(FANFARE_PATH).catch(function() {});
+            }
+            if (document.readyState === 'complete') setTimeout(run, 0);
+            else window.addEventListener('load', function() { setTimeout(run, 0); });
+        })();
 
         function handleJingleKey(teamNum) {
             const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
