@@ -1290,6 +1290,7 @@
             <div class="fanfare-actions-row">
                 <button type="button" class="football-anthem-btn" id="fanfareBtn" title="🎺 Фанфары"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">🎺 Фанфары</span></button>
                 <button type="button" class="football-anthem-btn" id="russiaAnthemBtn" title="Гимн РФ"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text football-anthem-btn-text--russia"><svg class="award-flag-svg" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="3" height="0.667" fill="#fff"/><rect y="0.667" width="3" height="0.667" fill="#0039a6"/><rect y="1.333" width="3" height="0.667" fill="#da291c"/></svg><span class="award-russia-label">Гимн РФ</span></span></button>
+                <button type="button" class="football-anthem-btn" id="championsBtn" title="Champions"><span class="football-anthem-fill" aria-hidden="true"></span><span class="football-anthem-btn-text">🏆 Champions</span></button>
             </div>
         </div>
     </div>
@@ -2138,6 +2139,7 @@
         let lastGoalJingleScoreSnapshot = null;
         let fanfareAudio = null;
         let russiaAnthemAudio = null;
+        let championsAudio = null;
 
         function isAnyJinglePlaying() {
             return (currentTeam1Audio && !currentTeam1Audio.paused) || (currentTeam2Audio && !currentTeam2Audio.paused);
@@ -2154,8 +2156,12 @@
             return russiaAnthemAudio && !russiaAnthemAudio.paused;
         }
         window.isRussiaAnthemPlaying = isRussiaAnthemPlaying;
+        function isChampionsPlaying() {
+            return championsAudio && !championsAudio.paused;
+        }
+        window.isChampionsPlaying = isChampionsPlaying;
         function isFanfareOverlaySoundPlaying() {
-            return isFanfarePlaying() || isRussiaAnthemPlaying();
+            return isFanfarePlaying() || isRussiaAnthemPlaying() || isChampionsPlaying();
         }
         window.isFanfareOverlaySoundPlaying = isFanfareOverlaySoundPlaying;
 
@@ -2310,6 +2316,10 @@
                 alert('Во время проигрывания гимна РФ другие звуки отключены. Дождитесь окончания.');
                 return;
             }
+            if (isChampionsPlaying()) {
+                alert('Во время проигрывания Champions другие звуки отключены. Дождитесь окончания.');
+                return;
+            }
             if (window.breakMusicPlaying) {
                 alert('Джингл можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                 return;
@@ -2417,6 +2427,7 @@
                     }
                 if (typeof window.stopFanfarePlayback === 'function') window.stopFanfarePlayback();
                 if (typeof window.stopRussiaAnthemPlayback === 'function') window.stopRussiaAnthemPlayback();
+                if (typeof window.stopChampionsPlayback === 'function') window.stopChampionsPlayback();
                 if (window.breakMusicPlaying) {
                         alert('Гимн можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                         return;
@@ -2454,6 +2465,7 @@
 
         const FANFARE_PATH = 'special/fanfare.mp3';
         const ANTHEM_RUSSIA_PATH = 'special/anthem-russia.mp3';
+        const CHAMPIONS_PATH = 'special/champions.mp3';
         let fanfareProgressIntervalId = null;
         const FANFARE_PROGRESS_MS = 50;
         const fanfareBtn = document.getElementById('fanfareBtn');
@@ -2557,6 +2569,10 @@
                         alert('Чтобы включить фанфару, сначала остановите воспроизведение гимна РФ (повторное нажатие на «Гимн РФ»).');
                         return;
                     }
+                    if (isChampionsPlaying()) {
+                        alert('Чтобы включить фанфару, сначала остановите воспроизведение Champions (повторное нажатие на «Champions»).');
+                        return;
+                    }
                     if (window.breakMusicPlaying) {
                         alert('Фанфару можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                         return;
@@ -2589,6 +2605,7 @@
                 ensureSpecialSoundCached(FOOTBALL_ANTHEM_PATH).catch(function() {});
                 ensureSpecialSoundCached(FANFARE_PATH).catch(function() {});
                 ensureSpecialSoundCached(ANTHEM_RUSSIA_PATH).catch(function() {});
+                ensureSpecialSoundCached(CHAMPIONS_PATH).catch(function() {});
             }
             if (document.readyState === 'complete') setTimeout(run, 0);
             else window.addEventListener('load', function() { setTimeout(run, 0); });
@@ -2688,6 +2705,10 @@
                         alert('Чтобы включить гимн РФ, сначала остановите воспроизведение фанфар (повторное нажатие на «Фанфары»).');
                         return;
                     }
+                    if (isChampionsPlaying()) {
+                        alert('Чтобы включить гимн РФ, сначала остановите воспроизведение Champions (повторное нажатие на «Champions»).');
+                        return;
+                    }
                     if (window.breakMusicPlaying) {
                         alert('Гимн РФ можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
                         return;
@@ -2714,6 +2735,131 @@
             });
         }
         if (russiaAnthemBtn) russiaAnthemBtn.addEventListener('click', toggleRussiaAnthem);
+
+        let championsProgressIntervalId = null;
+        const CHAMPIONS_PROGRESS_MS = 50;
+        const championsBtn = document.getElementById('championsBtn');
+        let championsListenersAttached = false;
+        let championsLoadPromise = null;
+        function attachChampionsListeners() {
+            if (!championsAudio || championsListenersAttached) return;
+            championsListenersAttached = true;
+            championsAudio.addEventListener('loadedmetadata', updateChampionsProgress);
+            championsAudio.addEventListener('ended', function() {
+                stopChampionsProgressLoop();
+                if (championsBtn) {
+                    championsBtn.style.setProperty('--anthem-progress', '100%');
+                    championsBtn.classList.remove('playing');
+                    setTimeout(function() { championsBtn.style.removeProperty('--anthem-progress'); }, 300);
+                }
+            });
+        }
+        function getChampionsAudio() {
+            if (championsAudio) return Promise.resolve(championsAudio);
+            if (!championsLoadPromise) {
+                championsLoadPromise = ensureSpecialSoundCached(CHAMPIONS_PATH).then(function(src) {
+                    championsAudio = new Audio(src);
+                    attachChampionsListeners();
+                    return championsAudio;
+                }).catch(function(err) {
+                    console.warn('fscore: champions load', err);
+                    championsAudio = new Audio(new URL(jingleBase + CHAMPIONS_PATH, window.location.origin).href);
+                    attachChampionsListeners();
+                    return championsAudio;
+                }).finally(function() {
+                    championsLoadPromise = null;
+                });
+            }
+            return championsLoadPromise;
+        }
+        function stopChampionsProgressLoop() {
+            if (championsProgressIntervalId != null) {
+                clearInterval(championsProgressIntervalId);
+                championsProgressIntervalId = null;
+            }
+        }
+        function stopChampionsPlayback() {
+            stopChampionsProgressLoop();
+            if (championsAudio) {
+                championsAudio.pause();
+                championsAudio.currentTime = 0;
+            }
+            if (championsBtn) {
+                championsBtn.classList.remove('playing');
+                championsBtn.style.setProperty('--anthem-progress', '0%');
+                championsBtn.style.removeProperty('--anthem-progress');
+            }
+        }
+        window.stopChampionsPlayback = stopChampionsPlayback;
+        function updateChampionsProgress() {
+            if (!championsBtn || !championsAudio) return;
+            var d = championsAudio.duration;
+            var ct = championsAudio.currentTime;
+            var pct = (d && isFinite(d) && d > 0) ? Math.min(100, (ct / d) * 100) : 0;
+            championsBtn.style.setProperty('--anthem-progress', pct + '%');
+        }
+        function startChampionsProgressUpdates() {
+            if (championsProgressIntervalId != null) return;
+            updateChampionsProgress();
+            championsProgressIntervalId = setInterval(function() {
+                if (!championsAudio || championsAudio.paused) return;
+                updateChampionsProgress();
+            }, CHAMPIONS_PROGRESS_MS);
+        }
+        function toggleChampions() {
+            getChampionsAudio().then(function() {
+                championsAudio.volume = getPlaybackVolume();
+                if (championsAudio.paused) {
+                    if (isAnyJinglePlaying()) {
+                        stopAllJingles();
+                        return;
+                    }
+                    if (isFootballAnthemPlaying()) {
+                        stopAnthemProgressLoop();
+                        footballAnthemAudio.pause();
+                        footballAnthemAudio.currentTime = 0;
+                        if (footballAnthemBtn) {
+                            footballAnthemBtn.classList.remove('playing');
+                            footballAnthemBtn.style.setProperty('--anthem-progress', '0%');
+                            footballAnthemBtn.style.removeProperty('--anthem-progress');
+                            var cx = footballAnthemBtn.querySelector('.football-anthem-btn-text');
+                            if (cx) cx.textContent = 'Футбольный гимн';
+                        }
+                    }
+                    if (isFanfarePlaying()) {
+                        alert('Чтобы включить Champions, сначала остановите воспроизведение фанфар (повторное нажатие на «Фанфары»).');
+                        return;
+                    }
+                    if (isRussiaAnthemPlaying()) {
+                        alert('Чтобы включить Champions, сначала остановите воспроизведение гимна РФ (повторное нажатие на «Гимн РФ»).');
+                        return;
+                    }
+                    if (window.breakMusicPlaying) {
+                        alert('Champions можно включить только когда музыка перерыва остановлена. Остановите воспроизведение музыки и нажмите снова.');
+                        return;
+                    }
+                    if (hasActiveScoreOrTime()) {
+                        if (!confirm('На табло уже выставлены счёт или время. Убедитесь, что Champions запускается в нужный момент. Продолжить воспроизведение?')) {
+                            return;
+                        }
+                    }
+                    championsAudio.currentTime = 0;
+                    if (championsBtn) championsBtn.style.setProperty('--anthem-progress', '0%');
+                    championsAudio.play().catch(function(e) {
+                        console.warn('champions play', e);
+                        alert('Не удалось воспроизвести Champions.');
+                    });
+                    if (championsBtn) championsBtn.classList.add('playing');
+                    startChampionsProgressUpdates();
+                } else {
+                    stopChampionsPlayback();
+                }
+            }).catch(function(e) {
+                console.warn(e);
+                alert('Не удалось загрузить Champions.');
+            });
+        }
+        if (championsBtn) championsBtn.addEventListener('click', toggleChampions);
 
         function handleJingleKey(teamNum) {
             const select = teamNum === 1 ? jingleSelect1 : jingleSelect2;
@@ -3379,6 +3525,10 @@
                 }
                 if (typeof window.isRussiaAnthemPlaying === 'function' && window.isRussiaAnthemPlaying()) {
                     alert('Во время проигрывания гимна РФ музыка перерыва недоступна. Дождитесь окончания.');
+                    return;
+                }
+                if (typeof window.isChampionsPlaying === 'function' && window.isChampionsPlaying()) {
+                    alert('Во время проигрывания Champions музыка перерыва недоступна. Дождитесь окончания.');
                     return;
                 }
                 if (typeof isAnyJinglePlaying === 'function' && isAnyJinglePlaying()) {
