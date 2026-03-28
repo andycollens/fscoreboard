@@ -1624,6 +1624,17 @@
             }
         }
 
+        function serviceLogoImgSrc(rawUrl, teamId, presetId) {
+            if (!rawUrl || String(rawUrl).trim() === '') return '';
+            var base = String(rawUrl).trim().split('#')[0].split('?')[0];
+            if (!base) return '';
+            var q = 'tid=' + encodeURIComponent(teamId != null ? String(teamId) : '');
+            if (presetId != null && String(presetId).trim() !== '') {
+                q += '&pid=' + encodeURIComponent(String(presetId));
+            }
+            return base + '?' + q;
+        }
+
         function updateDisplay(data) {
             if (!data || typeof data !== 'object') return;
             applyRosterExcludedFromServer(data);
@@ -1644,7 +1655,7 @@
                     team1NoLogo.style.display = 'flex';
                     if (data.kit1Color) team1NoLogo.style.backgroundColor = data.kit1Color;
                 };
-                var next1 = data.team1Logo;
+                var next1 = serviceLogoImgSrc(data.team1Logo, data.team1Id, data.presetId);
                 if (team1Logo.getAttribute('src') === next1) {
                     team1Logo.removeAttribute('src');
                     void team1Logo.offsetWidth;
@@ -1707,7 +1718,7 @@
                     team2NoLogo.style.display = 'flex';
                     if (data.kit2Color) team2NoLogo.style.backgroundColor = data.kit2Color;
                 };
-                var next2 = data.team2Logo;
+                var next2 = serviceLogoImgSrc(data.team2Logo, data.team2Id, data.presetId);
                 if (team2Logo.getAttribute('src') === next2) {
                     team2Logo.removeAttribute('src');
                     void team2Logo.offsetWidth;

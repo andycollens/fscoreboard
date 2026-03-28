@@ -7067,10 +7067,14 @@
       if (!presetLogoUrl) return '';
       
       try {
-        // Создаем уникальное имя файла с timestamp
+        // Уникальное имя: timestamp + random (только Date.now() давал коллизии в одну миллисекунду —
+        // тот же URL, перезапись файла на диске, в браузере оставалось старое изображение прошлой команды)
         const timestamp = Date.now();
-        const extension = presetLogoUrl.split('.').pop();
-        const newFilename = `main_${team}_${timestamp}.${extension}`;
+        const random = Math.random().toString(36).substring(2, 9);
+        const tail = String(presetLogoUrl).split('/').pop().split('?')[0].split('#')[0] || '';
+        const extMatch = tail.match(/\.([a-z0-9]+)$/i);
+        const extension = (extMatch ? extMatch[1] : 'png').toLowerCase();
+        const newFilename = `main_${team}_${timestamp}_${random}.${extension}`;
         
         // Копируем файл на сервере
         const response = await fetch(`/api/copy-logo?token=${getToken()}`, {
