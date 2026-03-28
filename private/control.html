@@ -7122,7 +7122,7 @@
         resetPayload.penaltyActive = false;
         resetPayload.penaltySeries = null;
       }
-      socket.emit('updateScoreboard', resetPayload);
+      // Сброс счёта/таймера уходит одним пакетом с полным stateUpdate ниже (без второго emit — меньше гонок на клиентах)
       
       // Обновляем отображение
       const timeInputEl = document.getElementById('timeInput');
@@ -7147,13 +7147,13 @@
         const tournament = tournaments.find(t => t.id === preset.tournamentId);
         if (teams) {
           if (preset.team1Id) {
-            const team1 = teams.find(t => t.id === preset.team1Id);
+            const team1 = teams.find(t => String(t.id) === String(preset.team1Id));
             if (team1 && team1.logo) {
               team1Logo = team1.logo;
             }
           }
           if (preset.team2Id) {
-            const team2 = teams.find(t => t.id === preset.team2Id);
+            const team2 = teams.find(t => String(t.id) === String(preset.team2Id));
             if (team2 && team2.logo) {
               team2Logo = team2.logo;
             }
@@ -7218,10 +7218,25 @@
       let team2 = null;
       
       if (preset.team1Id && teams) {
-        team1 = teams.find(t => t.id === preset.team1Id);
+        team1 = teams.find(t => String(t.id) === String(preset.team1Id));
       }
       if (preset.team2Id && teams) {
-        team2 = teams.find(t => t.id === preset.team2Id);
+        team2 = teams.find(t => String(t.id) === String(preset.team2Id));
+      }
+      
+      if (!team1) {
+        state.team1Players = [];
+        state.team1Staff = [];
+        scoreboardState.team1Id = null;
+        selectedTeams.team1 = null;
+        mainTeamSelection.team1 = null;
+      }
+      if (!team2) {
+        state.team2Players = [];
+        state.team2Staff = [];
+        scoreboardState.team2Id = null;
+        selectedTeams.team2 = null;
+        mainTeamSelection.team2 = null;
       }
       
       // Обновляем selectedTeams и mainTeamSelection
@@ -7263,6 +7278,11 @@
       // СРАЗУ отправляем полное состояние на сервер для сохранения
       // Это критично для сохранения данных при перезагрузке
       const stateUpdate = {
+        timerSeconds: 0,
+        score1: 0,
+        score2: 0,
+        timerRunning: false,
+        timerStartTS: null,
         team1Name: preset.team1Name || '',
         team1City: preset.team1City || '',
         team1Short: preset.team1Short || '',
@@ -7274,10 +7294,14 @@
         team1Logo: state.team1Logo || '',
         team2Logo: state.team2Logo || ''
       };
+      if (penaltyWasReset) {
+        stateUpdate.penaltyActive = false;
+        stateUpdate.penaltySeries = null;
+      }
       
-      // Добавляем ID команд для правильного отображения альтернативных номеров
-      if (preset.team1Id) stateUpdate.team1Id = preset.team1Id;
-      if (preset.team2Id) stateUpdate.team2Id = preset.team2Id;
+      // ID команд: с сервера уходит id найденной записи; если в базе нет — оставляем id из пресета (ссылка на состав/номера)
+      stateUpdate.team1Id = team1 ? team1.id : (preset.team1Id != null ? preset.team1Id : null);
+      stateUpdate.team2Id = team2 ? team2.id : (preset.team2Id != null ? preset.team2Id : null);
       
       // Критично для блока «следующая игра» на service: по presetId определяем день и турнир (2013 vs 2014)
       stateUpdate.presetId = preset.id;
@@ -8082,7 +8106,7 @@
       });
 
       syncMainTeamPresetSelectsFromState();
-+      toggleMainTeamPresetSelects(!timerRunning);
+      toggleMainTeamPresetSelects(!timerRunning);
     }
 
     function handleMainTeamPresetSelection(teamKey, value) {

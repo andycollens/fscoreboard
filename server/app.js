@@ -1086,8 +1086,9 @@ app.post('/api/copy-logo', (req, res) => {
   }
   
   try {
-    // Извлекаем имя файла из URL
-    const sourceFilename = sourceUrl.split('/').pop();
+    // Извлекаем имя файла из URL (без query/hash — иначе файл на диске не находится)
+    const rawTail = sourceUrl.split('/').pop() || '';
+    const sourceFilename = decodeURIComponent(rawTail.split('?')[0].split('#')[0]);
     const sourcePath = path.join(LOGOS_PATH, sourceFilename);
     const destPath = path.join(LOGOS_PATH, newFilename);
     

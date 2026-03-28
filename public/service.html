@@ -1638,10 +1638,22 @@
             lastTimerRunningFlag = nowTimerRunning;
             // Команда 1
             if (data.team1Logo && data.team1Logo !== '') {
-                team1Logo.src = data.team1Logo;
+                team1Logo.onerror = function team1LogoOnErr() {
+                    team1Logo.onerror = null;
+                    team1Logo.classList.remove('show');
+                    team1NoLogo.style.display = 'flex';
+                    if (data.kit1Color) team1NoLogo.style.backgroundColor = data.kit1Color;
+                };
+                var next1 = data.team1Logo;
+                if (team1Logo.getAttribute('src') === next1) {
+                    team1Logo.removeAttribute('src');
+                    void team1Logo.offsetWidth;
+                }
+                team1Logo.src = next1;
                 team1Logo.classList.add('show');
                 team1NoLogo.style.display = 'none';
             } else {
+                team1Logo.onerror = null;
                 team1Logo.classList.remove('show');
                 team1NoLogo.style.display = 'flex';
                 if (data.kit1Color) team1NoLogo.style.backgroundColor = data.kit1Color;
@@ -1689,10 +1701,22 @@
 
             // Команда 2
             if (data.team2Logo && data.team2Logo !== '') {
-                team2Logo.src = data.team2Logo;
+                team2Logo.onerror = function team2LogoOnErr() {
+                    team2Logo.onerror = null;
+                    team2Logo.classList.remove('show');
+                    team2NoLogo.style.display = 'flex';
+                    if (data.kit2Color) team2NoLogo.style.backgroundColor = data.kit2Color;
+                };
+                var next2 = data.team2Logo;
+                if (team2Logo.getAttribute('src') === next2) {
+                    team2Logo.removeAttribute('src');
+                    void team2Logo.offsetWidth;
+                }
+                team2Logo.src = next2;
                 team2Logo.classList.add('show');
                 team2NoLogo.style.display = 'none';
             } else {
+                team2Logo.onerror = null;
                 team2Logo.classList.remove('show');
                 team2NoLogo.style.display = 'flex';
                 if (data.kit2Color) team2NoLogo.style.backgroundColor = data.kit2Color;
