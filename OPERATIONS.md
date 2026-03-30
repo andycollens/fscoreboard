@@ -76,6 +76,7 @@ pm2 monit
 - **Турниры**: `/opt/fscoreboard/server/tournaments.json`
 - **Кастомные стили**: `/opt/fscoreboard/server/custom-styles.json`
 - **Логотипы команд**: `/opt/fscoreboard/public/logos/`
+- **Звуки (джинглы и спец-треки)**: `/opt/fscoreboard/public/sound/` (в т.ч. `public/sound/special/` — фанфары, гимн РФ, Champions и др.)
 - **Изображения кастомных стилей**: `/opt/fscoreboard/public/img/custom-styles/`
 
 ### Резервное копирование
@@ -93,6 +94,7 @@ cp /opt/fscoreboard/server/custom-styles.json $BACKUP_DIR/
 
 # Копирование изображений
 cp -r /opt/fscoreboard/public/logos $BACKUP_DIR/
+cp -r /opt/fscoreboard/public/sound $BACKUP_DIR/ 2>/dev/null || true
 cp -r /opt/fscoreboard/public/img/custom-styles $BACKUP_DIR/ 2>/dev/null || true
 
 # Архивирование
@@ -138,6 +140,9 @@ cat /etc/nginx/sites-available/fscoreboard | grep -A 10 socket.io
 # Проверка логов
 tail -f /var/log/nginx/fscoreboard_error.log
 ```
+
+### После применения пресета на service «старое» лого при новых названиях
+Обычно это **кэш браузера** по тому же URL или коллизия имён скопированного `main_team*` при очень быстрых повторных применениях. В актуальных версиях имя копии включает случайный суффикс, а на `service` к URL логотипа добавляются параметры `tid`/`pid`. Рекомендации: обновить проект до `origin/main`, жёстко обновить страницу (Ctrl+F5), при необходимости очистить кэш для сайта.
 
 ### Предустановки не сохраняются
 ```bash

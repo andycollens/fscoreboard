@@ -1,9 +1,11 @@
 # API документация FSCOREBOARD
 
+> Актуальный перечень маршрутов и правил доступа — **`server/app.js`**. Ниже — ориентиры для интеграции; часть endpoint’ов в браузере вызывается с **`?token=...`**, отдельные — с Bearer (см. `SECURITY.md`).
+
 ## REST API
 
 ### Аутентификация
-Все API endpoints требуют Bearer токен:
+Многие операции требуют токен панели управления (часто в query: `?token=...`) или заголовок:
 ```
 Authorization: Bearer your-secret-token-here
 ```
@@ -16,28 +18,21 @@ Authorization: Bearer your-secret-token-here
 { "status": "OK", "timestamp": "2024-01-01T12:00:00.000Z" }
 ```
 
-#### GET /api/state
-Получение текущего состояния табло.
-```json
-{
-  "timerRunning": false,
-  "timerSeconds": 0,
-  "time": "00:00",
-  "team1": { "name": "Команда 1", "city": "Город 1", "score": 0, "color": "#ff0000" },
-  "team2": { "name": "Команда 2", "city": "Город 2", "score": 0, "color": "#0000ff" }
-}
-```
+#### Состояние табло в реальном времени
+Основной канал — **Socket.IO**: клиенты подписываются на **`scoreboardUpdate`** (полный объект состояния, после обогащения — см. `enrichStateWithConfig` в `server/app.js`). Персистентная копия — файл **`server/state.json`**. Отдельного универсального **`GET/POST /api/state`** в проекте может не быть — смотрите фактические маршруты в коде.
 
-#### POST /api/state
-Обновление состояния табло.
+#### GET /api/jingles
+Список MP3 для джинглов (используется `service.html` и др.). Ответ: JSON с массивом путей/имён файлов.
+
+#### POST /api/copy-logo?token=...
+Копирование файла логотипа внутри каталога логотипов (для сценария «применить пресет»: создаётся `main_team1_*` / `main_team2_*`). Тело JSON:
 ```json
 {
-  "timerRunning": true,
-  "timerSeconds": 3600,
-  "team1": { "score": 1 },
-  "team2": { "score": 0 }
+  "sourceUrl": "/public/logos/исходный.png",
+  "newFilename": "main_team1_1730_abc12def.png"
 }
 ```
+Ответ при успехе: `{ "success": true, "url": "/public/logos/...", "filename": "..." }`.
 
 #### GET /api/presets
 Получение списка предустановок.
@@ -138,75 +133,47 @@ Authorization: Bearer your-secret-token-here
 
 ## Socket.IO Events
 
-### Подключение
+Namespace по умолчанию (как в `public/*.html` и `private/control.html`):
+
 ```javascript
-const socket = io('http://localhost:3001');
+const socket = io(); // тот же origin, что и страница
 ```
 
-### События от клиента
+### От клиента (основные)
 
-#### updateState
-Обновление состояния табло.
-```javascript
-socket.emit('updateState', {
-  timerRunning: true,
-  timerSeconds: 3600,
-  team1: { score: 1 }
-});
-```
+| Событие | Назначение |
+|--------|------------|
+| **`getCurrentState`** | Запрос текущего состояния; сервер ответит **`currentState`**. |
+| **`updateScoreboard`** | Частичное или полное обновление полей табло (`score1`, `team1Name`, `team1Logo`, `team1Players`, `presetId`, таймер, пенальти и т.д.). Сервер мержит в общий `state` и рассылает **`scoreboardUpdate`**. |
+| **`applyPreset`** | Устаревший/резервный обработчик; панель управления применяет пресеты через **`updateScoreboard`**. |
+| **`rosterExcludedUpdate`** | Список исключённых из игры на `service` / синхронизация с табло. |
+| **`resetScoreboard`** | Сброс табло в дефолтное состояние. |
+| **`countdownFinished`** | Сигнал с табло после обратного отсчёта 5→0 (запуск таймера на сервере). |
 
-#### updatePreset
-Обновление предустановки.
-```javascript
-socket.emit('updatePreset', {
-  id: 'preset1',
-  name: 'Новое название'
-});
-```
+### От сервера (основные)
 
-### События от сервера
+| Событие | Назначение |
+|--------|------------|
+| **`scoreboardUpdate`** | Главное событие синхронизации: полное состояние для `scoreboard`, `stadium`, `service`, `members`, и т.д. Может включать `tournamentTitle`, `nextPreset`, `team1TrackUrl`, … |
+| **`currentState`** | Ответ на `getCurrentState` (как правило то же по смыслу, что и `scoreboardUpdate`). |
+| **`configUpdate`** | Смена графического стиля, режима стадиона, данных кастом-стиля и т.п. |
+| **`stadiumModeChange`** | Режим отображения стадиона. |
+| **`stadiumWinnersChange`** | Данные режима победителей. |
+| **`startCountdown`** / **`cancelCountdown`** | Обратный отсчёт на табло. |
+| **`goalScored`** | Анимация гола (если включена), с приложенным состоянием. |
+| **`teamUseAltNumbersUpdated`** | Смена флага альтернативных номеров команды. |
+| **`stadiumAdPlayNow`** | Служебное событие рекламы на стадионе. |
 
-#### stateUpdate
-Обновление состояния (отправляется всем клиентам).
-```javascript
-socket.on('stateUpdate', (state) => {
-  console.log('Состояние обновлено:', state);
-});
-```
+### Пример: подписка на табло
 
-#### presetUpdate
-Обновление предустановок.
-```javascript
-socket.on('presetUpdate', (presets) => {
-  console.log('Предустановки обновлены:', presets);
-});
-```
-
-#### configUpdate
-Обновление конфигурации (графический стиль, режим стадиона и т.д.).
-```javascript
-socket.on('configUpdate', (config) => {
-  console.log('Конфигурация обновлена:', config);
-  // config.graphicStyle, config.customStyleData и т.д.
-});
-```
-
-#### scoreboardUpdate
-Обновление состояния табло (для stadium.html и других страниц).
 ```javascript
 socket.on('scoreboardUpdate', (data) => {
-  console.log('Состояние табло обновлено:', data);
-  // data содержит полное состояние: команды, счет, таймер, tournamentTitle и т.д.
+  // data.team1Name, data.team1Logo, data.team1Players, data.score1, data.timerSeconds, data.presetId, ...
 });
 ```
 
-#### stadiumWinnersChange
-Обновление победителей (для режима Winners на стадионе).
 ```javascript
-socket.on('stadiumWinnersChange', (data) => {
-  console.log('Победители обновлены:', data);
-  // data.winners, data.winnersTitle, data.winnersResolved
-});
+socket.emit('updateScoreboard', { score1: 1, score2: 0 });
 ```
 
 ## Коды ошибок
@@ -222,32 +189,18 @@ socket.on('stadiumWinnersChange', (data) => {
 
 ### JavaScript (браузер)
 ```javascript
-// Подключение
-const socket = io('http://localhost:3001');
+const socket = io();
 
-// Обновление счета
-socket.emit('updateState', {
-  team1: { score: 2 },
-  team2: { score: 1 }
-});
+socket.emit('updateScoreboard', { score1: 2, score2: 1 });
 
-// Слушание обновлений
-socket.on('stateUpdate', (state) => {
-  document.getElementById('score1').textContent = state.team1.score;
-  document.getElementById('score2').textContent = state.team2.score;
+socket.on('scoreboardUpdate', (data) => {
+  console.log(data.score1, data.score2, data.team1Name);
 });
 ```
 
 ### cURL
 ```bash
-# Получение состояния
-curl -H "Authorization: Bearer your-token" \
-     http://localhost:3001/api/state
-
-# Обновление счета
-curl -X POST \
-     -H "Authorization: Bearer your-token" \
-     -H "Content-Type: application/json" \
-     -d '{"team1":{"score":1}}' \
-     http://localhost:3001/api/state
+curl -s "http://localhost:3001/api/presets?token=YOUR_TOKEN" | head
+curl -s "http://localhost:3001/api/jingles" | head
+curl -I "http://localhost:3001/public/sound/special/fanfare.mp3"
 ```
